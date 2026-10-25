@@ -71,6 +71,10 @@ export default class Section {
 		);
 	}
 
+	isEmpty(): boolean {
+		return this.elements.length === 0;
+	}
+
 	copy(): Section {
 		return new Section(
 			this.id,

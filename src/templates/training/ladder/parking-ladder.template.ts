@@ -6,23 +6,26 @@ import { CAPACITE, createParkingVariables } from "@/templates/parking.template";
 import {
 	arithmetic,
 	callProgram,
+	coil,
 	compare,
 	nf,
 	no,
+	or,
 	rising,
 	section,
-	setMainSections,
 } from "@/templates/training/utils/ladder-dsl";
 import {
 	GrafcetLadderSpec,
+	addGrafcetPrograms,
 	grafcetMemories,
+	grafcetProgramSections,
 	grafcetSections,
 } from "@/templates/training/utils/grafcet-ladder";
 import { stopButton } from "@/templates/training/utils/training-variables";
 
 /**
- * Command: E0 ─dem_entree ET places < CAPACITE→ E1 (barrière, places+1) ─passage→ E2 ─NON passage→ E0
- *          E0 ─dem_sortie ET places > 0→ E3 (barrière, places-1) ─passage→ E4 ─NON passage→ E0
+ * Command: E0 ─dem_entree ET places < CAPACITE→ E1 (barrière, places+1) ─passage→ E2 (barrière) ─NON passage→ E0
+ *          E0 ─dem_sortie ET places > 0→ E3 (barrière, places-1) ─passage→ E4 (barrière) ─NON passage→ E0
  */
 export const PARKING_COMMAND_SPEC: GrafcetLadderSpec = {
 	steps: ["X0", "X1", "X2", "X3", "X4"],
@@ -50,7 +53,6 @@ export const PARKING_COMMAND_SPEC: GrafcetLadderSpec = {
 export const PARKING_SIGNALLING_SPEC: GrafcetLadderSpec = {
 	steps: ["S0", "S1"],
 	initial: ["S0"],
-	initMemory: "init_signalisation",
 	transitions: [
 		{
 			from: ["S0"],
@@ -99,25 +101,33 @@ export function createParkingLadderProject(locale: Locale = "fr"): Project {
 export function createParkingLadderSolution(locale: Locale = "fr"): Project {
 	const t = createTemplateText("parking-ladder", locale);
 	const project = createBase(t("solutionName"), locale);
-	setMainSections(project, [
-		...project.main.sections,
-		...grafcetSections(
-			PARKING_COMMAND_SPEC,
-			[{ variable: "barriere", steps: ["X1", "X3"] }],
-			locale,
-		),
-		section(
-			t("vehicleEntryTitle"),
-			t("vehicleEntryDescription"),
-			rising("X1"),
-			arithmetic("places", "places", "+", "1"),
-		),
-		section(
-			t("vehicleExitTitle"),
-			t("vehicleExitDescription"),
-			rising("X3"),
-			arithmetic("places", "places", "-", "1"),
-		),
-	]);
+	const command = grafcetProgramSections(PARKING_COMMAND_SPEC, [], locale);
+	addGrafcetPrograms(
+		project,
+		{
+			cycle: command.cycle,
+			outputs: [
+				section(
+					t("barrierTitle"),
+					t("barrierDescription"),
+					or([no("X1")], [no("X2")], [no("X3")], [no("X4")], [no("passage")]),
+					coil("barriere"),
+				),
+				section(
+					t("vehicleEntryTitle"),
+					t("vehicleEntryDescription"),
+					rising("X1"),
+					arithmetic("places", "places", "+", "1"),
+				),
+				section(
+					t("vehicleExitTitle"),
+					t("vehicleExitDescription"),
+					rising("X3"),
+					arithmetic("places", "places", "-", "1"),
+				),
+			],
+		},
+		locale,
+	);
 	return project;
 }

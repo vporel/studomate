@@ -1,17 +1,13 @@
 {
-	"statement": "## Poste de perçage en Ladder\n\nLa partie opérative (la machine : foret, moteur, capteurs) est fournie, appelée par le Main : ne la modifiez pas. Entrées : `dcy` (bouton poussoir, départ de cycle), `h` (foret en haut), `b` (foret en bas) et `blocage` (interrupteur qui simule un foret bloqué : le foret n'avance plus en descente tant qu'il est vrai). Sorties : `descendre`, `monter` et `broche`. Mémoires fournies : `defaut`, `X0` à `X3` et `init`.\n\n### Travail demandé\n\n1. Implanter le GRAFCET du poste, un réseau par transition : `dcy` → descente (`descendre`, `broche`) jusqu'à `b` → perçage 2 s (`broche`, un `TON`) → remontée (`monter`, `broche`) jusqu'à `h`.\n2. Surveiller la descente : si le foret n'atteint pas `b` en 8 s (un second `TON`), `defaut` est mémorisé et le foret remonte directement. Un nouvel appui sur `dcy` efface `defaut`. Tester en actionnant `blocage`.",
+	"statement": "## Poste de perçage en Ladder\n\nLa partie opérative (la machine : foret, moteur, capteurs) est fournie, appelée par le Main : ne la modifiez pas. Entrées : `dcy` (bouton poussoir, départ de cycle), `acquittement` (bouton poussoir), `h` (foret en haut), `b` (foret en bas) et `blocage` (interrupteur qui simule un foret bloqué : le foret n'avance plus en descente tant qu'il est vrai). Sorties : `descendre`, `monter` et `broche`. Mémoires fournies : `defaut`, `X0` à `X3`.\n\n### Travail demandé\n\n1. Créer les programmes `Defauts`, `Cycle_automatique` et `Sorties`, et les appeler depuis le Main dans cet ordre, après la partie opérative.\n2. Dans `Cycle_automatique`, implanter le GRAFCET du poste, un réseau par transition : `dcy` → descente (`descendre`, `broche`) jusqu'à `b` → perçage 2 s (`broche`, un `TON`) → remontée (`monter`, `broche`) jusqu'à `h`.\n3. Surveiller la descente : si le foret n'atteint pas `b` en 8 s (un second `TON`, dans `Cycle_automatique`), le foret remonte directement et `Defauts` mémorise `defaut`. Un appui sur `acquittement` efface `defaut`, et `dcy` ne démarre un cycle que si `defaut` est faux (`dcy ET NON defaut`). Tester en actionnant `blocage`.\n4. Dans `Sorties`, un réseau par sortie.",
 	"texts": {
 		"projectName": "Poste de perçage en Ladder",
 		"solutionName": "Poste de perçage en Ladder : solution",
 		"drillTimer": "t_perc",
 		"watchdogTimer": "t_surv",
-		"drillTimerTitle": "Temporisation de perçage",
-		"drillTimerDescription": "Le TON mesure le perçage.",
-		"watchdogTitle": "Surveillance de la descente",
-		"watchdogDescription": "Le TON surveille la descente : au bout de {seconds} s sans atteindre le bas, la transition de repli est franchie.",
 		"faultTitle": "Défaut mémorisé",
 		"faultDescription": "Le défaut de descente est mémorisé.",
-		"faultResetTitle": "Acquittement du défaut",
-		"faultResetDescription": "Un nouveau cycle efface le défaut."
+		"faultAcknowledgeTitle": "Acquittement du défaut",
+		"faultAcknowledgeDescription": "Un appui sur le bouton d'acquittement efface le défaut."
 	}
 }

@@ -53,7 +53,7 @@ describe("trainingStepSlug", () => {
 		expect(trainingStepSlug("fr", "a1", "synthesis-parking")).toBe(
 			"synthese-parking",
 		);
-		expect(trainingStepSlug("fr", "a4", "synthesis-parking")).toBe(
+		expect(trainingStepSlug("fr", "a5", "synthesis-parking")).toBe(
 			"synthese-parking",
 		);
 		expect(trainingStepSlug("fr", "a2", "conclusion")).toBe("conclusion");

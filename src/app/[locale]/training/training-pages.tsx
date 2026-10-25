@@ -32,7 +32,7 @@ async function renderModule(
 	const locale = toLocale(rawLocale);
 	setRequestLocale(locale);
 	const t = await getTranslations({ locale, namespace: "training" });
-	const { buildSteps, next } = TRAINING_MODULES[moduleId];
+	const { buildSteps, next, subtitleKey } = TRAINING_MODULES[moduleId];
 	const steps = buildSteps(t);
 	const stepId =
 		stepSlug === undefined
@@ -67,6 +67,7 @@ async function renderModule(
 		<TrainingModulePage
 			breadcrumb={breadcrumb}
 			title={moduleLabel}
+			subtitle={subtitleKey && t(subtitleKey)}
 			intro={t(`${moduleId}Intro`)}
 			introLabel={t("introToggle")}
 			steps={steps}

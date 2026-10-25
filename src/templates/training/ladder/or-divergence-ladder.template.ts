@@ -2,11 +2,12 @@ import type { Locale } from "@/i18n/config";
 import createTemplateText from "@/templates/template-text";
 import Project from "@/schemas/project/project.schema";
 import { createOrDivergenceBase } from "@/templates/training/grafcet/or-divergence.template";
-import { no, setMainSections } from "@/templates/training/utils/ladder-dsl";
+import { no } from "@/templates/training/utils/ladder-dsl";
 import {
 	GrafcetLadderSpec,
 	grafcetMemories,
-	grafcetSections,
+	addGrafcetPrograms,
+	grafcetProgramSections,
 } from "@/templates/training/utils/grafcet-ladder";
 
 /** E0 ─dcy1→ E1 (sortie1) ─fin1→ E0, and E0 ─dcy2→ E2 (sortie2) ─fin2→ E0 */
@@ -32,7 +33,9 @@ export function createOrDivergenceLadderProject(
 	locale: Locale = "fr",
 ): Project {
 	const t = createTemplateText("or-divergence-ladder", locale);
-	return createBase(t("projectName"), locale);
+	const project = createBase(t("projectName"), locale);
+	addGrafcetPrograms(project, { cycle: [], outputs: [] }, locale);
+	return project;
 }
 
 export function createOrDivergenceLadderSolution(
@@ -40,9 +43,9 @@ export function createOrDivergenceLadderSolution(
 ): Project {
 	const t = createTemplateText("or-divergence-ladder", locale);
 	const project = createBase(t("solutionName"), locale);
-	setMainSections(
+	addGrafcetPrograms(
 		project,
-		grafcetSections(
+		grafcetProgramSections(
 			OR_DIVERGENCE_SPEC,
 			[
 				{ variable: "sortie1", steps: ["X1"] },
@@ -50,6 +53,7 @@ export function createOrDivergenceLadderSolution(
 			],
 			locale,
 		),
+		locale,
 	);
 	return project;
 }

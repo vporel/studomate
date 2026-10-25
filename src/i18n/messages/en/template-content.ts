@@ -33,6 +33,7 @@ import enAndDivergenceLadder from "./template-content/and-divergence-ladder.json
 import enTrafficLightLadder from "./template-content/traffic-light-ladder.json";
 import enParkingLadder from "./template-content/parking-ladder.json";
 import enGateGrafcetLadder from "./template-content/gate-grafcet-ladder.json";
+import enGatePerTransitionLadder from "./template-content/gate-per-transition-ladder.json";
 import enGrafcetLadder from "./template-content/grafcet-ladder.json";
 
 const enTemplateContent: Record<string, TemplateContent> = {
@@ -70,6 +71,7 @@ const enTemplateContent: Record<string, TemplateContent> = {
 	"traffic-light-ladder": enTrafficLightLadder,
 	"parking-ladder": enParkingLadder,
 	"gate-grafcet-ladder": enGateGrafcetLadder,
+	"gate-per-transition-ladder": enGatePerTransitionLadder,
 	"grafcet-ladder": enGrafcetLadder,
 };
 

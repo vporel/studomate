@@ -1,0 +1,6 @@
+{
+	"statement": "## Portail à télécommande : un réseau par transition\n\nLe même GRAFCET du portail, implanté avec un réseau par transition (`X0 -> X1` à `X5 -> X1`), dans l'ordre du GRAFCET, dans le programme `Cycle_automatique`, puis les sorties `ouvrir` et `fermer` dans `Sorties`.\n\n### À observer\n\n1. Fermé (`fc_ferme` vrai), un appui sur `telecommande` devrait ouvrir le portail : observez `ouvrir` et les étapes `X0` à `X5` dans la table de visualisation.\n2. Pourquoi `X0` redevient-elle active ?",
+	"texts": {
+		"projectName": "Portail à télécommande : un réseau par transition"
+	}
+}

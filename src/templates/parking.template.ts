@@ -104,8 +104,8 @@ export function createParkingProject(locale: Locale = "fr"): Project {
  * GRAFCET "Commande" — sélection de séquence entrée / sortie :
  *   E0 (initial) ─[dem_entree ET places < CAPACITE]→ E1 : barrière d'entrée ouverte, places += 1
  *                ─[dem_sortie ET places > 0]────────→ E3 : barrière de sortie ouverte, places -= 1
- *   E1 ─[passage]→ E2 ─[NON passage]→ E0
- *   E3 ─[passage]→ E4 ─[NON passage]→ E0
+ *   E1 ─[passage]→ E2 ─[NON passage]→ E0   (E2 : barrière d'entrée restée ouverte)
+ *   E3 ─[passage]→ E4 ─[NON passage]→ E0   (E4 : barrière de sortie restée ouverte)
  *
  * GRAFCET "Signalisation" — voyant complet piloté par le seul niveau du compteur :
  *   E10 ─[places >= CAPACITE]→ E11 (complet) ─[places < CAPACITE]→ E10
@@ -199,6 +199,22 @@ export function createParkingSolution(locale: Locale = "fr"): Project {
 		.width(135)
 		.position(XL + 55, 220)
 		.build();
+	const aBarriere2 = new ActionBuilder()
+		.id(createRandomId())
+		.expression("barriere_entree")
+		.type(ActionType.BOOLEAN_VARIABLE)
+		.executionMode(ActionExecutionMode.CONTINUOUS)
+		.width(135)
+		.position(XL + 55, 380)
+		.build();
+	const aBarriere4 = new ActionBuilder()
+		.id(createRandomId())
+		.expression("barriere_sortie")
+		.type(ActionType.BOOLEAN_VARIABLE)
+		.executionMode(ActionExecutionMode.CONTINUOUS)
+		.width(135)
+		.position(XR + 55, 380)
+		.build();
 	const aInc = new ActionBuilder()
 		.id(createRandomId())
 		.expression("places := places + 1")
@@ -259,7 +275,7 @@ export function createParkingSolution(locale: Locale = "fr"): Project {
 		.addSteps(e0, e1, e2, e3, e4)
 		.addTransitions(t01, t03, t12, t34, t20, t40)
 		.addJunctionOrStart(orStart)
-		.addActions(aBarriere1, aInc, aBarriere3, aDec)
+		.addActions(aBarriere1, aBarriere2, aInc, aBarriere3, aBarriere4, aDec)
 		.addStepReferralsSources(renvoiEntree, renvoiSortie)
 		.addConnections(
 			ConnectionBuilder.betweenElements(
@@ -335,6 +351,20 @@ export function createParkingSolution(locale: Locale = "fr"): Project {
 				e3,
 				STEP_HANDLE_SOURCE_ACTION,
 				aDec,
+				ACTION_HANDLE_TARGET_STEP,
+			),
+			ConnectionBuilder.betweenElements(
+				createRandomId(),
+				e2,
+				STEP_HANDLE_SOURCE_ACTION,
+				aBarriere2,
+				ACTION_HANDLE_TARGET_STEP,
+			),
+			ConnectionBuilder.betweenElements(
+				createRandomId(),
+				e4,
+				STEP_HANDLE_SOURCE_ACTION,
+				aBarriere4,
 				ACTION_HANDLE_TARGET_STEP,
 			),
 		)

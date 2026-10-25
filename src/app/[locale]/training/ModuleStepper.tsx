@@ -74,6 +74,9 @@ export type StepData = {
 	embeddedWatchOpen?: boolean;
 	/** The view the embedded solution displays first. */
 	embeddedInitialView?: TrainingInitialView;
+	/** Other solutions observed in the page, each opened by its own button and sharing
+	 * `embeddedWatchOpen` and `embeddedInitialView`. */
+	embeddedMore?: { templateId: string; buttonLabel: string }[];
 	/** The template runs as an editable exercise with its solution in a second tab, and stays
 	 * mounted, with the student's work, while another step is displayed. */
 	embeddedExercise?: {
@@ -93,6 +96,10 @@ export type StepData = {
 		autostartSimulation?: boolean;
 	};
 };
+
+/** Key of an embedded block: the step id, plus the template id for the blocks after the first. */
+const embeddedKey = (stepId: string, templateId?: string) =>
+	templateId ? `${stepId}#${templateId}` : stepId;
 
 /** Anciens liens `#step-<id>`, redirigés vers l'URL de l'étape. */
 function stepIndexFromHash(hash: string, steps: StepData[]): number | null {
@@ -266,7 +273,7 @@ export default function ModuleStepper({
 	const goTo = (index: number) => {
 		setActiveIndex(index);
 		setEmbeddedOpenIds((ids) =>
-			ids.filter((id) => steps.find((s) => s.id === id)?.embeddedExercise),
+			ids.filter((key) => steps.find((s) => s.id === key)?.embeddedExercise),
 		);
 		window.history.replaceState(null, "", pathOf(index));
 		if (isStackedLayout) {
@@ -346,23 +353,25 @@ export default function ModuleStepper({
 					sx={{ "& p": { textAlign: "justify" } }}
 				/>
 
-				{embeddedOpenIds.map((id) => {
+				{embeddedOpenIds.map((key) => {
+					const [id, extraTemplateId] = key.split("#");
 					const openStep = steps.find((s) => s.id === id);
 					const current = id === step.id;
-					if (!openStep?.embeddedTemplateId) return null;
+					const templateId = extraTemplateId ?? openStep?.embeddedTemplateId;
+					if (!openStep || !templateId) return null;
 					if (!current && !openStep.embeddedExercise) return null;
 					return (
-						<Box key={id} sx={{ mt: 2, display: current ? "block" : "none" }}>
+						<Box key={key} sx={{ mt: 2, display: current ? "block" : "none" }}>
 							{openStep.embeddedExercise ? (
 								<TrainingExerciseBlock
-									templateId={openStep.embeddedTemplateId}
+									templateId={templateId}
 									locale={locale}
 									{...openStep.embeddedExercise}
 									watchOpen={openStep.embeddedWatchOpen}
 								/>
 							) : (
 								<TrainingEmbeddedBlock
-									templateId={openStep.embeddedTemplateId}
+									templateId={templateId}
 									locale={locale}
 									scene3d={openStep.embeddedScene3d}
 									watchOpen={openStep.embeddedWatchOpen}
@@ -376,14 +385,34 @@ export default function ModuleStepper({
 				{step.cta && (
 					<Stack direction="row" gap={1.5} flexWrap="wrap" mt={2}>
 						{step.embeddedTemplateId ? (
-							!embeddedOpenIds.includes(step.id) && (
-								<Button
-									variant="contained"
-									onClick={() => setEmbeddedOpenIds((ids) => [...ids, step.id])}
-								>
-									{step.cta.exerciseLabel}
-								</Button>
-							)
+							<>
+								{!embeddedOpenIds.includes(step.id) && (
+									<Button
+										variant="contained"
+										onClick={() =>
+											setEmbeddedOpenIds((ids) => [...ids, step.id])
+										}
+									>
+										{step.cta.exerciseLabel}
+									</Button>
+								)}
+								{step.embeddedMore?.map(({ templateId, buttonLabel }) => {
+									const key = embeddedKey(step.id, templateId);
+									return (
+										!embeddedOpenIds.includes(key) && (
+											<Button
+												key={key}
+												variant="contained"
+												onClick={() =>
+													setEmbeddedOpenIds((ids) => [...ids, key])
+												}
+											>
+												{buttonLabel}
+											</Button>
+										)
+									);
+								})}
+							</>
 						) : (
 							<Button
 								LinkComponent={NextLink}

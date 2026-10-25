@@ -33,6 +33,7 @@ import frAndDivergenceLadder from "./template-content/and-divergence-ladder.json
 import frTrafficLightLadder from "./template-content/traffic-light-ladder.json";
 import frParkingLadder from "./template-content/parking-ladder.json";
 import frGateGrafcetLadder from "./template-content/gate-grafcet-ladder.json";
+import frGatePerTransitionLadder from "./template-content/gate-per-transition-ladder.json";
 import frGrafcetLadder from "./template-content/grafcet-ladder.json";
 
 const frTemplateContent: Record<string, TemplateContent> = {
@@ -70,6 +71,7 @@ const frTemplateContent: Record<string, TemplateContent> = {
 	"traffic-light-ladder": frTrafficLightLadder,
 	"parking-ladder": frParkingLadder,
 	"gate-grafcet-ladder": frGateGrafcetLadder,
+	"gate-per-transition-ladder": frGatePerTransitionLadder,
 	"grafcet-ladder": frGrafcetLadder,
 };
 

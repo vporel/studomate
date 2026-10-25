@@ -69,6 +69,30 @@ describe("TrainingModulePage", () => {
 		expect(mockStepper.mock.calls[0][0].initialStepId).toBe("s1");
 	});
 
+	it("affiche le sous-titre sous le titre de la page du module, hors du titre de niveau 1", () => {
+		setup({ subtitle: "Une séquence, de l'étape aux sorties" });
+
+		const subtitle = screen.getByText("Une séquence, de l'étape aux sorties");
+		const title = screen.getByRole("heading", { level: 1 });
+		expect(title).toHaveTextContent("Module A0");
+		expect(title).not.toHaveTextContent("Une séquence");
+		expect(
+			title.compareDocumentPosition(subtitle) &
+				Node.DOCUMENT_POSITION_FOLLOWING,
+		).toBeTruthy();
+	});
+
+	it("n'affiche pas le sous-titre sur une page d'étape", () => {
+		setup({
+			subtitle: "Une séquence, de l'étape aux sorties",
+			initialStepId: "s1",
+		});
+
+		expect(
+			screen.queryByText("Une séquence, de l'étape aux sorties"),
+		).not.toBeInTheDocument();
+	});
+
 	it("rend le fil d'Ariane avant le titre", () => {
 		setup({ breadcrumb: <nav>fil</nav> });
 

@@ -1,7 +1,6 @@
 {
-	"statement": "## Portail à télécommande\n\nEntrées : `telecommande` (un seul bouton), `arret` (câblé à ouverture), `fc_ouvert` et `fc_ferme` (fins de course), `barriere_immaterielle` (cellule photoélectrique de détection d'obstacle, vraie quand le faisceau est coupé). Sorties : `ouvrir` et `fermer`. La mémoire `init` est déjà créée : une fois le GRAFCET dessiné, déclarer les mémoires d'étape et de franchissement.\n\n### Cahier des charges\n\n1. Un appui (sur front) ouvre si le portail est fermé, ferme s'il est ouvert, arrête s'il est en mouvement.\n2. Après un arrêt en cours de course, l'appui suivant repart dans le sens inverse du dernier mouvement.\n3. Le bouton d'arrêt produit le même arrêt. En fermeture, la cellule provoque la réouverture.\n\n### Travail demandé\n\nÉcrire d'abord le GRAFCET (sur papier, ou en ajoutant un programme GRAFCET au projet, exclu de l'exécution), puis l'implanter en Ladder en trois blocs.",
+	"statement": "## Portail à télécommande : trois blocs\n\nLe GRAFCET du portail à une seule télécommande, implanté en trois blocs : les conditions de franchissement `T0` à `T8`, puis tous les reset et tous les set des étapes `X0` à `X5` (ces deux blocs forment le programme `Cycle_automatique`), puis les sorties `ouvrir` et `fermer` (programme `Sorties`).\n\n### À observer\n\n1. Fermé (`fc_ferme` vrai), un appui sur `telecommande` ouvre le portail : `ouvrir` devient vraie.\n2. Pendant l'ouverture, un deuxième appui l'arrête : `ouvrir` et `fermer` sont fausses.",
 	"texts": {
-		"projectName": "Portail à télécommande",
-		"solutionName": "Portail à télécommande : solution"
+		"projectName": "Portail à télécommande : trois blocs"
 	}
 }

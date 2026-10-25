@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 392" font-family="sans-serif">
+	<!-- Reference: no step active -->
+	<rect x="4" y="4" width="552" height="116" rx="6" fill="none" stroke="#2e7d32" stroke-width="1.5" />
+	<text x="14" y="24" font-size="13" text-anchor="start" fill="#2e7d32" font-weight="bold">Référence : aucune étape active</text>
+	<line x1="40" y1="46" x2="40" y2="90" stroke="#263238" stroke-width="3" />
+	<line x1="520" y1="46" x2="520" y2="90" stroke="#263238" stroke-width="3" />
+	<line x1="40" y1="68" x2="100" y2="68" stroke="#263238" stroke-width="2" />
+	<line x1="112" y1="68" x2="190" y2="68" stroke="#263238" stroke-width="2" />
+	<line x1="202" y1="68" x2="280" y2="68" stroke="#263238" stroke-width="2" />
+	<line x1="292" y1="68" x2="330" y2="68" stroke="#263238" stroke-width="2" />
+	<line x1="352" y1="68" x2="440" y2="68" stroke="#263238" stroke-width="2" />
+	<line x1="456" y1="68" x2="520" y2="68" stroke="#263238" stroke-width="2" />
+	<line x1="100" y1="58" x2="100" y2="78" stroke="#263238" stroke-width="2.5" />
+	<line x1="112" y1="58" x2="112" y2="78" stroke="#263238" stroke-width="2.5" />
+	<line x1="98" y1="79" x2="114" y2="57" stroke="#263238" stroke-width="2" />
+	<text x="106" y="53" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X0</text>
+	<line x1="190" y1="58" x2="190" y2="78" stroke="#263238" stroke-width="2.5" />
+	<line x1="202" y1="58" x2="202" y2="78" stroke="#263238" stroke-width="2.5" />
+	<line x1="188" y1="79" x2="204" y2="57" stroke="#263238" stroke-width="2" />
+	<text x="196" y="53" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X1</text>
+	<line x1="280" y1="58" x2="280" y2="78" stroke="#263238" stroke-width="2.5" />
+	<line x1="292" y1="58" x2="292" y2="78" stroke="#263238" stroke-width="2.5" />
+	<line x1="278" y1="79" x2="294" y2="57" stroke="#263238" stroke-width="2" />
+	<text x="286" y="53" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X2</text>
+	<text x="341" y="72" font-size="14" text-anchor="middle" fill="#263238">…</text>
+	<path d="M 440 58 Q 433 68 440 78" fill="none" stroke="#263238" stroke-width="2.5" />
+	<path d="M 456 58 Q 463 68 456 78" fill="none" stroke="#263238" stroke-width="2.5" />
+	<text x="448" y="71.5" font-size="10" text-anchor="middle" fill="#263238" font-weight="bold">S</text>
+	<text x="448" y="53" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X0</text>
+	<text x="14" y="108" font-size="12" text-anchor="start" fill="#455a64">Un contact NF par étape : si aucune n'est active, X0 s'active.</text>
+
+	<!-- Variant: init memory -->
+	<text x="14" y="148" font-size="13" text-anchor="start" fill="#263238" font-weight="bold">Variante : mémoire init</text>
+	<line x1="40" y1="164" x2="40" y2="250" stroke="#263238" stroke-width="3" />
+	<line x1="520" y1="164" x2="520" y2="250" stroke="#263238" stroke-width="3" />
+	<line x1="40" y1="186" x2="100" y2="186" stroke="#263238" stroke-width="2" />
+	<line x1="112" y1="186" x2="440" y2="186" stroke="#263238" stroke-width="2" />
+	<line x1="456" y1="186" x2="520" y2="186" stroke="#263238" stroke-width="2" />
+	<line x1="100" y1="176" x2="100" y2="196" stroke="#263238" stroke-width="2.5" />
+	<line x1="112" y1="176" x2="112" y2="196" stroke="#263238" stroke-width="2.5" />
+	<line x1="98" y1="197" x2="114" y2="175" stroke="#263238" stroke-width="2" />
+	<text x="106" y="171" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">init</text>
+	<path d="M 440 176 Q 433 186 440 196" fill="none" stroke="#263238" stroke-width="2.5" />
+	<path d="M 456 176 Q 463 186 456 196" fill="none" stroke="#263238" stroke-width="2.5" />
+	<text x="448" y="189.5" font-size="10" text-anchor="middle" fill="#263238" font-weight="bold">S</text>
+	<text x="448" y="171" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X0</text>
+	<text x="32" y="190" font-size="11" text-anchor="end" fill="#607d8b">1</text>
+	<line x1="40" y1="228" x2="100" y2="228" stroke="#263238" stroke-width="2" />
+	<line x1="112" y1="228" x2="440" y2="228" stroke="#263238" stroke-width="2" />
+	<line x1="456" y1="228" x2="520" y2="228" stroke="#263238" stroke-width="2" />
+	<line x1="100" y1="218" x2="100" y2="238" stroke="#263238" stroke-width="2.5" />
+	<line x1="112" y1="218" x2="112" y2="238" stroke="#263238" stroke-width="2.5" />
+	<line x1="98" y1="239" x2="114" y2="217" stroke="#263238" stroke-width="2" />
+	<text x="106" y="213" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">init</text>
+	<path d="M 440 218 Q 433 228 440 238" fill="none" stroke="#263238" stroke-width="2.5" />
+	<path d="M 456 218 Q 463 228 456 238" fill="none" stroke="#263238" stroke-width="2.5" />
+	<text x="448" y="231.5" font-size="10" text-anchor="middle" fill="#263238" font-weight="bold">S</text>
+	<text x="448" y="213" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">init</text>
+	<text x="32" y="232" font-size="11" text-anchor="end" fill="#607d8b">2</text>
+	<text x="14" y="270" font-size="12" text-anchor="start" fill="#455a64">init est fausse au démarrage : le réseau 1 active X0, le réseau 2 verrouille init.</text>
+
+	<!-- Variant: first-scan system bit -->
+	<text x="14" y="306" font-size="13" text-anchor="start" fill="#263238" font-weight="bold">Variante : bit système de premier cycle</text>
+	<line x1="40" y1="324" x2="40" y2="368" stroke="#263238" stroke-width="3" />
+	<line x1="520" y1="324" x2="520" y2="368" stroke="#263238" stroke-width="3" />
+	<line x1="40" y1="346" x2="100" y2="346" stroke="#263238" stroke-width="2" />
+	<line x1="112" y1="346" x2="440" y2="346" stroke="#263238" stroke-width="2" />
+	<line x1="456" y1="346" x2="520" y2="346" stroke="#263238" stroke-width="2" />
+	<line x1="100" y1="336" x2="100" y2="356" stroke="#263238" stroke-width="2.5" />
+	<line x1="112" y1="336" x2="112" y2="356" stroke="#263238" stroke-width="2.5" />
+	<text x="106" y="331" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">_SYS_FIRST_SCAN</text>
+	<path d="M 440 336 Q 433 346 440 356" fill="none" stroke="#263238" stroke-width="2.5" />
+	<path d="M 456 336 Q 463 346 456 356" fill="none" stroke="#263238" stroke-width="2.5" />
+	<text x="448" y="349.5" font-size="10" text-anchor="middle" fill="#263238" font-weight="bold">S</text>
+	<text x="448" y="331" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X0</text>
+	<text x="14" y="384" font-size="12" text-anchor="start" fill="#455a64">_SYS_FIRST_SCAN est vrai au seul premier cycle : X0 s'active une fois.</text>
+</svg>

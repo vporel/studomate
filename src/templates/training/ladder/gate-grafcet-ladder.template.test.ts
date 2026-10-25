@@ -1,14 +1,9 @@
-import * as templates from "./gate-grafcet-ladder.template";
-import type { Locale } from "@/i18n/config";
-import type Project from "@/schemas/project/project.schema";
+import { calledPrograms } from "@tests/utils/execution-sections";
 import PlcScenario from "@tests/utils/plc-scenario";
-import {
-	createGateGrafcetLadderProject,
-	createGateGrafcetLadderSolution,
-} from "./gate-grafcet-ladder.template";
+import { createGateGrafcetLadderProject } from "./gate-grafcet-ladder.template";
 
 async function closedGate(): Promise<PlcScenario> {
-	const scenario = new PlcScenario(createGateGrafcetLadderSolution());
+	const scenario = new PlcScenario(createGateGrafcetLadderProject());
 	scenario.set("fc_ferme", true);
 	await scenario.cycles(3);
 	return scenario;
@@ -23,33 +18,29 @@ describe("gate-grafcet-ladder.template", () => {
 	beforeEach(() => jest.useFakeTimers());
 	afterEach(() => jest.useRealTimers());
 
-	it("l'énoncé n'embarque aucun GRAFCET ni programme de commande", () => {
-		const project = createGateGrafcetLadderProject();
-		expect(project.variables.map((v) => v.mnemonic)).toEqual(
+	it("range les blocs de franchissement et d'évolution dans Cycle_automatique, les sorties dans Sorties", () => {
+		const [cycle, outputs] = calledPrograms(createGateGrafcetLadderProject());
+		expect([cycle.name, outputs.name]).toEqual([
+			"Cycle_automatique",
+			"Sorties",
+		]);
+		expect(cycle.sections.map((s) => s.title)).toEqual(
 			expect.arrayContaining([
-				"telecommande",
-				"arret",
-				"barriere_immaterielle",
-				"init",
+				"Condition de franchissement T0",
+				"Désactivation par T0",
+				"Activation par T0",
 			]),
 		);
-		expect(project.main.sections[0].elements).toHaveLength(0);
+		expect(outputs.sections).toHaveLength(2);
 	});
 
-	it("l'énoncé ne fournit pas les mémoires d'étape et de franchissement", () => {
+	it("déclare les six étapes et les neuf transitions, sans doublon", () => {
 		const names = createGateGrafcetLadderProject().variables.map(
-			(v) => v.mnemonic,
-		);
-		expect(names.filter((n) => /^[XT]\d+$/.test(n))).toEqual([]);
-	});
-
-	it("la solution déclare les six étapes, les neuf transitions et init, sans doublon", () => {
-		const names = createGateGrafcetLadderSolution().variables.map(
 			(v) => v.mnemonic,
 		);
 		expect(names.filter((n) => /^X\d+$/.test(n))).toHaveLength(6);
 		expect(names.filter((n) => /^T\d+$/.test(n))).toHaveLength(9);
-		expect(names.filter((n) => n === "init")).toHaveLength(1);
+		expect(names).not.toContain("init");
 		expect(new Set(names).size).toBe(names.length);
 	});
 
@@ -142,36 +133,21 @@ describe("gate-grafcet-ladder.template", () => {
 });
 
 describe("gate-grafcet-ladder.template (langues)", () => {
-	const builders: [(locale?: Locale) => Project, string, string][] = [
-		[
-			templates.createGateGrafcetLadderProject,
-			"Portail à télécommande",
-			"Remote-controlled gate",
-		],
-		[
-			templates.createGateGrafcetLadderSolution,
-			"Portail à télécommande : solution",
-			"Remote-controlled gate: solution",
-		],
-	];
-
-	it.each(builders)("garde le nom français en fr (%#)", (build, fr) => {
-		expect(build().name).toBe(fr);
-		expect(build("fr").name).toBe(fr);
+	it("garde le nom français en fr", () => {
+		expect(createGateGrafcetLadderProject().name).toBe(
+			"Portail à télécommande : trois blocs",
+		);
 	});
 
-	it.each(builders)(
-		"nomme le projet en anglais, sans accent (%#)",
-		(build, _fr, en) => {
-			const project = build("en");
-			expect(project.name).toBe(en);
-			const titles = Object.values(project.ladders)
-				.flatMap((ladder) => [
-					ladder.name,
-					...ladder.sections.map((s) => s.title),
-				])
-				.join(" ");
-			expect(titles).not.toMatch(/[À-ÿ]/);
-		},
-	);
+	it("nomme le projet en anglais, sans accent", () => {
+		const project = createGateGrafcetLadderProject("en");
+		expect(project.name).toBe("Remote-controlled gate: three blocks");
+		const titles = Object.values(project.ladders)
+			.flatMap((ladder) => [
+				ladder.name,
+				...ladder.sections.map((s) => s.title),
+			])
+			.join(" ");
+		expect(titles).not.toMatch(/[À-ÿ]/);
+	});
 });

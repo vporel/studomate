@@ -1,5 +1,5 @@
 import PageTitle from "@/ui/components/public-pages/PageTitle";
-import { Container, Divider } from "@mui/material";
+import { Container, Divider, Typography } from "@mui/material";
 import type { TrainingModuleId } from "@/training/module-ids";
 import { ReactNode } from "react";
 import MarkdownBodyServer from "./MarkdownBodyServer";
@@ -10,6 +10,8 @@ import TrainingPageFooter from "./TrainingPageFooter";
 
 type TrainingModulePageProps = {
 	title: string;
+	/** Sous-titre rendu sous le titre, sur la page du module seulement. */
+	subtitle?: string;
 	/** Fil d'Ariane rendu au-dessus du titre. */
 	breadcrumb?: ReactNode;
 	/** Introduction en Markdown (rendue côté serveur). */
@@ -31,6 +33,7 @@ type TrainingModulePageProps = {
 export default function TrainingModulePage({
 	breadcrumb,
 	title,
+	subtitle,
 	intro,
 	introLabel,
 	steps,
@@ -47,6 +50,11 @@ export default function TrainingModulePage({
 		<Container maxWidth="lg" sx={{ my: 4 }}>
 			{breadcrumb}
 			<PageTitle as={isStepPage ? "p" : "h1"}>{title}</PageTitle>
+			{!isStepPage && subtitle && (
+				<Typography variant="h5" component="p" color="text.secondary">
+					{subtitle}
+				</Typography>
+			)}
 			<Divider sx={{ my: 2 }} />
 			<ModuleIntroProvider>
 				{!isStepPage && (

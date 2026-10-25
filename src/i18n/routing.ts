@@ -56,6 +56,11 @@ export const routing = defineRouting({
 			fr: "/formations/a4/[step]",
 			en: "/training/a4/[step]",
 		},
+		"/training/a5": { fr: "/formations/a5", en: "/training/a5" },
+		"/training/a5/[step]": {
+			fr: "/formations/a5/[step]",
+			en: "/training/a5/[step]",
+		},
 	},
 });
 

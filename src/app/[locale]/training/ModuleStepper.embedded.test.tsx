@@ -97,6 +97,23 @@ const steps: StepData[] = [
 		cta: { templateId: "linear-sequence", exerciseLabel: "Ouvrir l'exercice" },
 	},
 	{ id: "theory", kind: "theory", title: "Théorie", body: ["Corps"] },
+	{
+		id: "compare",
+		kind: "theory",
+		title: "Comparer",
+		body: ["Corps"],
+		embeddedTemplateId: "gate-per-transition-ladder",
+		embeddedMore: [
+			{
+				templateId: "gate-grafcet-ladder",
+				buttonLabel: "Observer les trois blocs",
+			},
+		],
+		cta: {
+			templateId: "gate-per-transition-ladder",
+			exerciseLabel: "Observer un réseau par transition",
+		},
+	},
 ];
 
 function setup() {
@@ -242,5 +259,63 @@ describe("ModuleStepper embedded blocks", () => {
 			screen.getByRole("button", { name: "Observer la simulation" }),
 		).toBeInTheDocument();
 		expect(mockUnmounted).toHaveBeenCalledWith("observation");
+	});
+
+	it("offers one button per solution and opens each in its own block", async () => {
+		window.history.replaceState(null, "", "/");
+		renderWithI18n(
+			<ModuleStepper
+				steps={steps}
+				prevLabel="Précédent"
+				nextLabel="Suivant"
+				moduleId="a1"
+				initialStepId="compare"
+			/>,
+		);
+		expect(screen.queryByTestId("observation")).not.toBeInTheDocument();
+
+		fireEvent.click(
+			screen.getByRole("button", { name: "Observer les trois blocs" }),
+		);
+		expect(await screen.findByTestId("observation")).toHaveTextContent(
+			"gate-grafcet-ladder",
+		);
+		expect(
+			screen.queryByRole("button", { name: "Observer les trois blocs" }),
+		).not.toBeInTheDocument();
+
+		fireEvent.click(
+			screen.getByRole("button", { name: "Observer un réseau par transition" }),
+		);
+		const blocks = await screen.findAllByTestId("observation");
+		expect(blocks.map((block) => block.textContent)).toEqual([
+			"gate-grafcet-ladder",
+			"gate-per-transition-ladder",
+		]);
+	});
+
+	it("drops the blocks of the extra solutions when leaving their step", async () => {
+		window.history.replaceState(null, "", "/");
+		renderWithI18n(
+			<ModuleStepper
+				steps={steps}
+				prevLabel="Précédent"
+				nextLabel="Suivant"
+				moduleId="a1"
+				initialStepId="compare"
+			/>,
+		);
+		fireEvent.click(
+			screen.getByRole("button", { name: "Observer les trois blocs" }),
+		);
+		expect(await screen.findByTestId("observation")).toBeInTheDocument();
+
+		fireEvent.click(screen.getByRole("button", { name: "Précédent" }));
+		fireEvent.click(screen.getByRole("button", { name: "Suivant" }));
+
+		expect(screen.queryByTestId("observation")).not.toBeInTheDocument();
+		expect(
+			screen.getByRole("button", { name: "Observer les trois blocs" }),
+		).toBeInTheDocument();
 	});
 });

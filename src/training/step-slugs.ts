@@ -5,6 +5,7 @@ import A1_STEP_IDS from "./step-ids/a1";
 import A2_STEP_IDS from "./step-ids/a2";
 import A3_STEP_IDS from "./step-ids/a3";
 import A4_STEP_IDS from "./step-ids/a4";
+import A5_STEP_IDS from "./step-ids/a5";
 
 type StepIdOf<T> = T[keyof T] & string;
 
@@ -18,6 +19,7 @@ const FR_STEP_SLUGS: {
 	a2: Record<StepIdOf<typeof A2_STEP_IDS>, string>;
 	a3: Record<StepIdOf<typeof A3_STEP_IDS>, string>;
 	a4: Record<StepIdOf<typeof A4_STEP_IDS>, string>;
+	a5: Record<StepIdOf<typeof A5_STEP_IDS>, string>;
 } = {
 	a0: {
 		automatisme: "automatisme",
@@ -77,17 +79,25 @@ const FR_STEP_SLUGS: {
 		"theory-steps-ladder": "theorie-etapes-ladder",
 		"exercise-grafcet-naive": "exercice-grafcet-naif",
 		"theory-method-ladder": "theorie-methode-ladder",
+		"theory-two-programs": "theorie-deux-programmes",
 		"exercise-grafcet-linear": "exercice-grafcet-lineaire",
 		"theory-actions-ladder": "theorie-actions-ladder",
-		"theory-timed-actions-ladder": "theorie-actions-temporisees-ladder",
+		"theory-edge-actions-ladder": "theorie-actions-sur-front-ladder",
+		"theory-receptivity-timer": "theorie-temporisation-receptivite",
+		"theory-movement-supervision": "theorie-surveillance-mouvement",
 		"synthesis-drilling": "synthese-percage",
-		"theory-divergences-ladder": "theorie-divergences-ladder",
+		conclusion: "conclusion",
+	},
+	a5: {
+		"theory-or-divergence-ladder": "theorie-divergence-en-ou-ladder",
 		"exercise-grafcet-or-divergence": "exercice-grafcet-divergence-en-ou",
+		"theory-and-divergence-ladder": "theorie-divergence-en-et-ladder",
 		"exercise-grafcet-and-divergence": "exercice-grafcet-divergence-en-et",
 		"theory-grafcet-reset": "theorie-grafcet-reinitialisation",
 		"exercise-grafcet-reset": "exercice-grafcet-reinitialisation",
 		"synthesis-parking": "synthese-parking",
-		"synthesis-gate-grafcet": "synthese-portail-grafcet",
+		"theory-going-further": "theorie-limites-reseau-par-transition",
+		"theory-three-blocks": "theorie-methode-trois-blocs",
 		conclusion: "conclusion",
 	},
 };
@@ -97,7 +107,7 @@ const SLUGS: Record<
 	Record<TrainingModuleId, Record<string, string>>
 > = {
 	fr: FR_STEP_SLUGS,
-	en: { a0: {}, a1: {}, a2: {}, a3: {}, a4: {} },
+	en: { a0: {}, a1: {}, a2: {}, a3: {}, a4: {}, a5: {} },
 };
 
 /** Slug of a training step in `locale`; the id itself when the step has none. */

@@ -9,15 +9,15 @@
 	<text x="130" y="32" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">0</text>
 	<line x1="130" y1="42" x2="130" y2="62" stroke="#263238" stroke-width="1.8" />
 	<line x1="120" y1="62" x2="140" y2="62" stroke="#263238" stroke-width="3" />
-	<text x="144" y="66" font-size="12" text-anchor="start" fill="#263238">dcy</text>
+	<text x="144" y="66" font-size="12" text-anchor="start" fill="#263238">dcy ET NON defaut</text>
 	<line x1="130" y1="62" x2="130" y2="82" stroke="#263238" stroke-width="1.8" />
 	<rect x="115" y="82" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
 	<text x="130" y="102" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">1</text>
 	<rect x="159" y="85" width="84" height="24" fill="#fff" stroke="#263238" stroke-width="1.8" />
 	<line x1="145" y1="97" x2="159" y2="97" stroke="#263238" stroke-width="1.8" />
 	<text x="201" y="101" font-size="12" text-anchor="middle" fill="#263238">descendre</text>
-	<rect x="145" y="109" width="84" height="24" fill="#fff" stroke="#263238" stroke-width="1.8" />
-	<text x="187" y="125" font-size="12" text-anchor="middle" fill="#263238">broche</text>
+	<rect x="243" y="85" width="70" height="24" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<text x="278" y="101" font-size="12" text-anchor="middle" fill="#263238">broche</text>
 	<line x1="130" y1="112" x2="130" y2="148" stroke="#263238" stroke-width="1.8" />
 	<line x1="130" y1="148" x2="270" y2="148" stroke="#263238" stroke-width="1.8" />
 	<line x1="130" y1="148" x2="130" y2="168" stroke="#263238" stroke-width="1.8" />
@@ -43,8 +43,8 @@
 	<rect x="159" y="297" width="84" height="24" fill="#fff" stroke="#263238" stroke-width="1.8" />
 	<line x1="145" y1="309" x2="159" y2="309" stroke="#263238" stroke-width="1.8" />
 	<text x="201" y="313" font-size="12" text-anchor="middle" fill="#263238">monter</text>
-	<rect x="145" y="321" width="84" height="24" fill="#fff" stroke="#263238" stroke-width="1.8" />
-	<text x="187" y="337" font-size="12" text-anchor="middle" fill="#263238">broche</text>
+	<rect x="243" y="297" width="70" height="24" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<text x="278" y="313" font-size="12" text-anchor="middle" fill="#263238">broche</text>
 	<line x1="130" y1="324" x2="130" y2="358" stroke="#263238" stroke-width="1.8" />
 	<line x1="120" y1="358" x2="140" y2="358" stroke="#263238" stroke-width="3" />
 	<text x="144" y="362" font-size="12" text-anchor="start" fill="#263238">h</text>
@@ -58,7 +58,10 @@
 	<text x="340" y="144" font-size="11" text-anchor="start" fill="#455a64">en 8 s, t_surv.Q franchit la</text>
 	<text x="340" y="160" font-size="11" text-anchor="start" fill="#455a64">transition vers l'étape 3 :</text>
 	<text x="340" y="176" font-size="11" text-anchor="start" fill="#455a64">le foret remonte.</text>
-	<text x="340" y="210" font-size="11" text-anchor="start" fill="#455a64">Le défaut est mémorisé dans</text>
-	<text x="340" y="226" font-size="11" text-anchor="start" fill="#455a64">defaut (bobine S) dès que</text>
-	<text x="340" y="242" font-size="11" text-anchor="start" fill="#455a64">t_surv.Q est vrai.</text>
+	<text x="340" y="210" font-size="11" text-anchor="start" fill="#455a64">Le programme Defauts mémorise</text>
+	<text x="340" y="226" font-size="11" text-anchor="start" fill="#455a64">le défaut dans defaut (bobine S)</text>
+	<text x="340" y="242" font-size="11" text-anchor="start" fill="#455a64">dès que t_surv.Q est vrai.</text>
+	<text x="340" y="276" font-size="11" text-anchor="start" fill="#455a64">Tant que defaut est vrai, dcy ne</text>
+	<text x="340" y="292" font-size="11" text-anchor="start" fill="#455a64">lance plus le cycle : il faut</text>
+	<text x="340" y="308" font-size="11" text-anchor="start" fill="#455a64">appuyer sur acquittement.</text>
 </svg>

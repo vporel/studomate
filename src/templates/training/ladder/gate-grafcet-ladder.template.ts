@@ -2,19 +2,13 @@ import type { Locale } from "@/i18n/config";
 import createTemplateText from "@/templates/template-text";
 import Project from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
-import {
-	nf,
-	no,
-	or,
-	rising,
-	setMainSections,
-} from "@/templates/training/utils/ladder-dsl";
+import { nf, no, or, rising } from "@/templates/training/utils/ladder-dsl";
 import { createGateCommonVariables } from "./ladder-gate.template";
 import {
 	GrafcetLadderSpec,
-	grafcetInitMemory,
 	grafcetThreeBlockMemories,
-	grafcetThreeBlockSections,
+	addGrafcetPrograms,
+	grafcetThreeBlockProgramSections,
 } from "@/templates/training/utils/grafcet-ladder";
 import { pushButton } from "@/templates/training/utils/training-variables";
 
@@ -69,36 +63,18 @@ export const GATE_SPEC: GrafcetLadderSpec = {
 	],
 };
 
-/** Gate inputs and outputs; the step and transition memories are declared by the student. */
-function createBase(name: string, locale: Locale): Project {
-	const project = new Project(createRandomId(), name, "");
+/** The gate GRAFCET implemented in three blocks: crossing conditions, step changes, outputs. */
+export function createGateGrafcetLadderProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("gate-grafcet-ladder", locale);
+	const project = new Project(createRandomId(), t("projectName"), "");
 	project.variables.push(
 		pushButton("telecommande"),
 		...createGateCommonVariables(locale),
-		grafcetInitMemory(GATE_SPEC),
+		...grafcetThreeBlockMemories(GATE_SPEC),
 	);
-	return project;
-}
-
-export function createGateGrafcetLadderProject(locale: Locale = "fr"): Project {
-	const t = createTemplateText("gate-grafcet-ladder", locale);
-	return createBase(t("projectName"), locale);
-}
-
-export function createGateGrafcetLadderSolution(
-	locale: Locale = "fr",
-): Project {
-	const t = createTemplateText("gate-grafcet-ladder", locale);
-	const project = createBase(t("solutionName"), locale);
-	const provided = new Set(project.variables.map((v) => v.mnemonic));
-	project.variables.push(
-		...grafcetThreeBlockMemories(GATE_SPEC).filter(
-			(v) => !provided.has(v.mnemonic),
-		),
-	);
-	setMainSections(
+	addGrafcetPrograms(
 		project,
-		grafcetThreeBlockSections(
+		grafcetThreeBlockProgramSections(
 			GATE_SPEC,
 			[
 				{ variable: "ouvrir", steps: ["X1"] },
@@ -106,6 +82,7 @@ export function createGateGrafcetLadderSolution(
 			],
 			locale,
 		),
+		locale,
 	);
 	return project;
 }

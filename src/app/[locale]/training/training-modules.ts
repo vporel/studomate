@@ -8,11 +8,14 @@ import buildA1Steps from "./a1/steps";
 import buildA2Steps from "./a2/steps";
 import buildA3Steps from "./a3/steps";
 import buildA4Steps from "./a4/steps";
+import buildA5Steps from "./a5/steps";
 import type { TrainingModuleId } from "@/training/module-ids";
 import type { TrainingTranslator } from "./training-translator";
 
 type TrainingModule = {
 	buildSteps: (t: TrainingTranslator) => StepData[];
+	/** Clé du sous-titre affiché sous le titre de la page du module, quand il en a un. */
+	subtitleKey?: "a4Subtitle" | "a5Subtitle";
 	/** Module suivant du parcours et clé du libellé de son lien dans `training`. */
 	next?: {
 		href: PublicPathname;
@@ -20,7 +23,8 @@ type TrainingModule = {
 			| "nextModuleA1Cta"
 			| "nextModuleA2Cta"
 			| "nextModuleA3Cta"
-			| "nextModuleA4Cta";
+			| "nextModuleA4Cta"
+			| "nextModuleA5Cta";
 	};
 };
 
@@ -41,7 +45,12 @@ export const TRAINING_MODULES: Record<TrainingModuleId, TrainingModule> = {
 		buildSteps: buildA3Steps,
 		next: { href: "/training/a4", labelKey: "nextModuleA4Cta" },
 	},
-	a4: { buildSteps: buildA4Steps },
+	a4: {
+		buildSteps: buildA4Steps,
+		subtitleKey: "a4Subtitle",
+		next: { href: "/training/a5", labelKey: "nextModuleA5Cta" },
+	},
+	a5: { buildSteps: buildA5Steps, subtitleKey: "a5Subtitle" },
 };
 
 /** Tout module de formation est servi à `/training/<module>` ; ses étapes (hors la première,

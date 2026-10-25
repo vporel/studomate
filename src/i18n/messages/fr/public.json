@@ -91,7 +91,9 @@
 		"trainingA3Topic": "Ladder",
 		"trainingA3Summary": "Temporisations, compteurs, calcul et sous-programmes.",
 		"trainingA4Topic": "GRAFCET → Ladder",
-		"trainingA4Summary": "Implanter un GRAFCET en Ladder avec la méthode en trois blocs.",
+		"trainingA4Summary": "Implanter un GRAFCET en Ladder : un réseau par transition, deux programmes, actions, temps et défauts.",
+		"trainingA5Topic": "GRAFCET → Ladder (suite)",
+		"trainingA5Summary": "Divergences en OU et en ET, arrêts d'une séquence, limites d'un réseau par transition et méthode en trois blocs.",
 		"trainingCta": "Voir toutes les formations",
 		"templatesTitle": "Des exemples pour démarrer",
 		"templatesIntro": "Ouvrez un projet pré-configuré et explorez-le à votre rythme.",
@@ -320,8 +322,10 @@
 		"trainingA2Description": "Module A2 : du schéma à relais au Ladder, contacts et bobines, auto-maintien, bobines S/R, fronts et ordre d'exécution des réseaux.",
 		"trainingA3Title": "Module A3 : Ladder, temps et calcul",
 		"trainingA3Description": "Module A3 : temporisations, compteurs, calcul et types numériques, sous-programmes : théorie et exercices auto-corrigés.",
-		"trainingA4Title": "Module A4 : Du GRAFCET au Ladder",
-		"trainingA4Description": "Module A4 : implanter un GRAFCET en Ladder, méthode en trois blocs, actions, divergences et réinitialisation.",
+		"trainingA4Title": "Module A4 : Du GRAFCET au Ladder (partie 1)",
+		"trainingA4Description": "Module A4 : implanter un GRAFCET en Ladder, de l'étape aux sorties : un réseau par transition, deux programmes, actions, temporisations et défauts.",
+		"trainingA5Title": "Module A5 : Du GRAFCET au Ladder (partie 2)",
+		"trainingA5Description": "Module A5 : divergences en OU et en ET, arrêt d'une séquence, limites d'un réseau par transition et méthode en trois blocs pour un GRAFCET en Ladder.",
 		"manualSections": {
 			"getting-started": {
 				"title": "Démarrer avec Studomate : manuel",
@@ -476,28 +480,54 @@
 			},
 			"a4": {
 				"theory-method-ladder": {
-					"title": "Du GRAFCET au Ladder : la méthode en trois blocs",
-					"description": "Implanter un GRAFCET en Ladder : conditions de franchissement, évolution (reset puis set) et sorties, avec exemple complet et liste de contrôle."
+					"title": "Du GRAFCET au Ladder : un réseau par transition",
+					"description": "Implanter un GRAFCET en Ladder : un réseau par transition (reset amont, set aval), ordre d'écriture des réseaux et activation de l'étape initiale."
+				},
+				"theory-two-programs": {
+					"title": "Deux programmes Ladder pour un GRAFCET : formation",
+					"description": "Ranger un GRAFCET implanté en Ladder dans deux programmes, Cycle_automatique et Sorties, appelés par le Main : exemple complet et liste de contrôle."
 				},
 				"theory-actions-ladder": {
-					"title": "Implanter les actions d'un GRAFCET en Ladder : formation",
-					"description": "Implanter les actions d'un GRAFCET en Ladder : continue, mémorisée, sur front et conditionnelle, avec les contacts P et N et un exemple de comptage."
+					"title": "Actions continues et mémorisées en Ladder : formation",
+					"description": "Implanter les actions continues, mémorisées et conditionnelles d'un GRAFCET en Ladder : un réseau par sortie, dans le programme Sorties."
 				},
-				"theory-timed-actions-ladder": {
-					"title": "Le temps dans un GRAFCET implanté en Ladder : formation",
-					"description": "Temporisation de réceptivité, action retardée, action limitée et surveillance de mouvement : où placer le TON et ce qui change dans le Ladder."
+				"theory-edge-actions-ladder": {
+					"title": "Actions sur front et numériques en Ladder : formation",
+					"description": "Implanter les actions sur front d'un GRAFCET en Ladder avec les contacts P et N, et les affectations numériques, sur un exemple de comptage de voitures."
 				},
-				"theory-divergences-ladder": {
-					"title": "Divergences et convergences GRAFCET en Ladder : formation",
-					"description": "Implanter en Ladder les divergences et convergences en OU et en ET d'un GRAFCET : une condition par branche en OU, une seule en ET."
+				"theory-receptivity-timer": {
+					"title": "Temporisation de réceptivité en Ladder : formation",
+					"description": "Placer le TON d'une temporisation de réceptivité dans le réseau de la transition, et retarder ou limiter une sortie avec une étape et une transition temporisée."
+				},
+				"theory-movement-supervision": {
+					"title": "Surveiller un mouvement en Ladder : formation",
+					"description": "Surveiller un mouvement avec un TON et une transition de repli, mémoriser le défaut dans Defauts et l'acquitter sans l'effacer si la cause persiste."
+				},
+				"conclusion": {
+					"title": "Conclusion du module A4 : GRAFCET en Ladder, partie 1",
+					"description": "Bilan du module A4 : étapes en mémoire, réseau par transition, programmes Cycle_automatique et Sorties, actions, temps et défauts en Ladder."
+				}
+			},
+			"a5": {
+				"theory-and-divergence-ladder": {
+					"title": "Divergence et convergence en ET en Ladder : formation",
+					"description": "Implanter une divergence et une convergence en ET d'un GRAFCET en Ladder : un seul réseau pour la divergence et un seul pour la convergence."
 				},
 				"theory-grafcet-reset": {
 					"title": "Arrêter une séquence GRAFCET en Ladder : formation",
 					"description": "Les deux façons d'arrêter une séquence en Ladder : arrêt immédiat par réinitialisation et arrêt en fin de cycle, et où placer le réseau de reset."
 				},
+				"theory-going-further": {
+					"title": "Limites d'un réseau par transition en Ladder : formation",
+					"description": "Quand un réseau par transition atteint sa limite (un appui lu par plusieurs transitions), sur l'exemple d'un portail à télécommande à un seul bouton."
+				},
+				"theory-three-blocks": {
+					"title": "La méthode en trois blocs en Ladder : formation",
+					"description": "La méthode en trois blocs pour implanter un GRAFCET en Ladder : conditions de franchissement, tous les reset puis tous les set, puis les sorties."
+				},
 				"conclusion": {
-					"title": "Conclusion du module A4 : du GRAFCET au Ladder",
-					"description": "Bilan du module A4 : étapes en mémoire, méthode en trois blocs, actions, temps, divergences et arrêts d'un GRAFCET implanté en Ladder."
+					"title": "Conclusion du module A5 : GRAFCET en Ladder, partie 2",
+					"description": "Bilan du module A5 : divergences en OU et en ET, arrêts d'une séquence, programmes du parking et limites d'un réseau par transition."
 				}
 			}
 		}

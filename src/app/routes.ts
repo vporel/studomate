@@ -13,6 +13,7 @@ const routes = {
 	trainingA2: () => "/formations/a2",
 	trainingA3: () => "/formations/a3",
 	trainingA4: () => "/formations/a4",
+	trainingA5: () => "/formations/a5",
 	contact: () => "/contact",
 };
 

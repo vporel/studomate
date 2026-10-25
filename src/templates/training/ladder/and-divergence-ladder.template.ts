@@ -2,11 +2,12 @@ import type { Locale } from "@/i18n/config";
 import createTemplateText from "@/templates/template-text";
 import Project from "@/schemas/project/project.schema";
 import { createAndDivergenceBase } from "@/templates/training/grafcet/and-divergence.template";
-import { no, setMainSections } from "@/templates/training/utils/ladder-dsl";
+import { no } from "@/templates/training/utils/ladder-dsl";
 import {
 	GrafcetLadderSpec,
 	grafcetMemories,
-	grafcetSections,
+	addGrafcetPrograms,
+	grafcetProgramSections,
 } from "@/templates/training/utils/grafcet-ladder";
 
 /** E0 ─dcy→ (E1 ∥ E2) ─capteur1 ET capteur2→ E0 */
@@ -34,7 +35,9 @@ export function createAndDivergenceLadderProject(
 	locale: Locale = "fr",
 ): Project {
 	const t = createTemplateText("and-divergence-ladder", locale);
-	return createBase(t("projectName"), locale);
+	const project = createBase(t("projectName"), locale);
+	addGrafcetPrograms(project, { cycle: [], outputs: [] }, locale);
+	return project;
 }
 
 export function createAndDivergenceLadderSolution(
@@ -42,9 +45,9 @@ export function createAndDivergenceLadderSolution(
 ): Project {
 	const t = createTemplateText("and-divergence-ladder", locale);
 	const project = createBase(t("solutionName"), locale);
-	setMainSections(
+	addGrafcetPrograms(
 		project,
-		grafcetSections(
+		grafcetProgramSections(
 			AND_DIVERGENCE_SPEC,
 			[
 				{ variable: "sortie1", steps: ["X1"] },
@@ -52,6 +55,7 @@ export function createAndDivergenceLadderSolution(
 			],
 			locale,
 		),
+		locale,
 	);
 	return project;
 }

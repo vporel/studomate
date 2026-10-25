@@ -109,7 +109,7 @@
 	},
 	"linear-sequence-ladder": {
 		"label": "Séquence linéaire en Ladder",
-		"description": "Implanter un GRAFCET linéaire en Ladder avec la méthode en trois blocs. Mini-exercice du module Formations."
+		"description": "Implanter un GRAFCET linéaire en Ladder, un réseau par transition. Mini-exercice du module Formations."
 	},
 	"drilling-ladder": {
 		"label": "Poste de perçage en Ladder",
@@ -131,8 +131,12 @@
 		"label": "Parking en Ladder",
 		"description": "Commande du parking en Ladder, signalisation fournie, réinitialisation. Épreuve de synthèse du module Formations."
 	},
+	"gate-per-transition-ladder": {
+		"label": "Portail à télécommande : un réseau par transition",
+		"description": "Portail à un seul bouton, implanté avec un réseau par transition. Exemple du module Formations."
+	},
 	"gate-grafcet-ladder": {
-		"label": "Portail à télécommande",
-		"description": "Cahier des charges à un seul bouton : écrire le GRAFCET puis l'implanter en Ladder. Épreuve de synthèse du module Formations."
+		"label": "Portail à télécommande : trois blocs",
+		"description": "Portail à un seul bouton, implanté en trois blocs. Exemple du module Formations."
 	}
 }

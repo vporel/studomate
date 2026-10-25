@@ -1,9 +1,7 @@
 {
 	"texts": {
 		"initialStepTitle": "Initial step activation",
-		"initialStepDescription": "On the first scan, the initialization memory is false: the initial steps are activated.",
-		"initLatchTitle": "Initialization latch",
-		"initLatchDescription": "The initialization memory latches: activation happens only once.",
+		"initialStepDescription": "If no step is active, the initial steps are activated.",
 		"transitionDescription": "If the upstream step is active and the receptivity true, the upstream step is deactivated and the downstream step is activated.",
 		"crossingTitle": "Crossing condition {name}",
 		"crossingDescription": "All conditions are computed before any evolution (rule 4).",
@@ -16,6 +14,12 @@
 		"resetInitialTitle": "Reset: initial step",
 		"resetInitialDescription": "The initial steps are reactivated.",
 		"outputTitle": "Output {output}",
-		"outputDescription": "Continuous action: true while any of the steps that drive it is active."
+		"outputDescription": "Continuous action: true while any of the steps that drive it is active.",
+		"faultsProgramName": "Faults",
+		"cycleProgramName": "Automatic_cycle",
+		"outputsProgramName": "Outputs",
+		"faultsCallDescription": "Sets and acknowledges the faults first: the fault bits are available for the rest of the scan.",
+		"cycleCallDescription": "GRAFCET evolution: initialization, one network per transition, optional reset.",
+		"outputsCallDescription": "GRAFCET actions: one network per output, run after the steps have evolved."
 	}
 }

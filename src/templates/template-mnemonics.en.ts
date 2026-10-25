@@ -1,6 +1,7 @@
 /** French mnemonics of the templates and their English counterparts, applied by `localizeProject`. */
 const TEMPLATE_MNEMONICS_EN: Readonly<Record<string, string>> = {
 	acquit: "ack",
+	acquittement: "acknowledge",
 	alarme: "alarm",
 	appel_0: "call_0",
 	appel_1: "call_1",

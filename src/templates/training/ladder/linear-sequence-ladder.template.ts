@@ -7,8 +7,9 @@ import {
 } from "@/templates/training/grafcet/linear-sequence.template";
 import {
 	GrafcetLadderSpec,
+	addGrafcetPrograms,
 	grafcetMemories,
-	grafcetSections,
+	grafcetProgramSections,
 } from "@/templates/training/utils/grafcet-ladder";
 import {
 	no,
@@ -43,7 +44,9 @@ export function createLinearSequenceLadderProject(
 	locale: Locale = "fr",
 ): Project {
 	const t = createTemplateText("linear-sequence-ladder", locale);
-	return createLinearSequenceLadderBase(t("projectName"), locale);
+	const project = createLinearSequenceLadderBase(t("projectName"), locale);
+	addGrafcetPrograms(project, { cycle: [], outputs: [] }, locale);
+	return project;
 }
 
 export function createLinearSequenceLadderSolution(
@@ -51,9 +54,9 @@ export function createLinearSequenceLadderSolution(
 ): Project {
 	const t = createTemplateText("linear-sequence-ladder", locale);
 	const project = createLinearSequenceLadderBase(t("solutionName"), locale);
-	setMainSections(
+	addGrafcetPrograms(
 		project,
-		grafcetSections(
+		grafcetProgramSections(
 			LINEAR_SEQUENCE_SPEC,
 			[
 				{ variable: "sortie1", steps: ["X1"] },
@@ -61,6 +64,7 @@ export function createLinearSequenceLadderSolution(
 			],
 			locale,
 		),
+		locale,
 	);
 	return project;
 }

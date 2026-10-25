@@ -340,7 +340,7 @@ export default class Ladder extends Program {
 	}
 
 	isEmpty(): boolean {
-		return this.sections.every((section) => section.elements.length === 0);
+		return this.sections.every((section) => section.isEmpty());
 	}
 
 	/** The Main is the project's execution entry point. */

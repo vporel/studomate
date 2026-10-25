@@ -109,7 +109,14 @@ export default async function Training({ params }: Props) {
 			moduleId: "a4",
 			stepIds: stepIdsOf("a4"),
 		},
-		{ label: t("blockA5Label"), available: false },
+		{
+			label: t("blockA5Label"),
+			available: true,
+			href: "/training/a5",
+			moduleId: "a5",
+			stepIds: stepIdsOf("a5"),
+		},
+		{ label: t("blockA6Label"), available: false },
 	];
 	const modulesB: ModuleEntry[] = [
 		{ label: t("blockB1Label"), available: false },

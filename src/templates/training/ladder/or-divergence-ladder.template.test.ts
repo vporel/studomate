@@ -1,9 +1,24 @@
+import { calledPrograms } from "@tests/utils/execution-sections";
 import PlcScenario from "@tests/utils/plc-scenario";
-import { createOrDivergenceLadderSolution } from "./or-divergence-ladder.template";
+import {
+	createOrDivergenceLadderProject,
+	createOrDivergenceLadderSolution,
+} from "./or-divergence-ladder.template";
 
 describe("or-divergence-ladder.template", () => {
 	beforeEach(() => jest.useFakeTimers());
 	afterEach(() => jest.useRealTimers());
+
+	it("l'énoncé fournit Cycle_automatique et Sorties vides, le corrigé les remplit", () => {
+		const exercise = calledPrograms(createOrDivergenceLadderProject());
+		expect(exercise.map((p) => p.name)).toEqual([
+			"Cycle_automatique",
+			"Sorties",
+		]);
+		expect(exercise.every((p) => p.isEmpty())).toBe(true);
+		const solution = calledPrograms(createOrDivergenceLadderSolution());
+		expect(solution.map((p) => p.sections.length)).toEqual([5, 2]);
+	});
 
 	it.each([
 		["dcy1", "fin1", "sortie1", "sortie2"],

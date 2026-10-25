@@ -54,8 +54,10 @@
 	<text x="456" y="179.5" font-size="10" text-anchor="middle" fill="#263238" font-weight="bold">S</text>
 	<text x="456" y="161" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">fault</text>
 	<line x1="464" y1="176" x2="540" y2="176" stroke="#263238" stroke-width="2" />
+	<text x="254" y="36" font-size="10" text-anchor="start" fill="#607d8b" font-style="italic">Automatic_cycle</text>
+	<text x="254" y="148" font-size="10" text-anchor="start" fill="#607d8b" font-style="italic">Faults</text>
 	<text x="250" y="130" font-size="11" text-anchor="start" fill="#455a64">Q becomes true if b has not arrived within 8 s:</text>
-	<text x="250" y="232" font-size="11" text-anchor="start" fill="#455a64">1. t_watchdog.Q latches the fault (S coil).</text>
-	<text x="250" y="250" font-size="11" text-anchor="start" fill="#455a64">2. t_watchdog.Q also crosses the fallback transition</text>
-	<text x="250" y="268" font-size="11" text-anchor="start" fill="#455a64">to step 3 (T = X1 AND t_watchdog.Q).</text>
+	<text x="250" y="232" font-size="11" text-anchor="start" fill="#455a64">Faults: t_watchdog.Q latches the fault (S coil).</text>
+	<text x="250" y="250" font-size="11" text-anchor="start" fill="#455a64">Automatic_cycle: t_watchdog.Q crosses the</text>
+	<text x="250" y="268" font-size="11" text-anchor="start" fill="#455a64">fallback transition to step 3.</text>
 </svg>

@@ -54,8 +54,10 @@
 	<text x="456" y="179.5" font-size="10" text-anchor="middle" fill="#263238" font-weight="bold">S</text>
 	<text x="456" y="161" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">defaut</text>
 	<line x1="464" y1="176" x2="540" y2="176" stroke="#263238" stroke-width="2" />
+	<text x="254" y="36" font-size="10" text-anchor="start" fill="#607d8b" font-style="italic">Cycle_automatique</text>
+	<text x="254" y="148" font-size="10" text-anchor="start" fill="#607d8b" font-style="italic">Defauts</text>
 	<text x="250" y="130" font-size="11" text-anchor="start" fill="#455a64">Q passe à vrai si b n'arrive pas en 8 s :</text>
-	<text x="250" y="232" font-size="11" text-anchor="start" fill="#455a64">1. t_surv.Q mémorise le défaut (bobine S).</text>
-	<text x="250" y="250" font-size="11" text-anchor="start" fill="#455a64">2. t_surv.Q franchit aussi la transition de repli</text>
-	<text x="250" y="268" font-size="11" text-anchor="start" fill="#455a64">vers l'étape 3 (T = X1 ET t_surv.Q).</text>
+	<text x="250" y="232" font-size="11" text-anchor="start" fill="#455a64">Defauts : t_surv.Q mémorise le défaut (bobine S).</text>
+	<text x="250" y="250" font-size="11" text-anchor="start" fill="#455a64">Cycle_automatique : t_surv.Q franchit la</text>
+	<text x="250" y="268" font-size="11" text-anchor="start" fill="#455a64">transition de repli vers l'étape 3.</text>
 </svg>

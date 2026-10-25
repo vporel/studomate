@@ -2,17 +2,12 @@ import type { Locale } from "@/i18n/config";
 import createTemplateText from "@/templates/template-text";
 import Project from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
-import {
-	nf,
-	no,
-	section,
-	setMainSections,
-	timer,
-} from "@/templates/training/utils/ladder-dsl";
+import { nf, no, timer } from "@/templates/training/utils/ladder-dsl";
 import {
 	GrafcetLadderSpec,
 	grafcetMemories,
-	grafcetSections,
+	addGrafcetPrograms,
+	grafcetProgramSections,
 } from "@/templates/training/utils/grafcet-ladder";
 import {
 	output,
@@ -35,17 +30,17 @@ export function createTrafficLightSpec(
 			{
 				from: ["X0"],
 				to: ["X1"],
-				receptivity: [no(`${greenTimer}.Q`)],
+				receptivity: [timer("TON", greenTimer, "T#5s")],
 			},
 			{
 				from: ["X1"],
 				to: ["X2"],
-				receptivity: [no(`${amberTimer}.Q`)],
+				receptivity: [timer("TON", amberTimer, "T#2s")],
 			},
 			{
 				from: ["X2"],
 				to: ["X0"],
-				receptivity: [no(`${redTimer}.Q`), no("marche")],
+				receptivity: [timer("TON", redTimer, "T#5s"), no("marche")],
 			},
 		],
 		resetCondition: [nf("arret")],
@@ -71,7 +66,9 @@ export function createTrafficLightLadderProject(
 	locale: Locale = "fr",
 ): Project {
 	const t = createTemplateText("traffic-light-ladder", locale);
-	return createBase(t("projectName"));
+	const project = createBase(t("projectName"));
+	addGrafcetPrograms(project, { cycle: [], outputs: [] }, locale);
+	return project;
 }
 
 export function createTrafficLightLadderSolution(
@@ -80,26 +77,9 @@ export function createTrafficLightLadderSolution(
 	const t = createTemplateText("traffic-light-ladder", locale);
 	const project = createBase(t("solutionName"));
 	const spec = createTrafficLightSpec(locale);
-	setMainSections(project, [
-		section(
-			t("greenDelayTitle"),
-			"",
-			no("X0"),
-			timer("TON", t("greenTimerName"), "T#5s"),
-		),
-		section(
-			t("amberDelayTitle"),
-			"",
-			no("X1"),
-			timer("TON", t("amberTimerName"), "T#2s"),
-		),
-		section(
-			t("redDelayTitle"),
-			"",
-			no("X2"),
-			timer("TON", t("redTimerName"), "T#5s"),
-		),
-		...grafcetSections(
+	addGrafcetPrograms(
+		project,
+		grafcetProgramSections(
 			spec,
 			[
 				{ variable: "vert", steps: ["X0"] },
@@ -108,6 +88,7 @@ export function createTrafficLightLadderSolution(
 			],
 			locale,
 		),
-	]);
+		locale,
+	);
 	return project;
 }

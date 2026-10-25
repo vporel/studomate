@@ -109,7 +109,7 @@
 	},
 	"linear-sequence-ladder": {
 		"label": "Linear sequence in Ladder",
-		"description": "Implement a linear GRAFCET in Ladder with the three-block method. Training module mini-exercise."
+		"description": "Implement a linear GRAFCET in Ladder, one network per transition. Training module mini-exercise."
 	},
 	"drilling-ladder": {
 		"label": "Drilling station in Ladder",
@@ -131,8 +131,12 @@
 		"label": "Parking in Ladder",
 		"description": "Parking control in Ladder, signalling provided, reset. Training module synthesis."
 	},
+	"gate-per-transition-ladder": {
+		"label": "Remote-controlled gate: one network per transition",
+		"description": "Single-button gate implemented with one network per transition. Training module example."
+	},
 	"gate-grafcet-ladder": {
-		"label": "Remote-controlled gate",
-		"description": "Single-button specification: write the GRAFCET, then implement it in Ladder. Training module synthesis."
+		"label": "Remote-controlled gate: three blocks",
+		"description": "Single-button gate implemented in three blocks. Training module example."
 	}
 }

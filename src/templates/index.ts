@@ -118,10 +118,8 @@ import {
 	createParkingLadderProject,
 	createParkingLadderSolution,
 } from "./training/ladder/parking-ladder.template";
-import {
-	createGateGrafcetLadderProject,
-	createGateGrafcetLadderSolution,
-} from "./training/ladder/gate-grafcet-ladder.template";
+import { createGateGrafcetLadderProject } from "./training/ladder/gate-grafcet-ladder.template";
+import { createGatePerTransitionLadderProject } from "./training/ladder/gate-per-transition-ladder.template";
 
 /**
  * Identifiant d'un template — aussi sa clé de traduction : le libellé et la description
@@ -365,6 +363,12 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
 		id: "gate-grafcet-ladder",
 		hiddenFromCatalog: true,
 		create: createGateGrafcetLadderProject,
-		solution: createGateGrafcetLadderSolution,
+		solution: createGateGrafcetLadderProject,
+	},
+	{
+		id: "gate-per-transition-ladder",
+		hiddenFromCatalog: true,
+		create: createGatePerTransitionLadderProject,
+		solution: createGatePerTransitionLadderProject,
 	},
 ];

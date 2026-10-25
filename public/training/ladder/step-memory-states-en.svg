@@ -16,7 +16,7 @@
 	<text x="66" y="130" font-size="12" text-anchor="start" fill="#263238">Xn = 0</text>
 	<text x="60" y="164" font-size="12" text-anchor="start" fill="#263238">Rn = 0</text>
 	<line x1="18" y1="182" x2="174" y2="182" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
-	<text x="96" y="200" font-size="11" text-anchor="middle" fill="#607d8b">Tn-1 = Xn-1 AND Rn-1 = 0</text>
+	<text x="96" y="200" font-size="11" text-anchor="middle" fill="#607d8b">Xn-1 AND Rn-1 = 0</text>
 	<text x="96" y="218" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">Xn stays 0</text>
 	<rect x="192" y="6" width="176" height="222" fill="#fff" stroke="#cfd8dc" stroke-width="1.5" rx="6" />
 	<text x="280" y="26" font-size="13" text-anchor="middle" fill="#263238" font-weight="bold">2. Transition crossed</text>
@@ -35,8 +35,8 @@
 	<text x="250" y="130" font-size="12" text-anchor="start" fill="#263238">Xn = 0</text>
 	<text x="244" y="164" font-size="12" text-anchor="start" fill="#263238">Rn = 0</text>
 	<line x1="202" y1="182" x2="358" y2="182" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
-	<text x="280" y="200" font-size="11" text-anchor="middle" fill="#d84315">Tn-1 = Xn-1 AND Rn-1 = 1</text>
-	<text x="280" y="218" font-size="12" text-anchor="middle" fill="#2e7d32" font-weight="bold">Xn becomes 1</text>
+	<text x="280" y="200" font-size="11" text-anchor="middle" fill="#d84315">Xn-1 AND Rn-1 = 1</text>
+	<text x="280" y="218" font-size="12" text-anchor="middle" fill="#2e7d32" font-weight="bold">Xn-1 → 0, Xn → 1</text>
 	<rect x="376" y="6" width="176" height="222" fill="#fff" stroke="#cfd8dc" stroke-width="1.5" rx="6" />
 	<text x="464" y="26" font-size="13" text-anchor="middle" fill="#263238" font-weight="bold">3. Step held</text>
 	<rect x="397" y="40" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
@@ -54,6 +54,6 @@
 	<text x="434" y="130" font-size="12" text-anchor="start" fill="#263238">Xn = 1</text>
 	<text x="428" y="164" font-size="12" text-anchor="start" fill="#263238">Rn = 0</text>
 	<line x1="386" y1="182" x2="542" y2="182" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
-	<text x="464" y="200" font-size="11" text-anchor="middle" fill="#607d8b">Tn = Xn AND Rn = 0</text>
+	<text x="464" y="200" font-size="11" text-anchor="middle" fill="#607d8b">Xn AND Rn = 0</text>
 	<text x="464" y="218" font-size="12" text-anchor="middle" fill="#2e7d32" font-weight="bold">Xn stays 1 on its own</text>
 </svg>

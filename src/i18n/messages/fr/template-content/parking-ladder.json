@@ -1,11 +1,13 @@
 {
-	"statement": "## Parking en Ladder\n\nGRAFCET de commande : E0 → `dem_entree ET places < 4` → E1 (`barriere`, `places := places + 1`) → `passage` → E2 → NON `passage` → E0 ; E0 → `dem_sortie ET places > 0` → E3 (`barriere`, `places := places - 1`) → `passage` → E4 → NON `passage` → E0. La signalisation (`complet`) est déjà implantée.\n\nEntrées : `dem_entree`, `dem_sortie` et `passage` (boutons poussoirs), `arret` (câblé à ouverture). Sorties : `barriere` et `complet`. Mémoire entière : `places`. Mémoires fournies : `X0` à `X4` et `init`.\n\n### Travail demandé\n\n1. Implanter la commande, un réseau par transition, avec incrément et décrément sur front d'étape (contact P sur l'étape).\n2. Ajouter une réinitialisation de la commande sur `arret`.\n3. Réfléchir : que devient `places` après un arrêt ? Faut-il le remettre à zéro, et dans quel cas ?",
+	"statement": "## Parking en Ladder\n\nGRAFCET de commande : E0 → `dem_entree ET places < 4` → E1 (`barriere`, `places := places + 1`) → `passage` → E2 (`barriere`) → NON `passage` → E0 ; E0 → `dem_sortie ET places > 0` → E3 (`barriere`, `places := places - 1`) → `passage` → E4 (`barriere`) → NON `passage` → E0. La signalisation (`complet`) est déjà implantée dans le programme `Signalisation`, appelé par le Main.\n\nEntrées : `dem_entree`, `dem_sortie` et `passage` (boutons poussoirs), `arret` (câblé à ouverture). Sorties : `barriere` et `complet`. Mémoire entière : `places`. Mémoires fournies : `X0` à `X4`.\n\n### Travail demandé\n\n1. Créer les programmes `Cycle_automatique` et `Sorties` et les appeler depuis le Main, après `Signalisation`.\n2. Dans `Cycle_automatique`, implanter la commande : un réseau par transition, puis une réinitialisation de la commande sur `arret`.\n3. Dans `Sorties`, écrire la sortie `barriere` et l'incrément et le décrément de `places` sur front d'étape (contact P sur l'étape).\n4. La barrière ne se ferme jamais tant que `passage` est vrai, même après un appui sur `arret`.\n5. Réfléchir : que devient `places` après un arrêt ? Faut-il le remettre à zéro, et dans quel cas ?",
 	"texts": {
 		"projectName": "Parking en Ladder",
 		"solutionName": "Parking en Ladder : solution",
 		"signallingProgramName": "Signalisation",
 		"signallingTitle": "Signalisation",
 		"signallingDescription": "GRAFCET de signalisation, fourni.",
+		"barrierTitle": "Barrière",
+		"barrierDescription": "Ouverte pendant tout le passage (étapes 1 à 4) et tant que la cellule détecte une voiture.",
 		"vehicleEntryTitle": "Entrée d'un véhicule",
 		"vehicleEntryDescription": "Action sur front d'étape : une seule unité ajoutée par passage.",
 		"vehicleExitTitle": "Sortie d'un véhicule",

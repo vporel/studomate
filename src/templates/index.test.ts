@@ -85,8 +85,10 @@ describe.each(PROJECT_TEMPLATES)("template $id", (template) => {
 
 		it("passe analyse → pré-compilation → compilation sans erreur", () => {
 			const project = build();
-			const { analysis, preCompilation, compilation } =
-				compilePipelineDetailed(project, project.dialect);
+			const { analysis, preCompilation, compilation } = compilePipelineDetailed(
+				project,
+				project.dialect,
+			);
 			expect(
 				analysis.issues.filter((i) => i.severity === "error"),
 			).toHaveLength(0);
