@@ -281,6 +281,28 @@ describe("EmbeddedApp", () => {
 			).toBeInTheDocument();
 		});
 
+		it("offers the dialect selector on an editable project, which changes the dialect", () => {
+			const project = ProjectFactory.createWithGrafcets([
+				GrafcetFactory.createSimpleCycle("g1"),
+			]);
+			renderApp({ project, controls: ["dialect"] });
+
+			const select = screen.getByLabelText("Dialecte") as HTMLSelectElement;
+			expect(select.value).toBe("FR");
+			fireEvent.change(select, { target: { value: "EN" } });
+
+			expect(
+				(screen.getByLabelText("Dialecte") as HTMLSelectElement).value,
+			).toBe("EN");
+			expect(project.dialect).toBe("FR"); // the app works on a copy
+		});
+
+		it("hides the dialect selector on a read-only project", () => {
+			renderApp({ controls: ["dialect"], editable: false });
+
+			expect(screen.queryByLabelText("Dialecte")).not.toBeInTheDocument();
+		});
+
 		it("offers the analysis status, which opens the panel", () => {
 			renderApp({ controls: ["analysis"] });
 

@@ -18,5 +18,10 @@
 	"fullscreen": {
 		"enter": "Full screen",
 		"exit": "Exit full screen"
+	},
+	"dialect": {
+		"label": "Dialect",
+		"FR": "French",
+		"EN": "English"
 	}
 }

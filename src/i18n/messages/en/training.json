@@ -73,12 +73,17 @@
 		"A GRAFCET is made of numbered steps (X0, X1, X2...); a step is active (true) or inactive (false). There's nothing more to understand for now: just watch which step is active when the light changes.",
 		"Step by step:\n\n1. Click \"Watch the simulation\": the simulation starts automatically.\n2. In the GRAFCET, spot the active step (highlighted): its step variable Xn is true.\n3. In the supervision screen (HMI), watch the indicator switching on and off in rhythm.\n4. When the indicator changes, the active step changes too: the previous step's variable Xn turns false.",
 		"<div style=\"text-align:center\"><figure><img src=\"/training/traffic-light-simulation-en.svg\" width=\"560\" alt=\"What to watch in the simulation: on the left, the traffic light GRAFCET, with steps 0, 1 and 2 linked in a loop; step 1 is active (X1 = TRUE) and its action drives the amber output. Below the step, the transition waits for the timer to run out. On the right, the supervision screen (HMI) shows the amber indicator on, red and green off.\" /></figure></div>",
-		"**Key takeaway:** a PLC repeats a loop of three steps: read the inputs, run the program, write the outputs.",
-		"What you now know:\n\n- sensor, actuator, PLC;\n- boolean, AND / OR / NOT;\n- the read, run, write cycle."
+		"**Key takeaway:** a PLC repeats a loop of three steps: read the inputs, run the program, write the outputs."
 	],
 	"scanCycleCta": "Watch the simulation",
 	"scanCycleManualLinkPrefix": "Before starting module A1, have a look at the",
 	"scanCycleManualLinkLabel": "user manual",
+	"a0ConclusionTitle": "Conclusion",
+	"a0ConclusionBody": [
+		"You now know what an automation system is and how a PLC runs its program. Take stock, notion by notion:\n\n- **sensor and actuator**: in the parking barrier, which is the sensor, which is the actuator, and what makes the decision?\n- **variables**: `voiture_detectee`, `lever_barriere` and `barriere_levee`: which one is an input, which an output, which an internal memory?\n- **logic**: what does `voiture_detectee AND NOT barriere_levee` evaluate to when a car is detected and the barrier is already raised?\n- **scan cycle**: in which order does the PLC chain its three steps, and why does a traffic light \"recheck\" its timer on every pass?",
+		"<details><summary>Show the answers</summary><ol><li>The car detector is the sensor, the barrier motor is the actuator, and the PLC makes the decision.</li><li><code>voiture_detectee</code> is an input (read), <code>lever_barriere</code> an output (written), <code>barriere_levee</code> a memory internal to the PLC.</li><li>False: the car is detected (true), but <code>NOT barriere_levee</code> is false since the barrier is raised, and AND requires both conditions to be true.</li><li>Read the inputs, run the program, write the outputs, then start over immediately. A PLC doesn't react continuously: on every pass, it rereads the state of its inputs (here, the timer) and decides whether to change colour or stay as it is.</li></ol></details>",
+		"What remains is to describe precisely the expected behaviour of an automation system before programming it. That is the purpose of module A1, which introduces GRAFCET: the numbered steps (X0, X1, X2...) you watched in the traffic light simulation."
+	],
 	"nextModuleA1Cta": "Move on to module A1",
 	"a1PageTitle": "Module A1: GRAFCET basics",
 	"a1Intro": "A short theory section at each step, with a hands-on exercise whenever a concept calls for one. Open each exercise in the app, solve it, then compare against the solution where there is one.",

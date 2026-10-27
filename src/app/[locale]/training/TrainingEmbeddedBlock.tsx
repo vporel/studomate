@@ -120,6 +120,7 @@ export default function TrainingEmbeddedBlock({
 							"mode",
 							"simulation",
 							"history",
+							"dialect",
 							"watch",
 							"analysis",
 							"openInApp",

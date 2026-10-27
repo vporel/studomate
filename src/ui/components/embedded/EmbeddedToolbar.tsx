@@ -13,6 +13,7 @@ import ProjectModeSwitcher from "../header/title-bar/ProjectModeSwitcher";
 import SimulationControls from "../header/title-bar/SimulationControls";
 import SimulationModeSelect from "../header/title-bar/SimulationModeSelect";
 import { useProjectContext, useProjectStore } from "../projects/ProjectContext";
+import EmbeddedDialectSelect from "./EmbeddedDialectSelect";
 import type { EmbeddedAppProps, EmbeddedControl } from "./embedded-app.types";
 
 export const EMBEDDED_TOOLBAR_CONTROLS: readonly EmbeddedControl[] = [
@@ -20,6 +21,7 @@ export const EMBEDDED_TOOLBAR_CONTROLS: readonly EmbeddedControl[] = [
 	"analysis",
 	"simulation",
 	"history",
+	"dialect",
 	"fullscreen",
 	"openInApp",
 ];
@@ -93,6 +95,11 @@ export default function EmbeddedToolbar({
 					alignItems: "center",
 				}}
 			>
+				{has("dialect") && editable && (
+					<Box sx={{ mr: 1.5 }}>
+						<EmbeddedDialectSelect />
+					</Box>
+				)}
 				{has("openInApp") && appHref && (
 					<Tooltip title={tApp("open")}>
 						<IconButton

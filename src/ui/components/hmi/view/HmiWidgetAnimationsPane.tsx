@@ -16,7 +16,7 @@ import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { READ_ONLY_ZONES } from "@/schemas/variable/variable.schema";
 import VariableSelector from "@/ui/components/variables/VariableSelector";
 import { useT } from "@/ui/i18n/useT";
-import HmiFloatingPane from "./HmiFloatingPane";
+import CustomModal from "@/ui/components/mui/CustomModal";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
@@ -351,10 +351,11 @@ const HmiWidgetAnimationsPane = ({
 		setActiveTab("position");
 	}, [widget.id]);
 
-	if (!visible) return null;
-
 	return (
-		<HmiFloatingPane
+		<CustomModal
+			open={visible}
+			compact
+			flexColumn
 			title={t("animationsHeading", { name: widget.name })}
 			onClose={close}
 			width="min(90vw, 720px)"
@@ -389,7 +390,7 @@ const HmiWidgetAnimationsPane = ({
 					</Box>
 				</Box>
 			</Box>
-		</HmiFloatingPane>
+		</CustomModal>
 	);
 };
 

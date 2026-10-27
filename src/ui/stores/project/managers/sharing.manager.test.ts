@@ -1,4 +1,6 @@
 /** @jest-environment jsdom */
+import { Dialect } from "@/expression-language/dialect.enum";
+import { setDefaultDialect } from "@/persistence/preferences.storage";
 import createAppProjectStoreEnvironment from "../environment/app-project-store-environment";
 import { createProjectStore } from "../project.store";
 import { authStore } from "@/ui/stores/auth/auth.store";
@@ -15,6 +17,7 @@ async function openBlankProject(store: ReturnType<typeof createProjectStore>) {
 describe("ProjectSharingManager", () => {
 	beforeEach(() => {
 		localStorage.clear();
+		setDefaultDialect(Dialect.FR); // sans préférence, un projet vierge attend la popup de dialecte
 	});
 
 	afterEach(() => {

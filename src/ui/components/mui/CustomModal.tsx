@@ -1,3 +1,6 @@
+"use client";
+
+import { useT } from "@/ui/i18n/useT";
 import CloseIcon from "@mui/icons-material/Close";
 import {
 	Box,
@@ -22,6 +25,8 @@ export default function CustomModal({
 	title,
 	closeButton = true,
 	fullscreenOnMobile = false,
+	compact = false,
+	flexColumn = false,
 	width,
 	height,
 	...props
@@ -32,8 +37,13 @@ export default function CustomModal({
 	width?: number | string;
 	height?: number | string;
 	fullscreenOnMobile?: boolean;
+	/** No padding, small title and bordered header. */
+	compact?: boolean;
+	/** Lays the content out in a flex column, so the body can scroll under the header. */
+	flexColumn?: boolean;
 }) {
 	const titleId = useId();
+	const t = useT("common.modal");
 
 	useEffect(() => {
 		document.body.style.overflowY = open ? "hidden" : "auto";
@@ -49,7 +59,7 @@ export default function CustomModal({
 					outline: "none",
 					background: "white",
 					borderRadius: { xs: fullscreenOnMobile ? "0" : "10px", md: "10px" },
-					p: { xs: 3, md: 3.5 },
+					p: compact ? 0 : { xs: 3, md: 3.5 },
 					boxShadow: "0 0 5px rgba(0, 0, 0, .3)",
 					position: "absolute",
 					top: "50%",
@@ -63,6 +73,7 @@ export default function CustomModal({
 						xs: fullscreenOnMobile ? "100%" : "auto",
 						md: "auto",
 					},
+					...(flexColumn && { display: "flex", flexDirection: "column" }),
 					...sx,
 				}}
 				{...props}
@@ -75,15 +86,24 @@ export default function CustomModal({
 							xs: fullscreenOnMobile ? "start" : "center",
 							md: "center",
 						}}
-						mb={2}
+						{...(compact
+							? { px: 2, py: 1, borderBottom: "1px solid #e0e0e0" }
+							: { mb: 2 })}
 					>
-						<Typography variant="h3" id={titleId}>
+						<Typography variant={compact ? "h6" : "h3"} id={titleId}>
 							{title}
 						</Typography>
 						{closeButton && (
-							<Tooltip title="Fermer">
-								<IconButton onClick={onClose} aria-label="Fermer">
-									<CloseIcon sx={{ width: 25, height: 25 }} />
+							<Tooltip title={t("close")}>
+								<IconButton
+									onClick={onClose}
+									aria-label={t("close")}
+									size={compact ? "small" : "medium"}
+								>
+									<CloseIcon
+										sx={compact ? undefined : { width: 25, height: 25 }}
+										fontSize={compact ? "small" : undefined}
+									/>
 								</IconButton>
 							</Tooltip>
 						)}

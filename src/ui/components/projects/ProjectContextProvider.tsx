@@ -32,6 +32,7 @@ import ShareRequiresCloudModal from "./ShareRequiresCloudModal";
 import DraftRecoveryDialog from "./DraftRecoveryDialog";
 import DraftConflictDialog from "./DraftConflictDialog";
 import CloudConflictDialog from "./CloudConflictDialog";
+import DefaultDialectModal from "./DefaultDialectModal";
 import SaveLocationModal from "./SaveLocationModal";
 import HardwareFirmwareDialog from "./HardwareFirmwareDialog";
 import HardwareObservationDialog from "./HardwareObservationDialog";
@@ -222,6 +223,7 @@ export const ProjectContextProvider = ({
 			<DraftConflictDialog />
 			<CloudConflictDialog />
 			<SaveLocationModal />
+			<DefaultDialectModal />
 		</ProjectStoreProvider>
 	);
 };

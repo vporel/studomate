@@ -1,9 +1,13 @@
 /** @jest-environment jsdom */
+import { Dialect } from "@/expression-language/dialect.enum";
 import Project from "@/schemas/project/project.schema";
 import createAppProjectStoreEnvironment from "./environment/app-project-store-environment";
 import { createProjectStore } from "./project.store";
 import * as draftStorage from "@/persistence/draft.storage";
-import { setPreferredSaveLocation } from "@/persistence/preferences.storage";
+import {
+	setDefaultDialect,
+	setPreferredSaveLocation,
+} from "@/persistence/preferences.storage";
 
 jest.mock("react-toastify", () => ({ toast: { error: jest.fn() } }));
 jest.mock("@/persistence/draft.storage", () => ({
@@ -35,6 +39,7 @@ function projectWithDate(id: string, lastModificationDate: Date): Project {
 describe("store — brouillons", () => {
 	beforeEach(() => {
 		localStorage.clear();
+		setDefaultDialect(Dialect.FR); // sans préférence, un projet vierge attend la popup de dialecte
 		jest.clearAllMocks();
 		mockedGetDraft.mockReturnValue(null);
 		mockedSaveDraft.mockReturnValue({ ok: true });

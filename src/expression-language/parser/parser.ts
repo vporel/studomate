@@ -11,6 +11,9 @@ import {
 	TokenType,
 } from "../tokens/tokens";
 import { ArithmeticOperator, ComparisonOperator } from "../operators";
+import { findKeywordDialect } from "../keywords";
+import ForeignKeywordException from "./exceptions/foreign-keyword.exception";
+import ParserException from "./exceptions/parser.exception";
 import BadTokenTypeException from "./exceptions/bad-token-type.exception";
 import MissingPrimaryOrLeftParentheseException from "./exceptions/missing-primary-or-left-parenthese.exception";
 import MissingRightParentheseException from "./exceptions/missing-right-parenthese.exception";
@@ -27,12 +30,37 @@ export default class Parser {
 	}
 
 	parse(): ASTNode {
+		try {
+			return this.parseWholeExpression();
+		} catch (error) {
+			throw this.withForeignKeywordHint(error);
+		}
+	}
+
+	private parseWholeExpression(): ASTNode {
 		const ast = this.parseExpr();
 		if (!this.at(TokenType.EOF)) {
 			const token = this.current();
 			throw new ParsingEndedBeforeEOFException(token);
 		}
 		return ast;
+	}
+
+	/**
+	 * A word of another dialect's vocabulary lexes as an identifier, so the parser fails away
+	 * from it (`NOT a` fails on `a`). When parsing fails, the first such word is reported
+	 * instead of the position where the parser gave up.
+	 */
+	private withForeignKeywordHint(error: unknown): unknown {
+		if (!(error instanceof ParserException)) return error;
+		const foreign = this.tokens.find(
+			(token) =>
+				token.type === TokenType.IDENTIFIER &&
+				findKeywordDialect(token.value) !== null,
+		);
+		return foreign
+			? new ForeignKeywordException(foreign.value, foreign.position)
+			: error;
 	}
 
 	private parseExpr(): ASTNode {

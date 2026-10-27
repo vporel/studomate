@@ -1,6 +1,6 @@
 "use client";
 
-import ResizableFixedBox from "@/ui/components/mui/ResizableFixedBox";
+import ResizableFixedBox from "@/ui/lib/boxes/ResizableFixedBox";
 import CloseIcon from "@mui/icons-material/Close";
 import { Box, Divider, IconButton, Tooltip, Typography } from "@mui/material";
 import { ReactNode } from "react";

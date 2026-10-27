@@ -174,6 +174,13 @@ export interface ProjectUiState {
 	 */
 	saveLocationModalVisible: boolean;
 	onSaveLocationChosen: ((location: StorageLocation | null) => void) | null;
+	/**
+	 * Affichée à la création du premier projet vierge, tant qu'aucun dialecte par défaut n'est
+	 * enregistré. `onDefaultDialectChosen` reçoit le dialecte validé (`null` si la popup est
+	 * fermée sans valider) : appelé par la popup, jamais lu ailleurs.
+	 */
+	defaultDialectModalVisible: boolean;
+	onDefaultDialectChosen: ((dialect: Dialect | null) => void) | null;
 }
 
 /**

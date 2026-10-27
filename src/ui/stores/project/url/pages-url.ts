@@ -1,6 +1,6 @@
 import { getUrlQueryParam, setUrlQueryParam } from "@/ui/lib/url-query-param";
 
-const ACTIVE_PAGE_PARAM = "activePage";
+const ACTIVE_PAGE_PARAM = "activePageId";
 
 /**
  * Permet à un lien partagé d'ouvrir directement sur une page précise du projet. Volontairement

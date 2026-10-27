@@ -43,6 +43,7 @@ import ExplicitConversionRequiredException from "@/simulator/interpreter/semanti
 import IncompatibleNumericTypesException from "@/simulator/interpreter/semantic-analyser/exceptions/incompatible-numeric-types.exception";
 import InvalidConversionArgumentException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-conversion-argument.exception";
 import InvalidTimeLiteralException from "@/expression-language/lexer/exceptions/invalid-time-literal.exception";
+import ForeignKeywordException from "@/expression-language/parser/exceptions/foreign-keyword.exception";
 import UnknownFunctionException from "@/expression-language/parser/exceptions/unknown-function.exception";
 import {
 	getConversionFunctionName,
@@ -50,6 +51,11 @@ import {
 	isConvertibleType,
 } from "@/expression-language/conversions";
 
+import { Dialect } from "@/expression-language/dialect.enum";
+import {
+	findKeywordDialect,
+	getKeywordString,
+} from "@/expression-language/keywords";
 import { DEFAULT_LOCALE, type Locale } from "@/i18n/config";
 import { getMessages } from "@/i18n/messages";
 import frExpressionErrors from "@/i18n/messages/fr/expressionErrors.json";
@@ -91,6 +97,9 @@ export default class SimulatorExceptionsMapper {
 		const nodeTypeLabel = (nodeType: string): string =>
 			(labels.astNodeType as Record<string, string>)[nodeType] ?? nodeType;
 
+		const dialectLabel = (dialect: string): string =>
+			(labels.dialect as Record<string, string>)[dialect] ?? dialect;
+
 		const conversionHint = (source: string, target: string): string =>
 			isConvertibleType(source) &&
 			isConvertibleType(target) &&
@@ -112,9 +121,10 @@ export default class SimulatorExceptionsMapper {
 				typeLabel,
 				sideLabel,
 				nodeTypeLabel,
+				dialectLabel,
 			}) ??
 			this.describeInterpreterException(exception) ??
-			this.describeParserException(exception) ??
+			this.describeParserException(exception, { dialectLabel }) ??
 			this.describeLexerException(exception);
 
 		if (descriptor) return t(descriptor.code, descriptor.params);
@@ -123,6 +133,31 @@ export default class SimulatorExceptionsMapper {
 			return exception.message || t("UNKNOWN_ERROR");
 		}
 		return String(exception);
+	}
+
+	/**
+	 * Message for a word that is a keyword of another dialect than the one the project is
+	 * written in, suggesting its equivalent; `null` when the word is a keyword of no dialect.
+	 */
+	private static describeForeignKeyword(
+		word: string,
+		dialectLabel: (dialect: string) => string,
+	): MessageDescriptor | null {
+		const found = findKeywordDialect(word);
+		if (!found) return null;
+		const otherDialect = Object.values(Dialect).find(
+			(dialect) => dialect !== found.dialect,
+		);
+		return {
+			code: "FOREIGN_KEYWORD",
+			params: {
+				word,
+				dialect: dialectLabel(found.dialect),
+				equivalent: otherDialect
+					? getKeywordString(found.keyword, otherDialect)
+					: word,
+			},
+		};
 	}
 
 	private static describeEnvironmentException(
@@ -245,10 +280,15 @@ export default class SimulatorExceptionsMapper {
 		}
 
 		if (exception instanceof UnknownIdentifierException) {
-			return {
-				code: "UNKNOWN_IDENTIFIER",
-				params: { identifier: exception.getIdentifier() },
-			};
+			return (
+				this.describeForeignKeyword(
+					exception.getIdentifier(),
+					labels.dialectLabel,
+				) ?? {
+					code: "UNKNOWN_IDENTIFIER",
+					params: { identifier: exception.getIdentifier() },
+				}
+			);
 		}
 
 		if (exception instanceof InvalidUnaryExprOperandTypeException) {
@@ -432,6 +472,7 @@ export default class SimulatorExceptionsMapper {
 
 	private static describeParserException(
 		exception: unknown,
+		{ dialectLabel }: Pick<LabelResolvers, "dialectLabel">,
 	): MessageDescriptor | null {
 		if (exception instanceof ParsingEndedBeforeEOFException) {
 			return {
@@ -464,6 +505,10 @@ export default class SimulatorExceptionsMapper {
 					position: exception.getPosition(),
 				},
 			};
+		}
+
+		if (exception instanceof ForeignKeywordException) {
+			return this.describeForeignKeyword(exception.getWord(), dialectLabel);
 		}
 
 		if (exception instanceof BadTokenTypeException) {
@@ -532,4 +577,5 @@ type LabelResolvers = {
 	typeLabel: (type: string) => string;
 	sideLabel: (side: string) => string;
 	nodeTypeLabel: (nodeType: string) => string;
+	dialectLabel: (dialect: string) => string;
 };

@@ -25,6 +25,7 @@ import {
 	getInitialPagesData,
 	restorePagesSession,
 } from "../pages-session-restore";
+import resolveDefaultDialect from "../default-dialect";
 import resolveSaveLocationIfNeeded from "../save-location";
 import {
 	PageData,
@@ -152,16 +153,23 @@ export default class ProjectLifecycleManager {
 					project.exercise = { statement };
 				}
 			} else {
-				project = new Project(createRandomId(), DEFAULT_PROJECT_NAME, "");
+				project = await this.createBlankProject();
 			}
 		} else {
-			project = new Project(createRandomId(), DEFAULT_PROJECT_NAME, "");
+			project = await this.createBlankProject();
 		}
 		this.env.analytics.trackEvent("project-created", {
 			template: templateId ?? "blank",
 			variant,
 		});
 		await this.doOpenProject(project);
+	}
+
+	private async createBlankProject(): Promise<Project> {
+		const project = new Project(createRandomId(), DEFAULT_PROJECT_NAME, "");
+		const dialect = await resolveDefaultDialect(this.setStoreState, this.env);
+		if (dialect) project.setDialect(dialect);
+		return project;
 	}
 
 	// Abandon explicite des modifications en cours : le brouillon auto-sauvegardé du projet

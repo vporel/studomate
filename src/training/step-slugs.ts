@@ -25,6 +25,7 @@ const FR_STEP_SLUGS: {
 		automatisme: "automatisme",
 		"logic-basics": "logique-de-base",
 		"scan-cycle": "cycle-de-scrutation",
+		conclusion: "conclusion",
 	},
 	a1: {
 		"grafcet-definition": "definition-grafcet",

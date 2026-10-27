@@ -18,5 +18,10 @@
 	"fullscreen": {
 		"enter": "Plein écran",
 		"exit": "Quitter le plein écran"
+	},
+	"dialect": {
+		"label": "Dialecte",
+		"FR": "Français",
+		"EN": "Anglais"
 	}
 }

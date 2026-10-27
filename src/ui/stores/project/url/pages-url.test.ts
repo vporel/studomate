@@ -6,14 +6,14 @@ describe("pages-url", () => {
 		window.history.replaceState(null, "", "/");
 	});
 
-	it("ne retourne rien quand l'URL ne porte pas d'activePage", () => {
+	it("ne retourne rien quand l'URL ne porte pas d'activePageId", () => {
 		expect(getActivePageIdFromUrl()).toBeNull();
 	});
 
 	it("setActivePageIdInUrl pose le paramètre, getActivePageIdFromUrl le relit", () => {
 		setActivePageIdInUrl("p1");
 		expect(getActivePageIdFromUrl()).toBe("p1");
-		expect(window.location.search).toBe("?activePage=p1");
+		expect(window.location.search).toBe("?activePageId=p1");
 	});
 
 	it("setActivePageIdInUrl(null) retire le paramètre", () => {

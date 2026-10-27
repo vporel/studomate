@@ -139,6 +139,8 @@ export const createProjectStore = (env: ProjectStoreEnvironment) => {
 				cloudConflictModalVisible: false,
 				saveLocationModalVisible: false,
 				onSaveLocationChosen: null,
+				defaultDialectModalVisible: false,
+				onDefaultDialectChosen: null,
 			},
 			savingProject: false,
 			projectRepository: env.persistence?.repository ?? UNAVAILABLE_REPOSITORY,

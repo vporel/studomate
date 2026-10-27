@@ -7,6 +7,7 @@ const A0_STEP_IDS = {
 	automatisme: "automatisme",
 	logicBasics: "logic-basics",
 	scanCycle: "scan-cycle",
+	conclusion: "conclusion",
 } as const;
 
 export default A0_STEP_IDS;

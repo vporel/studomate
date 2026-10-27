@@ -1,4 +1,5 @@
 /** @jest-environment jsdom */
+import { setDefaultDialect } from "@/persistence/preferences.storage";
 import { Dialect } from "@/expression-language/dialect.enum";
 import createAppProjectStoreEnvironment from "./environment/app-project-store-environment";
 import { createProjectStore } from "./project.store";
@@ -19,6 +20,7 @@ async function openBlankProject(store: ReturnType<typeof createProjectStore>) {
 describe("createProjectStore", () => {
 	beforeEach(() => {
 		localStorage.clear();
+		setDefaultDialect(Dialect.FR); // sans préférence, un projet vierge attend la popup de dialecte
 	});
 
 	it("starts with no project open", () => {

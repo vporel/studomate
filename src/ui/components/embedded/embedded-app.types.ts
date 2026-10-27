@@ -9,7 +9,8 @@ export type EmbeddedControl =
 	| "fullscreen"
 	| "openInApp"
 	| "watch"
-	| "analysis";
+	| "analysis"
+	| "dialect";
 
 type EmbeddedViewContent =
 	| { type: "grafcet"; id: string }

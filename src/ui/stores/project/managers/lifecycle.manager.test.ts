@@ -12,7 +12,9 @@ import createAppProjectStoreEnvironment from "../environment/app-project-store-e
 import { createProjectStore } from "../project.store";
 import { getDraft, saveDraft } from "@/persistence/draft.storage";
 import {
+	getDefaultDialect,
 	getPreferredSaveLocation,
+	setDefaultDialect,
 	setPreferredSaveLocation,
 } from "@/persistence/preferences.storage";
 import {
@@ -46,6 +48,9 @@ describe("ProjectLifecycleManager", () => {
 		// pertinent pour la plupart des tests, qui veulent un `saveProject`/`saveProjectAs`
 		// silencieux comme avant l'introduction de cette modale.
 		setPreferredSaveLocation("local");
+		// Idem pour le dialecte par défaut : sans préférence, la création d'un projet vierge ouvre
+		// la popup de préférences (voir `describe("dialecte d'un projet vierge")`).
+		setDefaultDialect(Dialect.FR);
 	});
 
 	afterEach(() => {
@@ -427,9 +432,76 @@ describe("ProjectLifecycleManager", () => {
 		});
 	});
 
+	describe("dialecte d'un projet vierge", () => {
+		it("applique le dialecte par défaut enregistré, sans ouvrir la popup", async () => {
+			setDefaultDialect(Dialect.EN);
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+
+			await openBlankProject(store);
+
+			expect(store.getState().project?.dialect).toBe(Dialect.EN);
+			expect(store.getState().ui.defaultDialectModalVisible).toBe(false);
+		});
+
+		it("sans préférence : ouvre la popup et attend le choix avant d'ouvrir le projet", async () => {
+			localStorage.clear();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+
+			const creation = openBlankProject(store);
+			await flushMicrotasks();
+
+			expect(store.getState().ui.defaultDialectModalVisible).toBe(true);
+			expect(store.getState().project).toBeNull();
+
+			store.getState().ui.onDefaultDialectChosen?.(Dialect.EN);
+			await creation;
+
+			expect(store.getState().ui.defaultDialectModalVisible).toBe(false);
+			expect(store.getState().project?.dialect).toBe(Dialect.EN);
+		});
+
+		it("le choix fait dans la popup devient le dialecte par défaut", async () => {
+			localStorage.clear();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+
+			const creation = openBlankProject(store);
+			await flushMicrotasks();
+			store.getState().ui.onDefaultDialectChosen?.(Dialect.EN);
+			await creation;
+
+			expect(getDefaultDialect()).toBe(Dialect.EN);
+		});
+
+		it("popup fermée sans valider : le projet prend la langue de l'interface, sans rien enregistrer", async () => {
+			localStorage.clear();
+			const store = createProjectStore(
+				createAppProjectStoreEnvironment({ getLocale: () => "en" }),
+			);
+
+			const creation = openBlankProject(store);
+			await flushMicrotasks();
+			store.getState().ui.onDefaultDialectChosen?.(null);
+			await creation;
+
+			expect(store.getState().project?.dialect).toBe(Dialect.EN);
+			expect(getDefaultDialect()).toBeNull();
+		});
+
+		it("un template ne passe jamais par la popup", async () => {
+			localStorage.clear();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+
+			await lifecycle(store).newProjectFromTemplate("parking");
+
+			expect(store.getState().ui.defaultDialectModalVisible).toBe(false);
+			expect(store.getState().project).not.toBeNull();
+		});
+	});
+
 	describe("résolution du lieu de stockage", () => {
 		it("aucune préférence : le premier enregistrement ouvre la modale et le choix devient la préférence par défaut", async () => {
 			localStorage.clear(); // efface la préférence "local" posée par le beforeEach
+			setDefaultDialect(Dialect.FR); // le dialecte par défaut est hors sujet ici
 			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			const saveResult = lifecycle(store).saveProject();
@@ -484,6 +556,7 @@ describe("ProjectLifecycleManager", () => {
 
 		it("annulation depuis la modale : n'enregistre pas, garde hasUnsavedChanges", async () => {
 			localStorage.clear();
+			setDefaultDialect(Dialect.FR); // le dialecte par défaut est hors sujet ici
 			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.setState({ hasUnsavedChanges: true });
@@ -499,6 +572,7 @@ describe("ProjectLifecycleManager", () => {
 
 		it("s'applique aussi à Enregistrer sous", async () => {
 			localStorage.clear();
+			setDefaultDialect(Dialect.FR); // le dialecte par défaut est hors sujet ici
 			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			const saveResult = lifecycle(store).saveProjectAs("Copie");

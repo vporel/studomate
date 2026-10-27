@@ -400,6 +400,10 @@
 				"scan-cycle": {
 					"title": "The PLC and its scan cycle: training",
 					"description": "How a programmable controller runs its program in a loop: the scan cycle, illustrated with a traffic light."
+				},
+				"conclusion": {
+					"title": "Module A0 conclusion: automation basics",
+					"description": "Module A0 recap: sensors, actuators, PLC, variables, AND/OR/NOT logic and the scan cycle, then what comes next with GRAFCET."
 				}
 			},
 			"a1": {

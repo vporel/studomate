@@ -1,10 +1,13 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import {
 	getAutoOpenHmiSimulationOnStart,
+	getDefaultDialect,
 	getPreferredLocale,
 	getPreferredSaveLocation,
 	getProductTourSeen,
 	getProjectEverSaved,
 	setAutoOpenHmiSimulationOnStart,
+	setDefaultDialect,
 	setPreferredLocale,
 	setPreferredSaveLocation,
 	setProductTourSeen,
@@ -36,6 +39,25 @@ describe("preferences.storage", () => {
 	it("ignore une valeur corrompue en localStorage", () => {
 		localStorage.setItem("studomate_preferred_save_location", "n'importe quoi");
 		expect(getPreferredSaveLocation()).toBeNull();
+	});
+
+	describe("dialecte par défaut", () => {
+		it("retourne null tant qu'aucun dialecte n'a été choisi", () => {
+			expect(getDefaultDialect()).toBeNull();
+		});
+
+		it("retient le dialecte choisi", () => {
+			setDefaultDialect(Dialect.EN);
+			expect(getDefaultDialect()).toBe(Dialect.EN);
+
+			setDefaultDialect(Dialect.FR);
+			expect(getDefaultDialect()).toBe(Dialect.FR);
+		});
+
+		it("ignore une valeur non reconnue", () => {
+			localStorage.setItem("studomate_default_dialect", "ES");
+			expect(getDefaultDialect()).toBeNull();
+		});
 	});
 
 	describe("langue", () => {

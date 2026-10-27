@@ -1,4 +1,7 @@
 {
+	"modal": {
+		"close": "Fermer"
+	},
 	"languageSwitch": {
 		"label": "Langue",
 		"fr": "Français",

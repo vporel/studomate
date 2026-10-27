@@ -6,6 +6,7 @@ import { renderWithI18n } from "@tests/utils/i18n";
 import { useProjectStore } from "../projects/ProjectContext";
 import { useAuthStore } from "@/ui/stores/auth/auth.store";
 import { selectorImplementation } from "@tests/utils/store-mocks";
+import { Dialect } from "@/expression-language/dialect.enum";
 import PreferencesPage from "./PreferencesPage";
 import { PREFERENCES_PAGE_ID } from "@/ui/stores/project/pages-data";
 
@@ -16,6 +17,8 @@ const mockGetPreferredSaveLocation = jest.fn();
 const mockSetPreferredSaveLocation = jest.fn();
 const mockGetPreferredLocale = jest.fn();
 const mockSetPreferredLocale = jest.fn();
+const mockGetDefaultDialect = jest.fn();
+const mockSetDefaultDialect = jest.fn();
 const mockGetAutoOpenHmiSimulationOnStart = jest.fn();
 const mockSetAutoOpenHmiSimulationOnStart = jest.fn();
 jest.mock("@/persistence/preferences.storage", () => ({
@@ -25,14 +28,21 @@ jest.mock("@/persistence/preferences.storage", () => ({
 		mockSetPreferredSaveLocation(...args),
 	getPreferredLocale: (...args: unknown[]) => mockGetPreferredLocale(...args),
 	setPreferredLocale: (...args: unknown[]) => mockSetPreferredLocale(...args),
+	getDefaultDialect: (...args: unknown[]) => mockGetDefaultDialect(...args),
+	setDefaultDialect: (...args: unknown[]) => mockSetDefaultDialect(...args),
 	getAutoOpenHmiSimulationOnStart: (...args: unknown[]) =>
 		mockGetAutoOpenHmiSimulationOnStart(...args),
 	setAutoOpenHmiSimulationOnStart: (...args: unknown[]) =>
 		mockSetAutoOpenHmiSimulationOnStart(...args),
 }));
 
-function setup({ authenticated = true, autoOpenHmi = true } = {}) {
+function setup({
+	authenticated = true,
+	autoOpenHmi = true,
+	dialect = null as Dialect | null,
+} = {}) {
 	mockGetPreferredLocale.mockReturnValue(null);
+	mockGetDefaultDialect.mockReturnValue(dialect);
 	mockGetAutoOpenHmiSimulationOnStart.mockReturnValue(autoOpenHmi);
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({ activePageId: PREFERENCES_PAGE_ID }),
@@ -114,5 +124,31 @@ describe("PreferencesPage", () => {
 		expect(
 			screen.getByLabelText("Ouvrir automatiquement la vue de simulation"),
 		).not.toBeChecked();
+	});
+
+	describe("langage des expressions par défaut", () => {
+		it("préselectionne le dialecte déjà enregistré", () => {
+			mockGetPreferredSaveLocation.mockReturnValue("local");
+			setup({ dialect: Dialect.EN });
+
+			expect(screen.getByLabelText(/^Anglais : AND/)).toBeChecked();
+		});
+
+		it("propose le français tant qu'aucune préférence n'existe et que l'interface est en français", () => {
+			mockGetPreferredSaveLocation.mockReturnValue("local");
+			setup();
+
+			expect(screen.getByLabelText(/^Français : ET/)).toBeChecked();
+		});
+
+		it("persiste immédiatement le nouveau choix", () => {
+			mockGetPreferredSaveLocation.mockReturnValue("local");
+			setup();
+
+			fireEvent.click(screen.getByLabelText(/^Anglais : AND/));
+
+			expect(mockSetDefaultDialect).toHaveBeenCalledWith(Dialect.EN);
+			expect(screen.getByLabelText(/^Anglais : AND/)).toBeChecked();
+		});
 	});
 });

@@ -11,5 +11,16 @@
 			"label": "Automatically open the simulation view",
 			"description": "When entering simulation, automatically switch to the \"Simulation HMI\" tab if the project has at least one HMI page, otherwise open the 3D scene tab if the project has a scene."
 		}
+	},
+	"defaultDialect": {
+		"heading": "Default expression language",
+		"description": "Applied to new blank projects. The language of an existing project is changed in its properties.",
+		"FR": "French: ET, OU, NON, VRAI, FAUX",
+		"EN": "English: AND, OR, NOT, TRUE, FALSE",
+		"firstProject": {
+			"title": "Your preferences",
+			"body": "Choose the language of your projects' expressions (conditions, actions, equations). You can change it later in Preferences.",
+			"confirm": "Confirm"
+		}
 	}
 }

@@ -406,6 +406,10 @@
 				"scan-cycle": {
 					"title": "Automate et cycle de scrutation : formation",
 					"description": "Comment un automate programmable exécute son programme en boucle : le cycle de scrutation, illustré par un feu tricolore."
+				},
+				"conclusion": {
+					"title": "Conclusion du module A0 : bases de l'automatisme",
+					"description": "Bilan du module A0 : capteurs, actionneurs, automate, variables, logique ET/OU/NON et cycle de scrutation, puis suite du parcours avec le GRAFCET."
 				}
 			},
 			"a1": {

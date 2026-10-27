@@ -73,12 +73,17 @@
 		"Un GRAFCET est composé d'étapes numérotées (X0, X1, X2...) ; une étape est active (vrai) ou inactive (faux). Vous n'avez rien à comprendre de plus pour l'instant : regardez simplement quelle étape est active quand le voyant change.",
 		"Pas à pas :\n\n1. Cliquez sur « Observer la simulation » : la simulation démarre automatiquement.\n2. Dans le GRAFCET, repérez l'étape active (mise en surbrillance) : c'est la variable d'étape Xn qui vaut vrai.\n3. Dans l'écran de supervision (IHM), regardez le voyant qui s'allume et s'éteint en rythme.\n4. Quand le voyant change, l'étape active change aussi : la variable Xn de l'ancienne étape repasse à faux.",
 		"<div style=\"text-align:center\"><figure><img src=\"/training/traffic-light-simulation.svg\" width=\"560\" alt=\"Ce qu'il faut regarder dans la simulation : à gauche le GRAFCET du feu, avec les étapes 0, 1 et 2 reliées en boucle ; l'étape 1 est active (X1 = VRAI) et son action commande la sortie orange. Sous l'étape, la transition attend la fin du minuteur. À droite, l'écran de supervision (IHM) montre le voyant orange allumé, le rouge et le vert éteints.\" /></figure></div>",
-		"**À retenir :** un automate répète en boucle trois étapes : lire les entrées, exécuter le programme, écrire les sorties.",
-		"Ce que vous savez maintenant :\n\n- capteur, actionneur, automate ;\n- booléen, ET / OU / NON ;\n- le cycle lire, exécuter, écrire."
+		"**À retenir :** un automate répète en boucle trois étapes : lire les entrées, exécuter le programme, écrire les sorties."
 	],
 	"scanCycleCta": "Observer la simulation",
 	"scanCycleManualLinkPrefix": "Avant de commencer le module A1, jetez un œil au",
 	"scanCycleManualLinkLabel": "manuel utilisateur",
+	"a0ConclusionTitle": "Conclusion",
+	"a0ConclusionBody": [
+		"Vous savez maintenant ce qu'est un automatisme et comment un automate exécute son programme. Faites le point, notion par notion :\n\n- **capteur et actionneur** : dans la barrière de parking, qui est le capteur, qui est l'actionneur, et qui décide ?\n- **variables** : `voiture_detectee`, `lever_barriere` et `barriere_levee` : laquelle est une entrée, laquelle une sortie, laquelle une mémoire interne ?\n- **logique** : que vaut `voiture_detectee ET NON barriere_levee` quand une voiture est détectée et que la barrière est déjà levée ?\n- **cycle de scrutation** : dans quel ordre l'automate enchaîne-t-il ses trois étapes, et pourquoi un feu tricolore « revérifie »-t-il son minuteur à chaque tour ?",
+		"<details><summary>Voir les réponses</summary><ol><li>Le détecteur de voiture est le capteur, le moteur de la barrière est l'actionneur, et l'automate décide.</li><li><code>voiture_detectee</code> est une entrée (lue), <code>lever_barriere</code> une sortie (écrite), <code>barriere_levee</code> une mémoire interne à l'automate.</li><li>Fausse : la voiture est détectée (vrai), mais <code>NON barriere_levee</code> est faux puisque la barrière est levée, et ET exige que les deux conditions soient vraies.</li><li>Lire les entrées, exécuter le programme, écrire les sorties, puis recommencer aussitôt. Un automate ne réagit pas en continu : à chaque tour, il relit l'état de ses entrées (ici, le minuteur) et décide s'il doit changer de couleur ou rester ainsi.</li></ol></details>",
+		"Il reste à décrire précisément le comportement attendu d'un automatisme, avant de le programmer. C'est l'objet du module A1, qui introduit le GRAFCET : les étapes numérotées (X0, X1, X2...) que vous avez observées dans la simulation du feu tricolore."
+	],
 	"nextModuleA1Cta": "Passer au module A1",
 	"a1PageTitle": "Module A1 : Bases du GRAFCET",
 	"a1Intro": "Une théorie courte à chaque étape, avec un exercice pratique dès qu'une notion s'y prête. Ouvrez chaque exercice dans l'application, résolvez-le, puis comparez avec le corrigé quand il y en a un.",

@@ -51,3 +51,18 @@ export function getKeywordByString(
 export function getKeywordString(keyword: Keyword, dialect: Dialect): string {
 	return KEYWORDS_BY_DIALECT[dialect][keyword];
 }
+
+/**
+ * The dialect in which `value` is a keyword, with the keyword it designates; `null` when it is
+ * a keyword of none. A word that is a keyword of some dialect yet lexed as an identifier is a
+ * keyword of another dialect than the one the expression is read in.
+ */
+export function findKeywordDialect(
+	value: string,
+): { keyword: Keyword; dialect: Dialect } | null {
+	for (const dialect of Object.values(Dialect)) {
+		const keyword = getKeywordByString(value, dialect);
+		if (keyword) return { keyword, dialect };
+	}
+	return null;
+}
