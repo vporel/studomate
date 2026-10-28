@@ -1,16 +1,13 @@
+import type { Locale } from "@/i18n/config";
+import createTemplateText from "@/templates/template-text";
 import Project from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
-import {
-	nf,
-	no,
-	section,
-	setMainSections,
-	timer,
-} from "@/templates/training/utils/ladder-dsl";
+import { nf, no, timer } from "@/templates/training/utils/ladder-dsl";
 import {
 	GrafcetLadderSpec,
 	grafcetMemories,
-	grafcetSections,
+	addGrafcetPrograms,
+	grafcetProgramSections,
 } from "@/templates/training/utils/grafcet-ladder";
 import {
 	output,
@@ -19,21 +16,38 @@ import {
 } from "@/templates/training/utils/training-variables";
 
 /** Green 5 s → orange 2 s → red 5 s, looping while `marche` is true; `arret` re-initializes. */
-export const TRAFFIC_LIGHT_SPEC: GrafcetLadderSpec = {
-	steps: ["X0", "X1", "X2"],
-	initial: ["X0"],
-	transitions: [
-		{ name: "T0", from: ["X0"], to: ["X1"], receptivity: [no("t_vert.Q")] },
-		{ name: "T1", from: ["X1"], to: ["X2"], receptivity: [no("t_orange.Q")] },
-		{
-			name: "T2",
-			from: ["X2"],
-			to: ["X0"],
-			receptivity: [no("t_rouge.Q"), no("marche")],
-		},
-	],
-	resetCondition: [nf("arret")],
-};
+export function createTrafficLightSpec(
+	locale: Locale = "fr",
+): GrafcetLadderSpec {
+	const t = createTemplateText("traffic-light-ladder", locale);
+	const greenTimer = t("greenTimerName");
+	const amberTimer = t("amberTimerName");
+	const redTimer = t("redTimerName");
+	return {
+		steps: ["X0", "X1", "X2"],
+		initial: ["X0"],
+		transitions: [
+			{
+				from: ["X0"],
+				to: ["X1"],
+				receptivity: [timer("TON", greenTimer, "T#5s")],
+			},
+			{
+				from: ["X1"],
+				to: ["X2"],
+				receptivity: [timer("TON", amberTimer, "T#2s")],
+			},
+			{
+				from: ["X2"],
+				to: ["X0"],
+				receptivity: [timer("TON", redTimer, "T#5s"), no("marche")],
+			},
+		],
+		resetCondition: [nf("arret")],
+	};
+}
+
+export const TRAFFIC_LIGHT_SPEC = createTrafficLightSpec();
 
 function createBase(name: string): Project {
 	const project = new Project(createRandomId(), name, "");
@@ -48,36 +62,33 @@ function createBase(name: string): Project {
 	return project;
 }
 
-export function createTrafficLightLadderProject(): Project {
-	return createBase("Feu tricolore en Ladder");
+export function createTrafficLightLadderProject(
+	locale: Locale = "fr",
+): Project {
+	const t = createTemplateText("traffic-light-ladder", locale);
+	const project = createBase(t("projectName"));
+	addGrafcetPrograms(project, { cycle: [], outputs: [] }, locale);
+	return project;
 }
 
-export function createTrafficLightLadderSolution(): Project {
-	const project = createBase("Feu tricolore en Ladder : solution");
-	setMainSections(project, [
-		section(
-			"Temporisation du vert",
-			"",
-			no("X0"),
-			timer("TON", "t_vert", "T#5s"),
+export function createTrafficLightLadderSolution(
+	locale: Locale = "fr",
+): Project {
+	const t = createTemplateText("traffic-light-ladder", locale);
+	const project = createBase(t("solutionName"));
+	const spec = createTrafficLightSpec(locale);
+	addGrafcetPrograms(
+		project,
+		grafcetProgramSections(
+			spec,
+			[
+				{ variable: "vert", steps: ["X0"] },
+				{ variable: "orange", steps: ["X1"] },
+				{ variable: "rouge", steps: ["X2"] },
+			],
+			locale,
 		),
-		section(
-			"Temporisation de l'orange",
-			"",
-			no("X1"),
-			timer("TON", "t_orange", "T#2s"),
-		),
-		section(
-			"Temporisation du rouge",
-			"",
-			no("X2"),
-			timer("TON", "t_rouge", "T#5s"),
-		),
-		...grafcetSections(TRAFFIC_LIGHT_SPEC, [
-			{ variable: "vert", steps: ["X0"] },
-			{ variable: "orange", steps: ["X1"] },
-			{ variable: "rouge", steps: ["X2"] },
-		]),
-	]);
+		locale,
+	);
 	return project;
 }

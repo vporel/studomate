@@ -125,7 +125,8 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
 		render: "box",
 		createElement: (row, col, params) =>
 			createTimerBlockElement(params as TimerBlockParams, row, col),
-		readParam: (params, suffix) => readTimerParam(params as TimerBlockParams, suffix),
+		readParam: (params, suffix) =>
+			readTimerParam(params as TimerBlockParams, suffix),
 		writeParam: (params, suffix, value) =>
 			writeTimerParam(params as TimerBlockParams, suffix, value),
 		portsAreExposedVariables: true,
@@ -174,7 +175,11 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
 		widthInColumns: 1,
 		render: "custom",
 		createElement: (row, col, params) =>
-			createCompareBlockElement(row, col, params as CompareBlockParams | undefined),
+			createCompareBlockElement(
+				row,
+				col,
+				params as CompareBlockParams | undefined,
+			),
 		readParam: noParamRead,
 		writeParam: noParamWrite,
 		portsAreExposedVariables: false,
@@ -185,8 +190,13 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
 		widthInColumns: 2,
 		render: "box",
 		createElement: (row, col, params) =>
-			createAssignBlockElement(row, col, params as AssignBlockParams | undefined),
-		readParam: (params, suffix) => readAssignParam(params as AssignBlockParams, suffix),
+			createAssignBlockElement(
+				row,
+				col,
+				params as AssignBlockParams | undefined,
+			),
+		readParam: (params, suffix) =>
+			readAssignParam(params as AssignBlockParams, suffix),
 		writeParam: (params, suffix, value) =>
 			writeAssignParam(params as AssignBlockParams, suffix, value),
 		portsAreExposedVariables: false,
@@ -197,7 +207,11 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
 		widthInColumns: 2,
 		render: "box",
 		createElement: (row, col, params) =>
-			createConvertBlockElement(row, col, params as ConvertBlockParams | undefined),
+			createConvertBlockElement(
+				row,
+				col,
+				params as ConvertBlockParams | undefined,
+			),
 		readParam: (params, suffix) =>
 			readConvertParam(params as ConvertBlockParams, suffix),
 		writeParam: (params, suffix, value) =>

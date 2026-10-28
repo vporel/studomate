@@ -1,0 +1,9 @@
+{
+	"statement": "## Reading timers\n\nA button `pb` (push button, true while pressed) drives a `TON`, a `TOF` and a `TP` in parallel, all set to 2 s: their outputs are `q_ton`, `q_tof` and `q_tp`. There is nothing to write or modify.\n\n### Sequence of presses on `pb`\n\n| Press | Start | End |\n| --- | --- | --- |\n| 1 (long) | 1 s | 5 s |\n| 2 (short: less than PT) | 8 s | 9 s |\n| 3 (during the `TP` pulse) | 9.5 s | 12 s |\n\n### Task\n\n1. Without starting the simulation, draw the timing diagram of the three outputs for this sequence on paper.\n2. Start the simulation, reproduce the sequence with `pb` (to within one second) and compare with the outputs.",
+	"texts": {
+		"projectName": "Reading timers",
+		"tonDescription": "2 s on-delay.",
+		"tofDescription": "2 s off-delay.",
+		"tpDescription": "2 s pulse, not retriggerable."
+	}
+}

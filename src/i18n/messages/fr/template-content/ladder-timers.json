@@ -1,0 +1,27 @@
+{
+	"statement": "## Démarrage étoile-triangle\n\nUn gros moteur triphasé démarre en étoile (tension réduite) puis passe en triangle (pleine tension). Chaque branchement est fermé par un contacteur : un contacteur de ligne, un contacteur étoile et un contacteur triangle.\n\n| Variable | Rôle | Nature |\n| --- | --- | --- |\n| `marche` | démarre le moteur | bouton poussoir (vrai tant qu'on appuie) |\n| `arret` | arrête le moteur | bouton poussoir (vrai tant qu'on appuie) |\n| `km_ligne`, `km_etoile`, `km_triangle` | contacteurs de ligne, étoile et triangle | sorties |\n| `ventilateur` | refroidissement du moteur | sortie |\n| `inter_clignotant` | marche du clignotant (facultatif) | interrupteur |\n| `voyant` | voyant du clignotant (facultatif) | sortie |\n\n### Cahier des charges\n\n1. Après un appui sur `marche`, le moteur démarre en étoile pendant 5 s (`km_ligne` et `km_etoile`), puis passe en triangle (`km_ligne` et `km_triangle`).\n2. `arret` arrête le moteur à tout moment (arrêt prioritaire).\n3. Étoile et triangle ne sont jamais fermés en même temps : programmer le verrouillage (un contact NF de l'autre contacteur dans chaque réseau). Sur une vraie machine il est aussi câblé, ici le programme doit le garantir.\n4. Le ventilateur reste actif 10 s après l'arrêt du moteur (après la retombée de `km_ligne`).\n5. Facultatif : un temps mort (par exemple 200 ms) entre l'étoile et le triangle ; un clignotant réglable (1 s éteint, 1 s allumé) à deux `TON` croisés, mis en marche par `inter_clignotant`.",
+	"texts": {
+		"projectName": "Démarrage étoile-triangle",
+		"solutionName": "Démarrage étoile-triangle : solution",
+		"starTimerName": "t_etoile",
+		"fanTimerName": "t_ventilo",
+		"lowPhaseTimerName": "t_phase_basse",
+		"highPhaseTimerName": "t_phase_haute",
+		"lineContactorTitle": "Contacteur de ligne",
+		"lineContactorDescription": "Auto-maintien à arrêt prioritaire.",
+		"startTimeTitle": "Temps de démarrage",
+		"startTimeDescription": "Le TON mesure la durée en étoile.",
+		"starTitle": "Étoile",
+		"starDescription": "Étoile pendant le démarrage, verrouillé par le triangle.",
+		"deltaTitle": "Triangle",
+		"deltaDescription": "Triangle après la temporisation, verrouillé par l'étoile.",
+		"fanTitle": "Ventilateur",
+		"fanDescription": "Le TOF prolonge la ventilation de 10 s après l'arrêt du moteur.",
+		"blinkOffTitle": "Clignotant : phase éteinte",
+		"blinkOffDescription": "Premier TON, armé tant que le second n'a pas terminé.",
+		"blinkOnTitle": "Clignotant : phase allumée",
+		"blinkOnDescription": "Second TON, armé pendant la phase allumée.",
+		"indicatorTitle": "Voyant",
+		"indicatorDescription": "Le voyant suit la phase allumée."
+	}
+}

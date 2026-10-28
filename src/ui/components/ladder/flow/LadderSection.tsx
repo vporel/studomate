@@ -1,15 +1,14 @@
 "use client";
 
+import useCanEdit from "@/ui/components/projects/useCanEdit";
 import { isConnectionAllowed } from "@/schemas/ladder/commands/connections-add.command";
 import Section from "@/schemas/ladder/section.schema";
 import useLadderRailEnergized from "@/ui/components/ladder/useLadderRailEnergized";
-import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import {
 	LADDER_FLOW_MAX_ZOOM,
 	LADDER_FLOW_MIN_ZOOM,
 	ZoomableInstance,
 } from "@/ui/stores/ladder/managers/view.manager";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import {
 	computeSectionLayout,
 	GRID_CELL_HEIGHT,
@@ -61,22 +60,28 @@ interface LadderSectionProps {
 
 const FLOW_MARGIN = 10;
 
-const SECTION_FLOW_SX: SystemStyleObject<Theme> = {
+/** Au-delà de ce zoom, le cadre d'une section garde sa taille et le contenu y est rogné. */
+const FRAME_MAX_SCALE = 1.5;
+
+/** Taille du cadre d'une section, proportionnelle au zoom jusqu'à `FRAME_MAX_SCALE`. */
+const frameScale = (zoom: number) => Math.min(zoom, FRAME_MAX_SCALE);
+
+const sectionFlowSx = (zoom: number): SystemStyleObject<Theme> => ({
 	width: "100%",
 	height: "100%",
 	// Fond CSS : aligné au pixel près sur la grille (60×45).
 	// Le <Background> de ReactFlow a un offset interne non contrôlable ;
 	// le CSS backgroundSize garantit un alignement parfait puisque
-	// le viewport est fixe à (0,0) (pas de pan/zoom).
+	// le viewport est fixe à (0,0) et que le fond suit son zoom.
 	backgroundColor: "white",
 	backgroundImage: `radial-gradient(circle at 0 0, rgba(0,0,0,0.45) 1.5px, transparent 1.5px)`,
-	backgroundSize: `${GRID_CELL_WIDTH}px ${GRID_CELL_HEIGHT}px`,
+	backgroundSize: `${GRID_CELL_WIDTH * zoom}px ${GRID_CELL_HEIGHT * zoom}px`,
 	// Décalé de RAIL_LANE_WIDTH en x (colonne 0 des éléments, voir POWER_RAIL_OFFSET)
 	// et de LADDER_FLOW_TOP_OFFSET en y (ligne 0 des éléments) — ce dernier n'étant
 	// plus un multiple exact de GRID_CELL_HEIGHT, la périodicité du motif ne suffit
 	// plus à garder les points alignés sur les lignes réelles, il faut ce recalage
 	// explicite.
-	backgroundPosition: `${RAIL_LANE_WIDTH}px ${LADDER_FLOW_TOP_OFFSET}px`,
+	backgroundPosition: `${RAIL_LANE_WIDTH * zoom}px ${LADDER_FLOW_TOP_OFFSET * zoom}px`,
 	borderLeft: "2px solid black",
 	".react-flow__pane": { cursor: "default" },
 	".react-flow__renderer": { background: "transparent" },
@@ -94,13 +99,11 @@ const SECTION_FLOW_SX: SystemStyleObject<Theme> = {
 	".react-flow__edge-interaction": { strokeLinecap: "round" },
 	".react-flow__edge.selected .react-flow__edge-path, .react-flow__edge.selectable:focus .react-flow__edge-path":
 		{ stroke: (th: Theme) => th.palette.primary.main },
-};
+});
 
 function LadderSection({ section, index }: LadderSectionProps) {
 	const viewManager = useLadderStore((state) => state.viewManager);
-	const zoom = useLadderStore(
-		(state) => state.zoomBySectionId[section.id] ?? 1,
-	);
+	const zoom = useLadderStore((state) => state.zoom);
 	const workflowManager = useLadderStore((state) => state.workflowManager);
 	const nodes = useLadderStore(
 		(state) => state.nodesBySectionId[section.id] ?? EMPTY_ARRAY,
@@ -108,7 +111,7 @@ function LadderSection({ section, index }: LadderSectionProps) {
 	const edges = useLadderStore(
 		(state) => state.edgesBySectionId[section.id] ?? EMPTY_ARRAY,
 	);
-	const mode = useProjectStore((state) => state.mode);
+	const canEdit = useCanEdit();
 	const railEnergized = useLadderRailEnergized();
 	const [collapsed, setCollapsed] = useState(false);
 	const hasHighlightedNode = useLadderStore((state) =>
@@ -182,6 +185,8 @@ function LadderSection({ section, index }: LadderSectionProps) {
 		() => computeLadderFlowDimensions(totalRows),
 		[totalRows],
 	);
+	const scale = frameScale(zoom);
+	const flowSx = useMemo(() => sectionFlowSx(zoom), [zoom]);
 
 	const [handleDragOver, handleDrop] = useLadderDropHandlers(
 		section,
@@ -245,7 +250,7 @@ function LadderSection({ section, index }: LadderSectionProps) {
 		openEdgeContextMenu,
 		openPaneContextMenu,
 		closeContextMenu,
-	} = useLadderContextMenu(section, mode);
+	} = useLadderContextMenu(section, canEdit);
 
 	const {
 		setNodeRef,
@@ -265,13 +270,14 @@ function LadderSection({ section, index }: LadderSectionProps) {
 			onPointerDownCapture={() => setActiveSectionId(section.id)}
 			sx={{
 				width:
-					flowDimensions.width + (FLOW_MARGIN * 2 + RAIL_LANE_WIDTH * 2) + "px",
-				marginLeft: "50%",
-				// translate(-50%, 0) centre la section ; le déplacement dnd-kit (CSS.Transform) se
-				// compose par-dessus, sinon il écraserait le centrage.
-				transform: [`translate(-50%, 0)`, CSS.Transform.toString(transform)]
-					.filter(Boolean)
-					.join(" "),
+					(flowDimensions.width + RAIL_LANE_WIDTH * 2) * scale +
+					FLOW_MARGIN * 2 +
+					"px",
+				// Les marges automatiques centrent la section et retombent à 0 quand elle est plus
+				// large que la page : elle déborde alors vers la droite, là où le défilement atteint.
+				marginLeft: "auto",
+				marginRight: "auto",
+				transform: CSS.Transform.toString(transform),
 				transition,
 				marginBottom: "16px",
 				opacity: isDragging ? 0.5 : 1,
@@ -298,7 +304,7 @@ function LadderSection({ section, index }: LadderSectionProps) {
 					ref={contentRef}
 					sx={{
 						width: "100%",
-						height: flowDimensions.height + FLOW_MARGIN * 2 + "px",
+						height: flowDimensions.height * scale + FLOW_MARGIN * 2 + "px",
 						backgroundColor: "white",
 						pl: FLOW_MARGIN + "px",
 						pr: FLOW_MARGIN + "px",
@@ -310,7 +316,7 @@ function LadderSection({ section, index }: LadderSectionProps) {
 							ref={flowWrapperRef}
 							onKeyDown={handleKeyDown}
 							sx={[
-								SECTION_FLOW_SX,
+								flowSx,
 								railEnergized &&
 									((th: Theme) => ({
 										borderLeftColor: th.palette.energized.main,
@@ -327,9 +333,9 @@ function LadderSection({ section, index }: LadderSectionProps) {
 								// traitement. `onDelete` (Suppr/Backspace) n'en dépend pas.
 								disableKeyboardA11y
 								edgeTypes={edgeTypes}
-								nodesDraggable={mode === ProjectMode.DESIGN}
-								nodesConnectable={mode === ProjectMode.DESIGN}
-								elementsSelectable={mode === ProjectMode.DESIGN}
+								nodesDraggable={canEdit}
+								nodesConnectable={canEdit}
+								elementsSelectable={canEdit}
 								onNodesChange={handleNodesChange}
 								onEdgesChange={handleEdgesChange}
 								onConnect={handleConnect}

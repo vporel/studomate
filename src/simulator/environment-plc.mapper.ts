@@ -4,7 +4,7 @@ import EnvVariable, {
 	EnvVariableDirection,
 } from "./interpreter/environment/env-variable";
 
-const directionToScope: Record<EnvVariableDirection, PLCVariableScope> = {
+export const directionToScope: Record<EnvVariableDirection, PLCVariableScope> = {
 	IN: "input",
 	OUT: "output",
 	INOUT: "memory",

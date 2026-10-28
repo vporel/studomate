@@ -64,7 +64,7 @@ export default async function PrivacyPolicy({ params }: Props) {
 				<LegalList items={t.raw("rightsItems") as string[]} />
 			</LegalArticle>
 
-			<Typography variant="h3" gutterBottom mt={3}>
+			<Typography variant="h3" component="h2" gutterBottom mt={3}>
 				{t("contactTitle")}
 			</Typography>
 			<Typography>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useT } from "@/ui/i18n/useT";
+import { ManualH2, ManualH3, ManualH4 } from "../manual-heading";
 import { Divider, Typography } from "@mui/material";
 import { ManualList } from "./manual-ui";
 
@@ -8,37 +9,37 @@ export default function VariablesSection() {
 	const t = useT("manual.variables");
 	return (
 		<section id="variables">
-			<Typography variant="h2" mb={3}>
+			<Typography variant="h2" component={ManualH2} mb={3}>
 				{t("title")}
 			</Typography>
 			<Typography mb={2}>{t("p1")}</Typography>
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h4" mb={2}>
+			<Typography variant="h4" component={ManualH3} mb={2}>
 				{t("zonesTitle")}
 			</Typography>
 			<ManualList items={t.raw("zonesItems") as string[]} />
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h4" mb={2}>
+			<Typography variant="h4" component={ManualH3} mb={2}>
 				{t("typesTitle")}
 			</Typography>
 			<ManualList items={t.raw("typesItems") as string[]} />
 			<Typography mb={2}>{t("typesByZone")}</Typography>
 			<Typography mb={2}>{t("typesOutro")}</Typography>
-			<Typography variant="h5" mb={1}>
+			<Typography variant="h5" component={ManualH4} mb={1}>
 				{t("typesCalcTitle")}
 			</Typography>
 			<ManualList items={t.raw("typesCalcItems") as string[]} />
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h4" mb={2}>
+			<Typography variant="h4" component={ManualH3} mb={2}>
 				{t("propertiesTitle")}
 			</Typography>
 			<ManualList items={t.raw("propertiesItems") as string[]} />
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h4" mb={2} id="input-behavior">
+			<Typography variant="h4" component={ManualH3} mb={2} id="input-behavior">
 				{t("behaviorTitle")}
 			</Typography>
 			<Typography mb={2}>{t("behaviorBody1")}</Typography>
@@ -47,7 +48,7 @@ export default function VariablesSection() {
 			<Typography mb={2}>{t("behaviorBody3")}</Typography>
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h4" mb={2}>
+			<Typography variant="h4" component={ManualH3} mb={2}>
 				{t("managementTitle")}
 			</Typography>
 			<Typography mb={2}>{t("managementBody1")}</Typography>
@@ -56,7 +57,7 @@ export default function VariablesSection() {
 			<Typography mb={2}>{t("managementBody4")}</Typography>
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h4" mb={2} id="system-variables">
+			<Typography variant="h4" component={ManualH3} mb={2} id="system-variables">
 				{t("systemTitle")}
 			</Typography>
 			<Typography mb={2}>{t("systemBody1")}</Typography>

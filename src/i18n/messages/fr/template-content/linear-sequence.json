@@ -1,0 +1,8 @@
+{
+	"statement": "## Séquence linéaire\n\nEntrées : `dcy`, `fin1`, `fin2`. Sorties : `sortie1`, `sortie2`.\n\n### Travail demandé\n\n1. Sur `dcy`, activer `sortie1`.\n2. Sur `fin1`, désactiver `sortie1` et activer `sortie2`.\n3. Sur `fin2`, désactiver `sortie2`.\n4. Sur un nouvel appui de `dcy`, reprendre le cycle depuis le début.",
+	"texts": {
+		"projectName": "Séquence linéaire",
+		"solutionName": "Séquence linéaire : solution",
+		"grafcetName": "Séquence"
+	}
+}

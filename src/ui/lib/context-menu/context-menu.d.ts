@@ -17,3 +17,9 @@ export type ContextMenuSubItemType =
 export type ContextMenuItemType = ContextMenuItemBaseType & {
 	subItems?: ContextMenuSubItemType[];
 };
+
+/** Translator passed to context-menu builders so they stay plain functions without hooks. */
+export type MenuTranslate = (
+	key: string,
+	values?: Record<string, string | number>,
+) => string;

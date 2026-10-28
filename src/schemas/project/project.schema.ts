@@ -59,7 +59,7 @@ export type Exercise = {
  * peuvent ainsi cohabiter, et une version ancienne de l'application peut lister tous les
  * projets tout en refusant proprement d'ouvrir ceux qui la dépassent.
  */
-export const PROJECT_SCHEMA_VERSION = 4;
+export const PROJECT_SCHEMA_VERSION = 5;
 
 export default class Project {
 	id: string;
@@ -124,6 +124,26 @@ export default class Project {
 		return result;
 	}
 
+	/** Programmes pris en compte par l'analyse, la compilation et la simulation : les programmes
+	 * exclus de l'exécution (illustratifs) n'en font pas partie. */
+	getExecutedPrograms(): Program[] {
+		return Object.values(this.programs).filter(
+			(program) => !program.excludedFromExecution,
+		);
+	}
+
+	getExecutedLadders(): Ladder[] {
+		return Object.values(this.ladders).filter(
+			(ladder) => !ladder.excludedFromExecution,
+		);
+	}
+
+	getExecutedGrafcets(): Grafcet[] {
+		return Object.values(this.grafcets).filter(
+			(grafcet) => !grafcet.excludedFromExecution,
+		);
+	}
+
 	addProgram(program: Program): void {
 		if (this.programs[program.id]) {
 			throw new Error(
@@ -152,7 +172,7 @@ export default class Project {
 	/** Ne supprime jamais le Main : un projet en porte toujours exactement un. */
 	deleteProgram(programId: string) {
 		const program = this.programs[programId];
-		if (program instanceof Ladder && program.role === "main") return;
+		if (program instanceof Ladder && program.isMain()) return;
 		delete this.programs[programId];
 		this.touch();
 	}
@@ -238,6 +258,11 @@ export default class Project {
 		);
 	}
 
+	/** Même règle que `getMainHmiPage` (repli sur la première page incluse). */
+	isMainHmiPage(hmiPageId: string): boolean {
+		return this.getMainHmiPage()?.id === hmiPageId;
+	}
+
 	/** Une seule page principale à la fois : les autres perdent le statut. */
 	setMainHmiPage(hmiPageId: string): void {
 		for (const id in this.hmiPages) {
@@ -252,7 +277,7 @@ export default class Project {
 	get main(): Ladder {
 		const found = Object.values(this.programs).find(
 			(program): program is Ladder =>
-				program.type === "ladder" && (program as Ladder).role === "main",
+				program.type === "ladder" && (program as Ladder).isMain(),
 		);
 		if (!found)
 			throw new Error("Project has no Main program — invariant violated.");
@@ -261,8 +286,7 @@ export default class Project {
 
 	createMain(name: string = DEFAULT_MAIN_NAME): Ladder {
 		const existing = Object.values(this.programs).some(
-			(program) =>
-				program.type === "ladder" && (program as Ladder).role === "main",
+			(program) => program.type === "ladder" && (program as Ladder).isMain(),
 		);
 		if (existing) throw new Error("A project can only have one Main program.");
 		const main = new Ladder(createRandomId(), name, undefined, "main");
@@ -302,11 +326,23 @@ export default class Project {
 		);
 	}
 
+	/** Variable déclarée dans le projet portant ce mnémonique (comparaison exacte). Les variables
+	 * système `_SYS_*` n'ont pas d'instance dans le projet et ne sont donc jamais trouvées. */
+	findVariableByMnemonic(mnemonic: string): Variable | undefined {
+		return this.variables.find((variable) => variable.mnemonic === mnemonic);
+	}
+
 	/** Un nom de bloc partage son espace de noms avec les mnémoniques de variable : il doit être
 	 * unique parmi les deux. */
 	isNameTaken(name: string): boolean {
-		if (this.variables.some((variable) => variable.mnemonic === name))
-			return true;
+		return (
+			this.findVariableByMnemonic(name) !== undefined ||
+			this.isBlockNameTaken(name)
+		);
+	}
+
+	/** Nom déjà porté par un bloc timer ou compteur du projet. */
+	isBlockNameTaken(name: string): boolean {
 		if (
 			this.getAllTimerBlockElements().some(
 				({ element }) => getTimerBlockParams(element)?.name === name,
@@ -347,6 +383,58 @@ export default class Project {
 			return translated;
 		});
 		this.dialect = dialect;
+		this.touch();
+	}
+
+	/**
+	 * Rewrites every reference to the renamed mnemonics (`{ from: to }`) in all the grafcets,
+	 * ladders and HMI pages. The renames apply simultaneously: swapping two names is safe.
+	 */
+	renameMnemonicReferences(renames: Record<string, string>): void {
+		if (Object.keys(renames).length === 0) return;
+		Object.values(this.grafcets).forEach((grafcet) => {
+			grafcet.renameIdentifiersInExpressions(renames, this.dialect);
+		});
+		Object.values(this.ladders).forEach((ladder) => {
+			ladder.renameVariableReferences(renames);
+		});
+		Object.values(this.hmiPages).forEach((page) => {
+			page.renameVariableReferences(renames);
+		});
+	}
+
+	/**
+	 * Renames the variables whose mnemonic is a key of `renames` and every reference to them.
+	 * Mnemonics absent from the project are ignored. Throws, leaving the project untouched,
+	 * if the renames would give two variables the same mnemonic.
+	 */
+	renameMnemonics(renames: Record<string, string>): void {
+		const applicable: Record<string, string> = {};
+		for (const variable of this.variables) {
+			const to = renames[variable.mnemonic];
+			if (to !== undefined && to !== variable.mnemonic) {
+				applicable[variable.mnemonic] = to;
+			}
+		}
+		if (Object.keys(applicable).length === 0) return;
+
+		const finalMnemonics = this.variables.map(
+			(variable) => applicable[variable.mnemonic] ?? variable.mnemonic,
+		);
+		const duplicate = finalMnemonics.find(
+			(mnemonic, i) => finalMnemonics.indexOf(mnemonic) !== i,
+		);
+		if (duplicate !== undefined) {
+			throw new Error(`Renaming would duplicate the mnemonic "${duplicate}"`);
+		}
+
+		this.variables = this.variables.map((variable) => {
+			const to = applicable[variable.mnemonic];
+			return to === undefined
+				? variable
+				: variable.update({ mnemonic: to }, this.dialect);
+		});
+		this.renameMnemonicReferences(applicable);
 		this.touch();
 	}
 

@@ -1,6 +1,7 @@
 import { Dialect } from "@/expression-language/dialect.enum";
 import { Lexer } from "../lexer/lexer";
 import { TokenType } from "../tokens/tokens";
+import ForeignKeywordException from "./exceptions/foreign-keyword.exception";
 import MissingPrimaryOrLeftParentheseException from "./exceptions/missing-primary-or-left-parenthese.exception";
 import MissingRightParentheseException from "./exceptions/missing-right-parenthese.exception";
 import ParsingEndedBeforeEOFException from "./exceptions/parsing-ended-before-eof.exception";
@@ -457,6 +458,52 @@ describe("Parser", () => {
 			expect(() => parseExpression("DINT_TO_INT(x")).toThrow(
 				MissingRightParentheseException,
 			);
+		});
+	});
+
+	describe("mot-clé d'un autre dialecte", () => {
+		const foreignWord = (input: string) => {
+			try {
+				parseExpression(input);
+			} catch (error) {
+				return error instanceof ForeignKeywordException
+					? { word: error.getWord(), position: error.getPosition() }
+					: error;
+			}
+			return null;
+		};
+
+		it("signale AND dans une expression française, à sa position", () => {
+			expect(foreignWord("a AND b")).toEqual({ word: "AND", position: 2 });
+		});
+
+		it("signale NOT même quand le parseur échoue sur l'opérande qui le suit", () => {
+			expect(foreignWord("NOT a")).toEqual({ word: "NOT", position: 0 });
+		});
+
+		it("signale le mot-clé quand l'échec est une parenthèse manquante", () => {
+			expect(foreignWord("(a OR b)")).toEqual({ word: "OR", position: 3 });
+		});
+
+		it("signale le premier mot-clé étranger quand il y en a plusieurs", () => {
+			expect(foreignWord("a AND b OR c")).toEqual({
+				word: "AND",
+				position: 2,
+			});
+		});
+
+		it("laisse l'exception d'origine quand aucun mot étranger n'est en cause", () => {
+			expect(() => parseExpression("a b")).toThrow(
+				ParsingEndedBeforeEOFException,
+			);
+		});
+
+		it("ne dit rien d'une expression valide dans son dialecte", () => {
+			expect(() => parseExpression("a ET NON b")).not.toThrow();
+		});
+
+		it("accepte un mot de l'autre dialecte employé comme identifiant valide", () => {
+			expect(() => parseExpression("AND")).not.toThrow();
 		});
 	});
 });

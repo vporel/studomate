@@ -12,7 +12,7 @@ describe("trainingStepPath", () => {
 
 	it("sert les étapes suivantes sous le module, avec le slug traduit", () => {
 		expect(trainingStepPath("fr", "a2", "theory-edges", 7)).toBe(
-			"/formations/a2/theory-edges",
+			"/formations/a2/theorie-fronts",
 		);
 		expect(trainingStepPath("en", "a2", "theory-edges", 7)).toBe(
 			"/en/training/a2/theory-edges",

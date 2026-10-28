@@ -7,6 +7,7 @@ import {
 import ActionBuilder from "@/schemas/grafcet/builders/action.builder";
 import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
+import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import { GrafcetFactory } from "@tests/utils/grafcet-factory";
 import { ProjectFactory } from "@tests/utils/project-factory";
 import { VariableFactory } from "@tests/utils/variable-factory";
@@ -19,6 +20,9 @@ import { isSystemVariableName } from "@/schemas/variable/system-variables";
 import { PROJECT_TEMPLATES } from "@/templates";
 import { compileProject } from "@tests/utils/test-helpers";
 import { stubLocalStorage } from "@tests/utils/local-storage-stub";
+import createAppProjectStoreEnvironment, {
+	getPersistedSimulationMode,
+} from "@/ui/stores/project/environment/app-project-store-environment";
 import SimulationManager from "./simulation.manager";
 import SimulationNotifier from "./simulation.notifier";
 
@@ -34,6 +38,19 @@ jest.mock("@/persistence/preferences.storage", () => ({
 
 const plcOf = (manager: SimulationManager) =>
 	(manager as unknown as { plc: { onCycleError(error: unknown): void } }).plc;
+
+const simulationEnv = (notifier: SimulationNotifier) =>
+	createAppProjectStoreEnvironment({ simulationNotifier: notifier });
+
+/** A grafcet the analyser rejects: a single step. */
+function grafcetWithOneStep() {
+	return new GrafcetBuilder()
+		.id("g1")
+		.addStep(
+			new StepBuilder().id("s1").number(0).initial().position(0, 0).build(),
+		)
+		.build();
+}
 
 function stubNotifier(): SimulationNotifier {
 	return {
@@ -110,7 +127,11 @@ describe("SimulationManager", () => {
 			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
 			const project = ProjectFactory.create([inputVar], [grafcet]);
 			const { get, set } = makeStore(project);
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 			const transitionId = "g1-trans-0";
 
 			manager.setSimulationMode();
@@ -138,7 +159,11 @@ describe("SimulationManager", () => {
 			);
 			const project = ProjectFactory.create([], [grafcet]);
 			const { get, set } = makeStore(project);
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 			const transitionId = "g1-trans-1";
 
 			manager.setSimulationMode();
@@ -160,7 +185,11 @@ describe("SimulationManager", () => {
 			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
 			const project = ProjectFactory.create([inputVar], [grafcet]);
 			const { get, set } = makeStore(project);
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 
 			manager.setSimulationMode();
 			await jest.advanceTimersByTimeAsync(60);
@@ -183,7 +212,11 @@ describe("SimulationManager", () => {
 			const project = ProjectFactory.create([inputVar], [grafcet]);
 			const { get, set } = makeStore(project);
 			set({ simulationMode: SimulationMode.STEP_BY_STEP });
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 
 			manager.setSimulationMode();
 
@@ -200,7 +233,11 @@ describe("SimulationManager", () => {
 			const project = ProjectFactory.create([inputVar], [grafcet]);
 			const { get, set } = makeStore(project);
 			set({ simulationMode: SimulationMode.CONTINUOUS });
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 
 			manager.setSimulationMode();
 
@@ -217,7 +254,11 @@ describe("SimulationManager", () => {
 			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
 			const project = ProjectFactory.create([inputVar], [grafcet]);
 			const { get, set } = makeStore(project);
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 
 			manager.setSimulationMode();
 			manager.setSimulationMode();
@@ -243,7 +284,11 @@ describe("SimulationManager", () => {
 				[grafcet],
 			);
 			const { get, set } = makeStore(project);
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 
 			manager.setSimulationMode();
 
@@ -260,7 +305,11 @@ describe("SimulationManager", () => {
 				[grafcet],
 			);
 			const { get, set } = makeStore(project);
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 
 			manager.setSimulationMode();
 
@@ -294,7 +343,11 @@ describe("SimulationManager", () => {
 			(
 				get().hmiManager.openHmiSimulationPageIfAny as jest.Mock
 			).mockReturnValue(Boolean(options.hmiPage));
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 			manager.setSimulationMode();
 			const opened = {
 				hmi: get().hmiManager.openHmiSimulationPageIfAny as jest.Mock,
@@ -333,7 +386,7 @@ describe("SimulationManager", () => {
 			const open = get().scene3dLinkManager.open as jest.Mock;
 			open.mockReturnValueOnce(false);
 			const notifier = stubNotifier();
-			const manager = new SimulationManager(set, get, notifier);
+			const manager = new SimulationManager(set, get, simulationEnv(notifier));
 
 			manager.setSimulationMode();
 			manager.setDesignMode();
@@ -358,7 +411,7 @@ describe("SimulationManager", () => {
 			};
 			const { get, set } = makeStore(project);
 			const notifier = stubNotifier();
-			const manager = new SimulationManager(set, get, notifier);
+			const manager = new SimulationManager(set, get, simulationEnv(notifier));
 
 			manager.setSimulationMode();
 			manager.setDesignMode();
@@ -415,7 +468,7 @@ describe("SimulationManager", () => {
 			const project = projectWithOneErrorAndOneWarning();
 			const notifier = stubNotifier();
 			const { get, set } = makeStore(project);
-			const manager = new SimulationManager(set, get, notifier);
+			const manager = new SimulationManager(set, get, simulationEnv(notifier));
 
 			manager.analyze();
 
@@ -434,7 +487,11 @@ describe("SimulationManager", () => {
 			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
 			const project = ProjectFactory.create([inputVar], [grafcet]);
 			const { get, set } = makeStore(project);
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 
 			manager.analyze();
 
@@ -444,13 +501,43 @@ describe("SimulationManager", () => {
 		});
 	});
 
+	describe("analyse sans issue", () => {
+		function cleanProject() {
+			const inputVar = VariableFactory.createLogicInput("I0");
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			return ProjectFactory.create([inputVar], [grafcet]);
+		}
+
+		it("notifie la réussite quand l'utilisateur lance l'analyse", () => {
+			const notifier = stubNotifier();
+			const { get, set } = makeStore(cleanProject());
+			new SimulationManager(set, get, simulationEnv(notifier)).analyze();
+
+			expect(notifier.analysisCompleted).toHaveBeenCalledWith(
+				expect.objectContaining({ errors: 0, warnings: 0 }),
+			);
+		});
+
+		it("ne notifie pas la réussite de l'analyse lancée à l'entrée en simulation", () => {
+			const notifier = stubNotifier();
+			const { get, set } = makeStore(cleanProject());
+			new SimulationManager(
+				set,
+				get,
+				simulationEnv(notifier),
+			).setSimulationMode();
+
+			expect(notifier.analysisCompleted).not.toHaveBeenCalled();
+		});
+	});
+
 	describe("setSimulationMode() — refus de démarrer", () => {
 		it("reste en DESIGN et n'appelle jamais simulationStarting quand l'analyse a des erreurs", () => {
-			const grafcet = new GrafcetBuilder().id("g1").build(); // grafcet vide : GRAFCET_TOO_FEW_STEPS
+			const grafcet = grafcetWithOneStep(); // GRAFCET_TOO_FEW_STEPS
 			const project = ProjectFactory.createWithGrafcets([grafcet]);
 			const notifier = stubNotifier();
 			const { get, set } = makeStore(project);
-			const manager = new SimulationManager(set, get, notifier);
+			const manager = new SimulationManager(set, get, simulationEnv(notifier));
 
 			const started = manager.setSimulationMode();
 
@@ -468,7 +555,7 @@ describe("SimulationManager", () => {
 			const notifier = stubNotifier();
 			const { get, set } = makeStore(project);
 			set({ simulationMode: mode });
-			const manager = new SimulationManager(set, get, notifier);
+			const manager = new SimulationManager(set, get, simulationEnv(notifier));
 			const internals = manager as unknown as {
 				createPLC(compiled: unknown): any;
 			};
@@ -525,7 +612,11 @@ describe("SimulationManager", () => {
 			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
 			const project = ProjectFactory.create([inputVar], [grafcet]);
 			const { get, set } = makeStore(project);
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 
 			expect(manager.setSimulationMode()).toBe(true);
 			expect(get().mode).toBe(ProjectMode.SIMULATION);
@@ -545,7 +636,11 @@ describe("SimulationManager", () => {
 
 		it("démarre une simulation virtuelle par défaut, et le dit", () => {
 			const { get, set } = makeStore(startable());
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 
 			expect(manager.setSimulationMode()).toBe(true);
 
@@ -556,7 +651,11 @@ describe("SimulationManager", () => {
 
 		it("retient le type « E/S réelles » avant d'avertir la liaison du démarrage", () => {
 			const { get, set } = makeStore(startable());
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 			let kindWhenStarting: unknown = null;
 			(
 				get().hardwareLinkManager.onSimulationStart as jest.Mock
@@ -572,11 +671,15 @@ describe("SimulationManager", () => {
 		});
 
 		it("laisse le type inchangé quand la simulation ne démarre pas", () => {
-			const grafcet = new GrafcetBuilder().id("g1").build();
+			const grafcet = grafcetWithOneStep();
 			const { get, set } = makeStore(
 				ProjectFactory.createWithGrafcets([grafcet]),
 			);
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 
 			expect(manager.setSimulationMode("hardware-io")).toBe(false);
 
@@ -585,7 +688,11 @@ describe("SimulationManager", () => {
 
 		it("change le type d'une simulation en cours sans la redémarrer", async () => {
 			const { get, set } = makeStore(startable());
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 			manager.setSimulationMode("hardware-io");
 
 			manager.setSimulationKind("virtual");
@@ -597,7 +704,11 @@ describe("SimulationManager", () => {
 
 		it("prévient la liaison quand un mode est en place, et avant d'arrêter une simulation", () => {
 			const { get, set } = makeStore(startable());
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 			const link = get().hardwareLinkManager as unknown as {
 				onModeSettled: jest.Mock;
 				onSimulationStop: jest.Mock;
@@ -636,7 +747,11 @@ describe("SimulationManager", () => {
 		it("ne rouvre pas le panneau à l'entrée en simulation quand le projet n'a que des avertissements", () => {
 			const project = projectWithOneWarningOnly();
 			const { get, set } = makeStore(project);
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 
 			manager.setSimulationMode();
 
@@ -646,10 +761,14 @@ describe("SimulationManager", () => {
 		});
 
 		it("ouvre quand même le panneau à l'entrée en simulation si le projet a des erreurs", () => {
-			const grafcet = new GrafcetBuilder().id("g1").build(); // grafcet vide : GRAFCET_TOO_FEW_STEPS
+			const grafcet = grafcetWithOneStep(); // GRAFCET_TOO_FEW_STEPS
 			const project = ProjectFactory.createWithGrafcets([grafcet]);
 			const { get, set } = makeStore(project);
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 
 			manager.setSimulationMode();
 
@@ -662,7 +781,11 @@ describe("SimulationManager", () => {
 		it("lèvent hors mode simulation", () => {
 			const project = ProjectFactory.createEmpty();
 			const { get, set } = makeStore(project);
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 
 			expect(() => manager.setPhysicalInputValue("v1", true)).toThrow();
 			expect(() => manager.setMemoryValue("v1", 1)).toThrow();
@@ -672,7 +795,11 @@ describe("SimulationManager", () => {
 			const project = ProjectFactory.createEmpty();
 			const { get, set } = makeStore(project);
 			set(() => ({ mode: ProjectMode.SIMULATION }));
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 
 			expect(() => manager.setPhysicalInputValue("v1", true)).toThrow();
 			expect(() => manager.setMemoryValue("v1", 1)).toThrow();
@@ -687,7 +814,11 @@ describe("SimulationManager", () => {
 			const project = ProjectFactory.create([inputVar, memoryVar], [grafcet]);
 			const { get, set } = makeStore(project);
 			set(() => ({ simulationMode: SimulationMode.STEP_BY_STEP }));
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 
 			manager.setSimulationMode();
 			await jest.advanceTimersByTimeAsync(0);
@@ -732,7 +863,11 @@ describe("SimulationManager", () => {
 			const project = ProjectFactory.create([arret, niveau], [grafcet]);
 			const { get, set } = makeStore(project);
 			set(() => ({ simulationMode: SimulationMode.STEP_BY_STEP }));
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 
 			manager.setSimulationMode();
 			await jest.advanceTimersByTimeAsync(0);
@@ -759,7 +894,11 @@ describe("SimulationManager", () => {
 				[grafcet],
 			);
 			const { get, set } = makeStore(project);
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 			manager.setSimulationMode();
 			await jest.advanceTimersByTimeAsync(20);
 			const id = Object.keys(get().simulationVariablesStates).find(
@@ -782,7 +921,11 @@ describe("SimulationManager", () => {
 			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
 			const project = ProjectFactory.create([inputVar], [grafcet]);
 			const { get, set } = makeStore(project);
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 
 			manager.setSimulationMode();
 			await jest.advanceTimersByTimeAsync(20);
@@ -801,7 +944,11 @@ describe("SimulationManager", () => {
 			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
 			const project = ProjectFactory.create([inputVar], [grafcet]);
 			const { get, set } = makeStore(project);
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 
 			manager.setSimulationMode();
 			await jest.advanceTimersByTimeAsync(20);
@@ -821,7 +968,11 @@ describe("SimulationManager", () => {
 			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
 			const project = ProjectFactory.create([inputVar], [grafcet]);
 			const { get, set } = makeStore(project);
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 
 			manager.setSimulationMode();
 			await jest.advanceTimersByTimeAsync(20);
@@ -843,7 +994,7 @@ describe("SimulationManager", () => {
 			const project = ProjectFactory.create([inputVar], [grafcet]);
 			const { get, set } = makeStore(project);
 			const notifier = stubNotifier();
-			const manager = new SimulationManager(set, get, notifier);
+			const manager = new SimulationManager(set, get, simulationEnv(notifier));
 
 			manager.setSimulationMode();
 			await jest.advanceTimersByTimeAsync(20);
@@ -866,7 +1017,7 @@ describe("SimulationManager", () => {
 			const project = ProjectFactory.create([n], [grafcet]);
 			const { get, set } = makeStore(project);
 			const notifier = stubNotifier();
-			const manager = new SimulationManager(set, get, notifier);
+			const manager = new SimulationManager(set, get, simulationEnv(notifier));
 
 			manager.setSimulationMode();
 			await jest.advanceTimersByTimeAsync(20);
@@ -884,7 +1035,11 @@ describe("SimulationManager", () => {
 			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
 			const project = ProjectFactory.create([inputVar], [grafcet]);
 			const { get, set } = makeStore(project);
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 
 			manager.setSimulationMode();
 			manager.forceVariable("id-inexistant", true);
@@ -901,7 +1056,7 @@ describe("SimulationManager", () => {
 			const project = ProjectFactory.create([inputVar], [grafcet]);
 			const notifier = stubNotifier();
 			const { get, set } = makeStore(project);
-			const manager = new SimulationManager(set, get, notifier);
+			const manager = new SimulationManager(set, get, simulationEnv(notifier));
 
 			manager.setSimulationMode();
 			await jest.advanceTimersByTimeAsync(20);
@@ -919,7 +1074,7 @@ describe("SimulationManager", () => {
 			const project = ProjectFactory.create([inputVar], [grafcet]);
 			const notifier = stubNotifier();
 			const { get, set } = makeStore(project);
-			const manager = new SimulationManager(set, get, notifier);
+			const manager = new SimulationManager(set, get, simulationEnv(notifier));
 
 			manager.setSimulationMode();
 			await jest.advanceTimersByTimeAsync(20);
@@ -978,7 +1133,11 @@ describe("SimulationManager", () => {
 
 		it("ne republie simulationVariablesStates que lorsqu'une valeur change", async () => {
 			const { get, set, patches } = recordingStore(frozenProject());
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 
 			manager.setSimulationMode();
 			await jest.advanceTimersByTimeAsync(40); // stabilisation
@@ -993,7 +1152,11 @@ describe("SimulationManager", () => {
 
 		it("republie l'état complet au redémarrage (référence de diff réinitialisée)", async () => {
 			const { get, set, patches } = recordingStore(frozenProject());
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 
 			manager.setSimulationMode();
 			await jest.advanceTimersByTimeAsync(60);
@@ -1016,7 +1179,11 @@ describe("SimulationManager", () => {
 
 		it("publie les variables système, pour que les contacts Ladder qui les lisent s'éclairent", async () => {
 			const { get, set } = recordingStore(frozenProject());
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 
 			manager.setSimulationMode();
 			await jest.advanceTimersByTimeAsync(250);
@@ -1039,7 +1206,11 @@ describe("SimulationManager", () => {
 
 		it("publie une vue indexée par mnémonique en miroir de simulationVariablesStates", async () => {
 			const { get, set } = recordingStore(frozenProject());
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 
 			manager.setSimulationMode();
 			await jest.advanceTimersByTimeAsync(60);
@@ -1059,12 +1230,18 @@ describe("SimulationManager", () => {
 	describe("suivi du programme d'une carte (mode en ligne)", () => {
 		const trafficLight = () =>
 			compileProject(
-				PROJECT_TEMPLATES.find((t) => t.id === "traffic-light")!.solution!(),
+				PROJECT_TEMPLATES.find((t) => t.id === "traffic-light")!.solution!(
+					"fr",
+				),
 			)!;
 
 		it("passe en simulation sans PLC local, la source étant la carte", () => {
 			const { get, set } = makeStore(ProjectFactory.create([], []));
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 
 			manager.startOnline(trafficLight());
 
@@ -1077,7 +1254,11 @@ describe("SimulationManager", () => {
 		it("publie les valeurs rapportées par la carte, et les valeurs observées qui en découlent", () => {
 			const compiled = trafficLight();
 			const { get, set } = makeStore(ProjectFactory.create([], []));
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 			manager.startOnline(compiled);
 			const stepName = compiled.variables
 				.find((v) => /^X\d/.test(v.getName()))!
@@ -1097,11 +1278,15 @@ describe("SimulationManager", () => {
 		it("ne publie pas les variables internes rapportées par la carte", () => {
 			const compiled = trafficLight();
 			const { get, set } = makeStore(ProjectFactory.create([], []));
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 			manager.startOnline(compiled);
 			const observedIds = new Set(
-				Object.values(compiled.observableExpressionVariableIds).flatMap((refs) =>
-					refs.map((ref) => ref.variableId),
+				Object.values(compiled.observableExpressionVariableIds).flatMap(
+					(refs) => refs.map((ref) => ref.variableId),
 				),
 			);
 			const internal = compiled.variables.filter(
@@ -1125,7 +1310,11 @@ describe("SimulationManager", () => {
 
 		it("ne publie rien sans suivi de carte", () => {
 			const { get, set } = makeStore(ProjectFactory.create([], []));
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 			manager.publishBoardSnapshot({ X0: true });
 			expect(get().simulationVariablesStatesByMnemonic).toEqual({});
 		});
@@ -1133,13 +1322,13 @@ describe("SimulationManager", () => {
 		describe("écritures de l'interface vers la carte", () => {
 			const setupOnline = () => {
 				const compiled = compileProject(
-					PROJECT_TEMPLATES.find((t) => t.id === "elevator")!.solution!(),
+					PROJECT_TEMPLATES.find((t) => t.id === "elevator")!.solution!("fr"),
 				)!;
 				const store = makeStore(ProjectFactory.create([], []));
 				const manager = new SimulationManager(
 					store.set,
 					store.get,
-					stubNotifier(),
+					simulationEnv(stubNotifier()),
 				);
 				manager.startOnline(compiled);
 				const input = compiled.variables.find((v) => v.getScope() === "input")!;
@@ -1212,7 +1401,11 @@ describe("SimulationManager", () => {
 		it("revient à la conception : source locale, états vidés, suivi de la carte arrêté", () => {
 			const compiled = trafficLight();
 			const { get, set } = makeStore(ProjectFactory.create([], []));
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 			manager.startOnline(compiled);
 			manager.publishBoardSnapshot({ X0: true });
 
@@ -1230,7 +1423,11 @@ describe("SimulationManager", () => {
 				[GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0")],
 			);
 			const { get, set } = makeStore(project);
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 			manager.setSimulationMode();
 			await jest.advanceTimersByTimeAsync(30);
 
@@ -1251,9 +1448,7 @@ describe("SimulationManager", () => {
 				getItem: () => SimulationMode.STEP_BY_STEP,
 			});
 
-			expect(SimulationManager.getPersistedSimulationMode()).toBe(
-				SimulationMode.STEP_BY_STEP,
-			);
+			expect(getPersistedSimulationMode()).toBe(SimulationMode.STEP_BY_STEP);
 		});
 
 		it("retombe sur le mode continu quand le stockage est indisponible", () => {
@@ -1263,9 +1458,7 @@ describe("SimulationManager", () => {
 				},
 			});
 
-			expect(SimulationManager.getPersistedSimulationMode()).toBe(
-				SimulationMode.CONTINUOUS,
-			);
+			expect(getPersistedSimulationMode()).toBe(SimulationMode.CONTINUOUS);
 		});
 
 		it("applique le mode même si l'écriture dans le stockage échoue", () => {
@@ -1275,7 +1468,11 @@ describe("SimulationManager", () => {
 				},
 			});
 			const { get, set } = makeStore(ProjectFactory.createEmpty());
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 
 			expect(() =>
 				manager.setPlcSimulationMode(SimulationMode.STEP_BY_STEP),
@@ -1294,7 +1491,11 @@ describe("SimulationManager", () => {
 				string,
 				jest.Mock
 			>;
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 
 			manager.setSimulationMode();
 			expect(link.onSimulationStart).toHaveBeenCalledTimes(1);
@@ -1316,7 +1517,11 @@ describe("SimulationManager", () => {
 				string,
 				jest.Mock
 			>;
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 			manager.setSimulationMode();
 
 			manager.pauseSimulation();
@@ -1330,7 +1535,11 @@ describe("SimulationManager", () => {
 			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
 			const project = ProjectFactory.create([inputVar], [grafcet]);
 			const { get, set } = makeStore(project);
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 			manager.setSimulationMode();
 
 			manager.applyExternalInputs(new Map([["i0", true]]));
@@ -1342,7 +1551,11 @@ describe("SimulationManager", () => {
 		it("applyExternalInputs est sans effet hors simulation", () => {
 			const project = ProjectFactory.create([], []);
 			const { get, set } = makeStore(project);
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 
 			expect(() =>
 				manager.applyExternalInputs(new Map([["x", true]])),
@@ -1361,7 +1574,11 @@ describe("SimulationManager", () => {
 					bindings: { p1AtIn: "i0" },
 				};
 				const { get, set } = makeStore(project);
-				const manager = new SimulationManager(set, get, stubNotifier());
+				const manager = new SimulationManager(
+					set,
+					get,
+					simulationEnv(stubNotifier()),
+				);
 				manager.setSimulationMode();
 				return { get, manager };
 			}
@@ -1412,7 +1629,11 @@ describe("SimulationManager", () => {
 				const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
 				const project = ProjectFactory.create([inputVar], [grafcet]);
 				const { get, set } = makeStore(project);
-				const manager = new SimulationManager(set, get, stubNotifier());
+				const manager = new SimulationManager(
+					set,
+					get,
+					simulationEnv(stubNotifier()),
+				);
 				manager.setSimulationMode();
 				manager.setPhysicalInputValue("i0", true);
 				expect(get().simulationVariablesStates["i0"]?.value).toBe(true);
@@ -1425,7 +1646,11 @@ describe("SimulationManager", () => {
 			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
 			const project = ProjectFactory.create([inputVar], [grafcet]);
 			const { get, set } = makeStore(project);
-			const manager = new SimulationManager(set, get, stubNotifier());
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
 			manager.setSimulationMode();
 			set({ hardwareLink: { status: "linked", drivenInputIds: ["i0"] } });
 
@@ -1436,6 +1661,43 @@ describe("SimulationManager", () => {
 			manager.setPhysicalInputValue("i0", true);
 			expect(get().simulationVariablesStates["i0"]?.value).toBe(true);
 			manager.setDesignMode();
+		});
+	});
+
+	describe("signal d'avis", () => {
+		function makeManager() {
+			const inputVar = VariableFactory.createLogicInput("I0");
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create([inputVar], [grafcet]);
+			const { get, set } = makeStore(project);
+			const notify = jest.fn();
+			const manager = new SimulationManager(
+				set,
+				get,
+				createAppProjectStoreEnvironment({
+					simulationNotifier: stubNotifier(),
+					feedback: { notify },
+				}),
+			);
+			return { manager, notify };
+		}
+
+		it("signale la fin d'une simulation quand on revient en conception", () => {
+			const { manager, notify } = makeManager();
+			manager.setSimulationMode();
+
+			manager.setDesignMode();
+
+			expect(notify).toHaveBeenCalledTimes(1);
+			expect(notify).toHaveBeenCalledWith("simulation-ended");
+		});
+
+		it("ne signale rien quand aucune simulation n'était en cours", () => {
+			const { manager, notify } = makeManager();
+
+			manager.setDesignMode();
+
+			expect(notify).not.toHaveBeenCalled();
 		});
 	});
 });

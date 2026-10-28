@@ -2,10 +2,7 @@ import { createRandomId } from "@/ids";
 import type { BlockElement, TimerBlockParams } from "../block.schema";
 import type { GridPosition } from "../element.schema";
 import Variable from "@/schemas/variable/variable.schema";
-import {
-	BlockPortSpec,
-	structuralRailPorts,
-} from "../block-port.schema";
+import { BlockPortSpec, structuralRailPorts } from "../block-port.schema";
 import {
 	createBlockVariables,
 	getBlockVariableMnemonics,
@@ -73,7 +70,10 @@ export function createTimerBlockVariables(
  * Lecture/écriture d'une pinoche paramètre d'un bloc timer par son suffixe (`PT`/`ET`) —
  * consommé par `BLOCK_DEFINITIONS` pour piloter la grille de pinoches générique de `BoxBlockNode`.
  */
-export function readTimerParam(params: TimerBlockParams, suffix: string): string {
+export function readTimerParam(
+	params: TimerBlockParams,
+	suffix: string,
+): string {
 	return suffix === "PT" ? params.pt : (params.et ?? "");
 }
 

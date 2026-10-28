@@ -1,3 +1,5 @@
+import type { Locale } from "@/i18n/config";
+import createTemplateText from "@/templates/template-text";
 import Project from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
 import {
@@ -13,13 +15,17 @@ import {
 import {
 	output,
 	pushButton,
+	toggleSwitch,
 } from "@/templates/training/utils/training-variables";
 
-/** Same input on a NO, a `P` and a `N` contact, each latching its own output. No solution. */
-export function createLadderEdgesReadingProject(): Project {
-	const project = new Project(createRandomId(), "Lire les fronts", "");
+/** Same input on a NO, a `P` and a `N` contact, each latching its own output. */
+export function createLadderEdgesReadingProject(
+	locale: Locale = "fr",
+): Project {
+	const t = createTemplateText("ladder-edges-reading", locale);
+	const project = new Project(createRandomId(), t("projectName"), "");
 	project.variables.push(
-		pushButton("bp"),
+		toggleSwitch("commut"),
 		pushButton("raz"),
 		output("s_no"),
 		output("s_p"),
@@ -27,26 +33,26 @@ export function createLadderEdgesReadingProject(): Project {
 	);
 	setMainSections(project, [
 		section(
-			"Contact NO",
-			"s_no se mémorise tant que bp est vrai.",
-			no("bp"),
+			t("network1Title"),
+			t("network1Description"),
+			no("commut"),
 			setCoil("s_no"),
 		),
 		section(
-			"Contact P",
-			"s_p se mémorise au cycle où bp passe à vrai.",
-			rising("bp"),
+			t("network2Title"),
+			t("network2Description"),
+			rising("commut"),
 			setCoil("s_p"),
 		),
 		section(
-			"Contact N",
-			"s_n se mémorise au cycle où bp repasse à faux.",
-			falling("bp"),
+			t("network3Title"),
+			t("network3Description"),
+			falling("commut"),
 			setCoil("s_n"),
 		),
 		section(
-			"Remise à zéro",
-			"Un appui sur raz remet les trois sorties à faux.",
+			t("resetTitle"),
+			t("resetDescription"),
 			no("raz"),
 			or([resetCoil("s_no")], [resetCoil("s_p")], [resetCoil("s_n")]),
 		),

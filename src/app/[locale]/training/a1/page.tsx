@@ -1,6 +1,9 @@
+import renderGlossaryLink from "../renderGlossaryLink";
 import createTrainingModulePages from "../training-pages";
 
-const { generateModuleMetadata, ModulePage } = createTrainingModulePages("a1");
+const { generateModuleMetadata, ModulePage } = createTrainingModulePages("a1", {
+	children: renderGlossaryLink,
+});
 
 export const generateMetadata = generateModuleMetadata;
 

@@ -3,6 +3,7 @@
 import routes from "@/app/routes";
 import type { Locale } from "@/i18n/config";
 import type { PublicPathname } from "@/i18n/routing";
+import type { TrainingModuleId } from "@/training/module-ids";
 import TrainingProgressRepository from "@/persistence/repositories/training-progress.repository";
 import PublicLinkButton from "@/ui/components/public-pages/PublicLinkButton";
 import MarkdownBody from "@/ui/lib/markdown-body";
@@ -15,6 +16,7 @@ import PlayCircleIcon from "@mui/icons-material/PlayCircle";
 import {
 	alpha,
 	Avatar,
+	Box,
 	Button,
 	Paper,
 	Stack,
@@ -25,8 +27,25 @@ import {
 import { blue } from "@mui/material/colors";
 import { useLocale } from "next-intl";
 import NextLink from "next/link";
+import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
+import { useModuleIntro } from "./ModuleIntroContext";
+import type { TrainingInitialView } from "./TrainingEmbeddedBlock";
+import EmbeddedLoading from "@/ui/components/embedded/EmbeddedLoading";
+import { TRAINING_EMBEDDED_HEIGHT } from "./training-embedded-height";
 import trainingStepPath from "./training-paths";
+
+//Templates, editors and Three.js are only loaded for the steps that show a running project.
+const TrainingEmbeddedBlock = dynamic(() => import("./TrainingEmbeddedBlock"), {
+	ssr: false,
+	loading: () => <EmbeddedLoading height={TRAINING_EMBEDDED_HEIGHT} />,
+});
+
+//Loaded with the embedded block it wraps, for the steps that offer an exercise to complete.
+const TrainingExerciseBlock = dynamic(() => import("./TrainingExerciseBlock"), {
+	ssr: false,
+	loading: () => <EmbeddedLoading height={TRAINING_EMBEDDED_HEIGHT} />,
+});
 
 const ACCENT_BACKGROUND = alpha(blue[700], 0.05);
 
@@ -47,6 +66,24 @@ export type StepData = {
 	/** Blocs Markdown (paragraphe, liste...), joints par une ligne vide avant rendu. */
 	body: string[];
 	kind: StepKind;
+	/** Template whose solution runs in the page, below the text. */
+	embeddedTemplateId?: string;
+	/** The embedded solution offers the 3D scene of its template as a tab. */
+	embeddedScene3d?: boolean;
+	/** The embedded solution opens its watch table when the simulation starts. */
+	embeddedWatchOpen?: boolean;
+	/** The view the embedded solution displays first. */
+	embeddedInitialView?: TrainingInitialView;
+	/** Other solutions observed in the page, each opened by its own button and sharing
+	 * `embeddedWatchOpen` and `embeddedInitialView`. */
+	embeddedMore?: { templateId: string; buttonLabel: string }[];
+	/** The template runs as an editable exercise with its solution in a second tab, and stays
+	 * mounted, with the student's work, while another step is displayed. */
+	embeddedExercise?: {
+		exerciseTab?: string;
+		solutionTab?: string;
+		initialView?: TrainingInitialView;
+	};
 	cta?: {
 		templateId: string;
 		exerciseLabel: string;
@@ -59,6 +96,10 @@ export type StepData = {
 		autostartSimulation?: boolean;
 	};
 };
+
+/** Key of an embedded block: the step id, plus the template id for the blocks after the first. */
+const embeddedKey = (stepId: string, templateId?: string) =>
+	templateId ? `${stepId}#${templateId}` : stepId;
 
 /** Anciens liens `#step-<id>`, redirigés vers l'URL de l'étape. */
 function stepIndexFromHash(hash: string, steps: StepData[]): number | null {
@@ -153,7 +194,7 @@ export default function ModuleStepper({
 	nextLabel: string;
 	/** Clé de module (ex. `"m1"`) — sert de clé de reprise de progression, distincte de l'id de
 	 * chaque étape. */
-	moduleId: string;
+	moduleId: TrainingModuleId;
 	/** Module suivant du parcours, s'il est disponible — remplace le bouton "Suivant" (désactivé
 	 * par défaut) sur la dernière étape par un lien vers ce module. */
 	nextModule?: { href: PublicPathname; label: string };
@@ -162,6 +203,7 @@ export default function ModuleStepper({
 	initialStepId?: string;
 }) {
 	const locale = useLocale() as Locale;
+	const [embeddedOpenIds, setEmbeddedOpenIds] = useState<string[]>([]);
 	const initialIndex = Math.max(
 		steps.findIndex((s) => s.id === initialStepId),
 		0,
@@ -178,6 +220,11 @@ export default function ModuleStepper({
 	// pour relire une étape. Sert aussi à verrouiller/cocher le sommaire —
 	// sans verrouillage, un saut direct à une étape avancée ferait cocher à tort les précédentes.
 	const [furthestIndex, setFurthestIndex] = useState(initialIndex);
+	const reportIntroSteps = useModuleIntro()?.reportSteps;
+	useEffect(
+		() => reportIntroSteps?.(activeIndex, furthestIndex),
+		[reportIntroSteps, activeIndex, furthestIndex],
+	);
 
 	const pathOf = (index: number) =>
 		trainingStepPath(locale, moduleId, steps[index].id, index);
@@ -202,8 +249,14 @@ export default function ModuleStepper({
 			.then((stepId) => {
 				if (cancelled) return;
 				const savedIndex = stepId ? stepIds.indexOf(stepId) : -1;
-				setFurthestIndex(Math.max(hashIndex ?? -1, initialIndex, savedIndex, 0));
-				if (hashIndex === null && initialStepId === undefined && savedIndex > 0) {
+				setFurthestIndex(
+					Math.max(hashIndex ?? -1, initialIndex, savedIndex, 0),
+				);
+				if (
+					hashIndex === null &&
+					initialStepId === undefined &&
+					savedIndex > 0
+				) {
 					setActiveIndex(savedIndex);
 					window.history.replaceState(
 						null,
@@ -219,13 +272,22 @@ export default function ModuleStepper({
 
 	const goTo = (index: number) => {
 		setActiveIndex(index);
+		setEmbeddedOpenIds((ids) =>
+			ids.filter((key) => steps.find((s) => s.id === key)?.embeddedExercise),
+		);
 		window.history.replaceState(null, "", pathOf(index));
 		if (isStackedLayout) {
-			contentRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+			contentRef.current?.scrollIntoView({
+				behavior: "smooth",
+				block: "start",
+			});
 		}
 		if (index > furthestIndex) {
 			setFurthestIndex(index);
-			void new TrainingProgressRepository().saveStepId(moduleId, steps[index].id);
+			void new TrainingProgressRepository().saveStepId(
+				moduleId,
+				steps[index].id,
+			);
 		}
 	};
 
@@ -233,7 +295,11 @@ export default function ModuleStepper({
 	const Icon = KIND_ICONS[step.kind];
 
 	return (
-		<Stack direction={{ xs: "column", md: "row" }} gap={3} alignItems="flex-start">
+		<Stack
+			direction={{ xs: "column", md: "row" }}
+			gap={3}
+			alignItems="flex-start"
+		>
 			<Stack
 				gap={0.5}
 				sx={{
@@ -265,6 +331,7 @@ export default function ModuleStepper({
 					borderRadius: 3,
 					flex: 1,
 					width: "100%",
+					minWidth: 0,
 					bgcolor: step.cta ? ACCENT_BACKGROUND : "background.paper",
 					borderLeft: step.cta ? "4px solid" : undefined,
 					borderLeftColor: step.cta ? "primary.main" : undefined,
@@ -272,7 +339,11 @@ export default function ModuleStepper({
 			>
 				<Stack direction="row" alignItems="center" gap={1} mb={1.5}>
 					<Icon fontSize="small" color={step.cta ? "primary" : "disabled"} />
-					<Typography variant="h5" component="h2" fontWeight={700}>
+					<Typography
+						variant="h5"
+						component={initialStepId === undefined ? "h2" : "h1"}
+						fontWeight={700}
+					>
 						{step.title}
 					</Typography>
 				</Stack>
@@ -282,22 +353,84 @@ export default function ModuleStepper({
 					sx={{ "& p": { textAlign: "justify" } }}
 				/>
 
+				{embeddedOpenIds.map((key) => {
+					const [id, extraTemplateId] = key.split("#");
+					const openStep = steps.find((s) => s.id === id);
+					const current = id === step.id;
+					const templateId = extraTemplateId ?? openStep?.embeddedTemplateId;
+					if (!openStep || !templateId) return null;
+					if (!current && !openStep.embeddedExercise) return null;
+					return (
+						<Box key={key} sx={{ mt: 2, display: current ? "block" : "none" }}>
+							{openStep.embeddedExercise ? (
+								<TrainingExerciseBlock
+									templateId={templateId}
+									locale={locale}
+									{...openStep.embeddedExercise}
+									watchOpen={openStep.embeddedWatchOpen}
+								/>
+							) : (
+								<TrainingEmbeddedBlock
+									templateId={templateId}
+									locale={locale}
+									scene3d={openStep.embeddedScene3d}
+									watchOpen={openStep.embeddedWatchOpen}
+									initialView={openStep.embeddedInitialView}
+								/>
+							)}
+						</Box>
+					);
+				})}
+
 				{step.cta && (
 					<Stack direction="row" gap={1.5} flexWrap="wrap" mt={2}>
-						<Button
-							LinkComponent={NextLink}
-							href={`${routes.app()}?template=${step.cta.templateId}${
-								step.cta.primaryMode === "solution" ? "&template-mode=solution" : ""
-							}${step.cta.autostartSimulation ? "&template-autostart=simulation" : ""}`}
-							target="_blank"
-							variant="contained"
-						>
-							{step.cta.exerciseLabel}
-						</Button>
+						{step.embeddedTemplateId ? (
+							<>
+								{!embeddedOpenIds.includes(step.id) && (
+									<Button
+										variant="contained"
+										onClick={() =>
+											setEmbeddedOpenIds((ids) => [...ids, step.id])
+										}
+									>
+										{step.cta.exerciseLabel}
+									</Button>
+								)}
+								{step.embeddedMore?.map(({ templateId, buttonLabel }) => {
+									const key = embeddedKey(step.id, templateId);
+									return (
+										!embeddedOpenIds.includes(key) && (
+											<Button
+												key={key}
+												variant="contained"
+												onClick={() =>
+													setEmbeddedOpenIds((ids) => [...ids, key])
+												}
+											>
+												{buttonLabel}
+											</Button>
+										)
+									);
+								})}
+							</>
+						) : (
+							<Button
+								LinkComponent={NextLink}
+								href={`${routes.app()}?template=${step.cta.templateId}${
+									step.cta.primaryMode === "solution"
+										? "&template-mode=solution"
+										: ""
+								}${step.cta.autostartSimulation ? "&template-autostart=simulation" : ""}&template-locale=${locale}`}
+								target="_blank"
+								variant="contained"
+							>
+								{step.cta.exerciseLabel}
+							</Button>
+						)}
 						{step.cta.solutionLabel && (
 							<Button
 								LinkComponent={NextLink}
-								href={`${routes.app()}?template=${step.cta.templateId}&template-mode=solution`}
+								href={`${routes.app()}?template=${step.cta.templateId}&template-mode=solution&template-locale=${locale}`}
 								target="_blank"
 								variant="outlined"
 							>

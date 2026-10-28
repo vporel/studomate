@@ -1,0 +1,25 @@
+{
+	"texts": {
+		"initialStepTitle": "Activation de l'étape initiale",
+		"initialStepDescription": "Si aucune étape n'est active, les étapes initiales s'activent.",
+		"transitionDescription": "Si l'étape amont est active et la réceptivité vraie, l'étape amont se désactive et l'étape aval s'active.",
+		"crossingTitle": "Condition de franchissement {name}",
+		"crossingDescription": "Toutes les conditions sont calculées avant toute évolution (règle 4).",
+		"deactivationTitle": "Désactivation par {name}",
+		"deactivationDescription": "Les étapes amont de la transition franchie se désactivent.",
+		"activationTitle": "Activation par {name}",
+		"activationDescription": "Les étapes aval de la transition franchie s'activent : l'activation l'emporte (règle 5).",
+		"resetDeactivationTitle": "Réinitialisation : désactivation",
+		"resetDeactivationDescription": "Toutes les étapes sont désactivées.",
+		"resetInitialTitle": "Réinitialisation : étape initiale",
+		"resetInitialDescription": "Les étapes initiales sont réactivées.",
+		"outputTitle": "Sortie {output}",
+		"outputDescription": "Action continue : vraie tant qu'une des étapes qui la commandent est active.",
+		"faultsProgramName": "Defauts",
+		"cycleProgramName": "Cycle_automatique",
+		"outputsProgramName": "Sorties",
+		"faultsCallDescription": "Pose et acquitte les défauts, en premier : les bits de défaut sont disponibles pour toute la suite du cycle.",
+		"cycleCallDescription": "Évolution du GRAFCET : initialisation, un réseau par transition, réinitialisation éventuelle.",
+		"outputsCallDescription": "Actions du GRAFCET : un réseau par sortie, exécuté après l'évolution des étapes."
+	}
+}

@@ -49,7 +49,10 @@ describe("TrainingProgressRepository", () => {
 			mockAuthGetUser.mockResolvedValue({ data: { user: null } });
 			setLocal({ m1: "s2" });
 
-			const result = await new TrainingProgressRepository().getStepId("m1", STEPS);
+			const result = await new TrainingProgressRepository().getStepId(
+				"m1",
+				STEPS,
+			);
 
 			expect(result).toBe("s2");
 			expect(mockFrom).not.toHaveBeenCalled();
@@ -58,16 +61,22 @@ describe("TrainingProgressRepository", () => {
 		it("retourne null sans progression locale ni compte", async () => {
 			mockAuthGetUser.mockResolvedValue({ data: { user: null } });
 
-			expect(await new TrainingProgressRepository().getStepId("m1", STEPS)).toBeNull();
+			expect(
+				await new TrainingProgressRepository().getStepId("m1", STEPS),
+			).toBeNull();
 		});
 
 		it("ignore un localStorage corrompu ou une étape inconnue", async () => {
 			mockAuthGetUser.mockResolvedValue({ data: { user: null } });
 			localStorage.setItem(TRAINING_PROGRESS_LOCAL_KEY, "{not json");
-			expect(await new TrainingProgressRepository().getStepId("m1", STEPS)).toBeNull();
+			expect(
+				await new TrainingProgressRepository().getStepId("m1", STEPS),
+			).toBeNull();
 
 			setLocal({ m1: "unknown" });
-			expect(await new TrainingProgressRepository().getStepId("m1", STEPS)).toBeNull();
+			expect(
+				await new TrainingProgressRepository().getStepId("m1", STEPS),
+			).toBeNull();
 		});
 
 		it("retourne l'étape cloud si elle est plus avancée que la locale, sans réécrire le cloud", async () => {
@@ -79,7 +88,10 @@ describe("TrainingProgressRepository", () => {
 				upsert,
 			});
 
-			const result = await new TrainingProgressRepository().getStepId("m1", STEPS);
+			const result = await new TrainingProgressRepository().getStepId(
+				"m1",
+				STEPS,
+			);
 
 			expect(result).toBe("s3");
 			expect(mockFrom).toHaveBeenCalledWith("training_progress");
@@ -95,11 +107,18 @@ describe("TrainingProgressRepository", () => {
 				upsert,
 			});
 
-			const result = await new TrainingProgressRepository().getStepId("m1", STEPS);
+			const result = await new TrainingProgressRepository().getStepId(
+				"m1",
+				STEPS,
+			);
 
 			expect(result).toBe("s4");
 			expect(upsert).toHaveBeenCalledWith(
-				expect.objectContaining({ user_id: "u1", module_id: "m1", step_id: "s4" }),
+				expect.objectContaining({
+					user_id: "u1",
+					module_id: "m1",
+					step_id: "s4",
+				}),
 			);
 		});
 
@@ -112,7 +131,9 @@ describe("TrainingProgressRepository", () => {
 				upsert,
 			});
 
-			expect(await new TrainingProgressRepository().getStepId("m1", STEPS)).toBe("s2");
+			expect(
+				await new TrainingProgressRepository().getStepId("m1", STEPS),
+			).toBe("s2");
 			expect(upsert).toHaveBeenCalledTimes(1);
 		});
 
@@ -125,7 +146,9 @@ describe("TrainingProgressRepository", () => {
 				upsert,
 			});
 
-			expect(await new TrainingProgressRepository().getStepId("m1", STEPS)).toBe("s2");
+			expect(
+				await new TrainingProgressRepository().getStepId("m1", STEPS),
+			).toBe("s2");
 			expect(upsert).not.toHaveBeenCalled();
 		});
 	});
@@ -137,9 +160,11 @@ describe("TrainingProgressRepository", () => {
 
 			await new TrainingProgressRepository().saveStepId("m1", "s3");
 
-			expect(JSON.parse(localStorage.getItem(TRAINING_PROGRESS_LOCAL_KEY)!)).toEqual({
-				other: "s1",
-				m1: "s3",
+			expect(
+				JSON.parse(localStorage.getItem(TRAINING_PROGRESS_LOCAL_KEY)!),
+			).toEqual({
+				other: { stepId: "s1", updatedAt: null },
+				m1: { stepId: "s3", updatedAt: expect.any(String) },
 			});
 			expect(mockFrom).not.toHaveBeenCalled();
 		});
@@ -151,13 +176,115 @@ describe("TrainingProgressRepository", () => {
 
 			await new TrainingProgressRepository().saveStepId("m1", "s3");
 
-			expect(JSON.parse(localStorage.getItem(TRAINING_PROGRESS_LOCAL_KEY)!)).toEqual({
-				m1: "s3",
+			expect(
+				JSON.parse(localStorage.getItem(TRAINING_PROGRESS_LOCAL_KEY)!),
+			).toEqual({
+				m1: { stepId: "s3", updatedAt: expect.any(String) },
 			});
 			expect(mockFrom).toHaveBeenCalledWith("training_progress");
 			expect(upsert).toHaveBeenCalledWith(
-				expect.objectContaining({ user_id: "u1", module_id: "m1", step_id: "s3" }),
+				expect.objectContaining({
+					user_id: "u1",
+					module_id: "m1",
+					step_id: "s3",
+				}),
 			);
+		});
+	});
+
+	describe("getLastProgress", () => {
+		const MODULES = [
+			{ moduleId: "m1", stepIds: STEPS },
+			{ moduleId: "m2", stepIds: STEPS },
+			{ moduleId: "m3", stepIds: STEPS },
+		];
+
+		beforeEach(() => {
+			mockAuthGetUser.mockResolvedValue({ data: { user: null } });
+		});
+
+		it("retourne null quand aucun module n'est commencé", async () => {
+			expect(
+				await new TrainingProgressRepository().getLastProgress(MODULES),
+			).toBeNull();
+		});
+
+		it("choisit le module à l'horodatage local le plus récent", async () => {
+			setLocal({
+				m1: { stepId: "s2", updatedAt: "2026-01-02T00:00:00.000Z" },
+				m2: { stepId: "s1", updatedAt: "2026-01-03T00:00:00.000Z" },
+				m3: { stepId: "s4", updatedAt: "2026-01-01T00:00:00.000Z" },
+			});
+
+			expect(
+				await new TrainingProgressRepository().getLastProgress(MODULES),
+			).toEqual({ moduleId: "m2", stepId: "s1" });
+		});
+
+		it("lit l'ancien format (id d'étape seul) et prend le dernier module de la liste faute de date", async () => {
+			setLocal({ m1: "s2", m2: "s3" });
+
+			expect(
+				await new TrainingProgressRepository().getLastProgress(MODULES),
+			).toEqual({ moduleId: "m2", stepId: "s3" });
+		});
+
+		it("un module daté l'emporte sur un module sans date", async () => {
+			setLocal({
+				m1: { stepId: "s1", updatedAt: "2026-01-01T00:00:00.000Z" },
+				m2: "s3",
+			});
+
+			expect(
+				await new TrainingProgressRepository().getLastProgress(MODULES),
+			).toEqual({ moduleId: "m1", stepId: "s1" });
+		});
+
+		it("ignore les modules inconnus et les étapes inconnues", async () => {
+			setLocal({
+				other: { stepId: "s1", updatedAt: "2026-02-01T00:00:00.000Z" },
+				m1: { stepId: "unknown", updatedAt: "2026-02-01T00:00:00.000Z" },
+			});
+
+			expect(
+				await new TrainingProgressRepository().getLastProgress(MODULES),
+			).toBeNull();
+		});
+
+		it("avec un compte, un module plus récent côté cloud l'emporte et l'étape la plus avancée est retenue", async () => {
+			signedIn();
+			setLocal({
+				m1: { stepId: "s3", updatedAt: "2026-01-02T00:00:00.000Z" },
+				m2: { stepId: "s1", updatedAt: "2026-01-01T00:00:00.000Z" },
+			});
+			mockFrom.mockReturnValue(
+				resolved({
+					data: [
+						{
+							module_id: "m2",
+							step_id: "s2",
+							updated_at: "2026-01-05T00:00:00.000Z",
+						},
+					],
+					error: null,
+				}),
+			);
+
+			expect(
+				await new TrainingProgressRepository().getLastProgress(MODULES),
+			).toEqual({ moduleId: "m2", stepId: "s2" });
+		});
+
+		it("en cas d'erreur cloud, se rabat sur le local", async () => {
+			signedIn();
+			setLocal({ m1: { stepId: "s2", updatedAt: "2026-01-02T00:00:00.000Z" } });
+			mockFrom.mockReturnValue(
+				resolved({ data: null, error: { message: "network" } }),
+			);
+
+			expect(
+				await new TrainingProgressRepository().getLastProgress(MODULES),
+			).toEqual({ moduleId: "m1", stepId: "s2" });
 		});
 	});
 });

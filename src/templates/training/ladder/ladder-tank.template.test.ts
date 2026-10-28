@@ -55,4 +55,38 @@ describe("ladder-tank.template", () => {
 		expect(statement.get("nb_demarrages") as number).toBeGreaterThan(1);
 		statement.stop();
 	});
+
+	it("le déroulé de l'énoncé : 15 allume la pompe, 50 la garde, 85 l'éteint, 50 la garde éteinte, 96 allume l'alarme", async () => {
+		const scenario = new PlcScenario(createLadderTankSolution());
+		for (const [niveau, pompe, alarme] of [
+			[15, true, false],
+			[50, true, false],
+			[85, false, false],
+			[50, false, false],
+			[96, false, true],
+		] as const) {
+			scenario.set("niveau", niveau);
+			await scenario.cycles(2);
+			expect({ niveau, pompe: scenario.get("pompe") }).toEqual({
+				niveau,
+				pompe,
+			});
+			expect(scenario.get("alarme")).toBe(alarme);
+		}
+		scenario.stop();
+	});
+
+	it("chaque démarrage de la pompe ajoute exactement 1 à nb_demarrages", async () => {
+		const scenario = new PlcScenario(createLadderTankSolution());
+		for (let start = 1; start <= 3; start++) {
+			scenario.set("niveau", 15);
+			await scenario.cycles(4);
+			scenario.set("niveau", 50);
+			await scenario.cycles(4);
+			scenario.set("niveau", 85);
+			await scenario.cycles(4);
+			expect(scenario.get("nb_demarrages")).toBe(start);
+		}
+		scenario.stop();
+	});
 });

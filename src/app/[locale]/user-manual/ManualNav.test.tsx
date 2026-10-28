@@ -6,6 +6,11 @@ import { renderWithI18n } from "@tests/utils/i18n";
 import ManualNav from "./ManualNav";
 
 describe("ManualNav", () => {
+	it("ne rend aucun titre (le libellé du plan n'est pas un heading)", () => {
+		renderWithI18n(<ManualNav />);
+		expect(screen.queryAllByRole("heading")).toHaveLength(0);
+	});
+
 	it("affiche les sections de premier niveau du plan (libellés traduits)", () => {
 		renderWithI18n(<ManualNav />);
 		expect(screen.getByText("Introduction")).toBeInTheDocument();

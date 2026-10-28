@@ -32,7 +32,8 @@
 	"tabBar": {
 		"ariaLabel": "Onglets ouverts",
 		"close": "Fermer",
-		"closeAria": "Fermer l'onglet"
+		"closeAria": "Fermer l'onglet",
+		"readOnly": "Lecture seule"
 	},
 	"properties": {
 		"heading": "Propriétés du projet",
@@ -86,6 +87,7 @@
 		},
 		"errors": {
 			"mnemonicExists": "Ce mnémonique existe déjà",
+			"mnemonicUsedByBlock": "Ce nom est déjà utilisé par un bloc",
 			"addressUsed": "Cette adresse est déjà utilisée par « {mnemonic} »"
 		},
 		"selectorPlaceholder": "?",

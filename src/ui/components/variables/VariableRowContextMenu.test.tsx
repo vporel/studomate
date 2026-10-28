@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { fireEvent, screen } from "@testing-library/react";
@@ -13,7 +14,10 @@ jest.mock("../projects/ProjectContext");
 
 const target: VariableRowMenuTarget = { variableId: "v1", mnemonic: "M0" };
 
-function setup(withTarget: VariableRowMenuTarget | null = target) {
+function setup(
+	withTarget: VariableRowMenuTarget | null = target,
+	{ editingEnabled = true, crossReference = true } = {},
+) {
 	const removeVariables = jest.fn();
 	const setCrossReferenceResultVisible = jest.fn();
 	const setCrossReferenceFilter = jest.fn();
@@ -22,6 +26,9 @@ function setup(withTarget: VariableRowMenuTarget | null = target) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			variablesManager: { removeVariables },
+			mode: ProjectMode.DESIGN,
+			editingEnabled,
+			capabilities: { crossReference },
 			setCrossReferenceResultVisible,
 			setCrossReferenceFilter,
 		}),
@@ -47,6 +54,27 @@ function setup(withTarget: VariableRowMenuTarget | null = target) {
 }
 
 describe("VariableRowContextMenu", () => {
+	it("ne propose que les références croisées sur un projet en lecture seule", () => {
+		setup(target, { editingEnabled: false });
+
+		expect(screen.getByText("Références croisées")).toBeInTheDocument();
+		expect(screen.queryByText("Supprimer")).not.toBeInTheDocument();
+		expect(screen.queryByText("Insérer une variable")).not.toBeInTheDocument();
+	});
+
+	it("ne propose pas les références croisées sans panneau pour les afficher", () => {
+		setup(target, { crossReference: false });
+
+		expect(screen.queryByText("Références croisées")).not.toBeInTheDocument();
+		expect(screen.getByText("Supprimer")).toBeInTheDocument();
+	});
+
+	it("n'ouvre rien quand il n'y a rien à proposer", () => {
+		setup(target, { editingEnabled: false, crossReference: false });
+
+		expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+	});
+
 	it("ne rend rien sans cible", () => {
 		setup(null);
 		expect(screen.queryByText("Supprimer")).not.toBeInTheDocument();

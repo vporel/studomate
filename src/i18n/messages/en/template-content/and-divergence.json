@@ -1,0 +1,8 @@
+{
+	"statement": "## AND divergence\n\nInputs: `cycle_start`, `sensor1`, `sensor2`. Outputs: `output1`, `output2`.\n\n### Work to do\n\n1. On `cycle_start`, activate `output1` and `output2` **simultaneously**.\n2. Wait until `sensor1` **and** `sensor2` are both active before returning to the initial state\n   (deactivation of both outputs).",
+	"texts": {
+		"projectName": "AND divergence",
+		"solutionName": "AND divergence: solution",
+		"grafcetName": "AND divergence"
+	}
+}

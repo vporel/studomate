@@ -4,7 +4,6 @@
 import { act, renderHook } from "@testing-library/react";
 import Section from "@/schemas/ladder/section.schema";
 import { createContactElement } from "@/schemas/ladder/element.schema";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import mitt from "mitt";
 import useLadderContextMenu from "./useLadderContextMenu";
 import { LadderContextMenuEvents } from "../context/context-menu-events";
@@ -32,16 +31,14 @@ describe("useLadderContextMenu", () => {
 		mockContextMenuEvents.all.clear();
 	});
 
-	it("n'émet pas show pour un nœud hors du mode DESIGN", () => {
+	it("n'émet pas show pour un nœud quand le projet n'est pas modifiable", () => {
 		const section = new Section("s1", "S");
 		const contact = createContactElement("A", "NO", 0, 0);
 		section.elements = [contact];
 		const showSpy = jest.fn();
 		mockContextMenuEvents.on("show", showSpy);
 
-		const { result } = renderHook(() =>
-			useLadderContextMenu(section, ProjectMode.SIMULATION),
-		);
+		const { result } = renderHook(() => useLadderContextMenu(section, false));
 		act(() =>
 			result.current.openNodeContextMenu(fakeMouseEvent(10, 20), {
 				id: contact.id,
@@ -57,9 +54,7 @@ describe("useLadderContextMenu", () => {
 		const showSpy = jest.fn();
 		mockContextMenuEvents.on("show", showSpy);
 
-		const { result } = renderHook(() =>
-			useLadderContextMenu(section, ProjectMode.DESIGN),
-		);
+		const { result } = renderHook(() => useLadderContextMenu(section, true));
 		act(() =>
 			result.current.openNodeContextMenu(fakeMouseEvent(10, 20), {
 				id: "virtual-rail-0",
@@ -77,9 +72,7 @@ describe("useLadderContextMenu", () => {
 		const showSpy = jest.fn();
 		mockContextMenuEvents.on("show", showSpy);
 
-		const { result } = renderHook(() =>
-			useLadderContextMenu(section, ProjectMode.DESIGN),
-		);
+		const { result } = renderHook(() => useLadderContextMenu(section, true));
 		act(() =>
 			result.current.openNodeContextMenu(fakeMouseEvent(10, 20), {
 				id: contact.id,
@@ -100,9 +93,7 @@ describe("useLadderContextMenu", () => {
 		const showSpy = jest.fn();
 		mockContextMenuEvents.on("show", showSpy);
 
-		const { result } = renderHook(() =>
-			useLadderContextMenu(section, ProjectMode.DESIGN),
-		);
+		const { result } = renderHook(() => useLadderContextMenu(section, true));
 		act(() =>
 			result.current.openEdgeContextMenu(fakeMouseEvent(5, 6), {
 				id: "c1",
@@ -121,9 +112,7 @@ describe("useLadderContextMenu", () => {
 		const hideSpy = jest.fn();
 		mockContextMenuEvents.on("hide", hideSpy);
 
-		const { result } = renderHook(() =>
-			useLadderContextMenu(section, ProjectMode.DESIGN),
-		);
+		const { result } = renderHook(() => useLadderContextMenu(section, true));
 		act(() => result.current.closeContextMenu());
 
 		expect(hideSpy).toHaveBeenCalled();

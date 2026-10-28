@@ -1,0 +1,9 @@
+{
+	"statement": "## Lire les temporisations\n\nUn bouton `bp` (bouton poussoir, vrai tant qu'on appuie) pilote en parallèle un `TON`, un `TOF` et un `TP` réglés sur 2 s : leurs sorties sont `q_ton`, `q_tof` et `q_tp`. Il n'y a rien à écrire ni à modifier.\n\n### Séquence d'appuis sur `bp`\n\n| Appui | Début | Fin |\n| --- | --- | --- |\n| 1 (long) | 1 s | 5 s |\n| 2 (court : moins que PT) | 8 s | 9 s |\n| 3 (pendant l'impulsion du `TP`) | 9,5 s | 12 s |\n\n### Travail demandé\n\n1. Sans lancer la simulation, tracer sur papier le chronogramme des trois sorties pour cette séquence.\n2. Lancer la simulation, reproduire la séquence avec `bp` (à une seconde près) et comparer avec les sorties.",
+	"texts": {
+		"projectName": "Lire les temporisations",
+		"tonDescription": "Retard à l'enclenchement de 2 s.",
+		"tofDescription": "Retard au déclenchement de 2 s.",
+		"tpDescription": "Impulsion de 2 s, non redéclenchable."
+	}
+}

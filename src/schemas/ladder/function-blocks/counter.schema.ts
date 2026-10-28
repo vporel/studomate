@@ -104,7 +104,11 @@ export function createCounterBlockVariables(
 	name: string,
 	counterType: CounterType,
 ): Variable[] {
-	return createBlockVariables(elementId, name, getCounterPortSpecs(counterType));
+	return createBlockVariables(
+		elementId,
+		name,
+		getCounterPortSpecs(counterType),
+	);
 }
 
 /**

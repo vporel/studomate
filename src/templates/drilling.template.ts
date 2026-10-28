@@ -37,6 +37,8 @@ import Variable from "@/schemas/variable/variable.schema";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import { PUSH_BUTTON_NO_BEHAVIOR } from "@/schemas/variable/input-behavior";
 import { createRandomId } from "@/ids";
+import type { Locale } from "@/i18n/config";
+import createTemplateText from "@/templates/template-text";
 
 /** Course du foret, du point haut (0) au point bas (100), en pixels d'animation. */
 const POSITION_MAX = 100;
@@ -71,7 +73,9 @@ function wireInSeries(elements: LadderElement[]): Connection[] {
  */
 export function buildOperativePartLadder(
 	options: { blockable?: boolean } = {},
+	locale: Locale = "fr",
 ): Ladder {
+	const t = createTemplateText("drilling", locale);
 	// Les lignes à bloc Calc occupent 2 cellules de haut : la ligne suivante démarre 2 rangées
 	// plus bas (rung1 en 2, capteurs en 4 et 5).
 	const rail0 = createRailTerminalElement(0);
@@ -132,8 +136,8 @@ export function buildOperativePartLadder(
 
 	const section = new Section(
 		createRandomId(),
-		"Modèle de partie opérative",
-		"Simule le déplacement du foret et les capteurs de fin de course à la place d'une partie opérative réelle. Ne pas modifier : ce n'est pas le programme de commande à écrire.",
+		t("operativeSectionTitle"),
+		t("operativeSectionDescription"),
 		[...rung0, ...rung1, ...rung2, ...rung3],
 		[
 			...wireInSeries(rung0),
@@ -143,10 +147,10 @@ export function buildOperativePartLadder(
 		],
 	);
 
-	return new Ladder(createRandomId(), "Partie opérative", [section]);
+	return new Ladder(createRandomId(), t("operativePartProgram"), [section]);
 }
 
-export function createDrillingVariables(): Variable[] {
+export function createDrillingVariables(_locale: Locale = "fr"): Variable[] {
 	return [
 		VariableBuilder.buildLogicInput(
 			createRandomId(),
@@ -166,8 +170,9 @@ export function createDrillingVariables(): Variable[] {
 export function addDrillingOperativePart(
 	project: Project,
 	options: { blockable?: boolean } = {},
+	locale: Locale = "fr",
 ): void {
-	const operativePart = buildOperativePartLadder(options);
+	const operativePart = buildOperativePartLadder(options, locale);
 	project.addProgram(operativePart);
 	const [mainSection] = project.main.sections;
 	const mainRail = createRailTerminalElement(0);
@@ -187,8 +192,9 @@ export function addDrillingOperativePart(
  * — scène 3D câblée sur les sorties et les capteurs
  * — pas de GRAFCET de commande : c'est ce que l'étudiant écrit
  */
-export function createDrillingProject(): Project {
-	const project = new Project(createRandomId(), "Poste de perçage", "");
+export function createDrillingProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("drilling", locale);
+	const project = new Project(createRandomId(), t("projectName"), "");
 
 	project.variables.push(
 		VariableBuilder.buildLogicInput(createRandomId(), "dcy"),
@@ -226,9 +232,10 @@ export function createDrillingProject(): Project {
  * Les capteurs `h`/`b` proviennent de la scène 3D, pas d'entrées physiques : la simulation tourne
  * donc sans intervention après appui sur « Départ cycle ».
  */
-export function createDrillingSolution(): Project {
-	const project = createDrillingProject();
-	project.name = "Poste de perçage — solution";
+export function createDrillingSolution(locale: Locale = "fr"): Project {
+	const t = createTemplateText("drilling", locale);
+	const project = createDrillingProject(locale);
+	project.name = t("solutionName");
 
 	const X = 200;
 	const e0 = new StepBuilder()
@@ -315,7 +322,7 @@ export function createDrillingSolution(): Project {
 
 	const commande = new GrafcetBuilder()
 		.id(createRandomId())
-		.name("Commande")
+		.name(t("controlGrafcet"))
 		.addSteps(e0, e1, e2, e3)
 		.addTransitions(t0, t1, t2, t3)
 		.addActions(aDescendre, aBroche, aMonter)

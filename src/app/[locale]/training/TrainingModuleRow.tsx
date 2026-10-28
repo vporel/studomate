@@ -3,7 +3,6 @@
 import { Link } from "@/i18n/navigation";
 import type { PublicPathname } from "@/i18n/routing";
 import TrainingProgressRepository from "@/persistence/repositories/training-progress.repository";
-import { useT } from "@/ui/i18n/useT";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import PlayCircleIcon from "@mui/icons-material/PlayCircle";
 import ScheduleIcon from "@mui/icons-material/Schedule";
@@ -17,6 +16,7 @@ export default function TrainingModuleRow({
 	statusLabel,
 	completedLabel,
 	comingSoonLabel,
+	comingSoonMessage,
 	href,
 	moduleId,
 	stepIds,
@@ -26,6 +26,7 @@ export default function TrainingModuleRow({
 	statusLabel: string;
 	completedLabel: string;
 	comingSoonLabel: string;
+	comingSoonMessage: string;
 	href?: PublicPathname;
 	/** Permet d'afficher la progression (reprise via compte requis, voir
 	 * `TrainingProgressRepository`) — sans effet si omis (`available: false`, ou module sans
@@ -33,7 +34,6 @@ export default function TrainingModuleRow({
 	moduleId?: string;
 	stepIds?: string[];
 }) {
-	const t = useT("training");
 	const [savedStepId, setSavedStepId] = useState<string | null>(null);
 
 	useEffect(() => {
@@ -49,9 +49,8 @@ export default function TrainingModuleRow({
 		};
 	}, [available, moduleId, stepIds]);
 
-	const currentStepNumber = stepIds && savedStepId
-		? stepIds.indexOf(savedStepId) + 1
-		: 0;
+	const currentStepNumber =
+		stepIds && savedStepId ? stepIds.indexOf(savedStepId) + 1 : 0;
 	const completed = !!stepIds && currentStepNumber === stepIds.length;
 
 	const statusText = completed
@@ -107,9 +106,9 @@ export default function TrainingModuleRow({
 		<div
 			role="button"
 			tabIndex={0}
-			onClick={() => toast.info(t("comingSoonMessage"))}
+			onClick={() => toast.info(comingSoonMessage)}
 			onKeyDown={(e) => {
-				if (e.key === "Enter" || e.key === " ") toast.info(t("comingSoonMessage"));
+				if (e.key === "Enter" || e.key === " ") toast.info(comingSoonMessage);
 			}}
 		>
 			{content}

@@ -201,10 +201,15 @@ describe("ladderToSectionScenes", () => {
 	});
 });
 
-describe("libellé d'un bloc convert", () => {
+describe("bloc convert", () => {
 	function convertLadder(): Ladder {
 		const rail = createRailTerminalElement(0);
-		const block = createConvertBlockElement(0, 0, { in: "D", out: "I" });
+		const block = createConvertBlockElement(0, 0, {
+			in: "D",
+			out: "I",
+			inType: "DINT",
+			outType: "INT",
+		});
 		return new Ladder("l1", "L", [
 			createSectionWith([rail, block], wireInSeries([rail, block])),
 		]);
@@ -212,15 +217,10 @@ describe("libellé d'un bloc convert", () => {
 	const texts = (ops: DrawOp[]) =>
 		ops.flatMap((o) => (o.op === "text" ? [o.text] : []));
 
-	it("affiche le nom normalisé de la conversion fourni par le contexte", () => {
-		const [section] = ladderToSectionScenes(convertLadder(), {
-			convertFunctionName: () => "DINT_TO_INT",
-		});
-		expect(texts(section.scene.ops)).toContain("DINT_TO_INT");
-	});
-
-	it("retombe sur CONV sans nom de conversion", () => {
+	it("affiche CONV et la paire de types choisie", () => {
 		const [section] = ladderToSectionScenes(convertLadder());
-		expect(texts(section.scene.ops)).toContain("CONV");
+		expect(texts(section.scene.ops)).toEqual(
+			expect.arrayContaining(["CONV", "DINT TO INT"]),
+		);
 	});
 });

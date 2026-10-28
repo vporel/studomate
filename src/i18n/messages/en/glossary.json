@@ -1,0 +1,505 @@
+{
+	"pageTitle": "Automation glossary",
+	"intro": "The words of industrial automation explained simply: GRAFCET, Ladder, variables, timers, counters. Each term is defined in a few sentences, with a diagram when it helps.",
+	"searchLabel": "Search for a term",
+	"searchPlaceholder": "Step, contact, TON, edge...",
+	"filterLabel": "Filter by notation",
+	"filterAll": "All",
+	"resultsOne": "1 term",
+	"resultsOther": "{count} terms",
+	"noResults": "No term matches your search.",
+	"aliasesLabel": "Also called",
+	"relatedLabel": "See also",
+	"sections": {
+		"general": {
+			"title": "General concepts"
+		},
+		"grafcet": {
+			"title": "GRAFCET"
+		},
+		"ladder": {
+			"title": "Ladder"
+		},
+		"ladder-advanced": {
+			"title": "Ladder: time, counting and calculation"
+		}
+	},
+	"entries": {
+		"plc": {
+			"term": "PLC",
+			"aliases": "programmable logic controller; programmable controller",
+			"definition": "A small industrial computer that reads inputs (buttons, sensors), runs a program, then drives outputs (lamps, contactors, valves).",
+			"details": "It endlessly repeats the same loop, the scan cycle. In Studomate, the program is written in GRAFCET and Ladder.",
+			"figureAlt": ""
+		},
+		"variable": {
+			"term": "Variable",
+			"aliases": "",
+			"definition": "A named piece of data handled by the program: an input, an output or an internal memory. A logic variable is TRUE or FALSE (1 or 0).",
+			"details": "Studomate declares variables in the variables table, shared between GRAFCET, Ladder and HMI.",
+			"figureAlt": ""
+		},
+		"mnemonic": {
+			"term": "Mnemonic",
+			"aliases": "variable name",
+			"definition": "The short, meaningful name of a variable (`pump`, `stop`), which programs use to refer to it. An address (`%I0.1`) can be added to link the variable to physical hardware.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"input": {
+			"term": "Input",
+			"aliases": "",
+			"definition": "A variable read by the program and driven by the outside world: button, switch, sensor.",
+			"details": "In the program, an input is read with a contact. The program cannot write it.",
+			"figureAlt": ""
+		},
+		"output": {
+			"term": "Output",
+			"aliases": "",
+			"definition": "A variable written by the program to drive a lamp, a contactor, a valve or a motor.",
+			"details": "In Ladder an output is driven by a coil; in GRAFCET, by an action.",
+			"figureAlt": ""
+		},
+		"scan-cycle": {
+			"term": "Scan cycle",
+			"aliases": "PLC cycle; scan",
+			"definition": "The loop a PLC repeats endlessly, in three phases: read the inputs, run the program, write the outputs.",
+			"details": "A cycle lasts a few milliseconds. While the program runs, inputs are frozen: they keep the value read at the start of the cycle.",
+			"figureAlt": "The scan cycle as three blocks linked by arrows: read inputs, run the program, write outputs, then back to the start."
+		},
+		"execution-order": {
+			"term": "Execution order",
+			"aliases": "",
+			"definition": "The rule for reading the program: networks run from top to bottom, and GRAFCETs run before Ladder.",
+			"details": "A network placed lower already sees the result of the networks above it within the same cycle. If two networks write the same variable, the last one executed wins.",
+			"figureAlt": ""
+		},
+		"truth-table": {
+			"term": "Truth table",
+			"aliases": "",
+			"definition": "A table giving the value of a logic expression for every combination of its variables (0 = false, 1 = true).",
+			"details": "",
+			"figureAlt": ""
+		},
+		"and": {
+			"term": "AND",
+			"aliases": "in series",
+			"definition": "An operator that is true only if all its conditions are true.",
+			"details": "In Ladder, AND corresponds to contacts in series.",
+			"figureAlt": ""
+		},
+		"or": {
+			"term": "OR",
+			"aliases": "in parallel",
+			"definition": "An operator that is true as soon as one of its conditions is true.",
+			"details": "In Ladder, OR corresponds to contacts in parallel.",
+			"figureAlt": ""
+		},
+		"not": {
+			"term": "NOT",
+			"aliases": "inversion",
+			"definition": "An operator that inverts a condition: true becomes false, false becomes true.",
+			"details": "In Ladder, NOT corresponds to an NC contact.",
+			"figureAlt": ""
+		},
+		"push-button": {
+			"term": "Push button",
+			"aliases": "",
+			"definition": "A control device that changes state while pressed and returns to rest by itself when released.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"switch": {
+			"term": "Switch",
+			"aliases": "maintained switch; toggle switch",
+			"definition": "A control device that keeps its position after being operated: it stays on until switched back.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"contactor": {
+			"term": "Contactor",
+			"aliases": "",
+			"definition": "A power switch driven by a coil: it lets a low-power output control a motor or a large load.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"limit-switch": {
+			"term": "Limit switch",
+			"aliases": "end stop",
+			"definition": "A sensor operated mechanically when a moving part (gate, cylinder) reaches the end of its travel.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"wiring": {
+			"term": "Wiring: normally open (NO) and normally closed (NC)",
+			"aliases": "NO; NC; normally open; normally closed",
+			"definition": "The way a button or sensor is connected. Wired normally open (NO), it is 0 at rest and 1 when operated; wired normally closed (NC), it is 1 at rest and 0 when operated.",
+			"details": "The physical wiring and the contact chosen in the program are two different things.",
+			"figureAlt": "Two buttons: the normally open one (NO) is 0 at rest and 1 when pressed, the normally closed one (NC) is 1 at rest and 0 when pressed."
+		},
+		"edge": {
+			"term": "Edge",
+			"aliases": "",
+			"definition": "The precise moment a signal changes value: rising edge (false to true) or falling edge (true to false).",
+			"details": "An edge lasts a single cycle: it is used to react only once to a press.",
+			"figureAlt": ""
+		},
+		"rising-edge": {
+			"term": "Rising edge",
+			"aliases": "",
+			"definition": "A signal going from false to true, detected during a single cycle.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"falling-edge": {
+			"term": "Falling edge",
+			"aliases": "",
+			"definition": "A signal going from true to false, detected during a single cycle.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"chronogram": {
+			"term": "Timing diagram",
+			"aliases": "chronogram",
+			"definition": "A chart showing how several signals change over time, stacked on the same time axis.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"step": {
+			"term": "Step",
+			"aliases": "",
+			"definition": "A numbered square representing a stable state of the system. It is active or inactive; an active step is shown with a coloured background in the editor.",
+			"details": "The `Xn` variable of a step is TRUE while step n is active.",
+			"figureAlt": "Three steps: an inactive step (number 1), an active step (number 2, green background) and an initial step (number 0, double outline)."
+		},
+		"initial-step": {
+			"term": "Initial step",
+			"aliases": "",
+			"definition": "A step with a double outline, active at power-up or after a reset. A GRAFCET has at least one.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"action": {
+			"term": "Action",
+			"aliases": "",
+			"definition": "A rectangle attached to a step: what the system does while the step is active, such as turning an output on.",
+			"details": "An action can be continuous, stored (Set / Reset), conditional, delayed or time-limited.",
+			"figureAlt": "A step numbered 1 linked to an action rectangle `pump` on its right."
+		},
+		"transition": {
+			"term": "Transition",
+			"aliases": "",
+			"definition": "A small horizontal bar linking two steps and carrying a receptivity: the condition to meet to go from one to the other.",
+			"details": "",
+			"figureAlt": "Two steps linked by a transition, with the receptivity `end1` to the right of the bar."
+		},
+		"receptivity": {
+			"term": "Receptivity",
+			"aliases": "transition condition",
+			"definition": "The crossing condition of a transition: a true-or-false expression, such as `end1` or `cycle_start AND NOT stop`.",
+			"details": "A receptivity can contain a timer or an edge.",
+			"figureAlt": ""
+		},
+		"directed-link": {
+			"term": "Directed link",
+			"aliases": "",
+			"definition": "A line joining steps and transitions, read from top to bottom. An arrow is drawn only when it goes back up.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"evolution": {
+			"term": "Evolution",
+			"aliases": "crossing; crossing a transition; firing",
+			"definition": "Crossing a transition: when the upstream step is active and the receptivity is true, the upstream step deactivates and the downstream step activates.",
+			"details": "The upstream step must be active AND the receptivity true: if either is missing, nothing moves.",
+			"figureAlt": ""
+		},
+		"upstream-downstream": {
+			"term": "Upstream, downstream",
+			"aliases": "",
+			"definition": "Before and after, in the reading direction of the GRAFCET (top to bottom). The upstream step precedes a transition, the downstream step follows it.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"step-variable": {
+			"term": "Step variable (Xn)",
+			"aliases": "Xn; X2",
+			"definition": "A logic variable tied to step n: it is TRUE when the step is active (`X2 = TRUE`).",
+			"details": "It is used in a receptivity or in a Ladder program to know where the sequence stands.",
+			"figureAlt": ""
+		},
+		"set-action": {
+			"term": "Stored action",
+			"aliases": "Set; Reset; Set action",
+			"definition": "An action whose variable stays true when the step deactivates, until another action sets it back to false (Reset).",
+			"details": "",
+			"figureAlt": ""
+		},
+		"divergences": {
+			"term": "Divergence and convergence",
+			"aliases": "junction; bar",
+			"definition": "A divergence splits a sequence into several branches, a convergence joins them back. A single bar means OR, a double bar means AND.",
+			"details": "",
+			"figureAlt": "Four junctions, left to right: OR divergence (one bar), OR convergence, AND divergence (double bar), AND convergence."
+		},
+		"or-divergence": {
+			"term": "OR divergence",
+			"aliases": "sequence selection",
+			"definition": "A point where the sequence splits into several paths of which only one is taken, depending on which receptivity becomes true first.",
+			"details": "The branch receptivities must be mutually exclusive.",
+			"figureAlt": ""
+		},
+		"and-divergence": {
+			"term": "AND divergence",
+			"aliases": "simultaneous sequences; parallelism",
+			"definition": "A point where the sequence splits into several branches that all start at the same time and then evolve independently.",
+			"details": "A single transition above the double bar crosses it.",
+			"figureAlt": ""
+		},
+		"convergence": {
+			"term": "Convergence",
+			"aliases": "",
+			"definition": "A point where branches join back. In AND, the sequence continues only once all branches have arrived; in OR, as soon as one branch arrives.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"branch": {
+			"term": "Branch",
+			"aliases": "",
+			"definition": "One of the sequences starting from a divergence.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"exclusivity": {
+			"term": "Exclusivity",
+			"aliases": "mutual exclusion",
+			"definition": "A property of the branches of an OR divergence whose receptivities cannot be true at the same time.",
+			"details": "Without exclusivity, several branches can start at once: the Studomate analysis flags it.",
+			"figureAlt": ""
+		},
+		"reinitialize": {
+			"term": "Reset",
+			"aliases": "reinitialize; GRAFCET reset",
+			"definition": "Put the whole GRAFCET back in its starting state: all steps inactive except the initial step, which becomes active again.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"ladder": {
+			"term": "Ladder",
+			"aliases": "LD; ladder diagram; relay diagram",
+			"definition": "A graphical PLC programming language: contacts on the left (the conditions) drive a coil on the right (the action).",
+			"details": "It descends from the relay diagram and is written « LD » in the IEC 61131-3 standard.",
+			"figureAlt": ""
+		},
+		"rails": {
+			"term": "Rails",
+			"aliases": "left rail; right rail",
+			"definition": "The two vertical lines framing a Ladder network: the notional current flows from the left rail to the right rail.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"network": {
+			"term": "Network",
+			"aliases": "rung; section",
+			"definition": "A block of the Ladder program, bounded by its two rails. It contains lines of contacts leading to coils. In the simplest case, a single line: contacts on the left, a coil on the right. It is read from left to right.",
+			"details": "If the contact path of a line lets current through, the coil is activated.",
+			"figureAlt": ""
+		},
+		"contact": {
+			"term": "Contact",
+			"aliases": "NO contact; NC contact",
+			"definition": "A symbol that reads a variable. An NO contact (normally open) conducts when its variable is true; an NC contact (normally closed) conducts when it is false.",
+			"details": "The contact reflects the behaviour wanted in the program, not the physical wiring of the button.",
+			"figureAlt": "Two contacts: an NO contact, two vertical bars, and an NC contact, two bars with a diagonal."
+		},
+		"coil": {
+			"term": "Coil",
+			"aliases": "output coil",
+			"definition": "A symbol at the end of a network that writes a variable: it takes the value of the contact path before it.",
+			"details": "It is used to drive an output or an internal memory.",
+			"figureAlt": "A minimal network: a `start` contact followed by a `pump` coil, between the two rails."
+		},
+		"series-parallel": {
+			"term": "Contacts in series and in parallel",
+			"aliases": "in series; in parallel",
+			"definition": "Contacts in series (one after the other) form an AND; contacts in parallel (on two paths) form an OR.",
+			"details": "",
+			"figureAlt": "Two networks: contacts a and b in series equal a AND b, the same contacts in parallel equal a OR b."
+		},
+		"internal-memory": {
+			"term": "Internal memory",
+			"aliases": "memory; memory bit",
+			"definition": "A variable that is neither an input nor an output: the program uses it to remember a state between two cycles.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"self-holding": {
+			"term": "Self-holding",
+			"aliases": "latching; seal-in",
+			"definition": "A circuit where a contact of the coil itself is placed in parallel with the start button: the output stays on after the button is released.",
+			"details": "With the stop in series after the parallel, the stop has priority.",
+			"figureAlt": "A network: `start` in parallel with `pump`, then an NC contact `stop` in series, to the `pump` coil."
+		},
+		"priority-stop": {
+			"term": "Stop priority",
+			"aliases": "start priority",
+			"definition": "A self-holding circuit where the stop wins if start and stop are operated together. Priority depends on the order of the contacts.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"interlock": {
+			"term": "Interlock",
+			"aliases": "mutual interlock",
+			"definition": "A condition that forbids two outputs from being active at the same time, like the two directions of a motor: each can start only if the other is off.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"set-reset": {
+			"term": "S and R coils",
+			"aliases": "Set; Reset; latch; set to 1; set to 0",
+			"definition": "An S (Set) coil sets its variable to 1 and leaves it; an R (Reset) coil sets it back to 0. Between orders, the variable keeps its value.",
+			"details": "The last network executed wins if both are active together.",
+			"figureAlt": ""
+		},
+		"retentive": {
+			"term": "Retentive memory",
+			"aliases": "retentivity",
+			"definition": "A memory that keeps its value after a power loss or a restart, unlike an ordinary memory that restarts at 0.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"edge-contacts": {
+			"term": "Edge contacts P and N",
+			"aliases": "P contact; N contact; rising edge; falling edge",
+			"definition": "A P contact conducts for a single cycle, on the rising edge of its variable; an N contact does so on the falling edge.",
+			"details": "They are used to react only once to a press.",
+			"figureAlt": "Two contacts: a P contact marked with the letter P and an N contact marked with the letter N."
+		},
+		"toggle": {
+			"term": "Toggle circuit",
+			"aliases": "latching relay; flip-flop",
+			"definition": "A circuit where each press of a button inverts the state of an output: one press turns it on, the next turns it off.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"double-coil": {
+			"term": "Double coil",
+			"aliases": "",
+			"definition": "A common mistake: writing the same variable with two coils. Only the last network executed counts, which hides the first.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"function-block": {
+			"term": "Function block",
+			"aliases": "block",
+			"definition": "A Ladder rectangle that performs a ready-made function (timing, counting, calculation) from input pins on the left and output pins on the right.",
+			"details": "",
+			"figureAlt": "A TON block: pins IN and PT on the left, pins Q and ET on the right."
+		},
+		"instance": {
+			"term": "Instance",
+			"aliases": "",
+			"definition": "One copy of a function block, with its own state: two TON timers are two independent instances.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"timer": {
+			"term": "Timer",
+			"aliases": "timer block",
+			"definition": "A block that measures a duration. It receives an input IN and a duration PT (the preset time), and its output Q responds according to the type: TON, TOF or TP.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"ton": {
+			"term": "TON",
+			"aliases": "on-delay timer",
+			"definition": "On-delay timer: output Q becomes true when IN has stayed true for the whole duration PT, and falls as soon as IN falls.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"tof": {
+			"term": "TOF",
+			"aliases": "off-delay timer",
+			"definition": "Off-delay timer: Q becomes true as soon as IN is true and stays true for the duration PT after IN has fallen.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"tp": {
+			"term": "TP",
+			"aliases": "pulse timer",
+			"definition": "Pulse timer: a rising edge on IN triggers an output Q that is true for exactly the duration PT, whatever IN does afterwards.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"system-time-bases": {
+			"term": "System time bases",
+			"aliases": "_SYS_TB; system clock",
+			"definition": "Read-only variables provided by Studomate (prefix `_SYS_`) that alternate between true and false at a fixed rate, from 200 ms to 2 s, for example to blink a lamp.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"counter": {
+			"term": "Counter",
+			"aliases": "CTU; CTD; CTUD; counting up; counting down",
+			"definition": "A block that counts rising edges. CTU increments on CU, CTD decrements on CD (with LD to load the PV value), CTUD does both. The current value is on the CV pin.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"preset-value": {
+			"term": "Preset value",
+			"aliases": "PV; preset",
+			"definition": "The target value of a counter (PV pin). The Q output of a CTU becomes true when the count CV reaches PV.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"data-type": {
+			"term": "Type",
+			"aliases": "BOOL; INT; DINT; REAL; variable type",
+			"definition": "The nature of a variable's value: BOOL (true or false), INT and DINT (16-bit and 32-bit integers), REAL (floating-point number).",
+			"details": "Each type has its own range of values and calculation rules.",
+			"figureAlt": ""
+		},
+		"conversion": {
+			"term": "Conversion",
+			"aliases": "widening; narrowing; *_TO_*",
+			"definition": "Changing the type of a value. A widening (INT to DINT) is safe; a narrowing (REAL to INT) can lose information and must be requested explicitly.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"overflow": {
+			"term": "Overflow",
+			"aliases": "wrap-around",
+			"definition": "A result that goes out of the range of its type: an INT passing 32767 wraps around to the low bound.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"scaling": {
+			"term": "Scaling",
+			"aliases": "raw value",
+			"definition": "A calculation that converts the raw value of an analog sensor into a physical quantity (temperature, level), usually through a straight line.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"hysteresis": {
+			"term": "Hysteresis",
+			"aliases": "",
+			"definition": "A gap between the switch-on threshold and the switch-off threshold, to prevent an output from flickering when the measurement oscillates around one value.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"subprogram": {
+			"term": "Subprogram",
+			"aliases": "subprogram call",
+			"definition": "A program called from another one through a call block. It lets a project be split into readable, reusable parts.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"main": {
+			"term": "Main",
+			"aliases": "main program",
+			"definition": "The main program of a project, run on every cycle. It calls the subprograms and cannot be excluded from execution.",
+			"details": "",
+			"figureAlt": ""
+		}
+	}
+}

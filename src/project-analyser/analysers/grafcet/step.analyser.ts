@@ -20,11 +20,7 @@ export default class StepAnalyser extends GrafcetElementAnalyser<Step> {
 		const issues: ProjectAnalyserIssue[] = [];
 		const source = { sourceType: "grafcet-step" as const, sourceId: step.id };
 
-		if (
-			step.data.number === "" ||
-			step.data.number === null ||
-			step.data.number === undefined
-		) {
+		if (!StepHelper.hasNumber(step.data)) {
 			if (!allowEmptyContent) {
 				issues.push(
 					new ProjectAnalyserIssue("error", "STEP_NUMBER_MISSING", source),
@@ -60,7 +56,7 @@ export default class StepAnalyser extends GrafcetElementAnalyser<Step> {
 		const sameNumber = Object.values(grafcet.steps).filter(
 			(s) =>
 				s.id !== step.id &&
-				s.data.number !== "" &&
+				StepHelper.hasNumber(s.data) &&
 				s.data.number === step.data.number,
 		);
 		if (sameNumber.length > 0) {

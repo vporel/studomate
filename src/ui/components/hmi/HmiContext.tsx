@@ -1,7 +1,10 @@
 "use client";
 
 import HmiPage from "@/schemas/hmi/hmi-page.schema";
-import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import {
+	useProjectContext,
+	useProjectStore,
+} from "@/ui/components/projects/ProjectContext";
 import { createHmiStore, HmiStoreState } from "@/ui/stores/hmi/hmi.store";
 import { createContext, ReactNode, useContext, useEffect, useRef } from "react";
 import { StoreApi, useStore } from "zustand";
@@ -17,6 +20,7 @@ export const HmiContextProvider = ({
 	children: ReactNode;
 }) => {
 	const hmiManager = useProjectStore((state) => state.hmiManager);
+	const projectStore = useProjectContext();
 	const storeRef = useRef<StoreApi<HmiStoreState> | null>(null);
 
 	if (!storeRef.current) {
@@ -25,6 +29,7 @@ export const HmiContextProvider = ({
 		storeRef.current = createHmiStore(
 			initialHmiPage,
 			hmiManager.getCommandsStack(initialHmiPage.id),
+			projectStore?.getState().clipboard,
 		);
 	}
 

@@ -1,4 +1,6 @@
 {
+	"updateAvailable": "New version available: click here to reload.",
+	"updateBlockedByUnsavedChanges": "Save your project before reloading: your changes would be lost.",
 	"analysisComplete": "Analysis complete: {elements, plural, one {# element analysed} other {# elements analysed}}, {errors, plural, =0 {no error} one {# error} other {# errors}} and {warnings, plural, =0 {no warning} one {# warning} other {# warnings}} found.",
 	"simulationStarting": "Compilation complete, starting the simulation…",
 	"simulationCouldNotStart": "Cannot start the simulation: {count, plural, one {# error} other {# errors}} during {step, select, preCompilation {pre-compilation} other {compilation}}.",
@@ -15,6 +17,7 @@
 	"draftCorrupted": "The draft is corrupted and could not be opened.",
 	"cloudReloadFailed": "Could not reload the online version of the project.",
 	"projectReloadFailed": "Could not load the saved project.",
+	"shareLinkOpenFailed": "Could not open the shared project: check your connection and that the link is valid.",
 	"shareLinkFailed": "Could not create the share link.",
 	"moveToCloudConflict": "A cloud project with this identifier already exists, probably sent from another device.",
 	"moveToCloudFailed": "The project could not be sent to the cloud. Check your connection.",

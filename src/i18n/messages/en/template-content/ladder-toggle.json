@@ -1,0 +1,15 @@
+{
+	"statement": "## Impulse relay\n\nInput: `pb` (push button). Output: `lamp`. Memory: `pulse`. The exercise starts from a naive two-network solution (a P contact on `pb`, an S coil then an R coil on `lamp`), on which the lamp never lights up.\n\n### Task\n\n1. Simulate the naive solution: observe that the lamp never lights up.\n2. Explain why, by going through one cycle network by network on paper.\n3. Fix the program: the lamp must toggle only once per press, even if the button is held for several cycles.",
+	"texts": {
+		"projectName": "Impulse relay",
+		"solutionName": "Impulse relay: solution",
+		"turnOnTitle": "Turn on",
+		"turnOnDescription": "Edge of pb and lamp off: turn on.",
+		"turnOffTitle": "Turn off",
+		"turnOffDescription": "Edge of pb and lamp on: turn off.",
+		"pulseTitle": "Pulse",
+		"pulseDescription": "A single P contact stores the edge in pulse.",
+		"toggleTitle": "Toggle",
+		"toggleDescription": "The lamp changes state on every pulse."
+	}
+}

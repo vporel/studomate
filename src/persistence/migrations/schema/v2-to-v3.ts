@@ -12,8 +12,7 @@ function collectCtuBlockNames(programs: Record<string, unknown>): string[] {
 			if (!Array.isArray(elements)) continue;
 			for (const element of elements) {
 				const data = (element as Record<string, unknown> | null)?.data as
-					| Record<string, unknown>
-					| undefined;
+					Record<string, unknown> | undefined;
 				const params = data?.params as Record<string, unknown> | undefined;
 				if (
 					data?.blockType === "counter" &&

@@ -2,20 +2,15 @@ import Project, {
 	DEFAULT_PROJECT_NAME,
 } from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
+import type { Locale } from "@/i18n/config";
 import { PROJECT_TEMPLATES } from "@/templates/index";
+import localizeProject from "@/templates/localize-project";
+import { getTemplateStatement } from "@/templates/template-text";
 import {
 	isShareable,
 	SaveFailureReason,
 } from "@/persistence/repositories/project.repository";
 import { toast } from "react-toastify";
-import {
-	getActivePageIdFromUrl,
-	setActivePageIdInUrl,
-} from "@/ui/stores/project/url/pages-url";
-import {
-	clearShareTokenFromUrl,
-	setProjectIdInUrl,
-} from "@/ui/stores/project/url/project-url";
 import {
 	Draft,
 	deleteDraft,
@@ -23,15 +18,17 @@ import {
 	parseDraftProject,
 	saveDraft,
 } from "@/persistence/draft.storage";
-import { clearClipboard } from "@/ui/stores/shared/clipboard.store";
-import trackEvent from "@/ui/services/analytics";
+import type { PagesSession } from "@/persistence/pages-session.storage";
+import type { ProjectStoreEnvironment } from "../environment/project-store-environment";
 import { getT } from "@/ui/i18n/translateGlobal";
 import {
 	getInitialPagesData,
 	restorePagesSession,
 } from "../pages-session-restore";
+import resolveDefaultDialect from "../default-dialect";
 import resolveSaveLocationIfNeeded from "../save-location";
 import {
+	PageData,
 	ProjectStoreGetFunction,
 	ProjectStoreSetFunction,
 } from "../project.store.types";
@@ -60,15 +57,27 @@ export default class ProjectLifecycleManager {
 	private setStoreState: ProjectStoreSetFunction;
 	private getStoreState: ProjectStoreGetFunction;
 	private autoSaveTimer: ReturnType<typeof setInterval> | null = null;
+	// Draft opened while the stored project was unreachable: the repository only knows the
+	// cloud version after a successful read, so the next save must read it first.
+	private unprimedDraft: { projectId: string; draftSavedAt: number } | null =
+		null;
 
-	constructor(set: ProjectStoreSetFunction, get: ProjectStoreGetFunction) {
+	constructor(
+		set: ProjectStoreSetFunction,
+		get: ProjectStoreGetFunction,
+		private readonly env: ProjectStoreEnvironment,
+	) {
 		this.setStoreState = set;
 		this.getStoreState = get;
 	}
 
-	private async doOpenProject(project: Project): Promise<void> {
+	private applyOpenedProject(
+		project: Project,
+		initialPagesData: Record<string, PageData>,
+	): void {
 		const set = this.setStoreState;
 		const get = this.getStoreState;
+		this.unprimedDraft = null;
 		//The undo histories belong to the project being left
 		get().grafcetsManager.clearCommandsStacks();
 		get().laddersManager.clearCommandsStacks();
@@ -77,29 +86,54 @@ export default class ProjectLifecycleManager {
 		get().scene3dLinkManager.close();
 		//Le presse-papiers aussi : ses éléments référencent des variables par id, sans validité
 		//dans un autre projet.
-		clearClipboard();
-		const initialPagesData = getInitialPagesData();
+		get().clipboard.getState().clear();
+		const pagesOrder = Object.keys(initialPagesData);
 		set(() => ({
 			project: project,
 			bootStatus: "idle",
 			hasUnsavedChanges: false,
 			autoSaveUnavailable: false,
 			pagesData: initialPagesData,
-			pagesOrder: Object.keys(initialPagesData),
-			activePageId: Object.keys(initialPagesData)[0],
+			pagesOrder,
+			activePageId: pagesOrder[0] ?? null,
 			activeScope: "project",
 			activeScopeType: "project",
 		}));
+	}
+
+	/**
+	 * Opens `project` as given, with `pages` as the only open tabs (the first one active, unless
+	 * `activePageId` designates another of them). Touches neither the URL, the storage nor the
+	 * repository, so it works on a store without persistence.
+	 */
+	openProjectInstance(
+		project: Project,
+		pages: PageData[],
+		activePageId?: string,
+	): void {
+		const pagesData: Record<string, PageData> = {};
+		for (const page of pages) pagesData[page.id] = page;
+		this.applyOpenedProject(project, pagesData);
+		const active = pages.find((page) => page.id === activePageId) ?? pages[0];
+		if (!active) return;
+		this.setStoreState(() => ({ activePageId: active.id }));
+		this.getStoreState().setActiveScope(active.id);
+	}
+
+	private async doOpenProject(project: Project): Promise<void> {
+		this.applyOpenedProject(project, getInitialPagesData());
 		//Pour qu'un rechargement de la page rouvre le même projet, voir ProjectContextProvider
-		setProjectIdInUrl(project.id);
+		this.env.persistence?.url.setProjectId(project.id);
+		this.env.persistence?.url.clearShareToken();
 		//Repart de zéro : un `activePage` d'URL laissé par un projet précédent n'a aucun sens ici.
 		//`openProject` l'a lu avant cet appel s'il doit le restaurer, voir restorePagesSession.
-		setActivePageIdInUrl(null);
+		this.env.persistence?.url.setActivePageId(null);
 	}
 
 	private async doNewProject(
 		templateId: string | null = null,
 		variant: "exercise" | "solution" = "exercise",
+		locale: Locale = this.env.getLocale(),
 	): Promise<void> {
 		let project: Project;
 		if (templateId !== null) {
@@ -107,21 +141,35 @@ export default class ProjectLifecycleManager {
 			if (template) {
 				project =
 					variant === "solution" && template.solution
-						? template.solution()
-						: template.create();
+						? template.solution(locale)
+						: template.create(locale);
+				localizeProject(project, locale, {
+					keep: template.keepMnemonics,
+				});
 				//L'énoncé accompagne les deux variantes : il donne son sens à la solution comme à
 				//l'exercice, une même maquette pouvant servir de support à des énoncés différents.
-				if (template.statement) {
-					project.exercise = { statement: template.statement };
+				const statement = getTemplateStatement(templateId, locale);
+				if (statement) {
+					project.exercise = { statement };
 				}
 			} else {
-				project = new Project(createRandomId(), DEFAULT_PROJECT_NAME, "");
+				project = await this.createBlankProject();
 			}
 		} else {
-			project = new Project(createRandomId(), DEFAULT_PROJECT_NAME, "");
+			project = await this.createBlankProject();
 		}
-		trackEvent("project-created", { template: templateId ?? "blank", variant });
+		this.env.analytics.trackEvent("project-created", {
+			template: templateId ?? "blank",
+			variant,
+		});
 		await this.doOpenProject(project);
+	}
+
+	private async createBlankProject(): Promise<Project> {
+		const project = new Project(createRandomId(), DEFAULT_PROJECT_NAME, "");
+		const dialect = await resolveDefaultDialect(this.setStoreState, this.env);
+		if (dialect) project.setDialect(dialect);
+		return project;
 	}
 
 	// Abandon explicite des modifications en cours : le brouillon auto-sauvegardé du projet
@@ -151,8 +199,9 @@ export default class ProjectLifecycleManager {
 			activeScope: "project",
 			activeScopeType: "project",
 		}));
-		setProjectIdInUrl(null);
-		setActivePageIdInUrl(null);
+		this.env.persistence?.url.setProjectId(null);
+		this.env.persistence?.url.clearShareToken();
+		this.env.persistence?.url.setActivePageId(null);
 	}
 
 	/**
@@ -165,13 +214,20 @@ export default class ProjectLifecycleManager {
 	): Promise<void> {
 		const set = this.setStoreState;
 		const get = this.getStoreState;
-		const urlActiveId = getActivePageIdFromUrl();
+		const urlActiveId = this.env.persistence?.url.getActivePageId() ?? null;
 		await this.doOpenProject(project);
 		set(() => ({
 			isSharedProject: opts.shared,
 			hasUnsavedChanges: opts.unsaved,
 		}));
-		restorePagesSession(set, get, project, urlActiveId);
+		if (this.env.persistence)
+			restorePagesSession(
+				set,
+				get,
+				project,
+				urlActiveId,
+				this.env.persistence.pagesSession,
+			);
 	}
 
 	private openDraftConflictModal(projectId: string, draft: Draft): void {
@@ -193,6 +249,7 @@ export default class ProjectLifecycleManager {
 		const get = this.getStoreState;
 		let project: Project | null = null;
 		let fromDraft = false;
+		let unprimedDraft: ProjectLifecycleManager["unprimedDraft"] = null;
 
 		if (preferDraft) {
 			// Rechargement via URL : le brouillon est prioritaire, mais on lit tout de même le
@@ -214,6 +271,9 @@ export default class ProjectLifecycleManager {
 				}
 				project = draftProject;
 				fromDraft = true;
+				if (!stored) {
+					unprimedDraft = { projectId, draftSavedAt: draft.savedAt };
+				}
 			} else {
 				project = stored;
 			}
@@ -240,6 +300,7 @@ export default class ProjectLifecycleManager {
 			shared: false,
 			unsaved: fromDraft,
 		});
+		this.unprimedDraft = unprimedDraft;
 		return true;
 	}
 
@@ -249,13 +310,20 @@ export default class ProjectLifecycleManager {
 		// jetable : c'est cette instance-là qui retient la `version` cloud servant de `baseVersion`
 		// à un enregistrement conditionnel ultérieur (voir `SupabaseProjectRepository`).
 		const repo = this.getStoreState().projectRepository;
-		if (!isShareable(repo)) return false;
-		const project = await repo.getByShareToken(token);
-		if (!project) return false;
+		const project = isShareable(repo)
+			? await repo.getByShareToken(token)
+			: null;
+		if (!project) {
+			toast.error(getT("toasts")("shareLinkOpenFailed"));
+			return false;
+		}
 		await this.doOpenProject(project);
-		trackEvent("shared-project-opened");
+		this.env.analytics.trackEvent("shared-project-opened");
 		set(() => ({ isSharedProject: true, shareToken: null }));
-		clearShareTokenFromUrl();
+		//Un projet partagé n'a pas de brouillon ni d'entrée dans l'index local : seul le token
+		//permet de le rouvrir après un rechargement.
+		this.env.persistence?.url.setProjectId(null);
+		this.env.persistence?.url.setShareToken(token);
 		return true;
 	}
 
@@ -285,11 +353,43 @@ export default class ProjectLifecycleManager {
 	async newProjectFromTemplate(
 		templateId: string | null,
 		variant: "exercise" | "solution" = "exercise",
+		locale?: Locale,
 	): Promise<void> {
 		this.setStoreState((state) => ({
 			ui: { ...state.ui, newProjectModalVisible: false },
 		}));
-		await this.doNewProject(templateId, variant);
+		await this.doNewProject(templateId, variant, locale);
+	}
+
+	/**
+	 * Opens a project built outside the application (a page of the site) as a new project, with
+	 * the statement of the template it comes from and the tabs that were open on it.
+	 */
+	async newProjectFromHandoff(
+		project: Project,
+		templateId: string | null,
+		locale: Locale,
+		pages: PagesSession,
+	): Promise<void> {
+		const statement = templateId
+			? getTemplateStatement(templateId, locale)
+			: null;
+		if (statement) project.exercise = { statement };
+		this.env.analytics.trackEvent("project-created", {
+			template: templateId ?? "blank",
+			variant: "handoff",
+		});
+		await this.doOpenProject(project);
+		const persistence = this.env.persistence;
+		if (!persistence) return;
+		persistence.pagesSession.set(project.id, pages);
+		restorePagesSession(
+			this.setStoreState,
+			this.getStoreState,
+			project,
+			null,
+			persistence.pagesSession,
+		);
 	}
 
 	/** true si réellement enregistré. */
@@ -304,7 +404,26 @@ export default class ProjectLifecycleManager {
 			return false;
 		}
 		set(() => ({ savingProject: true }));
-		const location = await resolveSaveLocationIfNeeded(project, get, set);
+		if (this.unprimedDraft?.projectId === project.id) {
+			const stored = await get().projectRepository.get(project.id);
+			if (
+				stored &&
+				stored.lastModificationDate.getTime() > this.unprimedDraft.draftSavedAt
+			) {
+				set((state) => ({
+					savingProject: false,
+					ui: { ...state.ui, cloudConflictModalVisible: true },
+				}));
+				return false;
+			}
+			if (stored) this.unprimedDraft = null;
+		}
+		const location = await resolveSaveLocationIfNeeded(
+			project,
+			get,
+			set,
+			this.env,
+		);
 		if (location === "cancelled") {
 			set(() => ({ savingProject: false }));
 			return false;
@@ -343,6 +462,7 @@ export default class ProjectLifecycleManager {
 			savingProject: false,
 		}));
 		deleteDraft(newProject.id);
+		this.unprimedDraft = null;
 		return true;
 	}
 
@@ -358,7 +478,12 @@ export default class ProjectLifecycleManager {
 		copy.touch();
 
 		set(() => ({ savingProject: true }));
-		const location = await resolveSaveLocationIfNeeded(copy, get, set);
+		const location = await resolveSaveLocationIfNeeded(
+			copy,
+			get,
+			set,
+			this.env,
+		);
 		if (location === "cancelled") {
 			set(() => ({ savingProject: false }));
 			return false;
@@ -466,22 +591,30 @@ export default class ProjectLifecycleManager {
 		await this.openAndRestore(reloaded, { shared: false, unsaved: false });
 	}
 
+	/** Writes the unsaved changes of the open project to its local draft. */
+	/**
+	 * Writes the draft of pending changes. Returns whether a reload would lose nothing: `false`
+	 * when the write failed, or for a shared project, which has no draft.
+	 */
+	flushDraft(): boolean {
+		const { project, hasUnsavedChanges, isSharedProject } =
+			this.getStoreState();
+		if (!project || !hasUnsavedChanges) return true;
+		if (isSharedProject) return false;
+		const result = saveDraft(project.id, project.name, JSON.stringify(project));
+		this.setStoreState(() => ({ autoSaveUnavailable: !result.ok }));
+		if (!result.ok) {
+			console.error("Auto-save of the draft failed:", result.reason);
+		}
+		return result.ok;
+	}
+
 	startAutoSave(): void {
 		if (this.autoSaveTimer !== null) return;
-		this.autoSaveTimer = setInterval(() => {
-			const { project, hasUnsavedChanges, isSharedProject } =
-				this.getStoreState();
-			if (!project || !hasUnsavedChanges || isSharedProject) return;
-			const result = saveDraft(
-				project.id,
-				project.name,
-				JSON.stringify(project),
-			);
-			this.setStoreState(() => ({ autoSaveUnavailable: !result.ok }));
-			if (!result.ok) {
-				console.error("Auto-save of the draft failed:", result.reason);
-			}
-		}, AUTO_SAVE_INTERVAL_MS);
+		this.autoSaveTimer = setInterval(
+			() => this.flushDraft(),
+			AUTO_SAVE_INTERVAL_MS,
+		);
 	}
 
 	stopAutoSave(): void {

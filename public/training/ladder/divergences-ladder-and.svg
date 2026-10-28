@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 458" font-family="sans-serif">
+	<text x="8" y="18" font-size="13" text-anchor="start" fill="#263238" font-weight="bold">GRAFCET</text>
+	<rect x="53" y="34" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<rect x="58" y="39" width="20" height="20" fill="none" stroke="#263238" stroke-width="1.8" />
+	<text x="68" y="54" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">1</text>
+	<line x1="68" y1="64" x2="68" y2="104" stroke="#263238" stroke-width="1.8" />
+	<line x1="58" y1="84" x2="78" y2="84" stroke="#263238" stroke-width="3" />
+	<text x="80" y="88" font-size="12" text-anchor="start" fill="#263238">a</text>
+	<line x1="28" y1="104" x2="108" y2="104" stroke="#263238" stroke-width="1.8" />
+	<line x1="28" y1="110" x2="108" y2="110" stroke="#263238" stroke-width="1.8" />
+	<line x1="28" y1="110" x2="28" y2="124" stroke="#263238" stroke-width="1.8" />
+	<line x1="108" y1="110" x2="108" y2="124" stroke="#263238" stroke-width="1.8" />
+	<rect x="13" y="124" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<text x="28" y="144" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">2</text>
+	<rect x="93" y="124" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<text x="108" y="144" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">3</text>
+	<line x1="28" y1="154" x2="28" y2="170" stroke="#263238" stroke-width="1.8" />
+	<line x1="108" y1="154" x2="108" y2="170" stroke="#263238" stroke-width="1.8" />
+	<line x1="28" y1="170" x2="108" y2="170" stroke="#263238" stroke-width="1.8" />
+	<line x1="28" y1="176" x2="108" y2="176" stroke="#263238" stroke-width="1.8" />
+	<line x1="68" y1="176" x2="68" y2="214" stroke="#263238" stroke-width="1.8" />
+	<line x1="58" y1="194" x2="78" y2="194" stroke="#263238" stroke-width="3" />
+	<text x="80" y="198" font-size="12" text-anchor="start" fill="#263238">c</text>
+	<rect x="53" y="214" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<text x="68" y="234" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">4</text>
+	<text x="168" y="18" font-size="13" text-anchor="start" fill="#263238" font-weight="bold">Initialisation, puis un réseau par transition</text>
+	<text x="176" y="42" font-size="11" text-anchor="start" fill="#263238" font-weight="bold">Activation de l'étape initiale</text>
+	<line x1="168" y1="84" x2="208" y2="84" stroke="#263238" stroke-width="2" />
+	<line x1="208" y1="74" x2="208" y2="94" stroke="#263238" stroke-width="2.5" />
+	<line x1="220" y1="74" x2="220" y2="94" stroke="#263238" stroke-width="2.5" />
+	<line x1="206" y1="95" x2="222" y2="73" stroke="#263238" stroke-width="2" />
+	<text x="214" y="69" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X1</text>
+	<line x1="220" y1="84" x2="260" y2="84" stroke="#263238" stroke-width="2" />
+	<line x1="260" y1="74" x2="260" y2="94" stroke="#263238" stroke-width="2.5" />
+	<line x1="272" y1="74" x2="272" y2="94" stroke="#263238" stroke-width="2.5" />
+	<line x1="258" y1="95" x2="274" y2="73" stroke="#263238" stroke-width="2" />
+	<text x="266" y="69" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X2</text>
+	<line x1="272" y1="84" x2="312" y2="84" stroke="#263238" stroke-width="2" />
+	<line x1="312" y1="74" x2="312" y2="94" stroke="#263238" stroke-width="2.5" />
+	<line x1="324" y1="74" x2="324" y2="94" stroke="#263238" stroke-width="2.5" />
+	<line x1="310" y1="95" x2="326" y2="73" stroke="#263238" stroke-width="2" />
+	<text x="318" y="69" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X3</text>
+	<line x1="324" y1="84" x2="364" y2="84" stroke="#263238" stroke-width="2" />
+	<line x1="364" y1="74" x2="364" y2="94" stroke="#263238" stroke-width="2.5" />
+	<line x1="376" y1="74" x2="376" y2="94" stroke="#263238" stroke-width="2.5" />
+	<line x1="362" y1="95" x2="378" y2="73" stroke="#263238" stroke-width="2" />
+	<text x="370" y="69" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X4</text>
+	<line x1="376" y1="84" x2="440" y2="84" stroke="#263238" stroke-width="2" />
+	<path d="M 440 74 Q 433 84 440 94" fill="none" stroke="#263238" stroke-width="2.5" />
+	<path d="M 456 74 Q 463 84 456 94" fill="none" stroke="#263238" stroke-width="2.5" />
+	<text x="448" y="87.5" font-size="10" text-anchor="middle" fill="#263238" font-weight="bold">S</text>
+	<text x="448" y="69" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X1</text>
+	<line x1="456" y1="84" x2="548" y2="84" stroke="#263238" stroke-width="2" />
+	<line x1="168" y1="42" x2="168" y2="126" stroke="#263238" stroke-width="3" />
+	<line x1="548" y1="42" x2="548" y2="126" stroke="#263238" stroke-width="3" />
+
+	<text x="176" y="150" font-size="11" text-anchor="start" fill="#263238" font-weight="bold">X1 -> X2 + X3</text>
+	<line x1="168" y1="212" x2="208" y2="212" stroke="#263238" stroke-width="2" />
+	<line x1="208" y1="202" x2="208" y2="222" stroke="#263238" stroke-width="2.5" />
+	<line x1="220" y1="202" x2="220" y2="222" stroke="#263238" stroke-width="2.5" />
+	<text x="214" y="197" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X1</text>
+	<line x1="220" y1="212" x2="260" y2="212" stroke="#263238" stroke-width="2" />
+	<line x1="260" y1="202" x2="260" y2="222" stroke="#263238" stroke-width="2.5" />
+	<line x1="272" y1="202" x2="272" y2="222" stroke="#263238" stroke-width="2.5" />
+	<text x="266" y="197" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">a</text>
+	<line x1="272" y1="212" x2="312" y2="212" stroke="#263238" stroke-width="2" />
+	<circle cx="312" cy="212" r="2.5" fill="#263238" />
+	<line x1="312" y1="172" x2="312" y2="252" stroke="#263238" stroke-width="2" />
+	<line x1="312" y1="172" x2="440" y2="172" stroke="#263238" stroke-width="2" />
+	<path d="M 440 162 Q 433 172 440 182" fill="none" stroke="#263238" stroke-width="2.5" />
+	<path d="M 456 162 Q 463 172 456 182" fill="none" stroke="#263238" stroke-width="2.5" />
+	<text x="448" y="175.5" font-size="10" text-anchor="middle" fill="#263238" font-weight="bold">R</text>
+	<text x="448" y="157" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X1</text>
+	<line x1="456" y1="172" x2="548" y2="172" stroke="#263238" stroke-width="2" />
+	<line x1="312" y1="212" x2="440" y2="212" stroke="#263238" stroke-width="2" />
+	<path d="M 440 202 Q 433 212 440 222" fill="none" stroke="#263238" stroke-width="2.5" />
+	<path d="M 456 202 Q 463 212 456 222" fill="none" stroke="#263238" stroke-width="2.5" />
+	<text x="448" y="215.5" font-size="10" text-anchor="middle" fill="#263238" font-weight="bold">S</text>
+	<text x="448" y="197" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X2</text>
+	<line x1="456" y1="212" x2="548" y2="212" stroke="#263238" stroke-width="2" />
+	<line x1="312" y1="252" x2="440" y2="252" stroke="#263238" stroke-width="2" />
+	<path d="M 440 242 Q 433 252 440 262" fill="none" stroke="#263238" stroke-width="2.5" />
+	<path d="M 456 242 Q 463 252 456 262" fill="none" stroke="#263238" stroke-width="2.5" />
+	<text x="448" y="255.5" font-size="10" text-anchor="middle" fill="#263238" font-weight="bold">S</text>
+	<text x="448" y="237" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X3</text>
+	<line x1="456" y1="252" x2="548" y2="252" stroke="#263238" stroke-width="2" />
+	<line x1="168" y1="150" x2="168" y2="274" stroke="#263238" stroke-width="3" />
+	<line x1="548" y1="150" x2="548" y2="274" stroke="#263238" stroke-width="3" />
+	<text x="176" y="298" font-size="11" text-anchor="start" fill="#263238" font-weight="bold">X2 + X3 -> X4</text>
+	<line x1="168" y1="360" x2="208" y2="360" stroke="#263238" stroke-width="2" />
+	<line x1="208" y1="350" x2="208" y2="370" stroke="#263238" stroke-width="2.5" />
+	<line x1="220" y1="350" x2="220" y2="370" stroke="#263238" stroke-width="2.5" />
+	<text x="214" y="345" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X2</text>
+	<line x1="220" y1="360" x2="260" y2="360" stroke="#263238" stroke-width="2" />
+	<line x1="260" y1="350" x2="260" y2="370" stroke="#263238" stroke-width="2.5" />
+	<line x1="272" y1="350" x2="272" y2="370" stroke="#263238" stroke-width="2.5" />
+	<text x="266" y="345" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X3</text>
+	<line x1="272" y1="360" x2="312" y2="360" stroke="#263238" stroke-width="2" />
+	<line x1="312" y1="350" x2="312" y2="370" stroke="#263238" stroke-width="2.5" />
+	<line x1="324" y1="350" x2="324" y2="370" stroke="#263238" stroke-width="2.5" />
+	<text x="318" y="345" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">c</text>
+	<line x1="324" y1="360" x2="364" y2="360" stroke="#263238" stroke-width="2" />
+	<circle cx="364" cy="360" r="2.5" fill="#263238" />
+	<line x1="364" y1="320" x2="364" y2="400" stroke="#263238" stroke-width="2" />
+	<line x1="364" y1="320" x2="440" y2="320" stroke="#263238" stroke-width="2" />
+	<path d="M 440 310 Q 433 320 440 330" fill="none" stroke="#263238" stroke-width="2.5" />
+	<path d="M 456 310 Q 463 320 456 330" fill="none" stroke="#263238" stroke-width="2.5" />
+	<text x="448" y="323.5" font-size="10" text-anchor="middle" fill="#263238" font-weight="bold">R</text>
+	<text x="448" y="305" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X2</text>
+	<line x1="456" y1="320" x2="548" y2="320" stroke="#263238" stroke-width="2" />
+	<line x1="364" y1="360" x2="440" y2="360" stroke="#263238" stroke-width="2" />
+	<path d="M 440 350 Q 433 360 440 370" fill="none" stroke="#263238" stroke-width="2.5" />
+	<path d="M 456 350 Q 463 360 456 370" fill="none" stroke="#263238" stroke-width="2.5" />
+	<text x="448" y="363.5" font-size="10" text-anchor="middle" fill="#263238" font-weight="bold">R</text>
+	<text x="448" y="345" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X3</text>
+	<line x1="456" y1="360" x2="548" y2="360" stroke="#263238" stroke-width="2" />
+	<line x1="364" y1="400" x2="440" y2="400" stroke="#263238" stroke-width="2" />
+	<path d="M 440 390 Q 433 400 440 410" fill="none" stroke="#263238" stroke-width="2.5" />
+	<path d="M 456 390 Q 463 400 456 410" fill="none" stroke="#263238" stroke-width="2.5" />
+	<text x="448" y="403.5" font-size="10" text-anchor="middle" fill="#263238" font-weight="bold">S</text>
+	<text x="448" y="385" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X4</text>
+	<line x1="456" y1="400" x2="548" y2="400" stroke="#263238" stroke-width="2" />
+	<line x1="168" y1="298" x2="168" y2="422" stroke="#263238" stroke-width="3" />
+	<line x1="548" y1="298" x2="548" y2="422" stroke="#263238" stroke-width="3" />
+	<text x="8" y="262" font-size="11" text-anchor="start" fill="#455a64">Un seul réseau pour toute</text>
+	<text x="8" y="278" font-size="11" text-anchor="start" fill="#455a64">la divergence : il active</text>
+	<text x="8" y="294" font-size="11" text-anchor="start" fill="#455a64">X2 et X3.</text>
+	<text x="8" y="310" font-size="11" text-anchor="start" fill="#455a64">Un seul réseau pour la</text>
+	<text x="8" y="326" font-size="11" text-anchor="start" fill="#455a64">convergence : il exige</text>
+	<text x="8" y="342" font-size="11" text-anchor="start" fill="#455a64">X2 ET X3 et les</text>
+	<text x="8" y="358" font-size="11" text-anchor="start" fill="#455a64">désactive toutes les deux.</text>
+</svg>

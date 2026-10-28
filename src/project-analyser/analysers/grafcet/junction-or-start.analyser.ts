@@ -54,7 +54,7 @@ export default class JunctionOrStartAnalyser extends GrafcetElementAnalyser<Junc
 			);
 		}
 
-		if (junctionOrStart.data.branchesOrder.length < 2) {
+		if (!JunctionHelper.hasMinimumBranches(junctionOrStart.data)) {
 			issues.push(
 				new ProjectAnalyserIssue("error", "JUNCTION_OR_MIN_BRANCHES", source),
 			);

@@ -6,6 +6,7 @@ import FakeRemoteIoBoard, {
 	createManualHeartbeat,
 } from "@tests/utils/fake-remote-io-board";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
+import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import { ProjectFactory } from "@tests/utils/project-factory";
 import { VariableFactory } from "@tests/utils/variable-factory";
 import * as hardwareRegistry from "@/hardware/hardware-device.registry";
@@ -82,7 +83,14 @@ function setup(
 		project.hardwareTarget = { modelId: "arduino-uno-r3" };
 	}
 	if (options.invalidProject) {
-		project.addProgram(new GrafcetBuilder().id("g-empty").build());
+		project.addProgram(
+			new GrafcetBuilder()
+				.id("g-one-step")
+				.addStep(
+					new StepBuilder().id("s1").number(0).initial().position(0, 0).build(),
+				)
+				.build(),
+		);
 	}
 
 	let state = {
@@ -1127,7 +1135,9 @@ describe("HardwareLinkManager program control", () => {
 });
 
 describe("HardwareLinkManager online mode", () => {
-	const flushLong = (ms: number) => new Promise((r) => setTimeout(r, ms));
+	afterEach(() => jest.useRealTimers());
+
+	const advance = (ms: number) => jest.advanceTimersByTimeAsync(ms);
 
 	const linkedWithProgram = async (
 		options: Parameters<typeof setup>[0] = {},
@@ -1341,10 +1351,11 @@ describe("HardwareLinkManager online mode", () => {
 
 	it("leaves the online mode and says why when the board reports a fault", async () => {
 		const { manager, get, board, notifier } = await linkedWithProgram();
+		jest.useFakeTimers();
 		await manager.goOnline();
 
 		board.fault = 1;
-		await flushLong(60);
+		await advance(60);
 
 		expect(notifier.onlineLost).toHaveBeenCalledWith("board-fault", 1);
 		expect(simulationOf(get).setDesignMode).toHaveBeenCalled();
@@ -1353,11 +1364,12 @@ describe("HardwareLinkManager online mode", () => {
 
 	it("leaves the online mode when the program of the board is stopped", async () => {
 		const { manager, board, notifier } = await linkedWithProgram();
+		jest.useFakeTimers();
 		await manager.goOnline();
 
 		board.autonomous = false;
 		board.stopped = true;
-		await flushLong(60);
+		await advance(60);
 
 		expect(notifier.onlineLost).toHaveBeenCalledWith("board-stopped", 0);
 		await manager.unlink();
@@ -1434,8 +1446,9 @@ describe("HardwareLinkManager online mode", () => {
 
 	it("keeps quiet while the board runs its program", async () => {
 		const { manager, notifier } = await linkedWithProgram();
+		jest.useFakeTimers();
 		await manager.goOnline();
-		await flushLong(60);
+		await advance(60);
 		expect(notifier.onlineLost).not.toHaveBeenCalled();
 		await manager.unlink();
 	});

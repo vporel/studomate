@@ -6,7 +6,7 @@ import {
 import { PendingSystemBlockEdit } from "@/ui/utils/ladder/ladder-system-block-drag";
 import { CoilType, ContactType } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
-import { LadderNodeType } from "@/ui/components/ladder/flow/ladder-nodes-definitions";
+import type { LadderNodeType } from "@/ui/components/ladder/flow/ladder-nodes-definitions";
 import {
 	buildKeyboardMoveChanges,
 	constrainBatchToGrid,

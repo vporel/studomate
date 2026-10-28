@@ -1,6 +1,6 @@
 import StepHelper from "@/schemas/grafcet/helpers/step.helper";
 import { createRandomId } from "@/ids";
-import {
+import type {
 	GrafcetEdgeType,
 	GrafcetNodeType,
 } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
@@ -9,6 +9,7 @@ import {
 	GrafcetStoreGetFunction,
 	GrafcetStoreSetFunction,
 } from "../grafcet.store";
+import type { ClipboardStore } from "@/ui/stores/shared/clipboard.store";
 import AbstractCopyCutPasteManager from "@/ui/stores/shared/abstract-copy-cut-paste.manager";
 
 export default class GrafcetCopyCutPasteManager extends AbstractCopyCutPasteManager<{
@@ -22,8 +23,9 @@ export default class GrafcetCopyCutPasteManager extends AbstractCopyCutPasteMana
 	constructor(
 		setStoreState: GrafcetStoreSetFunction,
 		getStoreState: GrafcetStoreGetFunction,
+		clipboard: ClipboardStore,
 	) {
-		super();
+		super(clipboard);
 		this.setStoreState = setStoreState;
 		this.getStoreState = getStoreState;
 	}
@@ -115,6 +117,7 @@ export default class GrafcetCopyCutPasteManager extends AbstractCopyCutPasteMana
 		}
 		const nodesIdsMap: Record<string, string> = {}; //Map to keep track of the old node ids and the new node ids, to update the edges source and target
 		const nodesOffsetsMaps: Record<string, { x: number; y: number }> = {}; //Map to keep track of the nodes offsets, to update the edges points
+		let nextStepNumber = StepHelper.getNextAvailableNumber(grafcet);
 		const newNodes = structuredClone(copiedElements.nodes).map((node) => {
 			const newNode = {
 				...node,
@@ -122,13 +125,11 @@ export default class GrafcetCopyCutPasteManager extends AbstractCopyCutPasteMana
 			};
 			//If the node is a step, change the number to avoid duplicates with existing steps in the grafcet
 			if (newNode.type === "step") {
-				newNode.data.number = StepHelper.getNextAvailableNumber(grafcet);
+				newNode.data.number = nextStepNumber++;
 				//For a copy, if the step was initial we should past a non-initial step,
 				//because there can be only one initial step in a grafcet
 				//We first check if an initial step already exists in the grafcet
-				const initialStepExists = Object.values(grafcet.steps).some(
-					(s) => s.data.initial,
-				);
+				const initialStepExists = grafcet.hasInitialStep();
 				newNode.data.initial = initialStepExists ? false : newNode.data.initial;
 			}
 

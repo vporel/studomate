@@ -8,7 +8,7 @@ import generateBytecode from "./bytecode.generator";
 
 function measure(id: string) {
 	const template = PROJECT_TEMPLATES.find((candidate) => candidate.id === id)!;
-	const project = template.solution!();
+	const project = template.solution!("fr");
 	// On a real maquette the sensors are wired: a plant model written in Ladder is not
 	// embedded, and the Main that only calls it is emptied.
 	const plantModel = Object.values(project.ladders).find(

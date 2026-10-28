@@ -56,8 +56,7 @@ describe("RailTerminalNode", () => {
 	});
 
 	describe("couleur en simulation", () => {
-		const bar = (c: HTMLElement) =>
-			c.querySelectorAll("div")[1] as HTMLElement;
+		const bar = (c: HTMLElement) => c.querySelectorAll("div")[1] as HTMLElement;
 
 		it.each([false, true])("est verte (virtual=%s)", (virtual) => {
 			const { container } = setup(virtual, { mode: ProjectMode.SIMULATION });

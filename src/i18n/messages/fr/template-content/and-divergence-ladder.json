@@ -1,0 +1,7 @@
+{
+	"statement": "## Divergence en ET en Ladder\n\nGRAFCET : E0 → `dcy` → E1 (`sortie1`) et E2 (`sortie2`) → `capteur1 ET capteur2` → E0.\n\nEntrées : `dcy` (bouton poussoir), `capteur1` et `capteur2`. Sorties : `sortie1` et `sortie2`. Mémoires fournies : `X0` à `X2`. Le projet fournit les programmes `Cycle_automatique` et `Sorties`, vides, appelés par le Main dans cet ordre.\n\n### Travail demandé\n\n1. Implanter le GRAFCET, un réseau par transition dans `Cycle_automatique` puis un réseau par sortie dans `Sorties` : `X0 -> X1 + X2` active `X1` et `X2` ; `X1 + X2 -> X0` exige `X1`, `X2` et les deux capteurs, et désactive les deux étapes.\n2. Vérifier : après `dcy`, les deux sorties sont vraies ; avec `capteur1` seul, rien ne change ; dès que `capteur1` et `capteur2` sont vrais, retour à `X0`.",
+	"texts": {
+		"projectName": "Divergence en ET en Ladder",
+		"solutionName": "Divergence en ET en Ladder : solution"
+	}
+}

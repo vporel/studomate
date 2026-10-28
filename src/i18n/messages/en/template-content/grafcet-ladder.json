@@ -1,0 +1,25 @@
+{
+	"texts": {
+		"initialStepTitle": "Initial step activation",
+		"initialStepDescription": "If no step is active, the initial steps are activated.",
+		"transitionDescription": "If the upstream step is active and the receptivity true, the upstream step is deactivated and the downstream step is activated.",
+		"crossingTitle": "Crossing condition {name}",
+		"crossingDescription": "All conditions are computed before any evolution (rule 4).",
+		"deactivationTitle": "Deactivation by {name}",
+		"deactivationDescription": "The upstream steps of the crossed transition are deactivated.",
+		"activationTitle": "Activation by {name}",
+		"activationDescription": "The downstream steps of the crossed transition are activated: activation wins (rule 5).",
+		"resetDeactivationTitle": "Reset: deactivation",
+		"resetDeactivationDescription": "All steps are deactivated.",
+		"resetInitialTitle": "Reset: initial step",
+		"resetInitialDescription": "The initial steps are reactivated.",
+		"outputTitle": "Output {output}",
+		"outputDescription": "Continuous action: true while any of the steps that drive it is active.",
+		"faultsProgramName": "Faults",
+		"cycleProgramName": "Automatic_cycle",
+		"outputsProgramName": "Outputs",
+		"faultsCallDescription": "Sets and acknowledges the faults first: the fault bits are available for the rest of the scan.",
+		"cycleCallDescription": "GRAFCET evolution: initialization, one network per transition, optional reset.",
+		"outputsCallDescription": "GRAFCET actions: one network per output, run after the steps have evolved."
+	}
+}

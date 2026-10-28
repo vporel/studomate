@@ -1,0 +1,8 @@
+{
+	"statement": "## Contacts en série et en parallèle\n\nEntrées : `a`, `b` (deux commutateurs qui gardent leur position, à 0 au repos). Sorties : `s_et`, `s_ou`.\n\n### Travail demandé\n\n1. Ouvrir le programme Main : deux réseaux, l'un sous l'autre.\n2. Lancer la simulation, puis basculer `a` et `b` dans les quatre combinaisons.\n3. Comparer `s_et` et `s_ou` avec la table de vérité de la théorie.",
+	"texts": {
+		"projectName": "Contacts en série et en parallèle",
+		"seriesTitle": "Contacts en série",
+		"parallelTitle": "Contacts en parallèle"
+	}
+}

@@ -1,3 +1,4 @@
+import { createTimerBlockElement } from "@/schemas/ladder/function-blocks/timer.schema";
 import Project from "@/schemas/project/project.schema";
 import { ProjectMode } from "../ProjectMode.enum";
 import { ProjectStoreState } from "../project.store";
@@ -9,10 +10,12 @@ import VariablesManager from "./variables.manager";
 function makeManager(initial: {
 	project?: Project | null;
 	mode?: ProjectMode;
+	editingEnabled?: boolean;
 }) {
 	let state = {
 		project: initial.project ?? null,
 		mode: initial.mode ?? ProjectMode.DESIGN,
+		editingEnabled: initial.editingEnabled ?? true,
 		commandsStackManager: { executeOperation: jest.fn() },
 	} as unknown as ProjectStoreState;
 
@@ -66,6 +69,30 @@ describe("VariablesManager", () => {
 			const { manager } = makeManager({ project: projectWithVariables() });
 
 			expect(manager.existsByMnemonic("Inconnue")).toBe(false);
+		});
+	});
+
+	describe("isMnemonicUsedByBlock", () => {
+		it("retourne true pour un nom de bloc, false pour un nom libre", () => {
+			const project = new Project("p1", "Projet", "auteur");
+			const ladder = project.createLadder("L1");
+			ladder.addElements(ladder.sections[0].id, [
+				createTimerBlockElement(
+					{ name: "Tempo1", timerType: "TON", pt: "T#5s" },
+					0,
+					0,
+				),
+			]);
+			const { manager } = makeManager({ project });
+
+			expect(manager.isMnemonicUsedByBlock("Tempo1")).toBe(true);
+			expect(manager.isMnemonicUsedByBlock("Libre")).toBe(false);
+		});
+
+		it("retourne false si aucun projet n'est ouvert", () => {
+			const { manager } = makeManager({ project: null });
+
+			expect(manager.isMnemonicUsedByBlock("Tempo1")).toBe(false);
 		});
 	});
 
@@ -146,6 +173,24 @@ describe("VariablesManager", () => {
 			expect(
 				getState().commandsStackManager.executeOperation,
 			).not.toHaveBeenCalled();
+		});
+
+		it("refuse d'ajouter une variable sur un projet en lecture seule, sans avertir", () => {
+			const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+			const { manager, getState } = makeManager({
+				project: projectWithVariables(),
+				editingEnabled: false,
+			});
+
+			manager.addVariables([
+				{ mnemonic: "X", zone: "memory", type: "BOOL" } as any,
+			]);
+
+			expect(
+				getState().commandsStackManager.executeOperation,
+			).not.toHaveBeenCalled();
+			expect(warn).not.toHaveBeenCalled();
+			warn.mockRestore();
 		});
 
 		it("dispatche une commande d'ajout en mode DESIGN", () => {

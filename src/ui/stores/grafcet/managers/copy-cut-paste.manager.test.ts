@@ -10,10 +10,15 @@ import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import { StepData } from "@/schemas/grafcet/step.schema";
 import { GrafcetNodeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import {
-	clearClipboard,
-	setClipboardEntry,
+	createClipboardStore,
+	type ClipboardEntry,
 } from "@/ui/stores/shared/clipboard.store";
 import { createGrafcetStore } from "../grafcet.store";
+
+const clipboard = createClipboardStore();
+const clearClipboard = () => clipboard.getState().clear();
+const setClipboardEntry = (entry: ClipboardEntry) =>
+	clipboard.getState().setEntry(entry);
 
 /**
  * Instance React Flow minimale : `pasteElements` n'a besoin que de ces deux méthodes.
@@ -41,6 +46,7 @@ function buildStore() {
 		grafcet,
 		new CommandsStack<Grafcet>(100),
 		() => Dialect.FR,
+		clipboard,
 	);
 	store.getState().viewManager.rfInstance = fakeRfInstance();
 	return store;
@@ -209,6 +215,25 @@ describe("GrafcetCopyCutPasteManager", () => {
 			expect(addedEdges).toHaveLength(0);
 		});
 
+		it("attribue des numéros distincts à plusieurs étapes collées, à la suite du maximum existant", () => {
+			const store = buildStoreWithConnectedSteps();
+			const { nodes, edges } = store.getState();
+			const originalNumbers = nodes.map((n) => (n.data as StepData).number);
+			store.getState().copyCutPasteManager.copyElements(nodes, edges);
+
+			const { addedNodes } = store
+				.getState()
+				.copyCutPasteManager.pasteElements();
+
+			const pastedNumbers = addedNodes.map((n) => (n.data as StepData).number);
+			expect(new Set(pastedNumbers).size).toBe(pastedNumbers.length);
+			pastedNumbers.forEach((n) => expect(originalNumbers).not.toContain(n));
+			const max = Math.max(...(originalNumbers as number[]));
+			expect([...(pastedNumbers as number[])].sort((a, b) => a - b)).toEqual(
+				pastedNumbers.map((_, i) => max + 1 + i),
+			);
+		});
+
 		it("décale les éléments collés depuis la position de la souris", () => {
 			const store = buildStoreWithConnectedSteps();
 			const { nodes, edges } = store.getState();
@@ -219,9 +244,9 @@ describe("GrafcetCopyCutPasteManager", () => {
 				.copyCutPasteManager.pasteElements({ x: 500, y: 500 });
 
 			const originalStep1 = nodes.find((n) => n.id === "step-1")!;
-			const pastedStep1 =
-				addedNodes.find((n) => (n.data as StepData).number !== 1) ??
-				addedNodes[0];
+			const pastedStep1 = addedNodes.find(
+				(n) => (n.data as StepData).number === 3,
+			)!;
 			expect(pastedStep1.position).not.toEqual(originalStep1.position);
 		});
 	});
@@ -237,6 +262,7 @@ describe("GrafcetCopyCutPasteManager", () => {
 				grafcetB,
 				new CommandsStack<Grafcet>(100),
 				() => Dialect.FR,
+				clipboard,
 			);
 			storeB.getState().viewManager.rfInstance = fakeRfInstance();
 

@@ -60,6 +60,54 @@ describe("edgeFadeMask", () => {
 	});
 });
 
+describe("PagesTabBar — cadenas", () => {
+	function setupWith(mode: string, pagesData: Record<string, unknown>) {
+		(useProjectStore as unknown as jest.Mock).mockImplementation(
+			selectorImplementation({
+				pagesManager: { setActivePage: jest.fn(), reorderPages: jest.fn() },
+				activePageId: "p1",
+				project: { ladders: {} },
+				mode,
+				editingEnabled: true,
+				pagesData,
+				pagesOrder: Object.keys(pagesData),
+			}),
+		);
+		renderWithI18n(<PagesTabBar />);
+	}
+	const pages = {
+		p1: { id: "p1", title: "Grafcet 1", type: "grafcet" },
+		p2: { id: "p2", title: "Variables", type: "variables" },
+		p3: { id: "p3", title: "HMI", type: "hmi" },
+		p4: { id: "p4", title: "Préférences", type: "preferences" },
+	};
+
+	it("n'affiche aucun cadenas en conception", () => {
+		setupWith("DESIGN", pages);
+		expect(screen.queryAllByRole("img", { name: "Lecture seule" })).toEqual([]);
+	});
+
+	it("marque les éditeurs en simulation, sauf la page HMI qui reste modifiable", () => {
+		setupWith("SIMULATION", pages);
+		const locked = screen
+			.getAllByRole("img", { name: "Lecture seule" })
+			.map((icon) =>
+				icon.closest('[role="tab"]')?.getAttribute("data-page-id"),
+			);
+		expect(locked).toEqual(["p1", "p2"]);
+	});
+
+	it("marque une page verrouillée même en conception", () => {
+		setupWith("DESIGN", { ...pages, p3: { ...pages.p3, locked: true } });
+		const locked = screen
+			.getAllByRole("img", { name: "Lecture seule" })
+			.map((icon) =>
+				icon.closest('[role="tab"]')?.getAttribute("data-page-id"),
+			);
+		expect(locked).toEqual(["p3"]);
+	});
+});
+
 describe("PagesTabBar — accessibilité des onglets", () => {
 	it("expose une tablist et des onglets avec aria-selected", () => {
 		setup({ activePageId: "p1" });

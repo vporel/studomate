@@ -1,7 +1,6 @@
 "use client";
 
 import { APP_NAME, APP_SLOGAN } from "@/app-info";
-import { PageData } from "@/ui/stores/project/project.store";
 import AddIcon from "@mui/icons-material/Add";
 import MemoryIcon from "@mui/icons-material/Memory";
 import ViewInArIcon from "@mui/icons-material/ViewInAr";
@@ -20,19 +19,15 @@ import VariablesIcon from "../icons/VariablesIcon";
 import { useProjectStore } from "../projects/ProjectContext";
 import useProjectPrograms from "../projects/useProjectPrograms";
 import { useT } from "@/ui/i18n/useT";
-import { HARDWARE_CONFIGURATION_PAGE_DATA } from "./HardwareConfigurationPage";
-import { SCENE3D_CONFIGURATION_PAGE_DATA } from "./Scene3dConfigurationPage";
 import Page from "./Page";
 import { usePageTitle } from "./usePageTitle";
 import { VARIABLES_PAGE_IDS } from "@/ui/stores/project/variables-pages";
-import { getVariablesPageData } from "./VariablesPage";
-
-export const PROJECT_STARTUP_PAGE_ID = "project-startup";
-export const PROJECT_STARTUP_PAGE_DATA: PageData = {
-	id: PROJECT_STARTUP_PAGE_ID,
-	type: "project-startup",
-	title: "Démarrage",
-};
+import {
+	HARDWARE_CONFIGURATION_PAGE_DATA,
+	SCENE3D_CONFIGURATION_PAGE_DATA,
+	getVariablesPageData,
+} from "@/ui/stores/project/pages-data";
+import { PROJECT_STARTUP_PAGE_ID } from "@/ui/stores/project/pages-data";
 
 function VariblesPagesList() {
 	const t = useT("pages.startup");

@@ -26,15 +26,13 @@ import Project from "@/schemas/project/project.schema";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import { PUSH_BUTTON_NO_BEHAVIOR } from "@/schemas/variable/input-behavior";
 import { createRandomId } from "@/ids";
+import type { Locale } from "@/i18n/config";
+import createTemplateText from "@/templates/template-text";
 
-/**
- * Creates a pre-configured "AND divergence" project: boolean input/output variables, no
- * program (the student writes it). Training module mini-exercise (M1): a single AND
- * divergence (two parallel branches) closed by its convergence, no other complexity (no
- * timer, no nesting).
- */
-export function createAndDivergenceProject(): Project {
-	const project = new Project(createRandomId(), "Divergence en ET", "");
+/** Input and output variables, shared by the exercise, the solution and the Ladder variants. */
+export function createAndDivergenceBase(locale: Locale = "fr"): Project {
+	const t = createTemplateText("and-divergence", locale);
+	const project = new Project(createRandomId(), t("projectName"), "");
 
 	project.variables.push(
 		VariableBuilder.buildLogicInput(
@@ -52,15 +50,29 @@ export function createAndDivergenceProject(): Project {
 }
 
 /**
+ * Creates a pre-configured "AND divergence" project: boolean input/output variables and an
+ * empty GRAFCET (the student draws it). Training module mini-exercise (M1): a single AND
+ * divergence (two parallel branches) closed by its convergence, no other complexity (no
+ * timer, no nesting).
+ */
+export function createAndDivergenceProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("and-divergence", locale);
+	const project = createAndDivergenceBase(locale);
+	project.createGrafcet(t("grafcetName"));
+	return project;
+}
+
+/**
  * Full, simulable version: a GRAFCET with a source step, an AND divergence into two parallel
  * steps (one output each), and an AND convergence that only allows continuing once both
  * branches are done.
  *
  * Sequence: E0 (initial) --dcy--> ⋀ (E1 sortie1 ∥ E2 sortie2) ⋀ --capteur1 ET capteur2--> E0
  */
-export function createAndDivergenceSolution(): Project {
-	const project = createAndDivergenceProject();
-	project.name = "Divergence en ET : solution";
+export function createAndDivergenceSolution(locale: Locale = "fr"): Project {
+	const t = createTemplateText("and-divergence", locale);
+	const project = createAndDivergenceBase(locale);
+	project.name = t("solutionName");
 
 	const XL = 140;
 	const XR = 340;
@@ -141,7 +153,7 @@ export function createAndDivergenceSolution(): Project {
 
 	const grafcet = new GrafcetBuilder()
 		.id(createRandomId())
-		.name("Divergence en ET")
+		.name(t("grafcetName"))
 		.addSteps(e0, e1, e2)
 		.addTransitions(t0, t1)
 		.addStepReferralsSources(renvoi)

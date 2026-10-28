@@ -2,7 +2,8 @@ import { createTranslator } from "next-intl";
 import { isValidElement, type ReactNode } from "react";
 import en from "@/i18n/messages/en/public.json";
 import fr from "@/i18n/messages/fr/public.json";
-import { renderStrong } from "./LegalArticle";
+import { renderToStaticMarkup } from "react-dom/server";
+import LegalArticle, { renderStrong } from "./LegalArticle";
 
 /**
  * Régression : ces textes contiennent des apostrophes suivies (ou précédées) de plusieurs
@@ -44,5 +45,16 @@ describe.each([
 
 		const rendered = renderStrong(raw);
 		expect(countStrongElements(rendered)).toBe(expectedStrongCount);
+	});
+});
+
+describe("LegalArticle", () => {
+	it("renders its title as an h2 followed by the body", () => {
+		const html = renderToStaticMarkup(
+			<LegalArticle title="Titre">Corps</LegalArticle>,
+		);
+
+		expect(html).toMatch(/<h2[^>]*>Titre<\/h2>/);
+		expect(html).toContain("Corps");
 	});
 });

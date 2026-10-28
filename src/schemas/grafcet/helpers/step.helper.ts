@@ -1,23 +1,43 @@
 import Grafcet from "../grafcet.schema";
 import Step, {
+	StepData,
 	STEP_HANDLE_SOURCE_ACTION,
 	STEP_HANDLE_SOURCE_SUCCESSOR,
 	STEP_HANDLE_TARGET_PREDECESSOR,
-	StepHandleTargetPredecessorType,
 } from "../step.schema";
-import Transition from "../transition.schema";
-import JunctionAndStartHelper from "./junction-and-start.helper";
-import JunctionOrEndHelper from "./junction-or-end.helper";
-import StepReferralSourceHelper from "./step-referral-source.helper";
-import StepReferralTargetHelper from "./step-referral-target.helper";
-import TransitionHelper from "./transition.helper";
 
 export default class StepHelper {
+	/**
+	 * Whether the step data flags the step as initial. Works on plain data (e.g. React Flow node data).
+	 */
+	static isInitial(data: StepData): boolean {
+		return data.initial === true;
+	}
+
+	/**
+	 * Whether the step data carries a number. Works on plain data and also covers
+	 * null/undefined, which imported or migrated data may carry despite the type.
+	 */
+	static hasNumber(data: StepData): data is StepData & { number: number } {
+		return (
+			data.number !== "" && data.number !== null && data.number !== undefined
+		);
+	}
+
 	/**
 	 * Mnémonique de la variable synthétique X{n} associée à une étape numérotée n.
 	 */
 	static getStepVariableMnemonic(stepNumber: number): string {
 		return `X${stepNumber}`;
+	}
+
+	/**
+	 * Inverse of `getStepVariableMnemonic`: the step number encoded in an `X{n}`
+	 * mnemonic, or `null` when the mnemonic does not follow the convention.
+	 */
+	static parseStepVariableMnemonic(mnemonic: string): number | null {
+		const match = /^X(\d+)$/.exec(mnemonic);
+		return match ? Number(match[1]) : null;
 	}
 
 	/**
@@ -35,74 +55,6 @@ export default class StepHelper {
 			.map((n) => parseInt(n + ""));
 		const maxNumber = Math.max(...numbers, 0);
 		return maxNumber + 1;
-	}
-
-	/**
-	 * Returns all the branches (transitionId + steps before the transition) that can activate the step.
-	 * @param step
-	 * @param grafcet
-	 */
-	static getPredecessorBranches(
-		stepId: string,
-		grafcet: Grafcet,
-	): { transition: Transition; stepsBeforeTransition: Step[] }[] {
-		const incomingConnections = grafcet.getConnectionsByElementIdAndHandle(
-			stepId,
-			STEP_HANDLE_TARGET_PREDECESSOR,
-		);
-		const transitions: Transition[] = [];
-		for (const connection of incomingConnections) {
-			//We check on the types that can be connection on this handle
-			switch (connection.source.type as StepHandleTargetPredecessorType) {
-				case "transition":
-					const transition = grafcet.getElementByIdAndType<Transition>(
-						connection.source.id,
-						"transition",
-					)!;
-					if (transition) transitions.push(transition);
-					break;
-				case "step-referral-target":
-					const stepReferralSource =
-						StepReferralTargetHelper.getStepReferralSource(
-							connection.source.id,
-							grafcet,
-						);
-					if (stepReferralSource) {
-						const transitions_ =
-							StepReferralSourceHelper.getPredecessorTransitions(
-								stepReferralSource.id,
-								grafcet,
-							);
-						transitions.push(...transitions_);
-					}
-					break;
-				case "junction-and-start":
-					const transition_ = JunctionAndStartHelper.getPredecessorTransition(
-						connection.source.id,
-						grafcet,
-					);
-					if (transition_) transitions.push(transition_);
-					break;
-				case "junction-or-end":
-					const transitions_ = JunctionOrEndHelper.getPredecessorTransitions(
-						connection.source.id,
-						grafcet,
-					);
-					transitions.push(...transitions_);
-					break;
-				default:
-					throw new Error(
-						`Unexpected source type ${connection.source.type} on handle ${STEP_HANDLE_TARGET_PREDECESSOR} of step ${stepId}`,
-					);
-			}
-		}
-		return transitions.map((transition) => {
-			const stepsBeforeTransition = TransitionHelper.getPredecessorSteps(
-				transition.id,
-				grafcet,
-			);
-			return { transition, stepsBeforeTransition };
-		});
 	}
 
 	/**

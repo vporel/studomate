@@ -1,5 +1,9 @@
 import { Keyword } from "./keyword.enum";
-import { getKeywordByString, getKeywordsStringsForDialect } from "./keywords";
+import {
+	findKeywordDialect,
+	getKeywordByString,
+	getKeywordsStringsForDialect,
+} from "./keywords";
 import { Dialect } from "./dialect.enum";
 
 describe("keywords", () => {
@@ -38,6 +42,26 @@ describe("keywords", () => {
 
 		it("returns null for non-keyword strings", () => {
 			expect(getKeywordByString("variable", Dialect.FR)).toBe(null);
+		});
+	});
+
+	describe("findKeywordDialect", () => {
+		it("finds the dialect and the keyword of a French word", () => {
+			expect(findKeywordDialect("ET")).toEqual({
+				keyword: Keyword.AND,
+				dialect: Dialect.FR,
+			});
+		});
+
+		it("finds the dialect and the keyword of an English word, whatever its case", () => {
+			expect(findKeywordDialect("true")).toEqual({
+				keyword: Keyword.TRUE,
+				dialect: Dialect.EN,
+			});
+		});
+
+		it("returns null for a word that is a keyword of no dialect", () => {
+			expect(findKeywordDialect("variable")).toBeNull();
 		});
 	});
 });

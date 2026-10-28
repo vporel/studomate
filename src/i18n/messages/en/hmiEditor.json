@@ -71,7 +71,6 @@
 		"delete": "Delete",
 		"deleteAction": "Delete the action",
 		"deleteRow": "Delete the row",
-		"close": "Close",
 		"expand": "Expand",
 		"collapse": "Collapse",
 		"expandNamed": "Expand {name}",
@@ -92,7 +91,9 @@
 		"offsetY": "Offset Y",
 		"reset": "Reset",
 		"addRow": "Add a row",
-		"imposedByInputBehavior": "Imposed by the behaviour of the variable \"{variable}\" ({behavior}). Can be changed in the inputs table."
+		"imposedByInputBehavior": "Imposed by the behaviour of the variable \"{variable}\" ({behavior}). Can be changed in the inputs table.",
+		"noWidgetSelected": "No widget selected: page properties.",
+		"setAsMainPage": "Set as main page"
 	},
 	"menu": {
 		"copy": "Copy",

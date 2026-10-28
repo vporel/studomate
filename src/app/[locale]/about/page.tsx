@@ -12,7 +12,7 @@ import {
 	scene3dCapture,
 } from "@/ui/components/public-pages/landing-content";
 import routes from "@/app/routes";
-import { APP_NAME, APP_REPO_URL } from "@/app-info";
+import { APP_REPO_URL } from "@/app-info";
 import AccountTreeIcon from "@mui/icons-material/AccountTree";
 import CastForEducationIcon from "@mui/icons-material/CastForEducation";
 import CloudQueueIcon from "@mui/icons-material/CloudQueue";
@@ -83,7 +83,7 @@ export const generateMetadata = createGenerateMetadata(
 );
 
 const SectionTitle = ({ children }: { children: ReactNode }) => (
-	<Typography variant="h3" gutterBottom mt={5}>
+	<Typography variant="h3" component="h2" gutterBottom mt={5}>
 		{children}
 	</Typography>
 );
@@ -114,11 +114,11 @@ export default async function About({ params }: Props) {
 	> = {
 		3: {
 			src: scene3dCapture,
-			alt: tLanding("showcaseScene3dAlt", { name: APP_NAME }),
+			alt: tLanding("showcaseScene3dAlt"),
 		},
 		4: {
 			src: arduinoPhoto,
-			alt: tLanding("showcaseArduinoAlt", { name: APP_NAME }),
+			alt: tLanding("showcaseArduinoAlt"),
 			contain: true,
 		},
 	};
@@ -126,13 +126,13 @@ export default async function About({ params }: Props) {
 	const editorCaptures = [
 		{
 			src: grafcetCapture,
-			alt: tLanding("showcaseGrafcetAlt", { name: APP_NAME }),
+			alt: tLanding("showcaseGrafcetAlt"),
 		},
 		{
 			src: ladderCapture,
-			alt: tLanding("showcaseLadderAlt", { name: APP_NAME }),
+			alt: tLanding("showcaseLadderAlt"),
 		},
-		{ src: hmiCapture, alt: tLanding("showcaseHmiAlt", { name: APP_NAME }) },
+		{ src: hmiCapture, alt: tLanding("showcaseHmiAlt") },
 	];
 
 	const cards = (
@@ -162,7 +162,7 @@ export default async function About({ params }: Props) {
 			<PageTitle>{t("title")}</PageTitle>
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h3" gutterBottom mt={3}>
+			<Typography variant="h3" component="h2" gutterBottom mt={3}>
 				{t("missionTitle")}
 			</Typography>
 			<Typography fontSize="1.1rem">
@@ -270,7 +270,7 @@ export default async function About({ params }: Props) {
 					color: "primary.contrastText",
 				}}
 			>
-				<Typography variant="h3" gutterBottom>
+				<Typography variant="h3" component="h2" gutterBottom>
 					{t("ctaTitle")}
 				</Typography>
 				<Typography mb={2}>{t("ctaBody")}</Typography>
@@ -291,7 +291,7 @@ export default async function About({ params }: Props) {
 			</Paper>
 
 			<TintedPaper sx={{ mt: 2, p: 3, textAlign: "center" }}>
-				<Typography variant="h3" gutterBottom>
+				<Typography variant="h3" component="h2" gutterBottom>
 					{t("contactTitle")}
 				</Typography>
 				<Typography mb={2}>{t("contactBody")}</Typography>

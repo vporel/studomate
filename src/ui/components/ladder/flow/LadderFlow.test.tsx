@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import Section from "@/schemas/ladder/section.schema";
 import SectionReorderCommand from "@/schemas/ladder/commands/section-reorder.command";
@@ -10,6 +10,10 @@ import { selectorImplementation } from "@tests/utils/store-mocks";
 import LadderFlow from "./LadderFlow";
 
 jest.mock("../context/LadderContext");
+jest.mock("@/ui/components/projects/useCanEdit", () => ({
+	__esModule: true,
+	default: () => true,
+}));
 jest.mock("./LadderSection", () => ({
 	__esModule: true,
 	default: ({ section, index }: { section: Section; index: number }) => (
@@ -64,6 +68,55 @@ describe("LadderFlow", () => {
 		const { container } = renderWithI18n(<LadderFlow />);
 
 		expect(container.querySelector(".ladder-page")).toHaveClass("flow-page");
+	});
+
+	it("défile horizontalement quand un réseau est plus large que la page", () => {
+		(useLadderStore as unknown as jest.Mock).mockImplementation(
+			selectorImplementation({
+				ladder: { sections: [new Section("s1", "A", "")] },
+				commandsStackManager: { executeOperation: jest.fn() },
+			}),
+		);
+
+		const { container } = renderWithI18n(<LadderFlow />);
+
+		expect(container.querySelector(".ladder-page")).toHaveStyle({
+			overflowX: "auto",
+		});
+	});
+
+	describe("Ctrl/Cmd + molette", () => {
+		function mount() {
+			const viewManager = { zoomIn: jest.fn(), zoomOut: jest.fn() };
+			(useLadderStore as unknown as jest.Mock).mockImplementation(
+				selectorImplementation({
+					ladder: { sections: [new Section("s1", "A", "")] },
+					commandsStackManager: { executeOperation: jest.fn() },
+					viewManager,
+				}),
+			);
+			const { container } = renderWithI18n(<LadderFlow />);
+			return { viewManager, page: container.querySelector(".ladder-page")! };
+		}
+
+		it("zoome tous les réseaux, sur toute la page et pas seulement sur un réseau", () => {
+			const { viewManager, page } = mount();
+
+			fireEvent.wheel(page, { ctrlKey: true, deltaY: -100 });
+			fireEvent.wheel(page, { metaKey: true, deltaY: 100 });
+
+			expect(viewManager.zoomIn).toHaveBeenCalledTimes(1);
+			expect(viewManager.zoomOut).toHaveBeenCalledTimes(1);
+		});
+
+		it("laisse la molette seule défiler", () => {
+			const { viewManager, page } = mount();
+
+			fireEvent.wheel(page, { deltaY: -100 });
+
+			expect(viewManager.zoomIn).not.toHaveBeenCalled();
+			expect(viewManager.zoomOut).not.toHaveBeenCalled();
+		});
 	});
 
 	it("ne rend rien pour un ladder sans section", () => {

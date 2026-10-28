@@ -20,7 +20,7 @@ describe("LimitsSection", () => {
 	it("rend un titre par groupe de limites", () => {
 		renderWithI18n(<LimitsSection />);
 		expect(
-			screen.getAllByRole("heading", { level: 4 }).map((h) => h.textContent),
+			screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent),
 		).toEqual(groups.map((g) => g.title));
 	});
 

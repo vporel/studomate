@@ -1,6 +1,7 @@
 "use client";
 
 import { useT } from "@/ui/i18n/useT";
+import { ManualH2, ManualH3 } from "../manual-heading";
 import { Divider, Typography } from "@mui/material";
 import { ManualList } from "./manual-ui";
 
@@ -8,11 +9,11 @@ export default function GettingStartedSection() {
 	const t = useT("manual.gettingStarted");
 	return (
 		<section id="getting-started">
-			<Typography variant="h2" mb={3}>
+			<Typography variant="h2" component={ManualH2} mb={3}>
 				{t("title")}
 			</Typography>
 
-			<Typography variant="h4" mb={2}>
+			<Typography variant="h4" component={ManualH3} mb={2}>
 				{t("newProjectTitle")}
 			</Typography>
 			<Typography mb={2}>{t("newProjectIntro")}</Typography>
@@ -20,32 +21,32 @@ export default function GettingStartedSection() {
 			<Typography mb={2}>{t("newProjectOutro")}</Typography>
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h4" mb={2}>
+			<Typography variant="h4" component={ManualH3} mb={2}>
 				{t("featuredTitle")}
 			</Typography>
 			<Typography mb={2}>{t("featuredBody")}</Typography>
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h4" mb={2}>
+			<Typography variant="h4" component={ManualH3} mb={2}>
 				{t("firstProjectTitle")}
 			</Typography>
 			<Typography mb={1}>{t("firstProjectIntro")}</Typography>
 			<ManualList items={t.raw("firstProjectItems") as string[]} />
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h4" mb={2}>
+			<Typography variant="h4" component={ManualH3} mb={2}>
 				{t("openTitle")}
 			</Typography>
 			<Typography mb={2}>{t("openBody")}</Typography>
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h4" mb={2}>
+			<Typography variant="h4" component={ManualH3} mb={2}>
 				{t("saveTitle")}
 			</Typography>
 			<Typography mb={2}>{t("saveBody")}</Typography>
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h4" mb={2}>
+			<Typography variant="h4" component={ManualH3} mb={2}>
 				{t("storageTitle")}
 			</Typography>
 			<Typography mb={1}>{t("storageIntro")}</Typography>
@@ -53,27 +54,27 @@ export default function GettingStartedSection() {
 			<Typography mb={2}>{t("storageOutro")}</Typography>
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h4" mb={2}>
+			<Typography variant="h4" component={ManualH3} mb={2}>
 				{t("interfaceTitle")}
 			</Typography>
 			<Typography mb={1}>{t("interfaceIntro")}</Typography>
 			<ManualList items={t.raw("interfaceItems") as string[]} />
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h4" mb={2}>
+			<Typography variant="h4" component={ManualH3} mb={2}>
 				{t("helpMenuTitle")}
 			</Typography>
 			<Typography mb={2}>{t("helpMenuBody")}</Typography>
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h4" mb={2}>
+			<Typography variant="h4" component={ManualH3} mb={2}>
 				{t("preferencesTitle")}
 			</Typography>
 			<Typography mb={1}>{t("preferencesBody")}</Typography>
 			<ManualList items={t.raw("preferencesItems") as string[]} />
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h4" mb={2}>
+			<Typography variant="h4" component={ManualH3} mb={2}>
 				{t("deviceTitle")}
 			</Typography>
 			<Typography mb={1}>{t("deviceIntro")}</Typography>

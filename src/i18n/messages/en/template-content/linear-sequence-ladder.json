@@ -1,0 +1,7 @@
+{
+	"statement": "## Linear sequence in Ladder\n\nGRAFCET: S0 (initial) → `cycle_start` → S1 (`output1`) → `end1` → S2 (`output2`) → `end2` → S3 → TRUE → S0. Continuous actions.\n\nInputs: `cycle_start` (push button), `end1` and `end2` (limit switches). Outputs: `output1` and `output2`. Provided memories: `X0` to `X3` (one per step). The project provides the empty programs `Automatic_cycle` and `Outputs`, called by the Main in this order.\n\n### Task\n\nImplement the GRAFCET with one network per transition:\n\n1. In `Automatic_cycle`, activate `X0` at startup, only once.\n2. In `Automatic_cycle`, transitions: one network per transition, named `X0 -> X1`, `X1 -> X2`... It puts the upstream step and the receptivity in series, then, in parallel, activates the downstream step (set) and deactivates the upstream step (reset). Write the networks in the order of the sequence.\n3. In `Outputs`, one network per output.\n\n### How to know it is correct\n\n- At startup, only `X0` is true; `cycle_start` activates `X1` alone and turns on `output1`; `end1` activates `X2` alone; `end2` returns to `X0` (step 3, with no action, is crossed immediately because its receptivity is always true).\n- The analysis panel reports no error.",
+	"texts": {
+		"projectName": "Linear sequence in Ladder",
+		"solutionName": "Linear sequence in Ladder: solution"
+	}
+}

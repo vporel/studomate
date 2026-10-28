@@ -23,6 +23,8 @@ import CrossroadsDescriptor from "@/3d-scenes/crossroads/v1/crossroads.descripto
 import Project from "@/schemas/project/project.schema";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import { createRandomId } from "@/ids";
+import type { Locale } from "@/i18n/config";
+import createTemplateText from "@/templates/template-text";
 
 const VOYANT_SIZE = { width: 50, height: 50 };
 const VOYANT_GAP = 12;
@@ -43,17 +45,18 @@ const FEU_OFFSET = CROSSING_SIZE / 2 + 20 + FEU_HEIGHT / 2;
 type FeuConfig = {
 	/** Mnémonique de base, ex. "NS1" → variables rougeNS1, orangeNS1, vertNS1 */
 	key: string;
-	label: string;
+	/** Clé du texte de direction (Nord, Sud...) */
+	labelKey: string;
 	/** Centre du feu sur le canvas */
 	cx: number;
 	cy: number;
 };
 
 const FEUX: FeuConfig[] = [
-	{ key: "NS1", label: "Nord", cx: CX, cy: CY - FEU_OFFSET },
-	{ key: "NS2", label: "Sud", cx: CX, cy: CY + FEU_OFFSET },
-	{ key: "EO1", label: "Est", cx: CX + FEU_OFFSET, cy: CY },
-	{ key: "EO2", label: "Ouest", cx: CX - FEU_OFFSET, cy: CY },
+	{ key: "NS1", labelKey: "directionNorth", cx: CX, cy: CY - FEU_OFFSET },
+	{ key: "NS2", labelKey: "directionSouth", cx: CX, cy: CY + FEU_OFFSET },
+	{ key: "EO1", labelKey: "directionEast", cx: CX + FEU_OFFSET, cy: CY },
+	{ key: "EO2", labelKey: "directionWest", cx: CX - FEU_OFFSET, cy: CY },
 ];
 
 /** Construit les données d'un voyant : couleur allumée / éteinte selon la variable liée. */
@@ -78,12 +81,9 @@ function indicatorData(
  *   et se percutent si deux axes passent en même temps
  * — aucun programme (l'étudiant l'écrit)
  */
-export function createCrossroadsProject(): Project {
-	const project = new Project(
-		createRandomId(),
-		"Carrefour de feux tricolores",
-		"",
-	);
+export function createCrossroadsProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("crossroads", locale);
+	const project = new Project(createRandomId(), t("projectName"), "");
 
 	// — Variables de sortie ———————————————————————————————————————————————
 	for (const { key } of FEUX) {
@@ -109,7 +109,7 @@ export function createCrossroadsProject(): Project {
 	};
 
 	// — Page HMI ——————————————————————————————————————————————————————————
-	const page = new HmiPage(createRandomId(), "Carrefour", true);
+	const page = new HmiPage(createRandomId(), t("hmiPageName"), true);
 	let stack = 0;
 
 	// Rectangle de chaussée central
@@ -128,7 +128,7 @@ export function createCrossroadsProject(): Project {
 				},
 			},
 			stack++,
-			"Chaussée",
+			t("roadWidgetName"),
 		),
 	);
 
@@ -140,16 +140,17 @@ export function createCrossroadsProject(): Project {
 			12,
 			{ width: 260, height: 28 },
 			{
-				text: "Carrefour de feux tricolores",
+				text: t("titleText"),
 				style: { fontSize: 16, color: "#333333", align: "left" },
 			},
 			stack++,
-			"Titre",
+			t("titleWidgetName"),
 		),
 	);
 
 	// 4 feux
-	for (const { key, label, cx, cy } of FEUX) {
+	for (const { key, labelKey, cx, cy } of FEUX) {
+		const label = t(labelKey);
 		const feuX = cx - FEU_WIDTH / 2;
 		const feuY = cy - FEU_HEIGHT / 2;
 
@@ -169,7 +170,7 @@ export function createCrossroadsProject(): Project {
 					},
 				},
 				stack++,
-				`Fond ${label}`,
+				t("backgroundWidgetName", { label }),
 			),
 		);
 
@@ -185,19 +186,38 @@ export function createCrossroadsProject(): Project {
 					style: { fontSize: 12, color: "#555555", align: "center" },
 				},
 				stack++,
-				`Étiquette ${label}`,
+				t("labelWidgetName", { label }),
 			),
 		);
 
 		// Voyants rouge / orange / vert
-		const colors: Array<{ suffix: string; colorOn: string; colorOff: string }> =
-			[
-				{ suffix: "rouge", colorOn: "#ff2020", colorOff: "#4a1010" },
-				{ suffix: "orange", colorOn: "#ff9900", colorOff: "#4a3010" },
-				{ suffix: "vert", colorOn: "#20dd20", colorOff: "#0a3010" },
-			];
+		const colors: Array<{
+			suffix: string;
+			colorKey: string;
+			colorOn: string;
+			colorOff: string;
+		}> = [
+			{
+				suffix: "rouge",
+				colorKey: "colorRed",
+				colorOn: "#ff2020",
+				colorOff: "#4a1010",
+			},
+			{
+				suffix: "orange",
+				colorKey: "colorAmber",
+				colorOn: "#ff9900",
+				colorOff: "#4a3010",
+			},
+			{
+				suffix: "vert",
+				colorKey: "colorGreen",
+				colorOn: "#20dd20",
+				colorOff: "#0a3010",
+			},
+		];
 
-		colors.forEach(({ suffix, colorOn, colorOff }, i) => {
+		colors.forEach(({ suffix, colorKey, colorOn, colorOff }, i) => {
 			const vx = cx - VOYANT_SIZE.width / 2;
 			const vy = feuY + FEU_PADDING + i * (VOYANT_SIZE.height + VOYANT_GAP);
 			const mnemonic = `${suffix}${key}`;
@@ -209,7 +229,7 @@ export function createCrossroadsProject(): Project {
 					VOYANT_SIZE,
 					indicatorData(mnemonic, colorOn, colorOff),
 					stack++,
-					`${suffix} ${label}`,
+					t("indicatorWidgetName", { color: t(colorKey), label }),
 				),
 			);
 		});
@@ -234,9 +254,10 @@ export function createCrossroadsProject(): Project {
  * Les phases de tout-rouge (E2, E5) laissent évacuer les véhicules engagés à l'orange
  * avant de donner le vert à l'axe perpendiculaire.
  */
-export function createCrossroadsSolution(): Project {
-	const project = createCrossroadsProject();
-	project.name = "Carrefour de feux tricolores — solution";
+export function createCrossroadsSolution(locale: Locale = "fr"): Project {
+	const t = createTemplateText("crossroads", locale);
+	const project = createCrossroadsProject(locale);
+	project.name = t("solutionName");
 
 	const X = 200;
 	const e0 = new StepBuilder()
@@ -358,7 +379,7 @@ export function createCrossroadsSolution(): Project {
 
 	const builder = new GrafcetBuilder()
 		.id(createRandomId())
-		.name("Carrefour de feux tricolores")
+		.name(t("grafcetName"))
 		.addSteps(e0, e1, e2, e3, e4, e5)
 		.addTransitions(t0, t1, t2, t3, t4, t5)
 		.addActions(...actions);

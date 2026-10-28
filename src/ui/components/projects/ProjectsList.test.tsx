@@ -8,10 +8,12 @@ import { SkippedProjectInfo } from "@/persistence/project-deserialization";
 import { useProjectStore } from "./ProjectContext";
 import { useAuthStore } from "@/ui/stores/auth/auth.store";
 import { selectorImplementation } from "@tests/utils/store-mocks";
+import { isSafari, isStandaloneDisplay } from "@/ui/lib/platform";
 import ProjectsList from "./ProjectsList";
 
 jest.mock("./ProjectContext");
 jest.mock("@/ui/stores/auth/auth.store");
+jest.mock("@/ui/lib/platform");
 
 let mockSupabaseConfigured = true;
 jest.mock("@/persistence/repositories/supabase-client", () => ({
@@ -28,6 +30,7 @@ function project(id: string, name: string): Project {
 function setup({
 	list = [] as Project[],
 	skipped = [] as SkippedProjectInfo[],
+	failed = undefined as true | undefined,
 	deleteFn = jest.fn(),
 	moveToCloudFn = jest.fn().mockResolvedValue({ ok: true }),
 	moveToLocalFn = jest.fn().mockResolvedValue({ ok: true }),
@@ -40,7 +43,7 @@ function setup({
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			projectRepository: {
-				list: () => ({ projects: list, skipped }),
+				list: () => ({ projects: list, skipped, failed }),
 				delete: deleteFn,
 				moveToCloud: moveToCloudFn,
 				moveToLocal: moveToLocalFn,
@@ -71,6 +74,65 @@ function setup({
 describe("ProjectsList", () => {
 	beforeEach(() => {
 		mockSupabaseConfigured = true;
+		(isSafari as jest.Mock).mockReturnValue(false);
+		(isStandaloneDisplay as jest.Mock).mockReturnValue(false);
+	});
+
+	describe("message de stockage séparé de l'app Safari installée", () => {
+		const notice = /son propre espace de stockage, séparé de Safari/;
+
+		function setSafariApp(safari: boolean, standalone: boolean) {
+			(isSafari as jest.Mock).mockReturnValue(safari);
+			(isStandaloneDisplay as jest.Mock).mockReturnValue(standalone);
+		}
+
+		it("s'affiche sous Safari en mode application quand aucun projet n'est en local", async () => {
+			setSafariApp(true, true);
+			setup({ list: [] });
+
+			await waitFor(() => expect(screen.getByText(notice)).toBeInTheDocument());
+		});
+
+		it("reste caché hors de Safari", async () => {
+			setSafariApp(false, true);
+			setup({ list: [] });
+			await waitFor(() => screen.getByText("Aucun projet enregistré"));
+
+			expect(screen.queryByText(notice)).not.toBeInTheDocument();
+		});
+
+		it("reste caché dans un onglet Safari (hors mode application)", async () => {
+			setSafariApp(true, false);
+			setup({ list: [] });
+			await waitFor(() => screen.getByText("Aucun projet enregistré"));
+
+			expect(screen.queryByText(notice)).not.toBeInTheDocument();
+		});
+
+		it("reste caché dès qu'un projet existe en local", async () => {
+			setSafariApp(true, true);
+			setup({ list: [project("p1", "Projet A")] });
+			await waitFor(() => screen.getByText("Projet A"));
+
+			expect(screen.queryByText(notice)).not.toBeInTheDocument();
+		});
+
+		it("reste caché dans l'onglet Cloud", async () => {
+			setSafariApp(true, true);
+			setup({ list: [], authenticated: true });
+			await waitFor(() => screen.getByText("Aucun projet enregistré"));
+
+			fireEvent.click(screen.getByRole("tab", { name: "Cloud" }));
+
+			expect(screen.queryByText(notice)).not.toBeInTheDocument();
+		});
+
+		it("n'est pas affiché pendant le chargement de la liste", () => {
+			setSafariApp(true, true);
+			setup({ list: [] });
+
+			expect(screen.queryByText(notice)).not.toBeInTheDocument();
+		});
 	});
 
 	it("masque l'onglet Cloud quand le cloud n'est pas configuré", async () => {
@@ -152,6 +214,16 @@ describe("ProjectsList", () => {
 		expect(
 			screen.queryByText(/n'a pas pu être ouvert/),
 		).not.toBeInTheDocument();
+		expect(screen.queryByText(/projets cloud/)).not.toBeInTheDocument();
+	});
+
+	it("signale que les projets cloud n'ont pas pu être chargés", async () => {
+		setup({ list: [project("p1", "Projet A")], failed: true });
+		await waitFor(() => screen.getByText("Projet A"));
+
+		expect(
+			screen.getByText(/Vos projets cloud n'ont pas pu être chargés/),
+		).toBeInTheDocument();
 	});
 
 	it("propose de se connecter dans l'onglet Cloud sans compte", async () => {

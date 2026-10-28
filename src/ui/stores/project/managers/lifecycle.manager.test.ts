@@ -1,20 +1,29 @@
 /** @jest-environment jsdom */
+import { Dialect } from "@/expression-language/dialect.enum";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import Project, {
 	DEFAULT_PROJECT_NAME,
 	PROJECT_SCHEMA_VERSION,
 } from "@/schemas/project/project.schema";
 import { toast } from "react-toastify";
-import { PROJECT_STARTUP_PAGE_ID } from "@/ui/components/pages/ProjectStartupPage";
 import { setPagesSession } from "@/persistence/pages-session.storage";
 import { setActivePageIdInUrl } from "@/ui/stores/project/url/pages-url";
+import createAppProjectStoreEnvironment from "../environment/app-project-store-environment";
 import { createProjectStore } from "../project.store";
 import { getDraft, saveDraft } from "@/persistence/draft.storage";
 import {
+	getDefaultDialect,
 	getPreferredSaveLocation,
+	setDefaultDialect,
 	setPreferredSaveLocation,
 } from "@/persistence/preferences.storage";
+import {
+	getProjectIdFromUrl,
+	getShareTokenFromUrl,
+	setShareTokenInUrl,
+} from "@/ui/stores/project/url/project-url";
 import { authStore } from "@/ui/stores/auth/auth.store";
+import { PROJECT_STARTUP_PAGE_ID } from "@/ui/stores/project/pages-data";
 
 jest.mock("react-toastify", () => ({ toast: { error: jest.fn() } }));
 
@@ -39,6 +48,9 @@ describe("ProjectLifecycleManager", () => {
 		// pertinent pour la plupart des tests, qui veulent un `saveProject`/`saveProjectAs`
 		// silencieux comme avant l'introduction de cette modale.
 		setPreferredSaveLocation("local");
+		// Idem pour le dialecte par défaut : sans préférence, la création d'un projet vierge ouvre
+		// la popup de préférences (voir `describe("dialecte d'un projet vierge")`).
+		setDefaultDialect(Dialect.FR);
 	});
 
 	afterEach(() => {
@@ -50,7 +62,7 @@ describe("ProjectLifecycleManager", () => {
 
 	describe("scene 3D tab", () => {
 		it("is closed when another project is opened", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			const close = jest.spyOn(store.getState().scene3dLinkManager, "close");
 
@@ -60,7 +72,7 @@ describe("ProjectLifecycleManager", () => {
 		});
 
 		it("is closed when the project is closed", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			const close = jest.spyOn(store.getState().scene3dLinkManager, "close");
 
@@ -72,14 +84,14 @@ describe("ProjectLifecycleManager", () => {
 
 	describe("newProject", () => {
 		it("opens the new-project modal when there are no unsaved changes", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await lifecycle(store).newProject();
 			expect(store.getState().ui.newProjectModalVisible).toBe(true);
 			expect(store.getState().project).toBeNull();
 		});
 
 		it("asks for confirmation instead when there are unsaved changes", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.setState({ hasUnsavedChanges: true });
 
@@ -92,7 +104,7 @@ describe("ProjectLifecycleManager", () => {
 		});
 
 		it("opens the new-project modal once the pending confirmation is continued", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.setState({ hasUnsavedChanges: true });
 
@@ -106,7 +118,7 @@ describe("ProjectLifecycleManager", () => {
 
 	describe("newProjectFromTemplate", () => {
 		it("opens a blank project and closes the modal when the template id is null", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			store.getState().setNewProjectModalVisible(true);
 
 			await lifecycle(store).newProjectFromTemplate(null);
@@ -118,7 +130,7 @@ describe("ProjectLifecycleManager", () => {
 		});
 
 		it("injecte l'énoncé du template dans le projet, exercice comme solution", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 
 			await lifecycle(store).newProjectFromTemplate(
 				"traffic-light",
@@ -136,11 +148,135 @@ describe("ProjectLifecycleManager", () => {
 				"Feu tricolore",
 			);
 		});
+
+		it("crée le projet dans la langue demandée : mnémoniques anglais et dialecte EN", async () => {
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+
+			await lifecycle(store).newProjectFromTemplate(
+				"traffic-light",
+				"solution",
+				"en",
+			);
+
+			const project = store.getState().project!;
+			expect(project.dialect).toBe(Dialect.EN);
+			expect(project.variables.map((v) => v.mnemonic)).toEqual([
+				"red",
+				"amber",
+				"green",
+			]);
+		});
+
+		it("garde les mnémoniques français en français", async () => {
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+
+			await lifecycle(store).newProjectFromTemplate(
+				"traffic-light",
+				"solution",
+				"fr",
+			);
+
+			const project = store.getState().project!;
+			expect(project.dialect).toBe(Dialect.FR);
+			expect(project.variables.map((v) => v.mnemonic)).toContain("rouge");
+		});
+
+		it("respecte keepMnemonics du template (carton-sorting garde dcy)", async () => {
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+
+			await lifecycle(store).newProjectFromTemplate(
+				"carton-sorting",
+				"solution",
+				"en",
+			);
+
+			const mnemonics = store
+				.getState()
+				.project!.variables.map((v) => v.mnemonic);
+			expect(mnemonics).toContain("dcy");
+			expect(mnemonics).not.toContain("cycle_start");
+		});
+	});
+
+	describe("newProjectFromHandoff", () => {
+		const NO_PAGES = { pagesOrder: [], activePageId: null };
+
+		it("opens the project as given, unsaved, with the statement of its template", async () => {
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+			const project = new Project("handoff-1", "Mon travail", "");
+
+			await lifecycle(store).newProjectFromHandoff(
+				project,
+				"traffic-light",
+				"fr",
+				NO_PAGES,
+			);
+
+			expect(store.getState().project).toBe(project);
+			expect(store.getState().hasUnsavedChanges).toBe(false);
+			expect(project.exercise?.statement).toContain("Feu tricolore");
+			expect(getProjectIdFromUrl()).toBe("handoff-1");
+		});
+
+		it("adds no statement when the project comes from no template", async () => {
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+			const project = new Project("handoff-2", "Libre", "");
+
+			await lifecycle(store).newProjectFromHandoff(
+				project,
+				null,
+				"fr",
+				NO_PAGES,
+			);
+
+			expect(project.exercise).toBeFalsy();
+		});
+
+		it("opens the tabs of the page it comes from, on the active one", async () => {
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+			const project = new Project("handoff-3", "Travail", "");
+			const g1 = project.createGrafcet("G1");
+			const g2 = project.createGrafcet("G2");
+
+			await lifecycle(store).newProjectFromHandoff(project, null, "fr", {
+				pagesOrder: [g1.id, g2.id],
+				activePageId: g2.id,
+			});
+
+			expect(store.getState().pagesOrder).toEqual([g1.id, g2.id]);
+			expect(store.getState().activePageId).toBe(g2.id);
+		});
+
+		it("skips the tabs that mean nothing in the application", async () => {
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+			const project = new Project("handoff-4", "Travail", "");
+			const g1 = project.createGrafcet("G1");
+
+			await lifecycle(store).newProjectFromHandoff(project, null, "fr", {
+				pagesOrder: ["embedded-scene3d", g1.id, "deleted"],
+				activePageId: "embedded-scene3d",
+			});
+
+			expect(store.getState().pagesOrder).toEqual([g1.id]);
+			expect(store.getState().activePageId).toBe(g1.id);
+		});
+
+		it("falls back to the startup page when no tab can be opened", async () => {
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+			const project = new Project("handoff-5", "Travail", "");
+
+			await lifecycle(store).newProjectFromHandoff(project, null, "fr", {
+				pagesOrder: ["embedded-variables"],
+				activePageId: "embedded-variables",
+			});
+
+			expect(store.getState().activePageId).toBe(PROJECT_STARTUP_PAGE_ID);
+		});
 	});
 
 	describe("saveProject", () => {
 		it("persists the project and clears hasUnsavedChanges", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.getState().setProjectName("Projet à sauvegarder");
 
@@ -156,7 +292,7 @@ describe("ProjectLifecycleManager", () => {
 		});
 
 		it("nominal save: the store holds the saved copy and the draft is deleted", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			const original = store.getState().project!;
 			store.setState({ hasUnsavedChanges: true });
@@ -171,7 +307,7 @@ describe("ProjectLifecycleManager", () => {
 		});
 
 		it("edits made during the repository save are kept: project, unsaved flag and draft", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			const original = store.getState().project!;
 			store.setState({ hasUnsavedChanges: true });
@@ -195,7 +331,7 @@ describe("ProjectLifecycleManager", () => {
 		});
 
 		it("expose savingProject à true le temps de la sauvegarde", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.getState().setProjectName("Projet en cours de sauvegarde");
 
@@ -207,13 +343,13 @@ describe("ProjectLifecycleManager", () => {
 		});
 
 		it("does nothing when there is no open project", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			const result = await lifecycle(store).saveProject();
 			expect(result).toBe(false);
 		});
 
 		it("quand le repository échoue : retourne false, garde hasUnsavedChanges, et affiche un toast d'erreur", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.getState().setProjectName("Projet non sauvegardable");
 			jest.spyOn(store.getState().projectRepository, "save").mockResolvedValue({
@@ -231,7 +367,7 @@ describe("ProjectLifecycleManager", () => {
 		});
 
 		it("projet partagé (lecture seule) : ouvre la modale Save As au lieu d'enregistrer", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.setState({ isSharedProject: true, hasUnsavedChanges: true });
 
@@ -242,7 +378,7 @@ describe("ProjectLifecycleManager", () => {
 		});
 
 		it("conflit cloud : ouvre la modale de conflit au lieu d'un toast, garde hasUnsavedChanges", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.getState().setProjectName("Projet en conflit");
 			jest.spyOn(store.getState().projectRepository, "save").mockResolvedValue({
@@ -262,7 +398,7 @@ describe("ProjectLifecycleManager", () => {
 
 	describe("resolveCloudConflict", () => {
 		it("'copy' ferme la modale de conflit et ouvre Enregistrer sous, sans toucher au projet", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.setState({
 				hasUnsavedChanges: true,
@@ -279,7 +415,7 @@ describe("ProjectLifecycleManager", () => {
 		});
 
 		it("'reload' recharge la version distante et efface hasUnsavedChanges", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			const project = new Project("p1", "Version distante", "");
 			await store.getState().projectRepository.save(project);
 			store.setState({
@@ -296,10 +432,77 @@ describe("ProjectLifecycleManager", () => {
 		});
 	});
 
+	describe("dialecte d'un projet vierge", () => {
+		it("applique le dialecte par défaut enregistré, sans ouvrir la popup", async () => {
+			setDefaultDialect(Dialect.EN);
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+
+			await openBlankProject(store);
+
+			expect(store.getState().project?.dialect).toBe(Dialect.EN);
+			expect(store.getState().ui.defaultDialectModalVisible).toBe(false);
+		});
+
+		it("sans préférence : ouvre la popup et attend le choix avant d'ouvrir le projet", async () => {
+			localStorage.clear();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+
+			const creation = openBlankProject(store);
+			await flushMicrotasks();
+
+			expect(store.getState().ui.defaultDialectModalVisible).toBe(true);
+			expect(store.getState().project).toBeNull();
+
+			store.getState().ui.onDefaultDialectChosen?.(Dialect.EN);
+			await creation;
+
+			expect(store.getState().ui.defaultDialectModalVisible).toBe(false);
+			expect(store.getState().project?.dialect).toBe(Dialect.EN);
+		});
+
+		it("le choix fait dans la popup devient le dialecte par défaut", async () => {
+			localStorage.clear();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+
+			const creation = openBlankProject(store);
+			await flushMicrotasks();
+			store.getState().ui.onDefaultDialectChosen?.(Dialect.EN);
+			await creation;
+
+			expect(getDefaultDialect()).toBe(Dialect.EN);
+		});
+
+		it("popup fermée sans valider : le projet prend la langue de l'interface, sans rien enregistrer", async () => {
+			localStorage.clear();
+			const store = createProjectStore(
+				createAppProjectStoreEnvironment({ getLocale: () => "en" }),
+			);
+
+			const creation = openBlankProject(store);
+			await flushMicrotasks();
+			store.getState().ui.onDefaultDialectChosen?.(null);
+			await creation;
+
+			expect(store.getState().project?.dialect).toBe(Dialect.EN);
+			expect(getDefaultDialect()).toBeNull();
+		});
+
+		it("un template ne passe jamais par la popup", async () => {
+			localStorage.clear();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+
+			await lifecycle(store).newProjectFromTemplate("parking");
+
+			expect(store.getState().ui.defaultDialectModalVisible).toBe(false);
+			expect(store.getState().project).not.toBeNull();
+		});
+	});
+
 	describe("résolution du lieu de stockage", () => {
 		it("aucune préférence : le premier enregistrement ouvre la modale et le choix devient la préférence par défaut", async () => {
 			localStorage.clear(); // efface la préférence "local" posée par le beforeEach
-			const store = createProjectStore();
+			setDefaultDialect(Dialect.FR); // le dialecte par défaut est hors sujet ici
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			const saveResult = lifecycle(store).saveProject();
 			await flushMicrotasks();
@@ -313,7 +516,7 @@ describe("ProjectLifecycleManager", () => {
 		});
 
 		it("préférence déjà connue : n'ouvre jamais la modale", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 
 			const result = await lifecycle(store).saveProject();
@@ -323,7 +526,7 @@ describe("ProjectLifecycleManager", () => {
 		});
 
 		it("projet déjà enregistré : Enregistrer reste silencieux même sans préférence", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			await lifecycle(store).saveProject(); // premier enregistrement, avec préférence "local"
 			localStorage.removeItem("studomate_preferred_save_location");
@@ -337,7 +540,7 @@ describe("ProjectLifecycleManager", () => {
 
 		it("préférence cloud sans session active : ouvre la modale en repli plutôt que d'échouer", async () => {
 			setPreferredSaveLocation("cloud");
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 
 			const saveResult = lifecycle(store).saveProject();
@@ -353,7 +556,8 @@ describe("ProjectLifecycleManager", () => {
 
 		it("annulation depuis la modale : n'enregistre pas, garde hasUnsavedChanges", async () => {
 			localStorage.clear();
-			const store = createProjectStore();
+			setDefaultDialect(Dialect.FR); // le dialecte par défaut est hors sujet ici
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.setState({ hasUnsavedChanges: true });
 
@@ -368,7 +572,8 @@ describe("ProjectLifecycleManager", () => {
 
 		it("s'applique aussi à Enregistrer sous", async () => {
 			localStorage.clear();
-			const store = createProjectStore();
+			setDefaultDialect(Dialect.FR); // le dialecte par défaut est hors sujet ici
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			const saveResult = lifecycle(store).saveProjectAs("Copie");
 			await flushMicrotasks();
@@ -381,9 +586,35 @@ describe("ProjectLifecycleManager", () => {
 		});
 	});
 
+	describe("token de partage dans l'URL", () => {
+		beforeEach(() => setShareTokenInUrl("tok-1"));
+
+		it("est retiré à l'ouverture d'un autre projet", async () => {
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+			await openBlankProject(store);
+			expect(getShareTokenFromUrl()).toBeNull();
+		});
+
+		it("est retiré par Enregistrer sous", async () => {
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+			await openBlankProject(store);
+			setShareTokenInUrl("tok-1");
+			expect(await lifecycle(store).saveProjectAs("Copie")).toBe(true);
+			expect(getShareTokenFromUrl()).toBeNull();
+		});
+
+		it("est retiré à la fermeture du projet", async () => {
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+			await openBlankProject(store);
+			setShareTokenInUrl("tok-1");
+			await lifecycle(store).closeProject();
+			expect(getShareTokenFromUrl()).toBeNull();
+		});
+	});
+
 	describe("closeProject", () => {
 		it("closes directly when there are no unsaved changes", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 
 			await lifecycle(store).closeProject();
@@ -392,7 +623,7 @@ describe("ProjectLifecycleManager", () => {
 		});
 
 		it("asks for confirmation when there are unsaved changes", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.setState({ hasUnsavedChanges: true });
 
@@ -409,14 +640,14 @@ describe("ProjectLifecycleManager", () => {
 		});
 
 		it("returns false for an unknown project id", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			const result = await lifecycle(store).openProject("does-not-exist");
 			expect(result).toBe(false);
 			expect(store.getState().project).toBeNull();
 		});
 
 		it("opens a previously saved project", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			const project = new Project("known-id", "Projet existant", "Author");
 			await store.getState().projectRepository.save(project);
 
@@ -429,7 +660,7 @@ describe("ProjectLifecycleManager", () => {
 
 		it("repasse le bootStatus à 'idle' une fois le projet ouvert", async () => {
 			window.history.replaceState(null, "", "/?projectId=known-id");
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			const project = new Project("known-id", "Projet", "Author");
 			await store.getState().projectRepository.save(project);
 
@@ -440,7 +671,7 @@ describe("ProjectLifecycleManager", () => {
 
 		describe("rechargement via URL avec brouillon (preferDraft)", () => {
 			it("restaure le brouillon sans modale quand il est plus récent que le projet enregistré", async () => {
-				const store = createProjectStore();
+				const store = createProjectStore(createAppProjectStoreEnvironment());
 				const project = new Project("p1", "Projet", "");
 				project.lastModificationDate = new Date(0);
 				await store.getState().projectRepository.save(project);
@@ -456,7 +687,7 @@ describe("ProjectLifecycleManager", () => {
 			});
 
 			it("ouvre la modale de conflit quand le projet enregistré est plus récent que le brouillon", async () => {
-				const store = createProjectStore();
+				const store = createProjectStore(createAppProjectStoreEnvironment());
 				const project = new Project("p1", "Projet", "");
 				project.lastModificationDate = new Date(Date.now() + 60_000);
 				await store.getState().projectRepository.save(project);
@@ -476,7 +707,7 @@ describe("ProjectLifecycleManager", () => {
 			});
 
 			it("lit le projet enregistré pour réamorcer la version, permettant l'enregistrement sans faux conflit", async () => {
-				const store = createProjectStore();
+				const store = createProjectStore(createAppProjectStoreEnvironment());
 				const getSpy = jest.spyOn(store.getState().projectRepository, "get");
 				const project = new Project("p1", "Projet", "");
 				project.lastModificationDate = new Date(0);
@@ -492,8 +723,113 @@ describe("ProjectLifecycleManager", () => {
 				expect(store.getState().ui.cloudConflictModalVisible).toBe(false);
 			});
 
+			describe("brouillon ouvert sans lecture du projet enregistré", () => {
+				const setup = (reRead: Project | null) => {
+					const store = createProjectStore(createAppProjectStoreEnvironment());
+					const repo = store.getState().projectRepository;
+					const getSpy = jest
+						.spyOn(repo, "get")
+						.mockResolvedValueOnce(null)
+						.mockResolvedValue(reRead);
+					const saveSpy = jest
+						.spyOn(repo, "save")
+						.mockResolvedValue({ ok: true } as never);
+					const draft = new Project("p1", "Projet modifié", "");
+					saveDraft("p1", draft.name, JSON.stringify(draft));
+					return { store, getSpy, saveSpy };
+				};
+
+				it("relit le projet enregistré avant d'enregistrer, puis enregistre sans modale", async () => {
+					const older = new Project("p1", "Projet", "");
+					older.lastModificationDate = new Date(0);
+					const { store, getSpy, saveSpy } = setup(older);
+					await lifecycle(store).openProject("p1", true);
+					expect(getSpy).toHaveBeenCalledTimes(1);
+
+					const saved = await lifecycle(store).saveProject();
+
+					expect(saved).toBe(true);
+					expect(getSpy.mock.calls.length).toBeGreaterThan(1);
+					expect(saveSpy).toHaveBeenCalledTimes(1);
+					expect(store.getState().ui.cloudConflictModalVisible).toBe(false);
+				});
+
+				it("ouvre la modale de conflit sans enregistrer quand le projet relu est plus récent que le brouillon", async () => {
+					const newer = new Project("p1", "Projet", "");
+					newer.lastModificationDate = new Date(Date.now() + 60_000);
+					const { store, saveSpy } = setup(newer);
+					await lifecycle(store).openProject("p1", true);
+
+					const saved = await lifecycle(store).saveProject();
+
+					expect(saved).toBe(false);
+					expect(saveSpy).not.toHaveBeenCalled();
+					expect(store.getState().ui.cloudConflictModalVisible).toBe(true);
+					expect(store.getState().savingProject).toBe(false);
+				});
+
+				it("enregistre quand le projet reste injoignable à la relecture", async () => {
+					const { store, saveSpy } = setup(null);
+					await lifecycle(store).openProject("p1", true);
+
+					const saved = await lifecycle(store).saveProject();
+
+					expect(saved).toBe(true);
+					expect(saveSpy).toHaveBeenCalledTimes(1);
+				});
+
+				it("ne relit plus après un enregistrement réussi", async () => {
+					const { store, getSpy, saveSpy } = setup(null);
+					await lifecycle(store).openProject("p1", true);
+					await lifecycle(store).saveProject();
+					const newer = new Project("p1", "Projet", "");
+					newer.lastModificationDate = new Date(Date.now() + 60_000);
+					getSpy.mockResolvedValue(newer);
+
+					const saved = await lifecycle(store).saveProject();
+
+					expect(saved).toBe(true);
+					expect(saveSpy).toHaveBeenCalledTimes(2);
+					expect(store.getState().ui.cloudConflictModalVisible).toBe(false);
+				});
+
+				it("est réinitialisé à l'ouverture d'un autre projet", async () => {
+					const { store, getSpy, saveSpy } = setup(null);
+					await lifecycle(store).openProject("p1", true);
+					await openBlankProject(store);
+					const newer = new Project("p1", "Projet", "");
+					newer.lastModificationDate = new Date(Date.now() + 60_000);
+					getSpy.mockResolvedValue(newer);
+					getSpy.mockClear();
+
+					const saved = await lifecycle(store).saveProject();
+
+					expect(saved).toBe(true);
+					expect(saveSpy).toHaveBeenCalledTimes(1);
+					expect(store.getState().ui.cloudConflictModalVisible).toBe(false);
+				});
+
+				it("n'est pas posé après une ouverture délibérée", async () => {
+					const store = createProjectStore(createAppProjectStoreEnvironment());
+					const repo = store.getState().projectRepository;
+					const project = new Project("p1", "Projet", "");
+					project.lastModificationDate = new Date(0);
+					await repo.save(project);
+					await lifecycle(store).openProject("p1");
+					const newer = new Project("p1", "Projet", "");
+					newer.lastModificationDate = new Date(Date.now() + 60_000);
+					jest.spyOn(repo, "get").mockResolvedValue(newer);
+					jest.spyOn(repo, "save").mockResolvedValue({ ok: true } as never);
+
+					const saved = await lifecycle(store).saveProject();
+
+					expect(saved).toBe(true);
+					expect(store.getState().ui.cloudConflictModalVisible).toBe(false);
+				});
+			});
+
 			it("ouvre le brouillon migré quand il a été enregistré dans une version plus ancienne", async () => {
-				const store = createProjectStore();
+				const store = createProjectStore(createAppProjectStoreEnvironment());
 				const project = new Project("p1", "Projet", "");
 				project.lastModificationDate = new Date(0);
 				await store.getState().projectRepository.save(project);
@@ -517,7 +853,7 @@ describe("ProjectLifecycleManager", () => {
 			});
 
 			it("se rabat sur le projet enregistré quand le brouillon vient d'une version plus récente", async () => {
-				const store = createProjectStore();
+				const store = createProjectStore(createAppProjectStoreEnvironment());
 				const project = new Project("p1", "Projet", "");
 				await store.getState().projectRepository.save(project);
 				saveDraft(
@@ -537,7 +873,7 @@ describe("ProjectLifecycleManager", () => {
 			});
 
 			it("se rabat sur le projet enregistré quand le brouillon est illisible", async () => {
-				const store = createProjectStore();
+				const store = createProjectStore(createAppProjectStoreEnvironment());
 				const project = new Project("p1", "Projet", "");
 				await store.getState().projectRepository.save(project);
 				saveDraft("p1", "Projet", "{ invalide");
@@ -553,7 +889,7 @@ describe("ProjectLifecycleManager", () => {
 
 		describe("restauration des onglets ouverts", () => {
 			it("sans session ni URL, garde la page de démarrage par défaut", async () => {
-				const store = createProjectStore();
+				const store = createProjectStore(createAppProjectStoreEnvironment());
 				const project = new Project("p1", "Projet", "Author");
 				await store.getState().projectRepository.save(project);
 
@@ -564,7 +900,7 @@ describe("ProjectLifecycleManager", () => {
 			});
 
 			it("rouvre les onglets et la page active mémorisés en session (localStorage)", async () => {
-				const store = createProjectStore();
+				const store = createProjectStore(createAppProjectStoreEnvironment());
 				const project = new Project("p1", "Projet", "Author");
 				const grafcet = new Grafcet("g1", "Mon grafcet");
 				project.addProgram(grafcet);
@@ -588,7 +924,7 @@ describe("ProjectLifecycleManager", () => {
 			});
 
 			it("priorise la page active de l'URL (lien partagé) sur celle de la session", async () => {
-				const store = createProjectStore();
+				const store = createProjectStore(createAppProjectStoreEnvironment());
 				const project = new Project("p1", "Projet", "Author");
 				const grafcetA = new Grafcet("gA", "A");
 				const grafcetB = new Grafcet("gB", "B");
@@ -605,7 +941,7 @@ describe("ProjectLifecycleManager", () => {
 			});
 
 			it("ignore les ids de session qui ne correspondent plus à rien et retombe sur la page de démarrage", async () => {
-				const store = createProjectStore();
+				const store = createProjectStore(createAppProjectStoreEnvironment());
 				const project = new Project("p1", "Projet", "Author");
 				await store.getState().projectRepository.save(project);
 				setPagesSession("p1", {
@@ -623,7 +959,7 @@ describe("ProjectLifecycleManager", () => {
 
 	describe("openProjectByShareToken", () => {
 		it("passe par le repository partagé du store, pas par une instance jetable", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			const shared = new Project("shared-id", "Projet partagé", "Author");
 			const getByShareToken = jest.fn().mockResolvedValue(shared);
 			// Repository partageable minimal substitué au hybrid : si `openProjectByShareToken`
@@ -649,8 +985,31 @@ describe("ProjectLifecycleManager", () => {
 			expect(store.getState().isSharedProject).toBe(true);
 		});
 
+		it("laisse le token et aucun projectId dans l'URL pour survivre à un rechargement", async () => {
+			window.history.replaceState(null, "", "/?shareToken=tok-1");
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+			store.setState({
+				projectRepository: {
+					list: async () => ({ projects: [], skipped: [] }),
+					get: async () => null,
+					save: async () => ({ ok: true }),
+					delete: async () => ({ ok: true }),
+					getByShareToken: async () =>
+						new Project("shared-id", "Projet partagé", "Author"),
+					getShareToken: async () => null,
+					createShareToken: async () => ({ ok: false, message: "" }),
+					deleteShareToken: async () => ({ ok: true }),
+				} as never,
+			});
+
+			await lifecycle(store).openProjectByShareToken("tok-1");
+
+			expect(getShareTokenFromUrl()).toBe("tok-1");
+			expect(getProjectIdFromUrl()).toBeNull();
+		});
+
 		it("retourne false si le repository n'est pas partageable", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			store.setState({
 				projectRepository: {
 					list: async () => ({ projects: [], skipped: [] }),
@@ -663,12 +1022,36 @@ describe("ProjectLifecycleManager", () => {
 			expect(await lifecycle(store).openProjectByShareToken("tok-1")).toBe(
 				false,
 			);
+			expect(toast.error).toHaveBeenCalledTimes(1);
+		});
+
+		it("signale l'échec par un toast quand le projet partagé est introuvable ou injoignable", async () => {
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+			store.setState({
+				projectRepository: {
+					list: async () => ({ projects: [], skipped: [] }),
+					get: async () => null,
+					save: async () => ({ ok: true }),
+					delete: async () => ({ ok: true }),
+					getByShareToken: async () => null,
+					getShareToken: async () => null,
+					createShareToken: async () => ({ ok: false, message: "" }),
+					deleteShareToken: async () => ({ ok: true }),
+				} as never,
+			});
+			(toast.error as jest.Mock).mockClear();
+
+			expect(await lifecycle(store).openProjectByShareToken("tok-1")).toBe(
+				false,
+			);
+			expect(toast.error).toHaveBeenCalledTimes(1);
+			expect(store.getState().project).toBeNull();
 		});
 	});
 
 	describe("resolveDraftConflict", () => {
 		it("ne fait rien si la modale n'est pas active", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			await expect(
 				lifecycle(store).resolveDraftConflict("draft"),
@@ -676,7 +1059,7 @@ describe("ProjectLifecycleManager", () => {
 		});
 
 		it("supprime le brouillon, ferme la modale et ouvre le projet enregistré quand le choix est 'real'", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			const project = new Project("p1", "Projet", "");
 			await store.getState().projectRepository.save(project);
 			store.setState({
@@ -700,7 +1083,7 @@ describe("ProjectLifecycleManager", () => {
 		});
 
 		it("ouvre le brouillon et marque hasUnsavedChanges quand le choix est 'draft'", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			const project = new Project("p1", "Projet", "");
 			const draftData = JSON.stringify(project);
 			store.setState({
@@ -719,7 +1102,7 @@ describe("ProjectLifecycleManager", () => {
 		});
 
 		it("ouvre le brouillon migré quand le choix est 'draft' et que la version est ancienne", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			const project = new Project("p1", "Projet", "");
 			const draftData = JSON.stringify({
 				...JSON.parse(JSON.stringify(project)),
@@ -741,7 +1124,7 @@ describe("ProjectLifecycleManager", () => {
 		});
 
 		it("affiche un toast et ferme la modale si le brouillon est corrompu", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			const project = new Project("p1", "Projet", "");
 			store.setState({
 				project,
@@ -774,7 +1157,7 @@ describe("ProjectLifecycleManager", () => {
 		}
 
 		it("supprime le brouillon quand on continue depuis newProject", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			const projectId = await openProjectWithDraft(store);
 
 			await lifecycle(store).newProject();
@@ -784,7 +1167,7 @@ describe("ProjectLifecycleManager", () => {
 		});
 
 		it("supprime le brouillon quand on continue depuis closeProject", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			const projectId = await openProjectWithDraft(store);
 
 			await lifecycle(store).closeProject();

@@ -4,6 +4,7 @@ import {
 	deserializeProject,
 	deserializeProjects,
 } from "../project-deserialization";
+import lookupSession from "./session-lookup";
 import { supabase } from "./supabase-client";
 import ProjectRepository, {
 	ProjectListResult,
@@ -19,8 +20,9 @@ const SHARES_TABLE = "project_shares";
 /**
  * Stockage des projets dans Supabase (table `projects`, colonne `data` en jsonb).
  *
- * Le RLS de la table filtre déjà par utilisateur connecté (`auth.uid() = owner_id`) : ce
- * repository ne fait donc jamais de filtrage explicite par utilisateur dans ses requêtes.
+ * Le RLS de la table limite la lecture et l'écriture au propriétaire (`auth.uid() = owner_id`).
+ * Un projet partagé n'est pas lisible directement : l'accès par token passe par la fonction
+ * RPC `get_shared_project` (voir `getByShareToken`).
  *
  * Comme `LocalStorageProjectRepository`, le projet est stocké tel quel (JSON versionné) et
  * migré à la lecture — jamais en base, cf. `deserializeProject`.
@@ -50,11 +52,20 @@ export default class SupabaseProjectRepository
 {
 	private readonly versions = new Map<string, number>();
 
+	/** The signed-in user's own projects, other users' shared projects excluded. */
 	async list(): Promise<ProjectListResult> {
-		const { data, error } = await supabase.from(TABLE).select("data");
+		const lookup = await lookupSession();
+		if (lookup.status === "unreachable") {
+			return { projects: [], skipped: [], failed: true };
+		}
+		if (lookup.status === "signed-out") return { projects: [], skipped: [] };
+		const { data, error } = await supabase
+			.from(TABLE)
+			.select("data")
+			.eq("owner_id", lookup.session.user.id);
 		if (error) {
 			console.error("Impossible de lister les projets cloud :", error);
-			return { projects: [], skipped: [] };
+			return { projects: [], skipped: [], failed: true };
 		}
 		return deserializeProjects(
 			(data ?? []).map((row) => row.data as Record<string, any>),
@@ -129,13 +140,15 @@ export default class SupabaseProjectRepository
 	}
 
 	async getByShareToken(token: string): Promise<Project | null> {
-		const { data, error } = await supabase
-			.from(SHARES_TABLE)
-			.select("project_id")
-			.eq("token", token)
-			.maybeSingle();
-		if (error || !data) return null;
-		return this.get(data.project_id as string);
+		const { data, error } = await supabase.rpc("get_shared_project", {
+			share_token: token,
+		});
+		const row = data?.[0];
+		if (error || !row) return null;
+		const result = deserializeProject(row.data as Record<string, any>);
+		if (!result.ok) return null;
+		this.versions.set(result.project.id, row.version as number);
+		return result.project;
 	}
 
 	async getShareToken(projectId: string): Promise<string | null> {
@@ -170,7 +183,8 @@ export default class SupabaseProjectRepository
 	private failureReason(error: unknown): SaveFailureReason {
 		// Code Postgres de violation de contrainte unique (ici, la clé primaire `id`) : la ligne
 		// existe déjà, écrite par un appareil dont celui-ci ignorait l'existence.
-		if ((error as { code?: string } | null)?.code === "23505") return "conflict";
+		if ((error as { code?: string } | null)?.code === "23505")
+			return "conflict";
 		return "network";
 	}
 }

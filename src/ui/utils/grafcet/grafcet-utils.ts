@@ -14,6 +14,17 @@ const CONNECTION_LINE_Y_OFFSET = 20;
  * (210 × 297 mm à 96 dpi). Taille fixe — le format n'est pas configurable. */
 export const GRAFCET_PAGE_DIMENSIONS = { width: 794, height: 1123 };
 
+/** Zoom that fits the page width in a container `containerWidth` wide, between `minZoom` and 1. */
+export function getPageFitZoom(
+	containerWidth: number,
+	minZoom: number,
+): number {
+	return Math.min(
+		1,
+		Math.max(minZoom, containerWidth / GRAFCET_PAGE_DIMENSIONS.width),
+	);
+}
+
 export function getConnectionLinePoints(
 	fromX: number,
 	fromY: number,

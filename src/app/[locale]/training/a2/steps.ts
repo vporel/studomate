@@ -1,6 +1,6 @@
 import type { StepData } from "../ModuleStepper";
 import type { TrainingTranslator } from "../training-translator";
-import A2_STEP_IDS from "./step-ids";
+import A2_STEP_IDS from "@/training/step-ids/a2";
 
 export default function buildA2Steps(t: TrainingTranslator): StepData[] {
 	return [
@@ -9,6 +9,14 @@ export default function buildA2Steps(t: TrainingTranslator): StepData[] {
 			kind: "theory",
 			title: t("a2LadderBasicsTitle"),
 			body: t.raw("a2LadderBasicsBody") as string[],
+			embeddedTemplateId: "ladder-and-or",
+			embeddedWatchOpen: true,
+			cta: {
+				templateId: "ladder-and-or",
+				exerciseLabel: t("observeSimulationCta"),
+				primaryMode: "solution",
+				autostartSimulation: true,
+			},
 		},
 		{
 			id: A2_STEP_IDS.theoryContactsCoils,
@@ -21,9 +29,11 @@ export default function buildA2Steps(t: TrainingTranslator): StepData[] {
 			kind: "exercise",
 			title: t("a2ExerciseReadingTitle"),
 			body: t.raw("a2ExerciseReadingBody") as string[],
+			embeddedTemplateId: "ladder-reading",
+			embeddedExercise: { initialView: { type: "ladder" } },
 			cta: {
 				templateId: "ladder-reading",
-				exerciseLabel: t("openExerciseCta"),
+				exerciseLabel: t("openEditorCta"),
 			},
 		},
 		{
@@ -31,10 +41,15 @@ export default function buildA2Steps(t: TrainingTranslator): StepData[] {
 			kind: "exercise",
 			title: t("a2ExerciseLogicTitle"),
 			body: t.raw("a2ExerciseLogicBody") as string[],
+			embeddedTemplateId: "ladder-logic",
+			embeddedExercise: {
+				exerciseTab: t("ctaExercise"),
+				solutionTab: t("ctaSolution"),
+				initialView: { type: "ladder" },
+			},
 			cta: {
 				templateId: "ladder-logic",
-				exerciseLabel: t("openExerciseCta"),
-				solutionLabel: t("ctaSolution"),
+				exerciseLabel: t("openEditorCta"),
 			},
 		},
 		{
@@ -48,10 +63,15 @@ export default function buildA2Steps(t: TrainingTranslator): StepData[] {
 			kind: "exercise",
 			title: t("a2ExerciseSelfHoldingTitle"),
 			body: t.raw("a2ExerciseSelfHoldingBody") as string[],
+			embeddedTemplateId: "ladder-self-holding",
+			embeddedExercise: {
+				exerciseTab: t("ctaExercise"),
+				solutionTab: t("ctaSolution"),
+				initialView: { type: "ladder" },
+			},
 			cta: {
 				templateId: "ladder-self-holding",
-				exerciseLabel: t("openExerciseCta"),
-				solutionLabel: t("ctaSolution"),
+				exerciseLabel: t("openEditorCta"),
 			},
 		},
 		{
@@ -59,10 +79,15 @@ export default function buildA2Steps(t: TrainingTranslator): StepData[] {
 			kind: "exercise",
 			title: t("a2ExerciseInterlockTitle"),
 			body: t.raw("a2ExerciseInterlockBody") as string[],
+			embeddedTemplateId: "ladder-interlock",
+			embeddedExercise: {
+				exerciseTab: t("ctaExercise"),
+				solutionTab: t("ctaSolution"),
+				initialView: { type: "ladder" },
+			},
 			cta: {
 				templateId: "ladder-interlock",
-				exerciseLabel: t("openExerciseCta"),
-				solutionLabel: t("ctaSolution"),
+				exerciseLabel: t("openEditorCta"),
 			},
 		},
 		{
@@ -76,10 +101,15 @@ export default function buildA2Steps(t: TrainingTranslator): StepData[] {
 			kind: "exercise",
 			title: t("a2ExerciseMemoryTitle"),
 			body: t.raw("a2ExerciseMemoryBody") as string[],
+			embeddedTemplateId: "ladder-memory",
+			embeddedExercise: {
+				exerciseTab: t("ctaExercise"),
+				solutionTab: t("ctaSolution"),
+				initialView: { type: "ladder" },
+			},
 			cta: {
 				templateId: "ladder-memory",
-				exerciseLabel: t("openExerciseCta"),
-				solutionLabel: t("ctaSolution"),
+				exerciseLabel: t("openEditorCta"),
 			},
 		},
 		{
@@ -93,9 +123,13 @@ export default function buildA2Steps(t: TrainingTranslator): StepData[] {
 			kind: "exercise",
 			title: t("a2ExerciseEdgesReadingTitle"),
 			body: t.raw("a2ExerciseEdgesReadingBody") as string[],
+			embeddedTemplateId: "ladder-edges-reading",
+			embeddedWatchOpen: true,
 			cta: {
 				templateId: "ladder-edges-reading",
-				exerciseLabel: t("openExerciseCta"),
+				exerciseLabel: t("observeSimulationCta"),
+				primaryMode: "solution",
+				autostartSimulation: true,
 			},
 		},
 		{
@@ -103,10 +137,15 @@ export default function buildA2Steps(t: TrainingTranslator): StepData[] {
 			kind: "exercise",
 			title: t("a2ExerciseToggleTitle"),
 			body: t.raw("a2ExerciseToggleBody") as string[],
+			embeddedTemplateId: "ladder-toggle",
+			embeddedExercise: {
+				exerciseTab: t("ctaExercise"),
+				solutionTab: t("ctaSolution"),
+				initialView: { type: "ladder" },
+			},
 			cta: {
 				templateId: "ladder-toggle",
-				exerciseLabel: t("openExerciseCta"),
-				solutionLabel: t("ctaSolution"),
+				exerciseLabel: t("openEditorCta"),
 			},
 		},
 		{
@@ -116,7 +155,7 @@ export default function buildA2Steps(t: TrainingTranslator): StepData[] {
 			body: t.raw("a2SynthesisGateBody") as string[],
 			cta: {
 				templateId: "ladder-gate",
-				exerciseLabel: t("ctaExercise"),
+				exerciseLabel: t("openEditorCta"),
 				solutionLabel: t("ctaSolution"),
 			},
 		},

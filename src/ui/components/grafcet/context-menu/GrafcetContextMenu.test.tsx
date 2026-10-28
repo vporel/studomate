@@ -1,8 +1,9 @@
 /**
  * @jest-environment jsdom
  */
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { i18nWrapper } from "@tests/utils/i18n";
+import { createClipboardStore } from "@/ui/stores/shared/clipboard.store";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import mitt from "mitt";
 import { act } from "react";
@@ -25,7 +26,12 @@ jest.mock("@/ui/services/analytics", () => ({
 
 const grafcet = { id: "g1", name: "Feu tricolore" };
 
-function setup() {
+function setup({
+	editingEnabled = true,
+	mode = ProjectMode.DESIGN,
+	pdfExport = true,
+	element = { type: "pane" } as { type: string },
+} = {}) {
 	const events = mitt();
 	(useGrafcetContext as jest.Mock).mockReturnValue({
 		contextMenuEvents: events,
@@ -40,7 +46,10 @@ function setup() {
 	);
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
-			mode: ProjectMode.DESIGN,
+			clipboard: createClipboardStore(),
+			mode,
+			editingEnabled,
+			capabilities: { pdfExport },
 			simulationManager: null,
 			forcedVariables: undefined,
 			project: { name: "Mon projet" },
@@ -51,7 +60,7 @@ function setup() {
 	});
 	act(() => {
 		events.emit("show", {
-			element: { type: "pane" },
+			element,
 			position: { x: 10, y: 10 },
 			screenPosition: { x: 10, y: 10 },
 		});
@@ -61,17 +70,47 @@ function setup() {
 afterEach(() => jest.clearAllMocks());
 
 describe("GrafcetContextMenu — export", () => {
-	it("exporte le grafcet courant au clic sur 'Exporter'", () => {
+	it("exporte le grafcet courant au clic sur 'Exporter'", async () => {
 		setup();
 
 		fireEvent.click(screen.getByText("Exporter"));
 
-		expect(exportProgramPdf).toHaveBeenCalledWith(
-			expect.objectContaining({
-				config: { type: "grafcet", program: grafcet },
-				filename: "Mon projet - Feu tricolore",
-				sectionTitle: "GRAFCET - Feu tricolore",
-			}),
+		await waitFor(() =>
+			expect(exportProgramPdf).toHaveBeenCalledWith(
+				expect.objectContaining({
+					config: { type: "grafcet", program: grafcet },
+					filename: "Mon projet - Feu tricolore",
+					sectionTitle: "GRAFCET - Feu tricolore",
+				}),
+			),
 		);
+	});
+
+	it("ne propose pas l'export quand le store ne sait pas exporter", () => {
+		setup({ pdfExport: false });
+
+		expect(screen.queryByText("Exporter")).not.toBeInTheDocument();
+		expect(screen.getByText("Coller")).toBeInTheDocument();
+	});
+
+	it("n'ouvre pas de menu sur un projet en lecture seule sans export", () => {
+		setup({ editingEnabled: false, pdfExport: false });
+
+		expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+	});
+
+	it("ne propose que l'export sur un projet en lecture seule", () => {
+		setup({ editingEnabled: false });
+
+		expect(screen.getByText("Exporter")).toBeInTheDocument();
+	});
+
+	it("n'ouvre pas de menu sur un élément d'un projet en lecture seule", () => {
+		setup({
+			editingEnabled: false,
+			element: { type: "transition", id: "t1", data: {} } as never,
+		});
+
+		expect(screen.queryByRole("menu")).not.toBeInTheDocument();
 	});
 });

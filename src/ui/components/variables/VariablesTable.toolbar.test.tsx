@@ -32,6 +32,7 @@ describe("VariablesTable toolbar", () => {
 			selectorImplementation({
 				variablesManager: {
 					existsByMnemonic: () => undefined,
+					isMnemonicUsedByBlock: () => false,
 					getByAddress: () => null,
 					removeVariables: jest.fn(),
 				},
@@ -47,6 +48,8 @@ describe("VariablesTable toolbar", () => {
 					],
 				},
 				mode: ProjectMode.DESIGN,
+				editingEnabled: true,
+				capabilities: { pdfExport: true, crossReference: true },
 			}),
 		);
 		renderWithI18n(

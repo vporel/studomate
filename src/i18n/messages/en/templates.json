@@ -35,6 +35,14 @@
 		"label": "OR divergence",
 		"description": "A two-branch OR divergence with mutually exclusive branches, each looping back to the initial state on its own. Training module mini-exercise."
 	},
+	"timer-cycle": {
+		"label": "Timer",
+		"description": "A 2-step GRAFCET alternating on two timers, no input. Training module observation."
+	},
+	"ladder-and-or": {
+		"label": "Series and parallel contacts",
+		"description": "Two networks provided: toggle a and b in simulation to observe AND and OR. Training module mini-exercise."
+	},
 	"ladder-reading": {
 		"label": "Read a Ladder program",
 		"description": "Four combinational networks provided: predict the outputs, then check in simulation. Training module mini-exercise."
@@ -60,8 +68,8 @@
 		"description": "The same input on a NO, P and N contact: record the timing diagram. Training module mini-exercise."
 	},
 	"ladder-toggle": {
-		"label": "Toggle switch",
-		"description": "One button turns a lamp on then off: section execution order and P contact. Training module mini-exercise."
+		"label": "Impulse relay",
+		"description": "One button turns a lamp on then off: network execution order and P contact. Training module mini-exercise."
 	},
 	"ladder-gate": {
 		"label": "Motorised gate",
@@ -87,6 +95,10 @@
 		"label": "Scaling",
 		"description": "Computing a level from a raw value: overflow, truncation, REAL computation. Training module mini-exercise."
 	},
+	"ladder-subprograms": {
+		"label": "Subprograms",
+		"description": "Call the counting subprogram from the Main, and see the effect of a conditional call. Training module mini-exercise."
+	},
 	"ladder-packing": {
 		"label": "Case packing",
 		"description": "Conveyor, fault, counting and box change in subprograms. No variables provided. Training module synthesis."
@@ -97,7 +109,7 @@
 	},
 	"linear-sequence-ladder": {
 		"label": "Linear sequence in Ladder",
-		"description": "Implement a linear GRAFCET in Ladder with the three-block method. Training module mini-exercise."
+		"description": "Implement a linear GRAFCET in Ladder, one network per transition. Training module mini-exercise."
 	},
 	"drilling-ladder": {
 		"label": "Drilling station in Ladder",
@@ -119,8 +131,12 @@
 		"label": "Parking in Ladder",
 		"description": "Parking control in Ladder, signalling provided, reset. Training module synthesis."
 	},
+	"gate-per-transition-ladder": {
+		"label": "Remote-controlled gate: one network per transition",
+		"description": "Single-button gate implemented with one network per transition. Training module example."
+	},
 	"gate-grafcet-ladder": {
-		"label": "Remote-controlled gate",
-		"description": "Single-button specification: write the GRAFCET, then implement it in Ladder. Training module synthesis."
+		"label": "Remote-controlled gate: three blocks",
+		"description": "Single-button gate implemented in three blocks. Training module example."
 	}
 }

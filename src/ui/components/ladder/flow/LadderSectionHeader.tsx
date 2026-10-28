@@ -1,5 +1,6 @@
 "use client";
 
+import useCanEdit from "@/ui/components/projects/useCanEdit";
 import SectionUpdateCommand from "@/schemas/ladder/commands/section-update.command";
 import Section from "@/schemas/ladder/section.schema";
 import {
@@ -12,8 +13,6 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import LibraryAddOutlinedIcon from "@mui/icons-material/LibraryAddOutlined";
-import ZoomInIcon from "@mui/icons-material/ZoomIn";
-import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import {
 	alpha,
 	Box,
@@ -24,10 +23,6 @@ import {
 	useTheme,
 } from "@mui/material";
 import { type PointerEvent as ReactPointerEvent, useCallback } from "react";
-import {
-	LADDER_FLOW_MAX_ZOOM,
-	LADDER_FLOW_MIN_ZOOM,
-} from "@/ui/stores/ladder/managers/view.manager";
 import { useT } from "@/ui/i18n/useT";
 import { useLadderStore } from "../context/LadderContext";
 
@@ -52,13 +47,15 @@ export default function LadderSectionHeader({
 }: LadderSectionHeaderProps) {
 	const th = useTheme();
 	const t = useT("ladderEditor.sectionHeader");
+	const canEdit = useCanEdit();
 	const commandsStackManager = useLadderStore(
 		(state) => state.commandsStackManager,
 	);
-	// Un ladder porte toujours au moins une section (voir SectionRemoveCommand.execute) : le
-	// bouton se désactive plutôt que de dispatcher une commande qu'on sait invalide.
+	// Le bouton Supprimer se désactive plutôt que de dispatcher une commande qu'on sait invalide.
+	const canDeleteSection = useLadderStore((state) =>
+		state.ladder.canDeleteSection(),
+	);
 	const sectionsCount = useLadderStore((state) => state.ladder.sections.length);
-	const viewManager = useLadderStore((state) => state.viewManager);
 	const workflowManager = useLadderStore((state) => state.workflowManager);
 	const copyCutPasteManager = useLadderStore(
 		(state) => state.copyCutPasteManager,
@@ -70,9 +67,6 @@ export default function LadderSectionHeader({
 	// qu'une sélection multiple est active (le collage multi passe par Ctrl+C / menu Édition).
 	const multipleSelected = useLadderStore(
 		(state) => state.selectedSectionIds.length > 1,
-	);
-	const zoom = useLadderStore(
-		(state) => state.zoomBySectionId[section.id] ?? 1,
 	);
 
 	const handleTitleBlur = useCallback(
@@ -101,6 +95,8 @@ export default function LadderSectionHeader({
 	const handleCopySection = useCallback(() => {
 		copyCutPasteManager.copySections([section.id]);
 	}, [section.id, copyCutPasteManager]);
+
+	const canReorder = canEdit && sectionsCount > 1;
 
 	// Les boutons d'action n'entrent pas dans la sélection de la section (voir
 	// `useLadderSectionSelection`) : ils arrêtent la propagation du pointer-down.
@@ -135,17 +131,17 @@ export default function LadderSectionHeader({
 			}}
 		>
 			<Box
-				{...(sectionsCount > 1 ? dragHandleAttributes : {})}
-				{...(sectionsCount > 1 ? dragHandleListeners : {})}
+				{...(canReorder ? dragHandleAttributes : {})}
+				{...(canReorder ? dragHandleListeners : {})}
 				sx={{
 					display: "flex",
 					alignItems: "center",
-					cursor: sectionsCount > 1 ? "grab" : "default",
+					cursor: canReorder ? "grab" : "default",
 					touchAction: "none",
-					opacity: sectionsCount > 1 ? 1 : 0.35,
+					opacity: canReorder ? 1 : 0.35,
 				}}
 				aria-label={t("reorderAria")}
-				aria-disabled={sectionsCount <= 1}
+				aria-disabled={!canReorder}
 			>
 				<DragIndicatorIcon
 					fontSize="small"
@@ -177,6 +173,7 @@ export default function LadderSectionHeader({
 			</Typography>
 
 			<InputBase
+				readOnly={!canEdit}
 				defaultValue={section.title}
 				key={section.title} // reset si undo change la valeur externe
 				onBlur={handleTitleBlur}
@@ -195,39 +192,6 @@ export default function LadderSectionHeader({
 				}}
 				inputProps={{ "aria-label": t("titleAria") }}
 			/>
-
-			{!collapsed && (
-				<>
-					<Tooltip title={t("zoomOut")}>
-						<span>
-							<IconButton
-								size="small"
-								onPointerDown={stopSelect}
-								onClick={() => viewManager.zoomOut(section.id)}
-								disabled={zoom <= LADDER_FLOW_MIN_ZOOM}
-								sx={{ p: 0.25 }}
-								aria-label={t("zoomOutAria")}
-							>
-								<ZoomOutIcon fontSize="small" />
-							</IconButton>
-						</span>
-					</Tooltip>
-					<Tooltip title={t("zoomIn")}>
-						<span>
-							<IconButton
-								size="small"
-								onPointerDown={stopSelect}
-								onClick={() => viewManager.zoomIn(section.id)}
-								disabled={zoom >= LADDER_FLOW_MAX_ZOOM}
-								sx={{ p: 0.25 }}
-								aria-label={t("zoomInAria")}
-							>
-								<ZoomInIcon fontSize="small" />
-							</IconButton>
-						</span>
-					</Tooltip>
-				</>
-			)}
 
 			<Tooltip title={t("copy")}>
 				<span>
@@ -249,6 +213,7 @@ export default function LadderSectionHeader({
 					size="small"
 					onPointerDown={stopSelect}
 					onClick={handleDuplicateSection}
+					disabled={!canEdit}
 					sx={{ p: 0.25 }}
 					aria-label={t("duplicateAria")}
 				>
@@ -262,7 +227,7 @@ export default function LadderSectionHeader({
 						size="small"
 						onPointerDown={stopSelect}
 						onClick={handleDeleteSection}
-						disabled={sectionsCount <= 1}
+						disabled={!canEdit || !canDeleteSection}
 						sx={{ p: 0.25 }}
 						aria-label={t("deleteAria")}
 					>

@@ -2,7 +2,11 @@
  * @jest-environment jsdom
  */
 import { act, render, screen } from "@testing-library/react";
-import { LocaleProvider, useLocaleContext } from "./LocaleProvider";
+import {
+	FixedLocaleProvider,
+	LocaleProvider,
+	useLocaleContext,
+} from "./LocaleProvider";
 
 const mockGetPreferredLocale = jest.fn();
 const mockSetPreferredLocale = jest.fn();
@@ -75,5 +79,35 @@ describe("LocaleProvider", () => {
 
 		expect(mockSetPreferredLocale).toHaveBeenCalledWith("en");
 		expect(screen.getByTestId("locale")).toHaveTextContent("en");
+	});
+});
+
+describe("FixedLocaleProvider", () => {
+	afterEach(() => jest.clearAllMocks());
+
+	it("expose la langue imposée, sans consulter les préférences", () => {
+		mockGetPreferredLocale.mockReturnValue("fr");
+
+		render(
+			<FixedLocaleProvider locale="en">
+				<Probe />
+			</FixedLocaleProvider>,
+		);
+
+		expect(screen.getByTestId("locale")).toHaveTextContent("en");
+		expect(mockGetPreferredLocale).not.toHaveBeenCalled();
+	});
+
+	it("ignore une demande de changement de langue", () => {
+		render(
+			<FixedLocaleProvider locale="en">
+				<Probe />
+			</FixedLocaleProvider>,
+		);
+
+		act(() => screen.getByRole("button").click());
+
+		expect(screen.getByTestId("locale")).toHaveTextContent("en");
+		expect(mockSetPreferredLocale).not.toHaveBeenCalled();
 	});
 });

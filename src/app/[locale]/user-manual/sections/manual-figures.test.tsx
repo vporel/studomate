@@ -15,6 +15,21 @@ import SimulationSection from "./SimulationSection";
 
 const FIGURES = [
 	{
+		name: "symboles du GRAFCET (fr)",
+		ui: () => renderWithI18n(<GrafcetSection selected="grafcet-steps" />),
+		alt: fr.grafcet.symbolsFigureAlt,
+		file: "grafcet/grafcet-symbols-fr.svg",
+	},
+	{
+		name: "symboles du GRAFCET (en)",
+		ui: () =>
+			renderWithI18n(<GrafcetSection selected="grafcet-steps" />, {
+				locale: "en",
+			}),
+		alt: en.grafcet.symbolsFigureAlt,
+		file: "grafcet/grafcet-symbols-en.svg",
+	},
+	{
 		name: "étape initiale, transition et action",
 		ui: () => renderWithI18n(<GrafcetSection selected="grafcet-steps" />),
 		alt: fr.grafcet.stepsFigureAlt,

@@ -1,6 +1,11 @@
 import Connection from "./connection.schema";
 import Ladder from "./ladder.schema";
 import { createCoilElement, createContactElement } from "./element.schema";
+import {
+	createArithmeticBlockElement,
+	createCompareBlockElement,
+} from "./block.schema";
+import { createTimerBlockElement } from "./function-blocks/timer.schema";
 import Section from "./section.schema";
 
 describe("Ladder", () => {
@@ -31,6 +36,30 @@ describe("Ladder", () => {
 			expect(section.description).toBe("Commande principale");
 		});
 
+		it("getSectionsInOrder suit l'ordre du ladder quel que soit l'ordre des ids", () => {
+			const ladder = new Ladder("l1", "Mon ladder");
+			const a = ladder.createSection("A");
+			const b = ladder.createSection("B");
+			const c = ladder.createSection("C");
+
+			expect(ladder.getSectionsInOrder([c.id, a.id, b.id])).toEqual([a, b, c]);
+		});
+
+		it("getSectionsInOrder ignore les ids inconnus et renvoie [] pour une liste vide", () => {
+			const ladder = new Ladder("l1", "Mon ladder");
+			const a = ladder.createSection("A");
+
+			expect(ladder.getSectionsInOrder(["inconnu", a.id])).toEqual([a]);
+			expect(ladder.getSectionsInOrder([])).toEqual([]);
+		});
+
+		it("getSectionsInOrder ne duplique pas une section dont l'id est répété", () => {
+			const ladder = new Ladder("l1", "Mon ladder");
+			const a = ladder.createSection("A");
+
+			expect(ladder.getSectionsInOrder([a.id, a.id])).toEqual([a]);
+		});
+
 		it("renameSection / setSectionDescription mettent à jour la section ciblée", () => {
 			const ladder = new Ladder("l1", "Mon ladder");
 			const [initial] = ladder.sections;
@@ -40,6 +69,15 @@ describe("Ladder", () => {
 
 			expect(initial.title).toBe("Nouveau titre");
 			expect(initial.description).toBe("Nouvelle description");
+		});
+
+		it("canDeleteSection est faux avec une seule section et vrai dès qu'il y en a deux", () => {
+			const ladder = new Ladder("l1", "Mon ladder");
+			expect(ladder.canDeleteSection()).toBe(false);
+
+			ladder.createSection();
+
+			expect(ladder.canDeleteSection()).toBe(true);
 		});
 
 		it("deleteSection refuse de supprimer la dernière section", () => {
@@ -74,6 +112,31 @@ describe("Ladder", () => {
 				first.id,
 				second.id,
 			]);
+		});
+	});
+
+	it("is never skipped, even empty", () => {
+		expect(new Ladder("l1", "Mon ladder").isSkippedWhenEmpty()).toBe(false);
+	});
+
+	describe("isEmpty", () => {
+		it("est vrai pour un ladder neuf, dont l'unique section n'a aucun élément", () => {
+			expect(new Ladder("l1", "Mon ladder").isEmpty()).toBe(true);
+		});
+
+		it("reste vrai avec plusieurs sections toutes vides", () => {
+			const ladder = new Ladder("l1", "Mon ladder");
+			ladder.createSection("Section 2");
+
+			expect(ladder.isEmpty()).toBe(true);
+		});
+
+		it("est faux dès qu'une section porte un élément", () => {
+			const ladder = new Ladder("l1", "Mon ladder");
+			const section = ladder.createSection("Section 2");
+			ladder.addElements(section.id, [createContactElement("A", "NO", 0, 0)]);
+
+			expect(ladder.isEmpty()).toBe(false);
 		});
 	});
 
@@ -200,6 +263,12 @@ describe("Ladder", () => {
 		});
 	});
 
+	it("isMain is true only for the main role", () => {
+		expect(new Ladder("l1", "L").isMain()).toBe(false);
+		expect(new Ladder("l2", "S", undefined, "standard").isMain()).toBe(false);
+		expect(new Ladder("l3", "Main", undefined, "main").isMain()).toBe(true);
+	});
+
 	it("can be excluded from execution, except the Main", () => {
 		expect(new Ladder("l1", "L").canBeExcludedFromExecution()).toBe(true);
 		expect(
@@ -233,6 +302,28 @@ describe("Ladder", () => {
 			expect(copiedSection.connections).toEqual(section.connections);
 		});
 
+		it("ne partage pas les params des blocs avec l'original", () => {
+			const ladder = new Ladder("l1", "Mon ladder");
+			const [section] = ladder.sections;
+			const compare = createCompareBlockElement(0, 0, {
+				in1: "A",
+				in2: "1",
+				operator: "<",
+			});
+			ladder.addElements(section.id, [compare]);
+
+			const copy = ladder.copy();
+			const copiedBlock = copy.sections[0].elements[0] as typeof compare;
+
+			expect(copiedBlock.data.params).toEqual(compare.data.params);
+			expect(copiedBlock.data.params).not.toBe(compare.data.params);
+
+			copy.renameVariableReferences({ A: "B" });
+
+			expect(copiedBlock.data.params).toMatchObject({ in1: "B" });
+			expect(compare.data.params).toMatchObject({ in1: "A" });
+		});
+
 		it("préserve le rôle du ladder", () => {
 			const main = new Ladder("l1", "Main", undefined, "main");
 			expect(main.copy().role).toBe("main");
@@ -260,6 +351,46 @@ describe("Ladder", () => {
 
 			expect(contact.data.variable).toBe("pompe");
 			expect(coil.data.variable).toBe("pompe");
+		});
+
+		it("réécrit les pinoches de variable des blocs sans toucher aux littéraux ni aux autres params", () => {
+			const ladder = new Ladder("l1", "Mon ladder");
+			const [section] = ladder.sections;
+			const arithmetic = createArithmeticBlockElement(0, 0, {
+				in1: "places",
+				in2: "1",
+				out: "places",
+				operator: "+",
+			});
+			const compare = createCompareBlockElement(0, 2, {
+				in1: "niveau",
+				in2: "places",
+				operator: "<",
+			});
+			const timer = createTimerBlockElement(
+				{ name: "places", timerType: "TON", pt: "niveau", et: "T#3s" },
+				4,
+				0,
+			);
+			ladder.addElements(section.id, [arithmetic, compare, timer]);
+
+			ladder.renameVariableReferences({ places: "spaces", niveau: "level" });
+
+			expect(arithmetic.data.params).toEqual({
+				in1: "spaces",
+				in2: "1",
+				out: "spaces",
+				operator: "+",
+			});
+			expect(compare.data.params).toMatchObject({
+				in1: "level",
+				in2: "spaces",
+			});
+			expect(timer.data.params).toMatchObject({
+				name: "places",
+				pt: "level",
+				et: "T#3s",
+			});
 		});
 
 		it("ne touche pas les éléments référençant une autre variable", () => {
@@ -293,9 +424,7 @@ describe("Ladder", () => {
 			const coil = createCoilElement("moteur", "normal", 0, 1);
 			ladder.addElements(section.id, [contact, coil]);
 
-			expect(() =>
-				ladder.translateExpressionsKeywords(),
-			).not.toThrow();
+			expect(() => ladder.translateExpressionsKeywords()).not.toThrow();
 
 			expect(contact.data.variable).toBe("moteur");
 			expect(coil.data.variable).toBe("moteur");

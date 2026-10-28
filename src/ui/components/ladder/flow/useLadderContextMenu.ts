@@ -1,7 +1,6 @@
 "use client";
 
 import Section from "@/schemas/ladder/section.schema";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { Edge, Node } from "@xyflow/react";
 import React, { useCallback } from "react";
 import useFlowContextMenu from "@/ui/lib/react-flow/useFlowContextMenu";
@@ -13,7 +12,7 @@ import { useLadderContext } from "../context/LadderContext";
  */
 export default function useLadderContextMenu(
 	section: Section,
-	mode: ProjectMode,
+	canEdit: boolean,
 ) {
 	const { contextMenuEvents } = useLadderContext();
 	const { openContextMenu, closeContextMenu } = useFlowContextMenu<any>(
@@ -21,7 +20,7 @@ export default function useLadderContextMenu(
 		useCallback(
 			(element: any) => {
 				if (element.type === "pane") return true;
-				if (mode !== ProjectMode.DESIGN) return false;
+				if (!canEdit) return false;
 				if (
 					element.id &&
 					"position" in element &&
@@ -30,7 +29,7 @@ export default function useLadderContextMenu(
 					return false; // is Node
 				return true;
 			},
-			[mode, section],
+			[canEdit, section],
 		),
 	);
 

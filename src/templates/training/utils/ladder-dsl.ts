@@ -6,6 +6,7 @@ import {
 	createArithmeticBlockElement,
 	createAssignBlockElement,
 	createCompareBlockElement,
+	ConvertBlockParams,
 	createConvertBlockElement,
 	createUserProgramBlockElement,
 } from "@/schemas/ladder/block.schema";
@@ -118,9 +119,14 @@ export const arithmetic = (
 		createArithmeticBlockElement(row, col, { in1, in2, out, operator }),
 	);
 
-export const convert = (out: string, input: string) =>
+export const convert = (
+	out: string,
+	input: string,
+	inType: ConvertBlockParams["inType"],
+	outType: ConvertBlockParams["outType"],
+) =>
 	element((row, col) =>
-		createConvertBlockElement(row, col, { out, in: input }),
+		createConvertBlockElement(row, col, { out, in: input, inType, outType }),
 	);
 
 export const callProgram = (programId: string) =>

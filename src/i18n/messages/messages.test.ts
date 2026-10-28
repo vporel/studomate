@@ -3,8 +3,8 @@ import { getMessages } from "@/i18n/messages";
 
 function flatKeys(obj: unknown, prefix = ""): string[] {
 	if (obj === null || typeof obj !== "object") return [prefix];
-	return Object.entries(obj as Record<string, unknown>).flatMap(([key, value]) =>
-		flatKeys(value, prefix ? `${prefix}.${key}` : key),
+	return Object.entries(obj as Record<string, unknown>).flatMap(
+		([key, value]) => flatKeys(value, prefix ? `${prefix}.${key}` : key),
 	);
 }
 

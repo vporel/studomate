@@ -18,14 +18,6 @@ export function getVariablesPageIdForZone(zone: VariableZone): VariablesPageId {
 	return getVariablesPageDefinitionForZone(zone).id;
 }
 
-export function getVariablesPageData(pageId: VariablesPageId): PageData {
-	return {
-		id: pageId,
-		type: "variables",
-		title: getVariablesPageDefinition(pageId).title,
-	};
-}
-
 const VariablesPage = ({ pageData }: { pageData: VariablesPageData }) => {
 	const pageTitle = usePageTitle();
 	const title = pageTitle({

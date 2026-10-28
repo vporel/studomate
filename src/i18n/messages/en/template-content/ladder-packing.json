@@ -1,0 +1,28 @@
+{
+	"statement": "## Case packing\n\nNo variable is provided: establish then declare the complete table of inputs, outputs and memories (name, role, type, nature, physical behavior of the inputs).\n\n### Specification\n\n1. Conveyor with start/stop: a press on Start starts it, a press on Stop stops it (stop priority).\n2. The thermal relay is wired normally closed: in normal operation its contact is closed (variable true), a fault makes it false (falling edge). A fault stops the conveyor and is stored; once it has disappeared, a new press on Start is needed.\n3. Fault lamp: blinking (system time base `_SYS_TB_500ms`) while the fault is not acknowledged by the Ack button, steady if acknowledged but still present, off once it has disappeared.\n4. Part counting on the sensor's rising edge, preset of 5; at the 5th part, the conveyor stops for 5 s (box changeover), then restarts automatically and the counter is reset.\n5. Structure the program into subprograms called unconditionally by the Main.",
+	"texts": {
+		"projectName": "Case packing",
+		"solutionName": "Case packing: solution",
+		"faultAndStartProgram": "Fault and start",
+		"countingProgram": "Counting",
+		"boxChangeProgram": "Box change",
+		"piecesCounter": "piece_counter",
+		"boxTimer": "t_box",
+		"faultMemoryTitle": "Fault memory",
+		"faultMemoryDescription": "The thermal relay is wired normally closed: its trip is a falling edge.",
+		"ackTitle": "Acknowledgement",
+		"ackDescription": "Acknowledgement stops the blinking, even if the fault is still present.",
+		"faultLampTitle": "Fault lamp",
+		"faultLampDescription": "Blinking while the fault is not acknowledged, steady if acknowledged but still present. A system time base is a square signal, directly usable for blinking.",
+		"startTitle": "Start",
+		"startDescription": "Self-holding with stop priority: a fault cancels it, a new press on Start is needed.",
+		"conveyorTitle": "Conveyor",
+		"conveyorDescription": "Stops at the part counter's preset.",
+		"countingTitle": "Part counting",
+		"countingDescription": "The CTU counts on the sensor's edge.",
+		"changeTimeTitle": "Changeover time",
+		"changeTimeDescription": "The TON measures the box changeover.",
+		"resetTitle": "Reset",
+		"resetDescription": "Automatic restart: the counter starts again from zero."
+	}
+}

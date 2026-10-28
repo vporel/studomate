@@ -24,6 +24,30 @@ describe("ContactAnalyser", () => {
 		};
 	}
 
+	it("signale LADDER_CONTACT_NO_VARIABLE, et non UNDECLARED, quand aucune variable n'est assignée", () => {
+		const rail = createRailTerminalElement(0);
+		const contact = createContactElement("", "NO", 0, 1);
+		const coil = createCoilElement("Q", "normal", 0, 2);
+		const ladder = new Ladder("l1", "L", [
+			createSectionWith(
+				[rail, contact, coil],
+				wireInSeries([rail, contact, coil]),
+			),
+		]);
+
+		const codes = analyser
+			.analyseInContext(
+				contact,
+				ladder,
+				variablesContext(),
+				ProjectFactory.createEmpty(),
+			)
+			.map((i) => i.code);
+
+		expect(codes).toContain("LADDER_CONTACT_NO_VARIABLE");
+		expect(codes).not.toContain("LADDER_CONTACT_VARIABLE_UNDECLARED");
+	});
+
 	it("signale LADDER_CONTACT_VARIABLE_UNDECLARED quand la variable n'est pas dans le dictionnaire", () => {
 		const rail = createRailTerminalElement(0);
 		const contact = createContactElement("A", "NO", 0, 1);

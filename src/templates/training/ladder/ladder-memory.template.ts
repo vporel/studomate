@@ -1,3 +1,5 @@
+import type { Locale } from "@/i18n/config";
+import createTemplateText from "@/templates/template-text";
 import Project from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
 import {
@@ -29,37 +31,35 @@ function createFaultVariables(project: Project): void {
 }
 
 /** The Main holds the solution of the self-holding exercise. */
-export function createLadderMemoryProject(): Project {
-	const project = new Project(createRandomId(), "Pompe : défaut mémorisé", "");
+export function createLadderMemoryProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("ladder-memory", locale);
+	const project = new Project(createRandomId(), t("projectName"), "");
 	createFaultVariables(project);
-	setMainSections(project, [createPumpSelfHoldingSection()]);
+	setMainSections(project, [createPumpSelfHoldingSection(locale)]);
 	return project;
 }
 
-export function createLadderMemorySolution(): Project {
-	const project = new Project(
-		createRandomId(),
-		"Pompe : défaut mémorisé : solution",
-		"",
-	);
+export function createLadderMemorySolution(locale: Locale = "fr"): Project {
+	const t = createTemplateText("ladder-memory", locale);
+	const project = new Project(createRandomId(), t("solutionName"), "");
 	createFaultVariables(project);
 	setMainSections(project, [
 		section(
-			"Mémorisation du défaut",
-			"Le capteur de température est câblé à ouverture : un contact NF détecte la surchauffe.",
+			t("faultMemoryTitle"),
+			t("faultMemoryDescription"),
 			nf("temperature_ok"),
 			setCoil("voyant_defaut"),
 		),
 		section(
-			"Acquittement",
-			"L'acquittement n'a d'effet que si le défaut a disparu.",
+			t("ackTitle"),
+			t("ackDescription"),
 			no("acquit"),
 			no("temperature_ok"),
 			resetCoil("voyant_defaut"),
 		),
 		section(
-			"Commande de la pompe",
-			"La pompe est bloquée tant que le défaut est mémorisé et ne repart qu'avec un nouvel appui sur Marche.",
+			t("pumpTitle"),
+			t("pumpDescription"),
 			or([no("marche")], [no("pompe")]),
 			nf("arret"),
 			no("temperature_ok"),

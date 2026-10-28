@@ -1,7 +1,6 @@
 "use client";
 
-import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import useCanEdit from "@/ui/components/projects/useCanEdit";
 import React from "react";
 import DraggableToolCell from "./DraggableToolCell";
 import {
@@ -21,8 +20,8 @@ const LadderTool = ({
 	children: React.ReactElement;
 }) => {
 	const { setDraggedElement } = useLadderToolbarDnD();
-	const mode = useProjectStore((state) => state.mode);
-	disabled = disabled || mode !== ProjectMode.DESIGN;
+	const canEdit = useCanEdit();
+	disabled = disabled || !canEdit;
 
 	return (
 		<DraggableToolCell

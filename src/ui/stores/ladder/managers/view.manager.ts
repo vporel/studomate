@@ -6,8 +6,8 @@ import {
 	LadderStoreState,
 } from "../ladder.store";
 
-export const LADDER_FLOW_MIN_ZOOM = 1;
-export const LADDER_FLOW_MAX_ZOOM = 2.5;
+export const LADDER_FLOW_MIN_ZOOM = 0.5;
+export const LADDER_FLOW_MAX_ZOOM = 2;
 
 /** Seule la méthode de viewport impérative nous intéresse ici — évite les soucis de variance de
  * générique entre les `ReactFlowInstance<TNode, TEdge>` de chaque section. */
@@ -28,10 +28,9 @@ export interface ZoomableInstance {
 const ZOOM_STEP_FACTOR = 1.2;
 
 /**
- * Le Ladder a une instance React Flow par section, chacune avec son propre zoom (état
- * `zoomBySectionId` du store, piloté par les boutons de l'en-tête de section). Chaque section est
- * resynchronisée impérativement à chaque changement de son zoom pour repincer x/y à 0 (voir
- * `pinViewport`).
+ * Le Ladder a une instance React Flow par section, toutes au même zoom (état `zoom` du store,
+ * piloté par les boutons de la barre d'outils). Chaque section est resynchronisée
+ * impérativement à chaque changement de zoom pour repincer x/y à 0 (voir `pinViewport`).
  */
 export default class LadderViewManager extends AbstractHighlightingViewManager<LadderStoreState> {
 	private setStoreState: LadderStoreSetFunction;
@@ -41,8 +40,8 @@ export default class LadderViewManager extends AbstractHighlightingViewManager<L
 	 * Nombre d'appels à `setViewport` programmatiques encore en vol. `setViewport` déclenche lui
 	 * aussi `onMoveEnd` côté React Flow (vérifié dans `@xyflow/react` — `onTransformChange`
 	 * l'appelle à la fin de toute transition de viewport, geste utilisateur ou pas) : sans ce
-	 * garde, `pinAllViewports` → `onMoveEnd` → `syncFromInstance` → `pinAllViewports` boucle sans
-	 * fin dès qu'il y a plus d'une section enregistrée.
+	 * garde, `pinViewport` → `onMoveEnd` → `syncFromInstance` → `pinViewport` boucle sans fin
+	 * dès qu'il y a plus d'une section enregistrée.
 	 */
 	private pendingProgrammaticMoves = 0;
 
@@ -67,8 +66,8 @@ export default class LadderViewManager extends AbstractHighlightingViewManager<L
 		this.instances.delete(sectionId);
 	}
 
-	getZoom(sectionId: string): number {
-		return this.getStoreState().zoomBySectionId[sectionId] ?? 1;
+	getZoom(): number {
+		return this.getStoreState().zoom;
 	}
 
 	/**
@@ -87,6 +86,10 @@ export default class LadderViewManager extends AbstractHighlightingViewManager<L
 		});
 	}
 
+	private pinAllViewports(zoom: number): void {
+		this.instances.forEach((instance) => this.pinViewport(instance, zoom));
+	}
+
 	/**
 	 * À appeler une fois une section prête (`onInit`) : corrige un éventuel viewport initial
 	 * incohérent (voir `LadderSection.tsx`) sans passer par `syncFromInstance`, qui
@@ -94,52 +97,50 @@ export default class LadderViewManager extends AbstractHighlightingViewManager<L
 	 */
 	resetViewport(sectionId: string): void {
 		const instance = this.instances.get(sectionId);
-		if (instance) this.pinViewport(instance, this.getZoom(sectionId));
+		if (instance) this.pinViewport(instance, this.getZoom());
 	}
 
-	private setSectionZoom(sectionId: string, zoom: number): number {
+	/** Applique `zoom` (borné) à toutes les sections et repince leur viewport. */
+	private applyZoom(zoom: number): void {
 		const clamped = clamp(zoom, LADDER_FLOW_MIN_ZOOM, LADDER_FLOW_MAX_ZOOM);
-		this.setStoreState((state) => ({
-			zoomBySectionId: { ...state.zoomBySectionId, [sectionId]: clamped },
-		}));
-		return clamped;
-	}
-
-	/** Applique `zoom` (borné) à la section et repince son viewport. */
-	private applyZoom(sectionId: string, zoom: number): void {
-		if (
-			this.clamp(zoom) ===
-			(this.getStoreState().zoomBySectionId[sectionId] ?? 1)
-		)
-			return;
-		const clamped = this.setSectionZoom(sectionId, zoom);
-		const instance = this.instances.get(sectionId);
-		if (instance) this.pinViewport(instance, clamped);
-	}
-
-	private clamp(zoom: number): number {
-		return clamp(zoom, LADDER_FLOW_MIN_ZOOM, LADDER_FLOW_MAX_ZOOM);
+		if (clamped === this.getZoom()) return;
+		this.setStoreState({ zoom: clamped });
+		this.pinAllViewports(clamped);
 	}
 
 	/**
-	 * À appeler depuis `onMoveEnd` d'une section : enregistre son zoom et re-pince systématiquement
-	 * x/y à 0 — même si le zoom résultant est inchangé (ex. déjà à la borne min/max), le geste peut
-	 * avoir décalé x sans changer la valeur affichée. Ignoré si le déplacement vient de notre propre
+	 * À appeler depuis `onMoveEnd` d'une section (Ctrl/Cmd + molette compris) : enregistre son zoom
+	 * pour toutes les sections et re-pince systématiquement x/y à 0 sur la section source — même si
+	 * le zoom résultant est inchangé (ex. déjà à la borne min/max), le geste peut avoir décalé x
+	 * sans changer la valeur affichée. Ignoré si le déplacement vient de notre propre
 	 * `pinViewport` (voir `pendingProgrammaticMoves`) — sinon boucle infinie.
 	 */
 	syncFromInstance(sectionId: string, zoom: number): void {
 		if (this.pendingProgrammaticMoves > 0) return;
-		const clamped = this.setSectionZoom(sectionId, zoom);
+		const clamped = clamp(zoom, LADDER_FLOW_MIN_ZOOM, LADDER_FLOW_MAX_ZOOM);
+		if (clamped !== this.getZoom()) {
+			this.setStoreState({ zoom: clamped });
+			this.pinAllViewports(clamped);
+			return;
+		}
 		const instance = this.instances.get(sectionId);
 		if (instance) this.pinViewport(instance, clamped);
 	}
 
-	zoomIn(sectionId: string): void {
-		this.applyZoom(sectionId, this.getZoom(sectionId) * ZOOM_STEP_FACTOR);
+	/** Un pas qui traverse 100 % s'y arrête, pour que le zoom initial reste atteignable. */
+	private step(factor: number): void {
+		const current = this.getZoom();
+		const next = current * factor;
+		const crossesDefault = (current - 1) * (next - 1) < 0;
+		this.applyZoom(crossesDefault ? 1 : next);
 	}
 
-	zoomOut(sectionId: string): void {
-		this.applyZoom(sectionId, this.getZoom(sectionId) / ZOOM_STEP_FACTOR);
+	zoomIn(): void {
+		this.step(ZOOM_STEP_FACTOR);
+	}
+
+	zoomOut(): void {
+		this.step(1 / ZOOM_STEP_FACTOR);
 	}
 
 	dispose(): void {

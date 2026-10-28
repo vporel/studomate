@@ -5,10 +5,7 @@ import {
 	resolvePortSpecs,
 	resolveStructuralPorts,
 } from "@/schemas/ladder/block-definition";
-import {
-	BlockData,
-	getConvertBlockFunctionName,
-} from "@/schemas/ladder/block.schema";
+import { BlockData } from "@/schemas/ladder/block.schema";
 import {
 	getBlockHeightInCellUnits,
 	getParameterPinRows,
@@ -16,6 +13,7 @@ import {
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
 import { useLadderStore } from "@/ui/components/ladder/context/LadderContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import Variable from "@/schemas/variable/variable.schema";
 import { useT } from "@/ui/i18n/useT";
 import { GRID_CELL_HEIGHT } from "@/ui/utils/ladder/ladder-flow-builder";
 import { Box, useTheme } from "@mui/material";
@@ -25,8 +23,10 @@ import { BLOCK_NODE_UI } from "./block-node-ui";
 import BlockNameField from "./BlockNameField";
 import BlockStructuralRow from "./BlockStructuralRow";
 import CompareBlockNode from "./CompareBlockNode";
+import ConvertTypeSelects from "./ConvertTypeSelects";
 import { BLOCK_NODE_DIMENSIONS, PIN_ROW_HEIGHT } from "./dimensions";
 import OperatorSelect from "./OperatorSelect";
+import { getBlockVariableMnemonics } from "@/schemas/ladder/function-blocks/function-block.schema";
 import ParamPinRow from "./ParamPinRow";
 
 export type BlockNodeData = BlockData;
@@ -66,27 +66,15 @@ const BoxBlockNode = ({
 				? state.project?.ladders[data.params.programId]?.name
 				: undefined,
 		) ?? "";
-	// A conversion block shows the standard name of the conversion it applies (`DINT_TO_INT`),
-	// which follows from the types of its IN and OUT variables.
-	const conversionName = useProjectStore((state) =>
-		data.blockType === "convert"
-			? getConvertBlockFunctionName(
-					data.params,
-					(mnemonic) =>
-						state.project?.variables.find((v) => v.mnemonic === mnemonic)?.type,
-				)
-			: null,
-	);
 	// `user-program` n'a pas de libellé fixe : c'est le nom du programme référencé (résolu dans le
 	// store). Timer/compteur portent leur nom dans un champ éditable (`labelSlot`). Toute autre
 	// famille tire son libellé de `BLOCK_DEFINITIONS` (fixe).
 	const label =
-		conversionName ??
-		(def.hasStaticLabel && ui.staticLabelKey
+		def.hasStaticLabel && ui.staticLabelKey
 			? t(ui.staticLabelKey as never)
 			: data.blockType === "user-program"
 				? programName
-				: "");
+				: "";
 	const highlighted = useLadderStore((state) =>
 		state.highlightedNodesIds?.includes(id),
 	);
@@ -98,6 +86,29 @@ const BoxBlockNode = ({
 	const portSpecs = resolvePortSpecs(data);
 	const height = getBlockHeightInCellUnits(portSpecs) * GRID_CELL_HEIGHT;
 	const parameterRows = getParameterPinRows(portSpecs);
+
+	const instanceName =
+		data.blockType === "timer" || data.blockType === "counter"
+			? data.params.name
+			: undefined;
+	const generatedMnemonics = instanceName
+		? getBlockVariableMnemonics(instanceName, portSpecs)
+		: {};
+
+	const getPinValidator =
+		data.blockType === "convert"
+			? (suffix: string) => {
+					const expected =
+						suffix === "IN" ? data.params.inType : data.params.outType;
+					return (variable: Variable) =>
+						variable.type === expected
+							? null
+							: t("convertTypeMismatch", {
+									expected,
+									actual: variable.type,
+								});
+				}
+			: undefined;
 
 	const runUpdate = (params: BlockData["params"]) =>
 		commandsStackManager.executeOperation([
@@ -161,11 +172,16 @@ const BoxBlockNode = ({
 					top={(GRID_CELL_HEIGHT / 2) * (index + 1)}
 					row={row}
 					getValue={(suffix) => def.readParam(data.params, suffix)}
+					getValidator={getPinValidator}
+					getLiveMnemonic={(suffix) => generatedMnemonics[suffix]}
 					onCommit={(suffix, value) =>
 						runUpdate(def.writeParam(data.params, suffix, value))
 					}
 				/>
 			))}
+			{data.blockType === "convert" && (
+				<ConvertTypeSelects params={data.params} onChange={runUpdate} />
+			)}
 			{def.inlineSelect && (
 				<Box
 					sx={{

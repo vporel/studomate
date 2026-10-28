@@ -19,10 +19,12 @@ const HmiPageView = ({
 	initialHmiPage,
 	tabPageId,
 	isSimulation,
+	fitToContainer,
 }: {
 	initialHmiPage: HmiPage;
 	tabPageId?: string;
 	isSimulation?: boolean;
+	fitToContainer?: boolean;
 }) => (
 	<HmiContextProvider initialHmiPage={initialHmiPage}>
 		<HmiWidgetDnDProvider>
@@ -30,6 +32,7 @@ const HmiPageView = ({
 				hmiPageId={initialHmiPage.id}
 				tabPageId={tabPageId}
 				isSimulation={isSimulation}
+				fitToContainer={fitToContainer}
 			/>
 		</HmiWidgetDnDProvider>
 	</HmiContextProvider>

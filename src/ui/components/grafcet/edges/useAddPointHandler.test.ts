@@ -35,12 +35,16 @@ describe("useAddPointHandler", () => {
 	const workflowManager = { updateEdgeData };
 
 	// `vertices` = liste complète `[source, ...coudes, target]`.
-	function setup(mode: ProjectMode, vertices: [number, number][]) {
+	function setup(
+		mode: ProjectMode,
+		vertices: [number, number][],
+		editingEnabled = true,
+	) {
 		(useGrafcetStore as jest.Mock).mockImplementation(
 			selectorImplementation({ workflowManager }),
 		);
 		(useProjectStore as jest.Mock).mockImplementation(
-			selectorImplementation({ mode }),
+			selectorImplementation({ mode, editingEnabled }),
 		);
 		return renderHook(() => useAddPointHandler(vertices, "edge-1"));
 	}
@@ -88,6 +92,21 @@ describe("useAddPointHandler", () => {
 				[7.5, 2.5],
 			],
 		});
+	});
+
+	it("does nothing on a read-only project", () => {
+		const { result } = setup(
+			ProjectMode.DESIGN,
+			[
+				[0, 0],
+				[10, 0],
+			],
+			false,
+		);
+
+		act(() => result.current.addPoint(0));
+
+		expect(updateEdgeData).not.toHaveBeenCalled();
 	});
 
 	it("does nothing outside design mode", () => {

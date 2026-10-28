@@ -3,6 +3,11 @@ import { ProjectMode } from "../ProjectMode.enum";
 import { ProjectStoreState } from "../project.store";
 import LaddersManager from "./ladders.manager";
 
+const mockTrackEvent = jest.fn();
+const mockFeedbackNotify = jest.fn();
+
+beforeEach(() => mockFeedbackNotify.mockClear());
+
 function makeManager(initial: {
 	project?: Project | null;
 	mode?: ProjectMode;
@@ -15,6 +20,7 @@ function makeManager(initial: {
 	let state = {
 		project: initial.project ?? null,
 		mode: initial.mode ?? ProjectMode.DESIGN,
+		editingEnabled: true,
 		activeScope: initial.activeScope ?? "project",
 		activeScopeType: initial.activeScopeType ?? "project",
 		laddersStoresValues: initial.laddersStoresValues ?? {},
@@ -29,7 +35,17 @@ function makeManager(initial: {
 	};
 	const get = () => state;
 
-	return { manager: new LaddersManager(set, get), getState: () => state };
+	return {
+		manager: new LaddersManager(
+			set,
+			get,
+			{ trackEvent: mockTrackEvent },
+			{
+				notify: mockFeedbackNotify,
+			},
+		),
+		getState: () => state,
+	};
 }
 
 function projectWithLadder() {
@@ -90,6 +106,18 @@ describe("LaddersManager", () => {
 				title: "L1",
 			});
 			expect(getState().hasUnsavedChanges).toBe(true);
+			expect(mockFeedbackNotify).toHaveBeenCalledWith("program-created");
+		});
+
+		it("ne signale rien pour l'avis quand la création est refusée", () => {
+			const { manager } = makeManager({
+				project: new Project("p1", "Projet", "auteur"),
+				mode: ProjectMode.SIMULATION,
+			});
+
+			manager.newLadder("L1");
+
+			expect(mockFeedbackNotify).not.toHaveBeenCalled();
 		});
 
 		it("génère un nom unique au format Ladder_N quand aucun nom n'est fourni", () => {
@@ -402,6 +430,44 @@ describe("LaddersManager", () => {
 			manager.syncMountedStoresFromProject();
 
 			expect(adoptLadder).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("clearCommandsStacksOf", () => {
+		it("empties the existing stacks in place, only for the given ids", () => {
+			const { manager } = makeManager({});
+			const target = manager.getCommandsStack("a");
+			const other = manager.getCommandsStack("b");
+			target.commandsToUndo.push([{} as any]);
+			other.commandsToUndo.push([{} as any]);
+
+			manager.clearCommandsStacksOf(["a"]);
+
+			expect(manager.getCommandsStack("a")).toBe(target);
+			expect(target.commandsToUndo).toHaveLength(0);
+			expect(other.commandsToUndo).toHaveLength(1);
+		});
+
+		it("does not create a stack for an unknown id", () => {
+			const { manager } = makeManager({});
+
+			manager.clearCommandsStacksOf(["unknown"]);
+
+			expect(manager.getCommandsStack("unknown").commandsToUndo).toEqual([]);
+			expect((manager as any).commandsStacks.size).toBe(1);
+		});
+
+		it("refreshes the flags of the mounted store", () => {
+			const refreshFlags = jest.fn();
+			const { manager } = makeManager({
+				laddersStoresManagers: {
+					a: { commandsStackManager: { refreshFlags } },
+				},
+			});
+
+			manager.clearCommandsStacksOf(["a", "no-store"]);
+
+			expect(refreshFlags).toHaveBeenCalledTimes(1);
 		});
 	});
 });

@@ -39,10 +39,22 @@ describe("linear-sequence.template", () => {
 			});
 		});
 
-		it("passe l'analyse sans erreur (projet sans programme est valide)", () => {
-			const { analysis } = compilePipelineDetailed(project);
+		it("fournit un grafcet vide à dessiner, nommé comme la solution", () => {
+			const grafcets = Object.values(project.grafcets);
+			expect(grafcets).toHaveLength(1);
+			expect(grafcets[0].isEmpty()).toBe(true);
+			expect(grafcets[0].name).toBe(
+				Object.values(createLinearSequenceSolution().grafcets)[0].name,
+			);
+		});
+
+		it("passe l'analyse, la pré-compilation et la compilation sans erreur (le grafcet vide n'est pas exécuté)", () => {
+			const { analysis, preCompilation, compilation } =
+				compilePipelineDetailed(project);
 			const errors = analysis.issues.filter((i) => i.severity === "error");
 			expect(errors).toHaveLength(0);
+			expect(preCompilation.errors).toHaveLength(0);
+			expect(compilation.errors).toHaveLength(0);
 		});
 	});
 
@@ -76,6 +88,32 @@ describe("linear-sequence.template", () => {
 			expect(Object.keys(grafcet.junctionsAndStarts)).toHaveLength(0);
 			expect(Object.keys(grafcet.junctionsOrStarts)).toHaveLength(0);
 			expect(Object.keys(grafcet.steps)).toHaveLength(4);
+		});
+	});
+
+	describe("langue", () => {
+		it("garde les noms français par défaut et en fr", () => {
+			for (const project of [
+				createLinearSequenceSolution(),
+				createLinearSequenceSolution("fr"),
+			]) {
+				expect(project.name).toBe("Séquence linéaire : solution");
+				expect(Object.values(project.grafcets).map((g) => g.name)).toEqual([
+					"Séquence",
+				]);
+			}
+			expect(createLinearSequenceProject().name).toBe("Séquence linéaire");
+		});
+
+		it("nomme le projet et le programme en anglais, sans accent", () => {
+			const project = createLinearSequenceSolution("en");
+			const names = [
+				project.name,
+				...Object.values(project.grafcets).map((g) => g.name),
+			];
+			expect(names).toEqual(["Linear sequence: solution", "Sequence"]);
+			expect(createLinearSequenceProject("en").name).toBe("Linear sequence");
+			expect(names.join("")).not.toMatch(/[À-ÿ]/);
 		});
 	});
 });

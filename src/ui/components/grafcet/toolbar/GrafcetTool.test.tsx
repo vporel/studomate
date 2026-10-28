@@ -10,9 +10,13 @@ import { GrafcetToolbarDnDProvider } from "./GrafcetToolbarDnDContext";
 
 jest.mock("@/ui/components/projects/ProjectContext");
 
-function setup({ mode = ProjectMode.DESIGN, disabled = false } = {}) {
+function setup({
+	mode = ProjectMode.DESIGN,
+	editingEnabled = true,
+	disabled = false,
+} = {}) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
-		selectorImplementation({ mode }),
+		selectorImplementation({ mode, editingEnabled }),
 	);
 
 	render(
@@ -44,6 +48,13 @@ describe("GrafcetTool", () => {
 
 	it("se désactive hors du mode DESIGN, quel que soit `disabled`", () => {
 		setup({ mode: ProjectMode.SIMULATION, disabled: false });
+		expect(
+			document.querySelector(".grafcet-toolbar__tool--disabled"),
+		).toBeInTheDocument();
+	});
+
+	it("se désactive sur un projet en lecture seule, même en conception", () => {
+		setup({ mode: ProjectMode.DESIGN, editingEnabled: false });
 		expect(
 			document.querySelector(".grafcet-toolbar__tool--disabled"),
 		).toBeInTheDocument();

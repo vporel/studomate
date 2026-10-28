@@ -6,7 +6,8 @@
 		"stopped": "Simulation arrêtée : visualisation seule, les commandes sont sans effet",
 		"running": "Simulation en cours",
 		"paused": "Simulation en pause",
-		"editorClosed": "Éditeur fermé"
+		"editorClosed": "Éditeur fermé",
+		"protocolMismatch": "L'éditeur a été mis à jour : rechargez cette fenêtre"
 	},
 	"missingSession": "Session introuvable. Ouvrez la scène depuis l'éditeur.",
 	"unknownScene": "Scène inconnue de cette version de Studomate.",

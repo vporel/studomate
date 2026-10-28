@@ -1,3 +1,6 @@
+import * as templates from "./ladder-counters.template";
+import type { Locale } from "@/i18n/config";
+import type Project from "@/schemas/project/project.schema";
 import PlcScenario from "@tests/utils/plc-scenario";
 import {
 	BUFFER_CAPACITY,
@@ -70,4 +73,75 @@ describe("ladder-counters.template", () => {
 		expect(scenario.get("stock_vide")).toBe(true);
 		scenario.stop();
 	});
+
+	it("le CTU ne s'arrête pas à PV : CV continue, Q reste vrai", async () => {
+		const scenario = new PlcScenario(createLadderCountersSolution());
+		await scenario.cycles();
+		for (let i = 0; i < PIECES_PRESET + 2; i++) {
+			await scenario.press("capteur_piece", 1);
+			scenario.release("capteur_piece");
+			await scenario.cycles(1);
+		}
+		expect(scenario.get("cpt_pieces.CV")).toBe(PIECES_PRESET + 2);
+		expect(scenario.get("cpt_pieces.Q")).toBe(true);
+		scenario.stop();
+	});
+
+	it("le CTUD ne se bloque ni au-dessus de PV, ni sous zéro", async () => {
+		const scenario = new PlcScenario(createLadderCountersSolution());
+		await scenario.cycles(2);
+		await scenario.press("capteur_sortie", 1);
+		scenario.release("capteur_sortie");
+		await scenario.cycles(1);
+		expect(scenario.get("tampon.CV")).toBe(-1);
+		expect(scenario.get("tampon_vide")).toBe(true);
+		for (let i = 0; i < BUFFER_CAPACITY + 2; i++) {
+			await scenario.press("capteur_entree", 1);
+			scenario.release("capteur_entree");
+			await scenario.cycles(1);
+		}
+		expect(scenario.get("tampon.CV")).toBe(BUFFER_CAPACITY + 1);
+		expect(scenario.get("tampon_plein")).toBe(true);
+		scenario.stop();
+	});
+
+	it("le CTD est chargé à PV par LD : avant le chargement le stock est vide", async () => {
+		const scenario = new PlcScenario(createLadderCountersSolution());
+		await scenario.cycles(2);
+		expect(scenario.get("stock_vide")).toBe(true);
+		await scenario.tap("charge_stock", 2);
+		expect(scenario.get("stock.CV")).toBe(STOCK_INITIAL);
+		scenario.stop();
+	});
+});
+
+describe("ladder-counters.template (langues)", () => {
+	const builders: [(locale?: Locale) => Project, string, string][] = [
+		[templates.createLadderCountersProject, "Comptage", "Counting"],
+		[
+			templates.createLadderCountersSolution,
+			"Comptage : solution",
+			"Counting: solution",
+		],
+	];
+
+	it.each(builders)("garde le nom français en fr (%#)", (build, fr) => {
+		expect(build().name).toBe(fr);
+		expect(build("fr").name).toBe(fr);
+	});
+
+	it.each(builders)(
+		"nomme le projet en anglais, sans accent (%#)",
+		(build, _fr, en) => {
+			const project = build("en");
+			expect(project.name).toBe(en);
+			const titles = Object.values(project.ladders)
+				.flatMap((ladder) => [
+					ladder.name,
+					...ladder.sections.map((s) => s.title),
+				])
+				.join(" ");
+			expect(titles).not.toMatch(/[À-ÿ]/);
+		},
+	);
 });

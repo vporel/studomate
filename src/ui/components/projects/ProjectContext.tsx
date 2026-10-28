@@ -3,209 +3,37 @@ import {
 	createProjectStore,
 	ProjectStoreState,
 } from "@/ui/stores/project/project.store";
-import { setLastMousePosition } from "@/ui/lib/mouse-position";
-import {
-	clearTemplateParamsFromUrl,
-	getProjectIdFromUrl,
-	getShareTokenFromUrl,
-	getTemplateAutostartFromUrl,
-	getTemplateIdFromUrl,
-	getTemplateModeFromUrl,
-	setProjectIdInUrl,
-} from "@/ui/stores/project/url/project-url";
-import { PROJECT_TEMPLATES } from "@/templates/index";
-import { EXERCISE_PAGE_DATA } from "@/ui/components/pages/ExercisePage";
-import {
-	createContext,
-	ReactNode,
-	useContext,
-	useEffect,
-	useRef,
-	useState,
-} from "react";
+import type { ProjectStoreEnvironment } from "@/ui/stores/project/environment/project-store-environment";
+import { createContext, ReactNode, useContext, useRef } from "react";
 import { StoreApi, useStore } from "zustand";
-import AnalysisResult from "./analysis-result/AnalysisResult";
-import CrossReferenceResult from "./cross-reference/CrossReferenceResult";
-import ExportModal from "./ExportModal";
-import NewProjectModal from "./NewProjectModal";
-import ProjectOpenModal from "./ProjectOpenModal";
-import SaveAsModal from "./SaveAsModal";
-import ShareProjectModal from "./ShareProjectModal";
-import ShareRequiresCloudModal from "./ShareRequiresCloudModal";
-import DraftRecoveryDialog from "./DraftRecoveryDialog";
-import DraftConflictDialog from "./DraftConflictDialog";
-import CloudConflictDialog from "./CloudConflictDialog";
-import SaveLocationModal from "./SaveLocationModal";
-import HardwareFirmwareDialog from "./HardwareFirmwareDialog";
-import HardwareObservationDialog from "./HardwareObservationDialog";
-import UnsavedChangesDialog from "./ProjectUnsavedChangesDialog";
-import useShortcutsHandler from "./useShortcutsHandler";
-import { suppressProductTourForThisPageLoad } from "@/ui/components/product-tour/product-tour-eligibility";
-import { parseDraftProject } from "@/persistence/draft.storage";
 
 const ProjectContext = createContext<StoreApi<ProjectStoreState> | null>(null);
 
-function ShortcutsHandler() {
-	useShortcutsHandler();
-	return null;
+/**
+ * Creates, once per mount, the store built on the environment `createEnvironment` returns, and
+ * hands it to `initialize` before anything renders from it.
+ */
+export function useProjectStoreInstance(
+	createEnvironment: () => ProjectStoreEnvironment,
+	initialize?: (store: StoreApi<ProjectStoreState>) => void,
+): StoreApi<ProjectStoreState> {
+	const storeRef = useRef<StoreApi<ProjectStoreState> | null>(null);
+	if (!storeRef.current) {
+		storeRef.current = createProjectStore(createEnvironment());
+		initialize?.(storeRef.current);
+	}
+	return storeRef.current;
 }
 
-export const ProjectContextProvider = ({
+export const ProjectStoreProvider = ({
+	store,
 	children,
 }: {
+	store: StoreApi<ProjectStoreState>;
 	children: ReactNode;
-}) => {
-	const storeRef = useRef<StoreApi<ProjectStoreState> | null>(null);
-
-	if (!storeRef.current) {
-		storeRef.current = createProjectStore();
-	}
-
-	useEffect(() => {
-		const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
-			if (!storeRef.current?.getState().hasUnsavedChanges) return;
-			e.preventDefault();
-		};
-
-		window.addEventListener("beforeunload", beforeUnloadHandler);
-		return () => {
-			window.removeEventListener("beforeunload", beforeUnloadHandler);
-		};
-	}, []);
-
-	useEffect(() => {
-		const handleMouseMove = (event: MouseEvent) => {
-			setLastMousePosition(event.clientX, event.clientY);
-		};
-		window.addEventListener("mousemove", handleMouseMove);
-		return () => {
-			window.removeEventListener("mousemove", handleMouseMove);
-		};
-	}, []);
-
-	// Démarre l'auto-save dès le montage, l'arrête au démontage
-	useEffect(() => {
-		storeRef.current!.getState().lifecycleManager.startAutoSave();
-		return () => {
-			storeRef.current!.getState().lifecycleManager.stopAutoSave();
-		};
-	}, []);
-
-	// Affichée au démarrage à froid (aucun projet ni token dans l'URL) ; réactivée plus bas si
-	// la réouverture d'un projet dont l'id est dans l'URL échoue (id invalide, projet supprimé).
-	const [showDraftDialog, setShowDraftDialog] = useState(
-		() =>
-			!getProjectIdFromUrl() &&
-			!getShareTokenFromUrl() &&
-			!getTemplateIdFromUrl(),
-	);
-
-	// Ouverture par token de partage (prioritaire sur l'id de projet)
-	useEffect(() => {
-		const shareToken = getShareTokenFromUrl();
-		if (!shareToken) return;
-		suppressProductTourForThisPageLoad();
-		const reopen = async () => {
-			const opened = await storeRef
-				.current!.getState()
-				.lifecycleManager.openProjectByShareToken(shareToken);
-			if (!opened) {
-				storeRef.current!.getState().finishBoot();
-				setShowDraftDialog(true);
-			}
-		};
-		void reopen();
-	}, []);
-
-	// Rouvre le projet dont l'id voyage dans l'URL, en cherchant d'abord un brouillon
-	useEffect(() => {
-		if (getShareTokenFromUrl()) return;
-		const projectId = getProjectIdFromUrl();
-		if (!projectId) return;
-		const reopen = async () => {
-			const opened = await storeRef
-				.current!.getState()
-				.lifecycleManager.openProject(projectId, true);
-			if (!opened) {
-				storeRef.current!.getState().finishBoot();
-				setProjectIdInUrl(null);
-				setShowDraftDialog(true);
-			}
-		};
-		void reopen();
-	}, []);
-
-	// Ouverture depuis un lien de template (`?template=id[&template-mode=solution]`, voir la
-	// landing page) — priorité au token de partage / à l'id de projet s'ils sont présents.
-	useEffect(() => {
-		if (getShareTokenFromUrl() || getProjectIdFromUrl()) return;
-		const templateId = getTemplateIdFromUrl();
-		if (!templateId) return;
-		const template = PROJECT_TEMPLATES.find((t) => t.id === templateId);
-		if (!template) {
-			clearTemplateParamsFromUrl();
-			storeRef.current!.getState().finishBoot();
-			setShowDraftDialog(true);
-			return;
-		}
-		const wantsSolution =
-			getTemplateModeFromUrl() === "solution" && !!template.solution;
-		const autostartSimulation = getTemplateAutostartFromUrl();
-		if (autostartSimulation) suppressProductTourForThisPageLoad();
-		const open = async () => {
-			await storeRef
-				.current!.getState()
-				.lifecycleManager.newProjectFromTemplate(
-					templateId,
-					wantsSolution ? "solution" : "exercise",
-				);
-			clearTemplateParamsFromUrl();
-			if (autostartSimulation) {
-				// Pas d'énoncé affiché ici : on veut atterrir directement sur la simulation
-				// (grafcet, ou HMI si le template en a une — voir `openHmiSimulationPageIfAny`),
-				// pas sur la page de démarrage classique.
-				storeRef.current!.getState().simulationManager.setSimulationMode();
-				return;
-			}
-			// Un template ouvert depuis un lien porte un énoncé : on l'affiche directement plutôt
-			// que la page de démarrage classique, exercice comme solution.
-			if (template.statement) {
-				storeRef.current!.getState().pagesManager.openPage(EXERCISE_PAGE_DATA);
-			}
-		};
-		void open();
-	}, []);
-
-	const handleDraftOpen = (draftData: string) => {
-		const project = parseDraftProject(draftData);
-		if (!project) return;
-		void storeRef
-			.current!.getState()
-			.lifecycleManager.openProject(project.id, true);
-	};
-
-	return (
-		<ProjectContext.Provider value={storeRef.current}>
-			{children}
-			<ShortcutsHandler />
-			<UnsavedChangesDialog />
-			<HardwareFirmwareDialog />
-			<HardwareObservationDialog />
-			<NewProjectModal />
-			<ProjectOpenModal />
-			<ExportModal />
-			<SaveAsModal />
-			<ShareProjectModal />
-			<ShareRequiresCloudModal />
-			<AnalysisResult />
-			<CrossReferenceResult />
-			{showDraftDialog && <DraftRecoveryDialog onOpen={handleDraftOpen} />}
-			<DraftConflictDialog />
-			<CloudConflictDialog />
-			<SaveLocationModal />
-		</ProjectContext.Provider>
-	);
-};
+}) => (
+	<ProjectContext.Provider value={store}>{children}</ProjectContext.Provider>
+);
 
 export const useProjectContext = () => useContext(ProjectContext);
 

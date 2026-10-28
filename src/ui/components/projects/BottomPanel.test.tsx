@@ -5,7 +5,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import BottomPanel from "./BottomPanel";
 
 const mockBox = jest.fn();
-jest.mock("@/ui/components/mui/ResizableFixedBox", () => ({
+jest.mock("@/ui/lib/boxes/ResizableFixedBox", () => ({
 	__esModule: true,
 	default: (props: { children: React.ReactNode }) => {
 		mockBox(props);

@@ -2,6 +2,7 @@ import { Dialect } from "@/expression-language/dialect.enum";
 import { analyserEnvironment } from "@tests/utils/test-helpers";
 import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
+import JunctionOrEndBuilder from "@/schemas/grafcet/builders/junction-or-end.builder";
 import StepReferralSourceBuilder from "@/schemas/grafcet/builders/step-referral-source.builder";
 import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
@@ -121,6 +122,68 @@ describe("StepReferralSourceAnalyser", () => {
 			);
 			expect(notExistIssue).toBeDefined();
 			expect(notExistIssue?.severity).toBe("error");
+		});
+
+		it("accepts a referral fed by an OR convergence", () => {
+			const referral = new StepReferralSourceBuilder()
+				.id("referral-1")
+				.targetStepNumber(1)
+				.build();
+			const step1 = new StepBuilder().id("step-1").number(1).initial().build();
+			const step2 = new StepBuilder().id("step-2").number(2).build();
+			const trans1 = new TransitionBuilder()
+				.id("t1")
+				.expression("VRAI")
+				.build();
+			const trans2 = new TransitionBuilder()
+				.id("t2")
+				.expression("VRAI")
+				.build();
+			const junction = new JunctionOrEndBuilder().id("j1").nBranches(2).build();
+			const [b1, b2] = junction.data.branchesOrder;
+			const connections = [
+				new ConnectionBuilder()
+					.id("c1")
+					.source("step", "step-1", "source:successor")
+					.target("transition", "t1", "target:predecessor")
+					.build(),
+				new ConnectionBuilder()
+					.id("c2")
+					.source("step", "step-2", "source:successor")
+					.target("transition", "t2", "target:predecessor")
+					.build(),
+				new ConnectionBuilder()
+					.id("c3")
+					.source("transition", "t1", "source:successor")
+					.target("junction-or-end", "j1", b1)
+					.build(),
+				new ConnectionBuilder()
+					.id("c4")
+					.source("transition", "t2", "source:successor")
+					.target("junction-or-end", "j1", b2)
+					.build(),
+				new ConnectionBuilder()
+					.id("c5")
+					.source("junction-or-end", "j1", "pivot")
+					.target("step-referral-source", "referral-1", "target:predecessor")
+					.build(),
+			];
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addSteps(step1, step2)
+				.addTransitions(trans1, trans2)
+				.addJunctionOrEnd(junction)
+				.addStepReferralSource(referral)
+				.addConnections(...connections)
+				.build();
+
+			const issues = analyser.analyseInContext(
+				referral,
+				grafcet,
+				analyserEnvironment(),
+			);
+
+			expect(issues).toHaveLength(0);
 		});
 
 		it("accepts when target step exists", () => {

@@ -45,6 +45,17 @@ export default class LocalStorageProjectRepository implements ProjectRepository 
 		return this.layoutVersion;
 	}
 
+	/**
+	 * Whether the browser holds at least one local project. Synchronous and read-only: it
+	 * triggers no layout migration and reads either layout.
+	 */
+	hasProjects(): boolean {
+		return (
+			Object.keys(this.readIndex()).length > 0 ||
+			this.readLegacyProjects().length > 0
+		);
+	}
+
 	async list(): Promise<ProjectListResult> {
 		return deserializeProjects(this.readRawProjects());
 	}

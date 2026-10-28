@@ -1,7 +1,8 @@
+import renderGlossaryLink from "@/app/[locale]/training/renderGlossaryLink";
 import createTrainingModulePages from "@/app/[locale]/training/training-pages";
 
 const { generateStepMetadata, generateStepStaticParams, StepPage } =
-	createTrainingModulePages("a3");
+	createTrainingModulePages("a3", { children: renderGlossaryLink });
 
 export const dynamicParams = false;
 

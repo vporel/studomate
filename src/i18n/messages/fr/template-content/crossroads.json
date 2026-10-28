@@ -1,0 +1,22 @@
+{
+	"statement": "## Carrefour de feux tricolores\n\nUn carrefour croise deux axes : Nord-Sud (feux `NS1`, `NS2`) et Est-Ouest (feux `EO1`, `EO2`).\nChaque feu dispose de ses trois sorties `rouge…`, `orange…`, `vert…` (par exemple `vertNS1`).\n\nUne scène 3D (menu Interface → Scène 3D) montre le carrefour : des voitures arrivent en continu sur les quatre branches et obéissent aux feux.\nSi les deux axes passent au vert en même temps, ou sans temps de dégagement suffisant, les voitures **se percutent** : la collision est affichée, le compteur d'accidents augmente et le flux de voitures est réinitialisé.\n\n### Travail demandé\n\n1. Faire fonctionner les deux feux d'un même axe **en parallèle** (même couleur au même instant).\n2. Alterner les deux axes en respectant une phase de **tout-au-rouge** entre chaque changement.\n3. Temporiser les phases et valider le cycle complet en simulation, en vérifiant dans la scène 3D qu'aucune collision ne se produit.",
+	"texts": {
+		"projectName": "Carrefour de feux tricolores",
+		"hmiPageName": "Carrefour",
+		"roadWidgetName": "Chaussée",
+		"titleText": "Carrefour de feux tricolores",
+		"titleWidgetName": "Titre",
+		"directionNorth": "Nord",
+		"directionSouth": "Sud",
+		"directionEast": "Est",
+		"directionWest": "Ouest",
+		"backgroundWidgetName": "Fond {label}",
+		"labelWidgetName": "Étiquette {label}",
+		"colorRed": "rouge",
+		"colorAmber": "orange",
+		"colorGreen": "vert",
+		"indicatorWidgetName": "{color} {label}",
+		"solutionName": "Carrefour de feux tricolores — solution",
+		"grafcetName": "Carrefour de feux tricolores"
+	}
+}

@@ -271,3 +271,89 @@ describe("Grafcet — table des collections d'éléments", () => {
 		});
 	});
 });
+
+describe("Grafcet : vide", () => {
+	it("is empty until it holds an element", () => {
+		const grafcet = new Grafcet("g1", "Grafcet");
+		expect(grafcet.isEmpty()).toBe(true);
+
+		grafcet.addElements([
+			{
+				type: "step",
+				id: "s0",
+				data: { number: 0, initial: true },
+				position: { x: 0, y: 0 },
+			},
+		]);
+
+		expect(grafcet.isEmpty()).toBe(false);
+	});
+
+	it("is skipped while empty", () => {
+		expect(new Grafcet("g1", "Grafcet").isSkippedWhenEmpty()).toBe(true);
+	});
+});
+
+describe("Grafcet : étapes initiales", () => {
+	function grafcetWithSteps(initials: (boolean | undefined)[]): Grafcet {
+		const grafcet = new Grafcet("g1", "Grafcet");
+		grafcet.addElements(
+			initials.map((initial, i) => ({
+				type: "step" as const,
+				id: `s${i}`,
+				data: { number: i, initial },
+				position: { x: i, y: i },
+			})),
+		);
+		return grafcet;
+	}
+
+	it("returns no initial step when there is no step", () => {
+		const grafcet = new Grafcet("g1", "Grafcet");
+		expect(grafcet.getInitialSteps()).toEqual([]);
+		expect(grafcet.hasInitialStep()).toBe(false);
+	});
+
+	it("ignores steps whose initial flag is false or undefined", () => {
+		const grafcet = grafcetWithSteps([false, undefined]);
+		expect(grafcet.getInitialSteps()).toEqual([]);
+		expect(grafcet.hasInitialStep()).toBe(false);
+	});
+
+	it("returns the single initial step", () => {
+		const grafcet = grafcetWithSteps([false, true, undefined]);
+		expect(grafcet.getInitialSteps().map((s) => s.id)).toEqual(["s1"]);
+		expect(grafcet.hasInitialStep()).toBe(true);
+	});
+
+	it("returns every initial step", () => {
+		const grafcet = grafcetWithSteps([true, false, true]);
+		expect(grafcet.getInitialSteps().map((s) => s.id)).toEqual(["s0", "s2"]);
+		expect(grafcet.hasInitialStep()).toBe(true);
+	});
+});
+
+describe("Grafcet.getStepByNumber", () => {
+	const grafcet = new Grafcet("g1", "Grafcet");
+	grafcet.addElements([
+		{ type: "step", id: "s0", data: { number: 0 }, position: { x: 0, y: 0 } },
+		{ type: "step", id: "s3", data: { number: 3 }, position: { x: 0, y: 1 } },
+		{ type: "step", id: "sx", data: { number: "" }, position: { x: 0, y: 2 } },
+	]);
+
+	it("returns the step carrying the number, zero included", () => {
+		expect(grafcet.getStepByNumber(3)?.id).toBe("s3");
+		expect(grafcet.getStepByNumber(0)?.id).toBe("s0");
+	});
+
+	it("returns undefined when no step carries the number", () => {
+		expect(grafcet.getStepByNumber(7)).toBeUndefined();
+	});
+
+	it.each(["", null, undefined] as const)(
+		"returns undefined for the empty value %p, even when a step has no number",
+		(value) => {
+			expect(grafcet.getStepByNumber(value)).toBeUndefined();
+		},
+	);
+});

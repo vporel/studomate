@@ -1,6 +1,6 @@
 "use client";
 
-import { parseProjectFromFile } from "@/persistence/project-file";
+import { importProjectFromFile } from "@/persistence/project-file";
 import Project from "@/schemas/project/project.schema";
 import {
 	openFileDialog,
@@ -55,7 +55,7 @@ export default function ProjectOpenModal() {
 		if (!text) return;
 		let project: Project;
 		try {
-			project = parseProjectFromFile(text);
+			project = importProjectFromFile(text);
 		} catch (err: any) {
 			console.error("Failed to parse project JSON:", err);
 			alert(t("readError"));

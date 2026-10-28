@@ -1,0 +1,14 @@
+{
+	"title": "Votre avis nous intéresse",
+	"intro": "Studomate vous est-il utile ? Une note et quelques mots nous aident à l'améliorer.",
+	"ratingLabel": "Votre note",
+	"ratingValue": "{count, plural, one {# étoile sur 5} other {# étoiles sur 5}}",
+	"commentLabel": "Commentaire (facultatif)",
+	"commentPlaceholder": "Ce qui vous plaît, ce qui manque, ce qui vous a bloqué…",
+	"send": "Envoyer",
+	"sending": "Envoi…",
+	"later": "Plus tard",
+	"cancel": "Annuler",
+	"thanks": "Merci pour votre avis !",
+	"error": "L'envoi a échoué. Réessayez dans un instant."
+}

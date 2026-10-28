@@ -4,37 +4,39 @@
 import { act, fireEvent, screen } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import SectionUpdateCommand from "@/schemas/ladder/commands/section-update.command";
+import Ladder from "@/schemas/ladder/ladder.schema";
 import Section from "@/schemas/ladder/section.schema";
+import useCanEdit from "@/ui/components/projects/useCanEdit";
 import { useLadderStore } from "../context/LadderContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import LadderSectionHeader from "./LadderSectionHeader";
 
 jest.mock("../context/LadderContext");
+jest.mock("@/ui/components/projects/useCanEdit");
 
 function setup({
 	title = "Ma section",
 	index = 0,
 	collapsed = false,
 	sectionsCount = 2,
-	zoom = 1,
 	onToggleCollapse = jest.fn(),
 	executeOperation = jest.fn(),
-	zoomIn = jest.fn(),
-	zoomOut = jest.fn(),
 	duplicateSection = jest.fn(),
 	copySections = jest.fn(),
 	deleteSections = jest.fn(),
 	selectedSectionIds = [] as string[],
+	canEdit = true,
 } = {}) {
+	(useCanEdit as jest.Mock).mockReturnValue(canEdit);
 	const section = new Section("s1", title, "", [], []);
+	const ladder = new Ladder("l1", "Ladder");
+	for (let i = 1; i < sectionsCount; i++) ladder.createSection();
 	(useLadderStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			commandsStackManager: { executeOperation },
-			ladder: { sections: new Array(sectionsCount).fill(null) },
-			viewManager: { zoomIn, zoomOut },
+			ladder,
 			workflowManager: { deleteSections },
 			copyCutPasteManager: { duplicateSection, copySections },
-			zoomBySectionId: { [section.id]: zoom },
 			selectedSectionIds,
 		}),
 	);
@@ -54,8 +56,6 @@ function setup({
 		section,
 		executeOperation,
 		onToggleCollapse,
-		zoomIn,
-		zoomOut,
 		duplicateSection,
 		copySections,
 		deleteSections,
@@ -143,6 +143,33 @@ describe("LadderSectionHeader — suppression et réordonnancement", () => {
 	});
 });
 
+describe("LadderSectionHeader — projet en lecture seule", () => {
+	it("rend le titre non éditable", () => {
+		setup({ canEdit: false });
+
+		expect(screen.getByLabelText("Titre du réseau")).toHaveAttribute(
+			"readonly",
+		);
+	});
+
+	it("désactive Supprimer, Dupliquer et la poignée de réordonnancement", () => {
+		setup({ sectionsCount: 3, canEdit: false });
+
+		expect(screen.getByLabelText("Supprimer le réseau")).toBeDisabled();
+		expect(screen.getByLabelText("Dupliquer le réseau")).toBeDisabled();
+		expect(screen.getByLabelText("Réordonner le réseau")).toHaveAttribute(
+			"aria-disabled",
+			"true",
+		);
+	});
+
+	it("garde Copier disponible", () => {
+		setup({ canEdit: false });
+
+		expect(screen.getByLabelText("Copier le réseau")).not.toBeDisabled();
+	});
+});
+
 describe("LadderSectionHeader — duplication", () => {
 	it("appelle duplicateSection au clic sur Dupliquer", () => {
 		const { section, duplicateSection } = setup();
@@ -215,33 +242,10 @@ describe("LadderSectionHeader — sélection de section et copie", () => {
 	});
 });
 
-describe("LadderSectionHeader — zoom de la section", () => {
-	it("zoome / dézoome la section via le viewManager", () => {
-		const { section, zoomIn, zoomOut } = setup({ zoom: 1.5 });
+describe("LadderSectionHeader — zoom", () => {
+	it("n'offre pas de zoom propre à la section (il est commun, dans la barre d'outils)", () => {
+		setup();
 
-		fireEvent.click(screen.getByLabelText("Zoomer le réseau"));
-		fireEvent.click(screen.getByLabelText("Dézoomer le réseau"));
-
-		expect(zoomIn).toHaveBeenCalledWith(section.id);
-		expect(zoomOut).toHaveBeenCalledWith(section.id);
-	});
-
-	it("désactive Zoomer à la borne max", () => {
-		setup({ zoom: 2.5 });
-		expect(screen.getByLabelText("Zoomer le réseau")).toBeDisabled();
-		expect(screen.getByLabelText("Dézoomer le réseau")).not.toBeDisabled();
-	});
-
-	it("désactive Dézoomer à la borne min", () => {
-		setup({ zoom: 1 });
-		expect(screen.getByLabelText("Dézoomer le réseau")).toBeDisabled();
-		expect(screen.getByLabelText("Zoomer le réseau")).not.toBeDisabled();
-	});
-
-	it("masque les boutons de zoom quand la section est repliée", () => {
-		setup({ collapsed: true });
-
-		expect(screen.queryByLabelText("Zoomer le réseau")).toBeNull();
-		expect(screen.queryByLabelText("Dézoomer le réseau")).toBeNull();
+		expect(screen.queryByLabelText(/zoom/i)).toBeNull();
 	});
 });

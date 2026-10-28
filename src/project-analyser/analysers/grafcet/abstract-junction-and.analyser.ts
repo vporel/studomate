@@ -62,6 +62,12 @@ export default abstract class AbstractJunctionAndAnalyser<
 			);
 		}
 
+		if (!JunctionHelper.hasMinimumBranches(junction.data)) {
+			issues.push(
+				new ProjectAnalyserIssue("error", "JUNCTION_AND_MIN_BRANCHES", source),
+			);
+		}
+
 		if (!JunctionHelper.areAllBranchesConnected(junction.id, grafcet)) {
 			issues.push(
 				new ProjectAnalyserIssue(

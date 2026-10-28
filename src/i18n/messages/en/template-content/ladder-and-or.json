@@ -1,0 +1,8 @@
+{
+	"statement": "## Contacts in series and in parallel\n\nInputs: `a`, `b` (two selectors that keep their position, at 0 at rest). Outputs: `s_and`, `s_or`.\n\n### Task\n\n1. Open the Main program: two networks, one below the other.\n2. Start the simulation, then toggle `a` and `b` through the four combinations.\n3. Compare `s_and` and `s_or` with the truth table from the theory.",
+	"texts": {
+		"projectName": "Contacts in series and in parallel",
+		"seriesTitle": "Contacts in series",
+		"parallelTitle": "Contacts in parallel"
+	}
+}

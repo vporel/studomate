@@ -52,6 +52,8 @@ interface HmiWidgetItemProps {
 	widget: HmiWidget;
 	isSelected: boolean;
 	isSimulation: boolean;
+	/** Le widget peut être déplacé : par défaut quand on n'est pas en simulation. */
+	editable?: boolean;
 	/** N'affiche la poignée que pour une sélection d'un seul widget — pas de redimensionnement
 	 * de groupe. */
 	showResizeHandle: boolean;
@@ -81,6 +83,7 @@ const HmiWidgetItem = ({
 	widget,
 	isSelected,
 	isSimulation,
+	editable = !isSimulation,
 	showResizeHandle,
 	previewOffset,
 	previewSize,
@@ -137,7 +140,7 @@ const HmiWidgetItem = ({
 				height: size.height,
 				zIndex: widget.stackOrder + HMI_WIDGET_ZINDEX_OFFSET,
 				outline: isSelected && !isSimulation ? "2px dashed #1976d2" : "none",
-				cursor: isSimulation ? "default" : "grab",
+				cursor: editable ? "grab" : "default",
 			}}
 		>
 			<Component

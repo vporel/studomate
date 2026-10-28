@@ -44,6 +44,16 @@ export type PreCompiledCoilAssignment = {
 	variable: string;
 	mode: CoilType;
 	condition: ASTNode;
+	/**
+	 * Renseigné pour une bobine qui n'est ni de front ni sans connexion entrante : `reachId`
+	 * identifie les connexions entrantes, donc la condition d'alimentation `reach` que partagent
+	 * les bobines d'un même départ de branches parallèles ; `inverted` indique que `condition`
+	 * est la négation de `reach`. `LadderCompiler` évalue `reach` une seule fois pour toutes les
+	 * bobines consécutives de même `reachId`, comme le résultat d'un réseau sur un automate.
+	 */
+	reachId?: string;
+	reach?: ASTNode;
+	inverted?: boolean;
 };
 
 /**
@@ -206,13 +216,17 @@ function buildContactEdgeAssignments(
 function buildCoilAssignments(
 	coil: CoilElement,
 	condition: ASTNode,
+	reachId: string | undefined,
 ): PreCompiledLadderAssignment[] {
 	const { type, variable } = coil.data;
 	const base = { kind: "coil", coilId: coil.id, variable } as const;
+	const shared = reachId === undefined ? {} : { reachId, reach: condition };
 	if (type === "inverted") {
 		return [
 			{
 				...base,
+				...shared,
+				inverted: reachId === undefined ? undefined : true,
 				mode: "normal",
 				condition: ExpressionsBuilder.buildUnaryExpressionNode(
 					"NOT",
@@ -221,7 +235,8 @@ function buildCoilAssignments(
 			},
 		];
 	}
-	if (!isEdgeCoilType(type)) return [{ ...base, mode: type, condition }];
+	if (!isEdgeCoilType(type))
+		return [{ ...base, ...shared, mode: type, condition }];
 
 	const memoMnemonic = getContactMemoryVariableMnemonic(coil.id);
 	const memoNode = IdentifiersBuilder.buildIdentifierNode(memoMnemonic);
@@ -726,7 +741,10 @@ function computeSectionAssignments(
 		incomingByTarget.set(connection.target.id, list);
 	}
 
-	const connectedGroupTopRow = connectedGroupTopRowByElementId(elements, connections);
+	const connectedGroupTopRow = connectedGroupTopRowByElementId(
+		elements,
+		connections,
+	);
 	const sortedByColumn = [...elements].sort(
 		(a, b) =>
 			(connectedGroupTopRow.get(a.id) ?? a.position.row) -
@@ -759,6 +777,12 @@ function computeSectionAssignments(
 				...buildCoilAssignments(
 					element,
 					reach ?? LiteralsBuilder.buildBooleanNode(true),
+					incoming.length > 0
+						? incoming
+								.map((connection) => connection.source.id)
+								.sort()
+								.join("|")
+						: undefined,
 				),
 			);
 		} else if (element.type === "railTerminal") {

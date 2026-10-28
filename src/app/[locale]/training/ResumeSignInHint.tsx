@@ -46,7 +46,11 @@ export default function ResumeSignInHint({
 
 	return (
 		<Stack gap={0.5} alignItems="flex-start">
-			<Typography variant="body2" color="text.secondary" sx={{ whiteSpace: "pre-line" }}>
+			<Typography
+				variant="body2"
+				color="text.secondary"
+				sx={{ whiteSpace: "pre-line" }}
+			>
 				{hint}
 			</Typography>
 			<Link

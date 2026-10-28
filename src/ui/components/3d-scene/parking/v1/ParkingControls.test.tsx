@@ -69,6 +69,14 @@ describe("ParkingControls", () => {
 		expect(group(/Pupitre/i).queryByRole("button")).toBeNull();
 	});
 
+	it("stacks the lamps in a single column", () => {
+		setup();
+		const lamps =
+			screen.getByText("Demande entrée").parentElement!.parentElement!;
+		expect(lamps.style.flexDirection).toBe("column");
+		expect(lamps.style.display).toBe("flex");
+	});
+
 	it("shows the places counter in the console, or a dash while unknown", () => {
 		const known = setup({
 			state: { ...ParkingModel.createState(), places: 3 },

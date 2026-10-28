@@ -1,9 +1,40 @@
+import * as templates from "./ladder-interlock.template";
+import type { Locale } from "@/i18n/config";
+import Project from "@/schemas/project/project.schema";
+import { getInputRestValue } from "@/schemas/variable/input-behavior";
 import PlcScenario from "@tests/utils/plc-scenario";
-import { createLadderInterlockSolution } from "./ladder-interlock.template";
+import {
+	createLadderInterlockProject,
+	createLadderInterlockSolution,
+} from "./ladder-interlock.template";
+
+function restValue(project: Project, name: string) {
+	return getInputRestValue(
+		project.variables.find((v) => v.mnemonic === name)?.behavior,
+	);
+}
 
 describe("ladder-interlock.template", () => {
 	beforeEach(() => jest.useFakeTimers());
 	afterEach(() => jest.useRealTimers());
+
+	it("l'énoncé fournit trois boutons poussoirs câblés NO, à 0 au repos", () => {
+		const project = createLadderInterlockProject();
+		for (const name of ["avant", "arriere", "arret"]) {
+			expect(restValue(project, name)).toBe(false);
+		}
+	});
+
+	it("marche arrière en cours, un appui sur avant est sans effet", async () => {
+		const scenario = new PlcScenario(createLadderInterlockSolution());
+		await scenario.tap("arriere");
+		await scenario.cycles(2);
+		await scenario.tap("avant");
+		await scenario.cycles(2);
+		expect(scenario.get("moteur_ar")).toBe(true);
+		expect(scenario.get("moteur_av")).toBe(false);
+		scenario.stop();
+	});
 
 	it("ne commande jamais les deux sens à la fois", async () => {
 		const scenario = new PlcScenario(createLadderInterlockSolution());
@@ -29,4 +60,39 @@ describe("ladder-interlock.template", () => {
 		expect(scenario.get("moteur_ar")).toBe(true);
 		scenario.stop();
 	});
+});
+
+describe("ladder-interlock.template (langues)", () => {
+	const builders: [(locale?: Locale) => Project, string, string][] = [
+		[
+			templates.createLadderInterlockProject,
+			"Moteur deux sens",
+			"Two-direction motor",
+		],
+		[
+			templates.createLadderInterlockSolution,
+			"Moteur deux sens : solution",
+			"Two-direction motor: solution",
+		],
+	];
+
+	it.each(builders)("garde le nom français en fr (%#)", (build, fr) => {
+		expect(build().name).toBe(fr);
+		expect(build("fr").name).toBe(fr);
+	});
+
+	it.each(builders)(
+		"nomme le projet en anglais, sans accent (%#)",
+		(build, _fr, en) => {
+			const project = build("en");
+			expect(project.name).toBe(en);
+			const titles = Object.values(project.ladders)
+				.flatMap((ladder) => [
+					ladder.name,
+					...ladder.sections.map((s) => s.title),
+				])
+				.join(" ");
+			expect(titles).not.toMatch(/[À-ÿ]/);
+		},
+	);
 });

@@ -39,7 +39,7 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 	 * puisse voir ce que les autres génèrent.
 	 */
 	generateVariables(grafcet: Grafcet, dialect: Dialect): Variable[] {
-		return this.buildstepsVariables(grafcet, dialect);
+		return this.buildStepsVariables(grafcet, dialect);
 	}
 
 	/**
@@ -163,7 +163,8 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 		const issues: ProjectAnalyserIssue[] = [];
 		for (const [mnemonic, grafcetNames] of mnemonicToGrafcetNames) {
 			if (grafcetNames.length < 2) continue;
-			const stepNumber = parseInt(mnemonic.slice(1)); // X{n} → n
+			const stepNumber = StepHelper.parseStepVariableMnemonic(mnemonic);
+			if (stepNumber === null) continue;
 			const names = grafcetNames.map((n) => `"${n}"`).join(", ");
 			issues.push(
 				new ProjectAnalyserIssue(
@@ -182,7 +183,7 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 	 * Mnemonic: X{stepNumber} — deduplicated by mnemonic so duplicate-number errors
 	 * don't produce duplicate variables.
 	 */
-	private buildstepsVariables(grafcet: Grafcet, dialect: Dialect): Variable[] {
+	private buildStepsVariables(grafcet: Grafcet, dialect: Dialect): Variable[] {
 		const seen = new Set<number>();
 		const variables: Variable[] = [];
 
@@ -276,9 +277,7 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 	 * plusieurs) à l'analyse, pour que l'erreur ne fuite jamais jusqu'à la compilation.
 	 */
 	private checkInitialStep(grafcet: Grafcet): ProjectAnalyserIssue[] {
-		const initialStepsCount = Object.values(grafcet.steps).filter(
-			(s) => s.data.initial === true,
-		).length;
+		const initialStepsCount = grafcet.getInitialSteps().length;
 		if (initialStepsCount === 0) {
 			return [
 				new ProjectAnalyserIssue("error", "GRAFCET_NO_INITIAL_STEP", {
@@ -488,9 +487,7 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 	 */
 	private checkDirectedReachability(grafcet: Grafcet): ProjectAnalyserIssue[] {
 		if (grafcet.connections.length === 0) return [];
-		const initialStepIds = Object.values(grafcet.steps)
-			.filter((s) => s.data.initial === true)
-			.map((s) => s.id);
+		const initialStepIds = grafcet.getInitialSteps().map((s) => s.id);
 		if (initialStepIds.length === 0) return []; // Already reported by checkInitialStep
 
 		const forward = new Map<string, Set<string>>();

@@ -1,6 +1,6 @@
 import type { StepData } from "../ModuleStepper";
 import type { TrainingTranslator } from "../training-translator";
-import A1_STEP_IDS from "./step-ids";
+import A1_STEP_IDS from "@/training/step-ids/a1";
 
 export default function buildA1Steps(t: TrainingTranslator): StepData[] {
 	return [
@@ -17,20 +17,54 @@ export default function buildA1Steps(t: TrainingTranslator): StepData[] {
 			body: t.raw("theoryBody") as string[],
 		},
 		{
+			id: A1_STEP_IDS.observeLinear,
+			kind: "exercise",
+			title: t("observeLinearTitle"),
+			body: t.raw("observeLinearBody") as string[],
+			embeddedTemplateId: "linear-sequence",
+			embeddedWatchOpen: true,
+			cta: {
+				templateId: "linear-sequence",
+				exerciseLabel: t("observeSimulationCta"),
+				primaryMode: "solution",
+				autostartSimulation: true,
+			},
+		},
+		{
 			id: A1_STEP_IDS.theoryActions,
 			kind: "theory",
 			title: t("theoryActionsTitle"),
 			body: t.raw("theoryActionsBody") as string[],
 		},
 		{
+			id: A1_STEP_IDS.observeActions,
+			kind: "exercise",
+			title: t("observeActionsTitle"),
+			body: t.raw("observeActionsBody") as string[],
+			embeddedTemplateId: "parking",
+			embeddedScene3d: true,
+			cta: {
+				templateId: "parking",
+				exerciseLabel: t("observeSimulationCta"),
+				primaryMode: "solution",
+				autostartSimulation: true,
+			},
+		},
+		{
 			id: A1_STEP_IDS.exerciseLinear,
 			kind: "exercise",
 			title: t("exerciseLinearTitle"),
 			body: t.raw("exerciseLinearBody") as string[],
+			embeddedTemplateId: "linear-sequence",
+			embeddedExercise: {
+				exerciseTab: t("ctaExercise"),
+				solutionTab: t("ctaSolution"),
+				initialView: { type: "grafcet" },
+			},
+			embeddedWatchOpen: true,
 			cta: {
 				templateId: "linear-sequence",
-				exerciseLabel: t("exerciseLinearCta"),
-				solutionLabel: t("ctaSolution"),
+				exerciseLabel: t("openEditorCta"),
 			},
 		},
 		{
@@ -40,14 +74,32 @@ export default function buildA1Steps(t: TrainingTranslator): StepData[] {
 			body: t.raw("theoryTimerBody") as string[],
 		},
 		{
+			id: A1_STEP_IDS.observeTimer,
+			kind: "exercise",
+			title: t("observeTimerTitle"),
+			body: t.raw("observeTimerBody") as string[],
+			embeddedTemplateId: "timer-cycle",
+			cta: {
+				templateId: "timer-cycle",
+				exerciseLabel: t("observeSimulationCta"),
+				primaryMode: "solution",
+				autostartSimulation: true,
+			},
+		},
+		{
 			id: A1_STEP_IDS.synthesisTrafficLight,
 			kind: "synthesis",
 			title: t("synthesisTrafficLightTitle"),
 			body: t.raw("synthesisTrafficLightBody") as string[],
+			embeddedTemplateId: "traffic-light",
+			embeddedExercise: {
+				exerciseTab: t("ctaExercise"),
+				solutionTab: t("ctaSolution"),
+				initialView: { type: "grafcet" },
+			},
 			cta: {
 				templateId: "traffic-light",
-				exerciseLabel: t("ctaExercise"),
-				solutionLabel: t("ctaSolution"),
+				exerciseLabel: t("openEditorCta"),
 			},
 		},
 		{
@@ -61,21 +113,37 @@ export default function buildA1Steps(t: TrainingTranslator): StepData[] {
 			kind: "exercise",
 			title: t("exerciseOrDivergenceTitle"),
 			body: t.raw("exerciseOrDivergenceBody") as string[],
+			embeddedTemplateId: "or-divergence",
+			embeddedExercise: {
+				exerciseTab: t("ctaExercise"),
+				solutionTab: t("ctaSolution"),
+				initialView: { type: "grafcet" },
+			},
 			cta: {
 				templateId: "or-divergence",
-				exerciseLabel: t("exerciseOrDivergenceCta"),
-				solutionLabel: t("ctaSolution"),
+				exerciseLabel: t("openEditorCta"),
 			},
+		},
+		{
+			id: A1_STEP_IDS.theoryAndDivergence,
+			kind: "theory",
+			title: t("theoryAndDivergenceTitle"),
+			body: t.raw("theoryAndDivergenceBody") as string[],
 		},
 		{
 			id: A1_STEP_IDS.exerciseAndDivergence,
 			kind: "exercise",
-			title: t("theoryAndDivergenceTitle"),
-			body: t.raw("theoryAndDivergenceBody") as string[],
+			title: t("exerciseAndDivergenceTitle"),
+			body: t.raw("exerciseAndDivergenceBody") as string[],
+			embeddedTemplateId: "and-divergence",
+			embeddedExercise: {
+				exerciseTab: t("ctaExercise"),
+				solutionTab: t("ctaSolution"),
+				initialView: { type: "grafcet" },
+			},
 			cta: {
 				templateId: "and-divergence",
-				exerciseLabel: t("exerciseAndDivergenceCta"),
-				solutionLabel: t("ctaSolution"),
+				exerciseLabel: t("openEditorCta"),
 			},
 		},
 		{
@@ -85,7 +153,7 @@ export default function buildA1Steps(t: TrainingTranslator): StepData[] {
 			body: t.raw("synthesisParkingBody") as string[],
 			cta: {
 				templateId: "parking",
-				exerciseLabel: t("ctaExercise"),
+				exerciseLabel: t("openEditorCta"),
 				solutionLabel: t("ctaSolution"),
 			},
 		},
@@ -96,7 +164,7 @@ export default function buildA1Steps(t: TrainingTranslator): StepData[] {
 			body: t.raw("synthesisCrossroadsBody") as string[],
 			cta: {
 				templateId: "crossroads",
-				exerciseLabel: t("ctaExercise"),
+				exerciseLabel: t("openEditorCta"),
 				solutionLabel: t("ctaSolution"),
 			},
 		},

@@ -227,4 +227,36 @@ describe("elevator.template", () => {
 			expect(compilation.result).toBeDefined();
 		});
 	});
+
+	describe("langue", () => {
+		it("garde les noms français par défaut et en fr", () => {
+			for (const project of [
+				createElevatorSolution(),
+				createElevatorSolution("fr"),
+			]) {
+				expect(project.name).toBe("Ascenseur — solution");
+				expect(Object.values(project.grafcets).map((g) => g.name)).toEqual([
+					"Commande",
+				]);
+				expect(Object.values(project.ladders).map((l) => l.name)).toContain(
+					"Affichage",
+				);
+			}
+		});
+
+		it("nomme projet, programmes et sections en anglais, sans accent", () => {
+			const project = createElevatorSolution("en");
+			const ladders = Object.values(project.ladders);
+			const names = [
+				project.name,
+				...Object.values(project.grafcets).map((g) => g.name),
+				...ladders.map((l) => l.name),
+				...ladders.flatMap((l) => l.sections.map((s) => s.title)),
+				...ladders.flatMap((l) => l.sections.map((s) => s.description)),
+			];
+			expect(project.name).toBe("Elevator: solution");
+			expect(ladders.map((l) => l.name)).toContain("Display");
+			expect(names.join("")).not.toMatch(/[À-ÿ]/);
+		});
+	});
 });

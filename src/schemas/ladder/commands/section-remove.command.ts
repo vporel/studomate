@@ -17,8 +17,7 @@ export default class SectionRemoveCommand extends AbstractLadderCommand<{
 	}
 
 	execute(ladder: Ladder): [ladder: Ladder, isCommandValid: boolean] {
-		//Un ladder porte toujours au moins une section.
-		if (ladder.sections.length <= 1) return [ladder, false];
+		if (!ladder.canDeleteSection()) return [ladder, false];
 		if (!ladder.getSection(this.payload.sectionId)) return [ladder, false];
 		ladder.deleteSection(this.payload.sectionId);
 		return [ladder, true];

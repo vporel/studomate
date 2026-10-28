@@ -89,50 +89,33 @@ export default class TransitionHelper {
 					break;
 				}
 				case "step-referral-source": {
-					// Resolve the referenced step by its number in the current grafcet
-					const referralSource =
-						grafcet.getElementByIdAndType<StepReferralSource>(
-							connection.target.id,
-							"step-referral-source",
-						);
-					if (referralSource && referralSource.data.targetStepNumber !== "") {
-						const step = Object.values(grafcet.steps).find(
-							(s) => s.data.number === referralSource.data.targetStepNumber,
-						);
-						if (step) successorSteps.push(step);
-					}
+					const step = TransitionHelper.resolveReferredStep(
+						connection.target.id,
+						grafcet,
+					);
+					if (step) successorSteps.push(step);
 					break;
 				}
 				case "junction-or-end": {
-					// OR convergence: the junction-or-end connects to the next step via its pivot handle
 					const pivotConns = grafcet.getConnectionsByElementIdAndHandle(
 						connection.target.id,
 						JUNCTION_HANDLE_PIVOT,
 					);
 					for (const pivotConn of pivotConns) {
 						if (pivotConn.source.id !== connection.target.id) continue;
-						if (pivotConn.target.type === "step") {
-							const step = grafcet.getElementByIdAndType<Step>(
-								pivotConn.target.id,
-								"step",
-							);
-							if (step) successorSteps.push(step);
-						} else if (pivotConn.target.type === "step-referral-source") {
-							const referralSource =
-								grafcet.getElementByIdAndType<StepReferralSource>(
-									pivotConn.target.id,
-									"step-referral-source",
-								);
-							if (
-								referralSource &&
-								referralSource.data.targetStepNumber !== ""
-							) {
-								const step = Object.values(grafcet.steps).find(
-									(s) => s.data.number === referralSource.data.targetStepNumber,
-								);
-								if (step) successorSteps.push(step);
-							}
-						}
+						const step =
+							pivotConn.target.type === "step"
+								? grafcet.getElementByIdAndType<Step>(
+										pivotConn.target.id,
+										"step",
+									)
+								: pivotConn.target.type === "step-referral-source"
+									? TransitionHelper.resolveReferredStep(
+											pivotConn.target.id,
+											grafcet,
+										)
+									: undefined;
+						if (step) successorSteps.push(step);
 					}
 					break;
 				}
@@ -143,6 +126,19 @@ export default class TransitionHelper {
 			}
 		}
 		return successorSteps;
+	}
+
+	private static resolveReferredStep(
+		referralSourceId: string,
+		grafcet: Grafcet,
+	): Step | undefined {
+		const referralSource = grafcet.getElementByIdAndType<StepReferralSource>(
+			referralSourceId,
+			"step-referral-source",
+		);
+		return referralSource
+			? grafcet.getStepByNumber(referralSource.data.targetStepNumber)
+			: undefined;
 	}
 
 	/**

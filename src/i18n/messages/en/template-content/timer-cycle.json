@@ -1,0 +1,8 @@
+{
+	"statement": "## Timer\n\nOutputs: `output1`, `output2`. No input: the cycle depends on time alone.\n\n### Work to do\n\n1. In the initial step, activate `output1`.\n2. After 4 seconds, activate `output2` instead.\n3. After 2 seconds, go back to the initial step, in a loop.",
+	"texts": {
+		"projectName": "Timer",
+		"solutionName": "Timer: solution",
+		"grafcetName": "Timer"
+	}
+}

@@ -1,3 +1,5 @@
+import type { Locale } from "@/i18n/config";
+import createTemplateText from "@/templates/template-text";
 import Project from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
 import {
@@ -18,8 +20,9 @@ export const PIECES_PRESET = 5;
 export const BUFFER_CAPACITY = 3;
 export const STOCK_INITIAL = 4;
 
-export function createLadderCountersProject(): Project {
-	const project = new Project(createRandomId(), "Comptage", "");
+export function createLadderCountersProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("ladder-counters", locale);
+	const project = new Project(createRandomId(), t("projectName"), "");
 	project.variables.push(
 		input("capteur_piece"),
 		pushButton("raz"),
@@ -38,27 +41,31 @@ export function createLadderCountersProject(): Project {
 }
 
 /** (a) `CTU` stops the conveyor, (b) `CTUD` buffer, extension: `CTD` stock loaded by `LD`. */
-export function createLadderCountersSolution(): Project {
-	const project = createLadderCountersProject();
-	project.name = "Comptage : solution";
+export function createLadderCountersSolution(locale: Locale = "fr"): Project {
+	const t = createTemplateText("ladder-counters", locale);
+	const project = createLadderCountersProject(locale);
+	project.name = t("solutionName");
+	const piecesCounter = t("piecesCounter");
+	const bufferCounter = t("bufferCounter");
+	const stockCounter = t("stockCounter");
 	setMainSections(project, [
 		section(
-			"Comptage des pièces",
-			"Le CTU compte sur front montant du capteur, remise à zéro par raz.",
+			t("piecesTitle"),
+			t("piecesDescription"),
 			no("capteur_piece"),
-			counter("CTU", "cpt_pieces", { control: "raz", pv: `${PIECES_PRESET}` }),
+			counter("CTU", piecesCounter, { control: "raz", pv: `${PIECES_PRESET}` }),
 		),
 		section(
-			"Convoyeur",
-			"Arrêt à la présélection.",
-			nf("cpt_pieces.Q"),
+			t("conveyorTitle"),
+			t("conveyorDescription"),
+			nf(`${piecesCounter}.Q`),
 			coil("convoyeur"),
 		),
 		section(
-			"Zone tampon",
-			"Le capteur d'entrée compte, le capteur de sortie décompte.",
+			t("bufferTitle"),
+			t("bufferDescription"),
 			no("capteur_entree"),
-			counter("CTUD", "tampon", {
+			counter("CTUD", bufferCounter, {
 				control: "raz_tampon",
 				down: "capteur_sortie",
 				load: "charge_tampon",
@@ -66,27 +73,32 @@ export function createLadderCountersSolution(): Project {
 			}),
 		),
 		section(
-			"Tampon plein",
-			"QU vaut CV >= PV.",
-			no("tampon.QU"),
+			t("bufferFullTitle"),
+			t("bufferFullDescription"),
+			no(`${bufferCounter}.QU`),
 			coil("tampon_plein"),
 		),
 		section(
-			"Tampon vide",
-			"QD vaut CV <= 0.",
-			no("tampon.QD"),
+			t("bufferEmptyTitle"),
+			t("bufferEmptyDescription"),
+			no(`${bufferCounter}.QD`),
 			coil("tampon_vide"),
 		),
 		section(
-			"Stock de pièces",
-			"Le CTD est chargé à PV par LD et décompte à chaque pièce prélevée.",
+			t("stockTitle"),
+			t("stockDescription"),
 			no("capteur_prelevement"),
-			counter("CTD", "stock", {
+			counter("CTD", stockCounter, {
 				control: "charge_stock",
 				pv: `${STOCK_INITIAL}`,
 			}),
 		),
-		section("Stock vide", "Q vaut CV <= 0.", no("stock.Q"), coil("stock_vide")),
+		section(
+			t("stockEmptyTitle"),
+			t("stockEmptyDescription"),
+			no(`${stockCounter}.Q`),
+			coil("stock_vide"),
+		),
 	]);
 	return project;
 }

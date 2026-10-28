@@ -2,11 +2,14 @@
 
 import { Box } from "@mui/material";
 import { useGrafcetStore } from "../context/GrafcetContext";
+import StepHelper from "@/schemas/grafcet/helpers/step.helper";
 import GrafcetTool from "./GrafcetTool";
 
 const StepTool = ({ initial }: { initial?: boolean }) => {
 	const initialNodeExists = useGrafcetStore((state) =>
-		state.nodes.some((node) => node.type === "step" && node.data.initial),
+		state.nodes.some(
+			(node) => node.type === "step" && StepHelper.isInitial(node.data),
+		),
 	);
 
 	return (

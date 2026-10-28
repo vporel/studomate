@@ -1,5 +1,6 @@
 "use client";
 
+import useCanEdit from "../projects/useCanEdit";
 import {
 	getValidTypesForZones,
 	VariableType,
@@ -25,9 +26,7 @@ export default function useGridColumns(zones: VariableZone[]): GridColDef[] {
 	const tError = useT("pages.variablesGrid.errors");
 	const tv = useT("variableValidation");
 	const variablesManager = useProjectStore((state) => state.variablesManager);
-	const designing = useProjectStore(
-		(state) => state.mode === ProjectMode.DESIGN,
-	);
+	const designing = useCanEdit();
 	const simulating = useProjectStore(
 		(state) => state.mode === ProjectMode.SIMULATION,
 	);
@@ -56,6 +55,8 @@ export default function useGridColumns(zones: VariableZone[]): GridColDef[] {
 					);
 					if (existingVariableId && existingVariableId !== params.id)
 						errors.push(tError("mnemonicExists"));
+					if (variablesManager.isMnemonicUsedByBlock(params.props.value))
+						errors.push(tError("mnemonicUsedByBlock"));
 					return {
 						...params.props,
 						error: errors.length > 0 ? errors[0] : false,

@@ -99,14 +99,19 @@ describe("parking template with its 3D scene", () => {
 		act(arrival);
 		let entryWasOpen = false;
 		let sawCarUnderBarrier = false;
+		let barrierClosedUnderCar = false;
 		for (let elapsed = 0; elapsed < 18000; elapsed += 50) {
 			await jest.advanceTimersByTimeAsync(50);
 			entryWasOpen ||= getState().barriers.entry >= BARRIER_CLEAR;
-			sawCarUnderBarrier ||= getVariableValue(plc, "passage") === true;
+			const carUnderBarrier = getVariableValue(plc, "passage") === true;
+			sawCarUnderBarrier ||= carUnderBarrier;
+			barrierClosedUnderCar ||=
+				carUnderBarrier && getVariableValue(plc, "barriere_entree") === false;
 		}
 		if (getError()) throw getError();
 		expect(entryWasOpen).toBe(true);
 		expect(sawCarUnderBarrier).toBe(true);
+		expect(barrierClosedUnderCar).toBe(false);
 		expect(getState().cars).toHaveLength(1);
 		expect(getState().cars[0].phase).toBe("parked");
 		expect(getState().barriers).toEqual({ entry: 0, exit: 0 });

@@ -7,16 +7,23 @@ import GrafcetToolbar from "../grafcet/toolbar/GrafcetToolbar";
 import { GrafcetToolbarDnDProvider } from "../grafcet/toolbar/GrafcetToolbarDnDContext";
 import Page from "./Page";
 
-const GrafcetPage = ({ initialGrafcet }: { initialGrafcet: Grafcet }) => {
+const GrafcetPage = ({
+	initialGrafcet,
+	fitToContainer = false,
+}: {
+	initialGrafcet: Grafcet;
+	/** Fits the grafcet to the space the page is given, instead of showing the full print page. */
+	fitToContainer?: boolean;
+}) => {
 	return (
 		<Page
 			pageId={initialGrafcet.id}
-			sx={{ flexDirection: "column", paddingBottom: 4 }}
+			sx={{ flexDirection: "column", paddingBottom: fitToContainer ? 0 : 4 }}
 		>
 			<GrafcetContextProvider initialGrafcet={initialGrafcet}>
 				<GrafcetToolbarDnDProvider>
 					<GrafcetToolbar />
-					<GrafcetFlow />
+					<GrafcetFlow fitToContainer={fitToContainer} />
 				</GrafcetToolbarDnDProvider>
 			</GrafcetContextProvider>
 		</Page>

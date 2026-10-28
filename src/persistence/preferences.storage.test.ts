@@ -1,29 +1,28 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import {
 	getAutoOpenHmiSimulationOnStart,
+	getDefaultDialect,
 	getPreferredLocale,
 	getPreferredSaveLocation,
 	getProductTourSeen,
+	getProjectEverSaved,
 	setAutoOpenHmiSimulationOnStart,
+	setDefaultDialect,
 	setPreferredLocale,
 	setPreferredSaveLocation,
 	setProductTourSeen,
+	setProjectEverSaved,
 } from "./preferences.storage";
-
-function installLocalStorage() {
-	const store = new Map<string, string>();
-	(globalThis as any).localStorage = {
-		getItem: (k: string) => store.get(k) ?? null,
-		setItem: (k: string, v: string) => store.set(k, v),
-		removeItem: (k: string) => store.delete(k),
-		clear: () => store.clear(),
-	};
-	return store;
-}
+import { installMemoryLocalStorage } from "@tests/utils/local-storage-stub";
 
 describe("preferences.storage", () => {
+	let restoreLocalStorage: () => void;
+
 	beforeEach(() => {
-		installLocalStorage();
+		({ restore: restoreLocalStorage } = installMemoryLocalStorage());
 	});
+
+	afterEach(() => restoreLocalStorage());
 
 	it("retourne null tant qu'aucune préférence n'a été enregistrée", () => {
 		expect(getPreferredSaveLocation()).toBeNull();
@@ -40,6 +39,25 @@ describe("preferences.storage", () => {
 	it("ignore une valeur corrompue en localStorage", () => {
 		localStorage.setItem("studomate_preferred_save_location", "n'importe quoi");
 		expect(getPreferredSaveLocation()).toBeNull();
+	});
+
+	describe("dialecte par défaut", () => {
+		it("retourne null tant qu'aucun dialecte n'a été choisi", () => {
+			expect(getDefaultDialect()).toBeNull();
+		});
+
+		it("retient le dialecte choisi", () => {
+			setDefaultDialect(Dialect.EN);
+			expect(getDefaultDialect()).toBe(Dialect.EN);
+
+			setDefaultDialect(Dialect.FR);
+			expect(getDefaultDialect()).toBe(Dialect.FR);
+		});
+
+		it("ignore une valeur non reconnue", () => {
+			localStorage.setItem("studomate_default_dialect", "ES");
+			expect(getDefaultDialect()).toBeNull();
+		});
 	});
 
 	describe("langue", () => {
@@ -95,6 +113,16 @@ describe("preferences.storage", () => {
 			};
 			expect(getProductTourSeen()).toBe(false);
 			expect(() => setProductTourSeen()).not.toThrow();
+		});
+	});
+	describe("project ever saved", () => {
+		it("is false until a save has been marked", () => {
+			expect(getProjectEverSaved()).toBe(false);
+		});
+
+		it("remembers that a project was saved", () => {
+			setProjectEverSaved();
+			expect(getProjectEverSaved()).toBe(true);
 		});
 	});
 });

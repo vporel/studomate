@@ -4,9 +4,13 @@ import {
 	setProjectIdInUrl,
 	getShareTokenFromUrl,
 	clearShareTokenFromUrl,
+	setShareTokenInUrl,
 	getTemplateIdFromUrl,
 	getTemplateModeFromUrl,
+	getTemplateLocaleFromUrl,
 	clearTemplateParamsFromUrl,
+	clearHandoffFromUrl,
+	getHandoffIdFromUrl,
 } from "./project-url";
 
 describe("project-url", () => {
@@ -56,6 +60,20 @@ describe("project-url", () => {
 		});
 	});
 
+	describe("setShareTokenInUrl", () => {
+		it("pose le shareToken, getShareTokenFromUrl le relit", () => {
+			setShareTokenInUrl("tok");
+			expect(getShareTokenFromUrl()).toBe("tok");
+			expect(window.location.search).toBe("?shareToken=tok");
+		});
+
+		it("ne touche pas aux autres paramètres", () => {
+			window.history.replaceState(null, "", "/?projectId=p1");
+			setShareTokenInUrl("tok");
+			expect(getProjectIdFromUrl()).toBe("p1");
+		});
+	});
+
 	describe("clearShareTokenFromUrl", () => {
 		it("retire uniquement le shareToken de l'URL", () => {
 			window.history.replaceState(null, "", "/?projectId=p1&shareToken=tok");
@@ -66,6 +84,24 @@ describe("project-url", () => {
 
 		it("ne lève pas si le shareToken est absent", () => {
 			expect(() => clearShareTokenFromUrl()).not.toThrow();
+		});
+	});
+
+	describe("handoff", () => {
+		it("retourne null si aucun token dans l'URL", () => {
+			expect(getHandoffIdFromUrl()).toBeNull();
+		});
+
+		it("relit le token présent dans l'URL, puis le retire sans toucher au reste", () => {
+			window.history.replaceState(null, "", "/app?handoff=abc&other=1");
+			expect(getHandoffIdFromUrl()).toBe("abc");
+
+			clearHandoffFromUrl();
+
+			expect(getHandoffIdFromUrl()).toBeNull();
+			expect(new URLSearchParams(window.location.search).get("other")).toBe(
+				"1",
+			);
 		});
 	});
 
@@ -105,7 +141,41 @@ describe("project-url", () => {
 		});
 	});
 
+	describe("getTemplateLocaleFromUrl", () => {
+		it("retourne null si le paramètre est absent", () => {
+			expect(getTemplateLocaleFromUrl()).toBeNull();
+		});
+
+		it("retourne la langue présente dans l'URL", () => {
+			window.history.replaceState(
+				null,
+				"",
+				"/?template=parking&template-locale=en",
+			);
+			expect(getTemplateLocaleFromUrl()).toBe("en");
+		});
+
+		it("retourne null si la langue est inconnue", () => {
+			window.history.replaceState(
+				null,
+				"",
+				"/?template=parking&template-locale=de",
+			);
+			expect(getTemplateLocaleFromUrl()).toBeNull();
+		});
+	});
+
 	describe("clearTemplateParamsFromUrl", () => {
+		it("retire aussi template-locale", () => {
+			window.history.replaceState(
+				null,
+				"",
+				"/?template=parking&template-locale=en",
+			);
+			clearTemplateParamsFromUrl();
+			expect(getTemplateLocaleFromUrl()).toBeNull();
+		});
+
 		it("retire template et template-mode, laisse le reste intact", () => {
 			window.history.replaceState(
 				null,

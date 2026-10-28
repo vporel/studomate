@@ -71,7 +71,6 @@
 		"delete": "Supprimer",
 		"deleteAction": "Supprimer l'action",
 		"deleteRow": "Supprimer la ligne",
-		"close": "Fermer",
 		"expand": "Déplier",
 		"collapse": "Replier",
 		"expandNamed": "Déplier {name}",
@@ -92,7 +91,9 @@
 		"offsetY": "Décalage Y",
 		"reset": "Réinitialiser",
 		"addRow": "Ajouter une ligne",
-		"imposedByInputBehavior": "Imposé par le comportement de la variable « {variable} » ({behavior}). Modifiable dans la table des entrées."
+		"imposedByInputBehavior": "Imposé par le comportement de la variable « {variable} » ({behavior}). Modifiable dans la table des entrées.",
+		"noWidgetSelected": "Aucun widget sélectionné : propriétés de la page.",
+		"setAsMainPage": "Définir en page principale"
 	},
 	"menu": {
 		"copy": "Copier",

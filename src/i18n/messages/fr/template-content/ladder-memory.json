@@ -1,0 +1,13 @@
+{
+	"statement": "## Pompe : défaut mémorisé\n\nLe Main contient l'auto-maintien de la pompe, déjà écrit : il s'agit d'ajouter les réseaux de défaut. Nouvelles entrées : `temperature_ok` (capteur câblé à ouverture, un commutateur maintenu : 1 au repos, 0 en cas de surchauffe), `acquit` (bouton poussoir). Nouvelle sortie : `voyant_defaut`.\n\n### Travail demandé\n\n1. Une surchauffe (`temperature_ok` passe à 0) arrête la pompe et allume `voyant_defaut`.\n2. Le voyant reste allumé même si la température redevient normale (défaut mémorisé).\n3. Un appui sur `acquit` éteint le voyant, une fois le défaut disparu.\n4. Après acquittement, la pompe ne redémarre pas seule : il faut un nouvel appui sur `marche`.\n\nScénario de test : température normale et appui sur `marche` (pompe à 1), surchauffe (pompe à 0, voyant à 1), retour à la normale (voyant toujours à 1), appui sur `acquit` (voyant à 0, pompe à 0), appui sur `marche` (pompe à 1).",
+	"texts": {
+		"projectName": "Pompe : défaut mémorisé",
+		"solutionName": "Pompe : défaut mémorisé : solution",
+		"faultMemoryTitle": "Mémorisation du défaut",
+		"faultMemoryDescription": "Le capteur de température est câblé à ouverture : un contact NF détecte la surchauffe.",
+		"ackTitle": "Acquittement",
+		"ackDescription": "L'acquittement n'a d'effet que si le défaut a disparu.",
+		"pumpTitle": "Commande de la pompe",
+		"pumpDescription": "La pompe est bloquée tant que le défaut est mémorisé et ne repart qu'avec un nouvel appui sur Marche."
+	}
+}

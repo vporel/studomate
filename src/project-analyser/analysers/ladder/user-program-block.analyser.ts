@@ -25,44 +25,31 @@ export default class UserProgramBlockAnalyser {
 		const referenced = project.getProgram(programId);
 		if (!referenced) {
 			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"BLOCK_PROGRAM_UNDECLARED",
-					source,
-				),
+				new ProjectAnalyserIssue("error", "BLOCK_PROGRAM_UNDECLARED", source),
 			);
 			return issues;
 		}
 		if (referenced.type !== "ladder") {
 			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"BLOCK_PROGRAM_NOT_LADDER",
-					source,
-					{ programName: referenced.name },
-				),
+				new ProjectAnalyserIssue("error", "BLOCK_PROGRAM_NOT_LADDER", source, {
+					programName: referenced.name,
+				}),
 			);
 			return issues;
 		}
 		if (referenced.excludedFromExecution) {
 			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"BLOCK_PROGRAM_EXCLUDED",
-					source,
-					{ programName: referenced.name },
-				),
+				new ProjectAnalyserIssue("error", "BLOCK_PROGRAM_EXCLUDED", source, {
+					programName: referenced.name,
+				}),
 			);
 			return issues;
 		}
-		if ((referenced as Ladder).role === "main") {
+		if ((referenced as Ladder).isMain()) {
 			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"BLOCK_PROGRAM_IS_MAIN",
-					source,
-					{ programName: referenced.name },
-				),
+				new ProjectAnalyserIssue("error", "BLOCK_PROGRAM_IS_MAIN", source, {
+					programName: referenced.name,
+				}),
 			);
 		}
 

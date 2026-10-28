@@ -1,5 +1,7 @@
 import CartonSortingDescriptor from "@/3d-scenes/carton-sorting/v1/carton-sorting.descriptor";
 import { createRandomId } from "@/ids";
+import type { Locale } from "@/i18n/config";
+import createTemplateText from "@/templates/template-text";
 import {
 	ACTION_HANDLE_TARGET_STEP,
 	ActionExecutionMode,
@@ -38,8 +40,9 @@ import VariableBuilder from "@/schemas/variable/builders/variable.builder";
  *   et porte le pupitre (départ cycle, compteur) et l'arrivée des caisses
  * — pas de GRAFCET de commande : c'est ce que l'étudiant écrit
  */
-export function createCartonSortingProject(): Project {
-	const project = new Project(createRandomId(), "Poste de tri de caisses", "");
+export function createCartonSortingProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("carton-sorting", locale);
+	const project = new Project(createRandomId(), t("projectName"), "");
 
 	const sensors = CartonSortingDescriptor.points
 		.filter((point) => point.kind === "sensor")
@@ -64,7 +67,7 @@ export function createCartonSortingProject(): Project {
 		...sensors.filter((sensor) => sensor !== startCycle),
 	);
 	const counter = VariableBuilder.buildMemoryInt(createRandomId(), "C");
-	counter.comment = "compteur de caisses triées";
+	counter.comment = t("counterComment");
 	project.variables.push(counter);
 
 	const variableIdByMnemonic = new Map(
@@ -100,9 +103,10 @@ export function createCartonSortingProject(): Project {
  * Les capteurs proviennent de la scène 3D : après `dcy` puis chaque appui sur « Nouvelle
  * caisse » dans la scène, le tri se déroule sans autre intervention.
  */
-export function createCartonSortingSolution(): Project {
-	const project = createCartonSortingProject();
-	project.name = "Poste de tri de caisses — solution";
+export function createCartonSortingSolution(locale: Locale = "fr"): Project {
+	const t = createTemplateText("carton-sorting", locale);
+	const project = createCartonSortingProject(locale);
+	project.name = t("solutionName");
 
 	// Coordonnées « bord gauche » (comme les autres templates) ; le centre d'un élément est à
 	// `x + 20`. `GX` est l'axe central du grafcet, `XL` / `XR` les axes des deux branches.
@@ -338,7 +342,7 @@ export function createCartonSortingSolution(): Project {
 
 	const commande = new GrafcetBuilder()
 		.id(createRandomId())
-		.name("Commande")
+		.name(t("controlGrafcet"))
 		.addSteps(e0, e1, e11, e12, e13, e21, e22, e23, e4, e5, e6)
 		.addTransitions(
 			t0,

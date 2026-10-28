@@ -27,7 +27,9 @@
 	"autoSaveUnavailable": "Sauvegarde automatique indisponible — enregistrez manuellement",
 	"statusBar": {
 		"author": "Auteur : {name}",
-		"unknownAuthor": "Inconnu"
+		"unknownAuthor": "Inconnu",
+		"offline": "Hors ligne",
+		"offlineHint": "Les projets cloud, les liens de partage et la connexion à un compte sont indisponibles sans réseau."
 	},
 	"footerActions": {
 		"watchTables": "Tables de visualisation",
@@ -80,14 +82,58 @@
 		}
 	},
 	"startup": {
-		"homeAria": "{name} : accueil",
-		"featuredOverline": "Découvrir avec un exemple",
-		"openSolutionAndSimulate": "Ouvrir la solution et simuler",
-		"helpPrompt": "Besoin d'aide pour démarrer ?",
-		"openManual": "Consulter le manuel utilisateur",
-		"alreadyComfortable": "Déjà à l'aise ?",
-		"createProject": "Créer un nouveau projet",
-		"openProject": "Ouvrir un projet existant"
+		"homeAria": "Studomate : accueil",
+		"welcomeTitle": "Par où commencer ?",
+		"welcomeSubtitle": "Ouvrez un exemple complet et regardez-le fonctionner, ou partez d'une page blanche.",
+		"resumeTitle": "Reprendre un projet",
+		"newProject": "Nouveau projet",
+		"openProject": "Ouvrir un projet",
+		"recentProjects": "Projets récents",
+		"allProjects": "Tous les projets ({count})",
+		"noProjects": "Aucun projet enregistré pour le moment. Créez-en un nouveau ou ouvrez un fichier de projet.",
+		"modifiedAgo": "Modifié {ago}",
+		"cloudProject": "Enregistré dans le cloud",
+		"contents": {
+			"grafcet": "GRAFCET",
+			"ladder": "Ladder",
+			"hmi": "HMI",
+			"scene3d": "Scène 3D"
+		},
+		"featuredOverline": "Exemple à simuler",
+		"examplesTitle": "Exemples",
+		"otherExamplesTitle": "Autres exemples",
+		"continueTraining": "Continuer la formation",
+		"trainingStep": "Étape {current}/{total} : {step}",
+		"trainingNextModule": "Module terminé, voici le suivant",
+		"trainingResume": "Reprendre",
+		"trainingCompleted": "Terminé : {module}, étape {current}/{total} ({step})",
+		"trainingStart": "Commencer",
+		"allTemplates": "Tous les modèles",
+		"simulateSolution": "Simuler la solution",
+		"seeSolution": "Voir la solution",
+		"doExercise": "Faire l'exercice",
+		"examples": {
+			"crossroads": "Faites alterner deux axes de circulation sans jamais provoquer d'accident.",
+			"carton-sorting": "Aiguillez chaque caisse vers le bon tapis selon sa hauteur.",
+			"drilling": "Enchaînez la descente, le perçage et la remontée d'une perceuse automatique.",
+			"elevator": "Amenez la cabine au bon étage et gérez l'ouverture des portes."
+		},
+		"resources": "Ressources",
+		"userManual": "Manuel utilisateur",
+		"training": "Formations",
+		"footer": {
+			"copyright": "© {year} Studomate",
+			"about": "À propos",
+			"legalMentions": "Mentions légales",
+			"terms": "Conditions d'utilisation",
+			"privacy": "Politique de confidentialité",
+			"reportIssue": "Signaler un problème",
+			"whatsNew": "Voir les nouveautés de la version {version}"
+		},
+		"sceneLabels": {
+			"crossroads": "Animation 3D d'un carrefour : des voitures arrivent sur les quatre branches et s'arrêtent au rouge, les deux axes passant au vert à tour de rôle.",
+			"carton-sorting": "Animation 3D d'un poste de tri de caisses : un tapis amène chaque caisse, des vérins la trient selon sa hauteur."
+		}
 	},
 	"mobileGuard": {
 		"title": "Application desktop uniquement",

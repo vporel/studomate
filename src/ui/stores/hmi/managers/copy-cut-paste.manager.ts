@@ -8,6 +8,7 @@ import { createRandomId } from "@/ids";
 import { getLastMousePosition } from "@/ui/lib/mouse-position";
 import { snapToGrid } from "@/ui/components/hmi/logic/constants";
 import { nextCopyName } from "@/lib/naming";
+import type { ClipboardStore } from "@/ui/stores/shared/clipboard.store";
 import AbstractCopyCutPasteManager from "@/ui/stores/shared/abstract-copy-cut-paste.manager";
 import { HmiStoreGetFunction, HmiStoreSetFunction } from "../hmi.store";
 
@@ -25,8 +26,9 @@ export default class HmiCopyCutPasteManager extends AbstractCopyCutPasteManager<
 	constructor(
 		setStoreState: HmiStoreSetFunction,
 		getStoreState: HmiStoreGetFunction,
+		clipboard: ClipboardStore,
 	) {
-		super();
+		super(clipboard);
 		this.setStoreState = setStoreState;
 		this.getStoreState = getStoreState;
 	}

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 224" font-family="sans-serif">
+	<!-- Rail and wired input -->
+	<line x1="20" y1="30" x2="20" y2="190" stroke="#263238" stroke-width="3" />
+	<line x1="20" y1="56" x2="124" y2="56" stroke="#263238" stroke-width="2" />
+	<line x1="124" y1="46" x2="124" y2="66" stroke="#263238" stroke-width="2.5" />
+	<line x1="136" y1="46" x2="136" y2="66" stroke="#263238" stroke-width="2.5" />
+	<text x="130" y="40" font-size="11" text-anchor="middle" fill="#263238">capteur_entree</text>
+	<line x1="136" y1="56" x2="250" y2="56" stroke="#263238" stroke-width="2" />
+
+	<!-- CTUD block -->
+	<rect x="250" y="34" width="100" height="170" rx="4" fill="#eceff1" stroke="#263238" stroke-width="1.5" />
+	<text x="300" y="30" font-size="11" font-weight="bold" text-anchor="middle" fill="#263238">tampon</text>
+	<text x="300" y="120" font-size="13" font-weight="bold" text-anchor="middle" fill="#263238">CTUD</text>
+	<text x="255" y="60" font-size="11" font-family="monospace" text-anchor="start" fill="#263238">CU</text>
+	<text x="255" y="100" font-size="11" font-family="monospace" text-anchor="start" fill="#263238">CD</text>
+	<text x="244" y="100" font-size="11" text-anchor="end" fill="#d84315">capteur_sortie</text>
+	<text x="255" y="132" font-size="11" font-family="monospace" text-anchor="start" fill="#263238">R</text>
+	<text x="244" y="132" font-size="11" text-anchor="end" fill="#d84315">raz_tampon</text>
+	<text x="255" y="164" font-size="11" font-family="monospace" text-anchor="start" fill="#263238">LD</text>
+	<text x="244" y="164" font-size="11" text-anchor="end" fill="#d84315">charge_tampon</text>
+	<text x="255" y="196" font-size="11" font-family="monospace" text-anchor="start" fill="#263238">PV</text>
+	<text x="244" y="196" font-size="11" text-anchor="end" fill="#d84315">3</text>
+	<text x="345" y="60" font-size="11" font-family="monospace" text-anchor="end" fill="#263238">QU</text>
+	<text x="345" y="116" font-size="11" font-family="monospace" text-anchor="end" fill="#263238">QD</text>
+	<text x="345" y="196" font-size="11" font-family="monospace" text-anchor="end" fill="#263238">CV</text>
+
+	<!-- Callouts -->
+	<text x="370" y="60" font-size="12" text-anchor="start" fill="#263238">Seule CU est reliée au rail.</text>
+	<text x="370" y="100" font-size="12" text-anchor="start" fill="#d84315">CD, R, LD et PV : on tape la</text>
+	<text x="370" y="116" font-size="12" text-anchor="start" fill="#d84315">variable (ou la valeur) sur la</text>
+	<text x="370" y="132" font-size="12" text-anchor="start" fill="#d84315">broche, sans fil.</text>
+	<text x="370" y="172" font-size="12" text-anchor="start" fill="#263238">QU et QD se lisent ensuite</text>
+	<text x="370" y="188" font-size="12" text-anchor="start" fill="#263238">comme des contacts :</text>
+	<text x="370" y="204" font-size="12" font-family="monospace" text-anchor="start" fill="#263238">tampon.QU, tampon.QD</text>
+</svg>

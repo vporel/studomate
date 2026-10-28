@@ -1,0 +1,9 @@
+{
+	"statement": "## Éclairage en va-et-vient\n\nEntrées : `inter1`, `inter2`, `validation` (trois commutateurs maintenus, à 0 au repos). Sortie : `lampe`.\n\n### Travail demandé\n\nDans le programme Main, on veut réaliser le comportement suivant :\n\n- La lampe change d'état quand on actionne l'un ou l'autre des deux interrupteurs (va-et-vient).\n- La lampe ne s'allume que si `validation` est active.\n\n1. Remplir la table de vérité de la lampe (avec `validation` actif).\n2. Écrire le réseau qui commande `lampe`.\n3. Vérifier les quatre combinaisons en simulation, avec `validation` actif puis inactif.",
+	"texts": {
+		"projectName": "Éclairage en va-et-vient",
+		"solutionName": "Éclairage en va-et-vient : solution",
+		"lightingTitle": "Éclairage",
+		"lightingDescription": "La lampe s'allume quand exactement un des deux interrupteurs est actionné, si la validation est active."
+	}
+}

@@ -5,10 +5,12 @@ import ViewInArIcon from "@mui/icons-material/ViewInAr";
 import { Fragment } from "react";
 import { useT } from "@/ui/i18n/useT";
 import CustomTreeItem from "../mui/CustomTreeItem";
-import { HARDWARE_CONFIGURATION_PAGE_DATA } from "../pages/HardwareConfigurationPage";
-import { SCENE3D_CONFIGURATION_PAGE_DATA } from "../pages/Scene3dConfigurationPage";
 import { useProjectStore } from "../projects/ProjectContext";
 import { ExplorerItemsProps } from "./explorer-items-props";
+import {
+	HARDWARE_CONFIGURATION_PAGE_DATA,
+	SCENE3D_CONFIGURATION_PAGE_DATA,
+} from "@/ui/stores/project/pages-data";
 
 const ExplorerConfigurationItems = ({
 	styles,

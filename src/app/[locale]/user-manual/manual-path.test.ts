@@ -7,8 +7,11 @@ describe("manualPath", () => {
 	});
 
 	it("donne à chaque section de premier niveau son slug traduit", () => {
-		expect(manualPath("fr", "hmi")).toBe("/manuel-utilisateur/hmi");
+		expect(manualPath("fr", "hmi")).toBe("/manuel-utilisateur/interfaces-hmi");
 		expect(manualPath("en", "hmi")).toBe("/en/user-manual/hmi");
+		expect(manualPath("fr", "troubleshooting")).toBe(
+			"/manuel-utilisateur/depannage",
+		);
 	});
 
 	it("pointe une sous-section vers l'ancre de la page de son parent", () => {

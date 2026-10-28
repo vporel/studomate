@@ -7,6 +7,7 @@ import { CounterNode, TimerNode } from "@/expression-language/ast/nodes/blocks";
 import InvalidCharacterException from "@/expression-language/lexer/exceptions/invalid-character.exception";
 import InvalidKeywordException from "@/expression-language/lexer/exceptions/invalid-keyword.exception";
 import UnterminatedStringException from "@/expression-language/lexer/exceptions/unterminated-string.exception";
+import ForeignKeywordException from "@/expression-language/parser/exceptions/foreign-keyword.exception";
 import BadTokenTypeException from "@/expression-language/parser/exceptions/bad-token-type.exception";
 import MissingPrimaryOrLeftParentheseException from "@/expression-language/parser/exceptions/missing-primary-or-left-parenthese.exception";
 import MissingRightParentheseException from "@/expression-language/parser/exceptions/missing-right-parenthese.exception";
@@ -409,6 +410,39 @@ describe("SimulatorExceptionsMapper", () => {
 			const e = new DivisionByZeroException(10, 0, node);
 			expect(message(e, "fr")).toBe("Division par zéro : 10 / 0");
 			expect(message(e, "en")).toBe("Division by zero: 10 / 0");
+		});
+	});
+
+	describe("mot-clé d'un autre dialecte", () => {
+		it("propose l'équivalent français d'un mot-clé anglais, avec l'indication de changer de dialecte", () => {
+			const e = new ForeignKeywordException("AND", 2);
+			expect(message(e, "fr")).toBe(
+				"« AND » est un mot-clé du dialecte anglais. Écrivez ET ou changez le dialecte du projet dans ses propriétés.",
+			);
+			expect(message(e, "en")).toBe(
+				'"AND" is a keyword of the English dialect. Write ET or change the project\'s dialect in its properties.',
+			);
+		});
+
+		it("propose l'équivalent anglais d'un mot-clé français", () => {
+			const e = new ForeignKeywordException("ET", 2);
+			expect(message(e, "en")).toContain("Write AND");
+			expect(message(e, "fr")).toContain("Écrivez AND");
+		});
+
+		it("reconnaît aussi un identifiant inconnu qui est un mot-clé de l'autre dialecte", () => {
+			const e = new UnknownIdentifierException(
+				IdentifiersBuilder.buildIdentifierNode("TRUE", 0),
+			);
+			expect(message(e, "fr")).toContain("« TRUE » est un mot-clé du dialecte");
+			expect(message(e, "fr")).toContain("Écrivez VRAI");
+		});
+
+		it("garde « Variable inconnue » pour un identifiant qui n'est un mot-clé d'aucun dialecte", () => {
+			const e = new UnknownIdentifierException(
+				IdentifiersBuilder.buildIdentifierNode("Foo", 0),
+			);
+			expect(message(e, "fr")).toBe("Variable inconnue : Foo");
 		});
 	});
 

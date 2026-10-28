@@ -1,16 +1,18 @@
-import { createStore, useStore } from "zustand";
+import { createStore, StoreApi } from "zustand";
 
 /**
- * Presse-papiers unique de l'application, partagé par toutes les pages (grafcet, ladder, HMI).
- * Une seule copie vivante à la fois : une nouvelle copie écrase la précédente.
+ * Presse-papiers d'un projet ouvert, partagé par toutes ses pages (grafcet, ladder, HMI).
+ * Une seule copie vivante à la fois : une nouvelle copie écrase la précédente. Chaque store
+ * projet possède le sien : ses éléments référencent des variables par id, sans validité dans
+ * un autre projet ni dans un autre bloc de la même page.
  *
- * Le contenu (`data`) est opaque pour ce module — sa forme réelle est connue du seul
+ * Le contenu (`data`) est opaque pour ce module : sa forme réelle est connue du seul
  * gestionnaire copier/coller de chaque type de page (voir `AbstractCopyCutPasteManager`), ce
  * qui évite de coupler cette couche partagée aux schémas de domaine. `scope` permet de
  * refuser un collage vers une page d'un autre type.
  *
- * Store zustand (et non simple objet de module comme `mouse-position`) parce que le menu
- * « Édition » doit se griser/dégriser selon le contenu du presse-papiers.
+ * Store zustand parce que le menu « Édition » doit se griser/dégriser selon le contenu du
+ * presse-papiers.
  */
 
 export type ClipboardScope = "grafcet" | "ladder" | "hmi";
@@ -20,39 +22,18 @@ export type ClipboardEntry = {
 	data: unknown;
 };
 
-interface ClipboardStoreState {
+export interface ClipboardStoreState {
 	entry: ClipboardEntry | null;
 	setEntry: (entry: ClipboardEntry) => void;
 	clear: () => void;
 }
 
-const clipboardStore = createStore<ClipboardStoreState>((set) => ({
-	entry: null,
-	setEntry: (entry) => set(() => ({ entry })),
-	clear: () => set(() => ({ entry: null })),
-}));
+export type ClipboardStore = StoreApi<ClipboardStoreState>;
 
-export default clipboardStore;
-
-export function useClipboardStore<T>(
-	selector: (state: ClipboardStoreState) => T,
-): T {
-	return useStore(clipboardStore, selector);
-}
-
-export function getClipboardEntry(): ClipboardEntry | null {
-	return clipboardStore.getState().entry;
-}
-
-export function setClipboardEntry(entry: ClipboardEntry): void {
-	clipboardStore.getState().setEntry(entry);
-}
-
-export function clearClipboard(): void {
-	clipboardStore.getState().clear();
-}
-
-export function canPasteInScope(scope: ClipboardScope): boolean {
-	const entry = clipboardStore.getState().entry;
-	return entry !== null && entry.scope === scope;
+export function createClipboardStore(): ClipboardStore {
+	return createStore<ClipboardStoreState>((set) => ({
+		entry: null,
+		setEntry: (entry) => set(() => ({ entry })),
+		clear: () => set(() => ({ entry: null })),
+	}));
 }

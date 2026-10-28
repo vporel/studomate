@@ -6,6 +6,11 @@ jest.mock("@/ui/components/MobileGuard", () => ({
 	default: ({ children }: { children: unknown }) => children,
 }));
 
+jest.mock("@/ui/components/offline/OfflineProvider", () => ({
+	__esModule: true,
+	default: ({ children }: { children: unknown }) => children,
+}));
+
 jest.mock("@/app/RootDocument", () => ({
 	__esModule: true,
 	default: () => null,

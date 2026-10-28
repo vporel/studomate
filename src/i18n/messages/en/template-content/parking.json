@@ -1,0 +1,9 @@
+{
+	"statement": "## Barrier parking\n\nA 4-space car park has an entry barrier and an exit barrier. Inputs: `entry_request` and\n`exit_request` (a car is waiting in front of the entry / exit barrier) and `car_present` (cell under a barrier,\ntrue as long as a car is in it), provided by the 3D scene (Interface → 3D scene menu).\nOutputs: `entry_barrier`, `exit_barrier` (opening) and `full` (indicator).\nThe number of occupied spaces is tracked in `spaces`, displayed on the console. The \"Arrival\" and \"Departure\" buttons\nof the scene make cars appear, which line up and only move forward if their barrier is open.\n\n### Work to do\n\n1. On `entry_request`, if the car park is not full: open the entry barrier, increment `spaces`.\n2. On `exit_request`, if the car park is not empty: open the exit barrier, decrement `spaces`.\n3. Turn on `full` as soon as all spaces are occupied and refuse new entries.\n4. Close the barrier once the car has gone through (`car_present`), then validate in simulation with the 3D scene.",
+	"texts": {
+		"projectName": "Barrier parking",
+		"solutionName": "Barrier parking: solution",
+		"controlGrafcet": "Control",
+		"signalingGrafcet": "Signaling"
+	}
+}

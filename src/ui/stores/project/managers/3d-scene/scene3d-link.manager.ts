@@ -24,6 +24,11 @@ export interface Scene3dLinkHost {
 	getSessionId(): string;
 	/** False when the browser refused to open the tab (blocked pop-up). */
 	openWindow(sessionId: string): boolean;
+	/**
+	 * Hosts whose scene lives in the same page: the end of the link the scene reads, once the
+	 * editor end of that session exists.
+	 */
+	connectScene?(sessionId: string): SceneTransport;
 	now(): number;
 }
 
@@ -53,6 +58,20 @@ export default class Scene3dLinkManager {
 		const opened = this.host.openWindow(sessionId);
 		this.channel?.send({ type: "ping" });
 		return opened;
+	}
+
+	/**
+	 * Connects the editor to a scene shown in this very page, and returns the end of the link the
+	 * scene has to read.
+	 */
+	openInline(): SceneTransport {
+		const { connectScene } = this.host;
+		if (!connectScene) {
+			throw new Error("This host cannot show the scene in the page");
+		}
+		const sessionId = this.host.getSessionId();
+		this.connect(sessionId);
+		return connectScene.call(this.host, sessionId);
 	}
 
 	/** True while the scene tab answers the pings. */

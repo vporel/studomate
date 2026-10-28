@@ -122,7 +122,14 @@ describe("collectLadderReferences", () => {
 	});
 
 	it("lit l'entrée et écrit la sortie d'un bloc convert", () => {
-		const ladder = ladderWith(createConvertBlockElement(0, 1, { in: "Brut", out: "Niveau" }));
+		const ladder = ladderWith(
+			createConvertBlockElement(0, 1, {
+				in: "Brut",
+				out: "Niveau",
+				inType: "INT",
+				outType: "REAL",
+			}),
+		);
 		const refs = collectLadderReferences(ladder, Dialect.FR);
 		expect(find(refs, "Brut")).toEqual([
 			expect.objectContaining({ access: "read", locationKind: "ladder-block-pin" }),

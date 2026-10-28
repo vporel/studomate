@@ -13,6 +13,7 @@ import JunctionOrStart from "./junction-or-start.schema";
 import { Dimensions, XYPosition } from "./shared-types";
 import StepReferralSource from "./step-referral-source.schema";
 import StepReferralTarget from "./step-referral-target.schema";
+import StepHelper from "./helpers/step.helper";
 import Step from "./step.schema";
 import Transition from "./transition.schema";
 
@@ -97,6 +98,26 @@ export default class Grafcet extends Program {
 		super(id, name);
 	}
 
+	getInitialSteps(): Step[] {
+		return Object.values(this.steps).filter((s) =>
+			StepHelper.isInitial(s.data),
+		);
+	}
+
+	/**
+	 * Returns the step designated by the given number, or undefined when the number
+	 * is empty or no step carries it.
+	 */
+	getStepByNumber(number: number | "" | null | undefined): Step | undefined {
+		if (number === "" || number === null || number === undefined)
+			return undefined;
+		return Object.values(this.steps).find((s) => s.data.number === number);
+	}
+
+	hasInitialStep(): boolean {
+		return this.getInitialSteps().length > 0;
+	}
+
 	/**
 	 * Get the connections that have the provided element id as source or target, regardless of the handle id
 	 * @param elementId
@@ -158,6 +179,15 @@ export default class Grafcet extends Program {
 			allElements.push(...Object.values(this.getCollection(collection)));
 		}
 		return allElements;
+	}
+
+	isEmpty(): boolean {
+		return this.getAllElements().length === 0;
+	}
+
+	/** A blank grafcet is a page to draw on, not an incomplete program. */
+	isSkippedWhenEmpty(): boolean {
+		return true;
 	}
 
 	getElementsByType<T extends Element<any>>(type: ElementType): T[] {

@@ -44,6 +44,50 @@ describe("JunctionAndEndAnalyser", () => {
 	});
 
 	describe("analyseInContext", () => {
+		it("detects a junction with a single branch", () => {
+			const junction = new JunctionAndEndBuilder()
+				.id("junction-1")
+				.nBranches(1)
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addJunctionAndEnd(junction)
+				.build();
+
+			const issues = analyser.analyseInContext(
+				junction,
+				grafcet,
+				analyserEnvironment(),
+			);
+
+			const minIssue = issues.find(
+				(i) => i.code === "JUNCTION_AND_MIN_BRANCHES",
+			);
+			expect(minIssue).toBeDefined();
+			expect(minIssue?.severity).toBe("error");
+		});
+
+		it("does not report JUNCTION_AND_MIN_BRANCHES with two branches", () => {
+			const junction = new JunctionAndEndBuilder()
+				.id("junction-1")
+				.nBranches(2)
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addJunctionAndEnd(junction)
+				.build();
+
+			const issues = analyser.analyseInContext(
+				junction,
+				grafcet,
+				analyserEnvironment(),
+			);
+
+			expect(issues.map((i) => i.code)).not.toContain(
+				"JUNCTION_AND_MIN_BRANCHES",
+			);
+		});
+
 		it("detects pivot not connected", () => {
 			const junction = new JunctionAndEndBuilder()
 				.id("junction-1")

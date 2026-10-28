@@ -1,17 +1,33 @@
 import Project, {
 	PROJECT_SCHEMA_VERSION,
 } from "@/schemas/project/project.schema";
-import { LOCALES } from "@/i18n/config";
+import { LOCALES, type Locale } from "@/i18n/config";
+import localizeProject from "./localize-project";
 import { getMessages } from "@/i18n/messages";
 import { compilePipelineDetailed } from "@tests/utils/test-helpers";
+import { getTemplateStatement } from "./template-text";
 import { FEATURED_TEMPLATE_ID, PROJECT_TEMPLATES } from "./index";
 
 type Variant = { name: string; build: () => Project };
 
 function variantsOf(template: (typeof PROJECT_TEMPLATES)[number]): Variant[] {
-	const variants: Variant[] = [{ name: "create", build: template.create }];
-	if (template.solution)
-		variants.push({ name: "solution", build: template.solution });
+	const variants: Variant[] = [];
+	for (const locale of LOCALES) {
+		const localized = (build: (locale: Locale) => Project) => () => {
+			const project = build(locale);
+			localizeProject(project, locale, { keep: template.keepMnemonics });
+			return project;
+		};
+		variants.push({
+			name: `create (${locale})`,
+			build: localized(template.create),
+		});
+		if (template.solution)
+			variants.push({
+				name: `solution (${locale})`,
+				build: localized(template.solution),
+			});
+	}
 	return variants;
 }
 
@@ -34,6 +50,12 @@ describe("PROJECT_TEMPLATES — registre", () => {
 			}
 		},
 	);
+
+	it.each(LOCALES)("a un énoncé en %s pour chaque template", (locale) => {
+		for (const { id } of PROJECT_TEMPLATES) {
+			expect(getTemplateStatement(id, locale)).toBeTruthy();
+		}
+	});
 
 	it("FEATURED_TEMPLATE_ID désigne une entrée existante pourvue d'une solution", () => {
 		const featured = PROJECT_TEMPLATES.find(
@@ -62,8 +84,11 @@ describe.each(PROJECT_TEMPLATES)("template $id", (template) => {
 		});
 
 		it("passe analyse → pré-compilation → compilation sans erreur", () => {
-			const { analysis, preCompilation, compilation } =
-				compilePipelineDetailed(build());
+			const project = build();
+			const { analysis, preCompilation, compilation } = compilePipelineDetailed(
+				project,
+				project.dialect,
+			);
 			expect(
 				analysis.issues.filter((i) => i.severity === "error"),
 			).toHaveLength(0);

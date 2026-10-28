@@ -9,10 +9,9 @@ import {
 import Section from "@/schemas/ladder/section.schema";
 import { LadderNodeType } from "@/ui/components/ladder/flow/ladder-nodes-definitions";
 import {
-	cellRectsOverlap,
 	colToX,
 	computeSectionLayout,
-	elementFootprint,
+	findFootprintCollision,
 	LADDER_MAX_COLS,
 	parseVirtualRailRow,
 	rowToY,
@@ -153,12 +152,7 @@ export function collidesOnGrid(
 		width: getElementWidth(movedElement),
 		height: getElementHeight(movedElement),
 	};
-	return section.elements.some(
-		(element) =>
-			!movingIds.has(element.id) &&
-			element.type !== "railTerminal" &&
-			cellRectsOverlap(rect, elementFootprint(element)),
-	);
+	return findFootprintCollision(section, rect, movingIds) !== undefined;
 }
 
 /**

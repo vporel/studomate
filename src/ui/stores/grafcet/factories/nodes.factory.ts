@@ -3,7 +3,7 @@ import Element, {
 	JUNCTION_TYPES,
 } from "@/schemas/grafcet/element.schema";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
-import { GrafcetNodeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
+import type { GrafcetNodeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import AbstractNodesFactory from "@/ui/stores/shared/abstract-nodes.factory";
 import describeGrafcetElement from "./describe-grafcet-element";
 

@@ -1,5 +1,8 @@
 {
 	"toolbar": {
+		"systemBlocksButton": "System blocks",
+		"zoomIn": "Zoom in",
+		"zoomOut": "Zoom out",
 		"contactNO": "Normally open contact (NO)",
 		"contactNF": "Normally closed contact (NC)",
 		"contactP": "Rising-edge detection contact (P)",
@@ -13,6 +16,10 @@
 		"hideExtraCoils": "Hide extra coils",
 		"coilFalling": "Falling-edge coil (pulse on deactivation)",
 		"addSection": "Network"
+	},
+	"systemBlocksPalette": {
+		"title": "System blocks",
+		"close": "Close"
 	},
 	"systemBlocks": {
 		"timerLabel": "Timer",
@@ -34,10 +41,6 @@
 		"collapseAria": "Collapse the network",
 		"number": "Network {number}:",
 		"titleAria": "Network title",
-		"zoomIn": "Zoom in",
-		"zoomOut": "Zoom out",
-		"zoomInAria": "Zoom in on the network",
-		"zoomOutAria": "Zoom out of the network",
 		"copy": "Copy",
 		"copyAria": "Copy the network",
 		"duplicate": "Duplicate",
@@ -81,7 +84,10 @@
 		"arithmeticOperatorAria": "Block operator",
 		"assignStaticLabel": "Assign",
 		"arithmeticStaticLabel": "Calc",
-		"convertStaticLabel": "CONV"
+		"convertStaticLabel": "CONV",
+		"convertInTypeAria": "Conversion source type",
+		"convertOutTypeAria": "Conversion target type",
+		"convertTypeMismatch": "Expected type: {expected} (the variable is of type {actual})"
 	},
 	"timerDialog": {
 		"createTitle": "New timer",

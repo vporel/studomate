@@ -131,4 +131,51 @@ describe("crossroads.template", () => {
 			expect(allRedSteps).toHaveLength(2);
 		});
 	});
+
+	describe("langue", () => {
+		it("garde les noms français par défaut et en fr", () => {
+			for (const project of [
+				createCrossroadsSolution(),
+				createCrossroadsSolution("fr"),
+			]) {
+				const [page] = Object.values(project.hmiPages);
+				const widgetNames = Object.values(page.widgets).map((w) => w.name);
+				expect(project.name).toBe("Carrefour de feux tricolores — solution");
+				expect(page.name).toBe("Carrefour");
+				expect(widgetNames).toEqual(
+					expect.arrayContaining([
+						"Chaussée",
+						"Fond Nord",
+						"Étiquette Ouest",
+						"rouge Nord",
+						"vert Est",
+					]),
+				);
+			}
+		});
+
+		it("nomme projet, programme, page et widgets en anglais, sans accent", () => {
+			const project = createCrossroadsSolution("en");
+			const [page] = Object.values(project.hmiPages);
+			const widgetNames = Object.values(page.widgets).map((w) => w.name ?? "");
+			expect(project.name).toBe("Traffic light crossroads: solution");
+			expect(page.name).toBe("Crossroads");
+			expect(widgetNames).toEqual(
+				expect.arrayContaining([
+					"Roadway",
+					"Background North",
+					"Label West",
+					"red North",
+					"green East",
+				]),
+			);
+			const names = [
+				project.name,
+				...Object.values(project.grafcets).map((g) => g.name),
+				page.name,
+				...widgetNames,
+			];
+			expect(names.join("")).not.toMatch(/[À-ÿ]/);
+		});
+	});
 });

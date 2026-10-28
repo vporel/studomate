@@ -16,6 +16,15 @@ describe("renderMarkdown", () => {
 		expect(html).toContain("<table>");
 	});
 
+	it("conserve les blocs repliables details/summary", async () => {
+		const html = await renderMarkdown(
+			"<details><summary>Voir</summary>Réponse</details>",
+		);
+
+		expect(html).toContain("<details>");
+		expect(html).toContain("<summary>Voir</summary>");
+	});
+
 	it("assainit le HTML dangereux", async () => {
 		const html = await renderMarkdown(
 			"Bonjour <script>alert(1)</script><img src=x onerror=alert(1)>",

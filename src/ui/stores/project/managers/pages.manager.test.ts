@@ -1,16 +1,14 @@
 import { PageData, ProjectStoreState } from "../project.store";
+import type { ProjectStorePersistence } from "../environment/project-store-environment";
 import PagesManager from "./pages.manager";
 
 const mockSetPagesSession = jest.fn();
 const mockSetActivePageIdInUrl = jest.fn();
 
-jest.mock("@/persistence/pages-session.storage", () => ({
-	setPagesSession: (...args: unknown[]) => mockSetPagesSession(...args),
-}));
-jest.mock("@/ui/stores/project/url/pages-url", () => ({
-	setActivePageIdInUrl: (...args: unknown[]) =>
-		mockSetActivePageIdInUrl(...args),
-}));
+const persistence = {
+	pagesSession: { get: jest.fn(), set: mockSetPagesSession },
+	url: { setActivePageId: mockSetActivePageIdInUrl },
+} as unknown as ProjectStorePersistence;
 
 /**
  * Ces tests tournent sans zustand ni React : le manager ne reçoit qu'un `get`/`set`.
@@ -39,7 +37,10 @@ function makeManager(
 	};
 	const get = () => state;
 
-	return { manager: new PagesManager(set, get), getState: () => state };
+	return {
+		manager: new PagesManager(set, get, persistence),
+		getState: () => state,
+	};
 }
 
 function page(id: string): PageData {

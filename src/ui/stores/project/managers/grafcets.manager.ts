@@ -8,6 +8,10 @@ import {
 	ProjectStoreSetFunction,
 	ProjectStoreState,
 } from "../project.store";
+import type {
+	ProjectStoreAnalytics,
+	ProjectStoreFeedback,
+} from "../environment/project-store-environment";
 import AbstractProgramsManager from "./abstract-programs.manager";
 
 export default class GrafcetsManager extends AbstractProgramsManager<
@@ -20,11 +24,13 @@ export default class GrafcetsManager extends AbstractProgramsManager<
 	constructor(
 		setStoreState: ProjectStoreSetFunction,
 		getStoreState: ProjectStoreGetFunction,
+		analytics: ProjectStoreAnalytics,
+		feedback?: ProjectStoreFeedback,
 	) {
-		super(setStoreState, getStoreState);
+		super(setStoreState, getStoreState, analytics, feedback);
 	}
 
-	protected getProgram(project: Project, id: string): Grafcet | undefined {
+	protected getDocument(project: Project, id: string): Grafcet | undefined {
 		return project.getGrafcet(id);
 	}
 
@@ -52,14 +58,14 @@ export default class GrafcetsManager extends AbstractProgramsManager<
 		return { grafcetsStoresManagers: managers };
 	}
 
-	protected adoptProgram(
+	protected adoptDocument(
 		managers: GrafcetStoreManagers,
 		program: Grafcet,
 	): void {
 		managers.workflowManager.adoptGrafcet(program);
 	}
 
-	protected getAdoptedProgram(
+	protected getAdoptedDocument(
 		managers: GrafcetStoreManagers,
 	): Grafcet | undefined {
 		return managers.workflowManager.getGrafcet();

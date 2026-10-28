@@ -1,8 +1,7 @@
 "use client";
 
+import useCanEdit from "@/ui/components/projects/useCanEdit";
 import { SystemBlockType } from "@/ui/components/ladder/system-blocks/system-block-catalog";
-import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE } from "@/ui/utils/ladder/ladder-system-block-drag";
 import DraggableToolCell from "./DraggableToolCell";
 import React from "react";
@@ -28,8 +27,8 @@ const LadderSystemBlockTool = ({
 	label?: string;
 	children: React.ReactElement;
 }) => {
-	const mode = useProjectStore((state) => state.mode);
-	disabled = disabled || mode !== ProjectMode.DESIGN;
+	const canEdit = useCanEdit();
+	disabled = disabled || !canEdit;
 
 	return (
 		<DraggableToolCell

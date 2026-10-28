@@ -2,6 +2,7 @@ import {
 	VariableUpdatableFields,
 	VariableUpdatableFieldsWithId,
 } from "@/schemas/variable/variable.schema";
+import { refuseEdit } from "../editability";
 import Project from "@/schemas/project/project.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import VariablesCommandsFactory from "../factories/variables-commands.factory";
@@ -9,7 +10,6 @@ import {
 	ProjectStoreGetFunction,
 	ProjectStoreSetFunction,
 } from "../project.store";
-import { ProjectMode } from "../ProjectMode.enum";
 
 export default class VariablesManager {
 	private setStoreState: ProjectStoreSetFunction;
@@ -56,6 +56,14 @@ export default class VariablesManager {
 	}
 
 	/**
+	 * @param mnemonic
+	 * @returns True if a timer or counter block of the current project already uses this name
+	 */
+	isMnemonicUsedByBlock(mnemonic: string): boolean {
+		return this.getStoreState().project?.isBlockNameTaken(mnemonic) ?? false;
+	}
+
+	/**
 	 *
 	 * @param address
 	 * @returns The variable owning the address or null if not found
@@ -71,10 +79,7 @@ export default class VariablesManager {
 	): VariableUpdatableFieldsWithId[] {
 		const project = this.getStoreState().project;
 		if (!project) return [];
-		if (this.getStoreState().mode !== ProjectMode.DESIGN) {
-			console.warn("Cannot add variable in non-design mode");
-			return [];
-		}
+		if (refuseEdit(this.getStoreState(), "add variable")) return [];
 		const { commands, variablesToAdd } = VariablesCommandsFactory.onAddVariable(
 			project,
 			data,
@@ -89,10 +94,7 @@ export default class VariablesManager {
 	): void {
 		const project = this.getStoreState().project;
 		if (!project) return;
-		if (this.getStoreState().mode !== ProjectMode.DESIGN) {
-			console.warn("Cannot update variable in non-design mode");
-			return;
-		}
+		if (refuseEdit(this.getStoreState(), "update variable")) return;
 		const { commands } = VariablesCommandsFactory.onUpdateVariable(
 			project,
 			variableId,
@@ -107,10 +109,7 @@ export default class VariablesManager {
 	removeVariables(variablesIds: string[]): void {
 		const project = this.getStoreState().project;
 		if (!project) return;
-		if (this.getStoreState().mode !== ProjectMode.DESIGN) {
-			console.warn("Cannot remove variable in non-design mode");
-			return;
-		}
+		if (refuseEdit(this.getStoreState(), "remove variable")) return;
 		const { commands } = VariablesCommandsFactory.onRemoveVariable(
 			project,
 			variablesIds,

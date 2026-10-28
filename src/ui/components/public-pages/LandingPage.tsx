@@ -3,8 +3,9 @@
 import { APP_NAME, APP_REPO_URL } from "@/app-info";
 import routes from "@/app/routes";
 import { Link } from "@/i18n/navigation";
-import { TRAINING_MODULE_IDS } from "@/app/[locale]/training/training-module-ids";
+import { TRAINING_MODULE_IDS } from "@/training/module-ids";
 import { PROJECT_TEMPLATES, type TemplateId } from "@/templates/index";
+import { useLocale } from "next-intl";
 import { useT } from "@/ui/i18n/useT";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
 import BoltIcon from "@mui/icons-material/Bolt";
@@ -35,7 +36,7 @@ import {
 import NextLink from "next/link";
 import { ComponentType } from "react";
 import DemoVideo from "./DemoVideo";
-import HeroSceneSlot from "./hero-scene/HeroSceneSlot";
+import Illustration3dSlot from "@/ui/components/3d-illustrations/Illustration3dSlot";
 import {
 	arduinoPhoto,
 	featureKeys,
@@ -271,7 +272,7 @@ const Showcase = ({
 							src={showcaseMedia[key].src}
 							loading="lazy"
 							decoding="async"
-							alt={t(`${key}Alt`, { name: APP_NAME })}
+							alt={t(`${key}Alt`)}
 							sx={
 								showcaseMedia[key].portrait
 									? {
@@ -309,9 +310,16 @@ const featuredTemplates = PROJECT_TEMPLATES.filter(
 	(t) => t.id in templateCaptures,
 );
 
+/** Fades the scene out on the text side and at the bottom edge, onto the hero's own background. */
+const HERO_SCENE_MASK = [
+	"linear-gradient(90deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.15) 35%, #000 58%)",
+	"linear-gradient(180deg, #000 75%, transparent 100%)",
+].join(", ");
+
 const LandingPage = () => {
 	const t = useT("public.landing");
 	const tTemplates = useT("templates");
+	const locale = useLocale();
 	const tMeta = useT("public.metadata");
 
 	return (
@@ -328,7 +336,11 @@ const LandingPage = () => {
 				}}
 			>
 				<Box sx={{ display: { xs: "none", md: "block" } }}>
-					<HeroSceneSlot label={t("heroSceneLabel")} />
+					<Illustration3dSlot
+						illustration="carton-sorting"
+						label={t("heroSceneLabel")}
+						mask={HERO_SCENE_MASK}
+					/>
 				</Box>
 				<Container
 					maxWidth="lg"
@@ -423,11 +435,11 @@ const LandingPage = () => {
 
 			{/* Démo vidéo */}
 			<Section>
-				<SectionTitle>{t("demoTitle", { name: APP_NAME })}</SectionTitle>
+				<SectionTitle>{t("demoTitle")}</SectionTitle>
 				<FlexBox justifyContent="center">
 					<DemoVideo
 						src="/videos/demo-feu-tricolore.mp4"
-						label={t("demoVideoLabel", { name: APP_NAME })}
+						label={t("demoVideoLabel")}
 					/>
 				</FlexBox>
 			</Section>
@@ -451,9 +463,9 @@ const LandingPage = () => {
 
 			{/* Pourquoi Studomate ? */}
 			<Section tone="muted">
-				<SectionTitle>{t("whyTitle", { name: APP_NAME })}</SectionTitle>
+				<SectionTitle>{t("whyTitle")}</SectionTitle>
 				<Typography textAlign="center" color="text.secondary" mb={3}>
-					{t("whyIntro", { name: APP_NAME })}
+					{t("whyIntro")}
 				</Typography>
 				<FlexBox gap={1.5} wrap justifyContent="center" mb={5}>
 					{audiences.map(({ key, Icon }) => (
@@ -520,7 +532,7 @@ const LandingPage = () => {
 							<Box sx={{ px: 2.5, pb: 2.5 }}>
 								<Button
 									LinkComponent={NextLink}
-									href={`${routes.app()}?template=${tpl.id}&template-mode=solution`}
+									href={`${routes.app()}?template=${tpl.id}&template-mode=solution&template-locale=${locale}`}
 									variant="outlined"
 									size="small"
 								>

@@ -9,7 +9,7 @@ export default function useDrivenInputVariable(
 ): boolean {
 	return useProjectStore((s) => {
 		if (!mnemonic) return false;
-		const variable = s.project?.variables.find((v) => v.mnemonic === mnemonic);
+		const variable = s.project?.findVariableByMnemonic(mnemonic);
 		return !!variable && isInputDriven(s, variable.id);
 	});
 }

@@ -33,6 +33,14 @@ export default abstract class AbstractCommandsStackManager<TDomain> {
 		this.applyDomain(newDomain);
 	}
 
+	/** Realigns `hasCommandsToUndo` / `hasCommandsToRedo` on the stack after it was emptied or altered from outside. */
+	refreshFlags(): void {
+		this.setFlags(
+			this.commandsStack.commandsToUndo.length > 0,
+			this.commandsStack.commandsToRedo.length > 0,
+		);
+	}
+
 	/** Retourne une copie du domaine courant depuis le store. */
 	protected abstract getDomain(): TDomain;
 
@@ -41,4 +49,10 @@ export default abstract class AbstractCommandsStackManager<TDomain> {
 	 * Doit aussi mettre à jour `hasCommandsToUndo` / `hasCommandsToRedo`.
 	 */
 	protected abstract applyDomain(domain: TDomain): void;
+
+	/** Writes `hasCommandsToUndo` / `hasCommandsToRedo` into the store, nothing else. */
+	protected abstract setFlags(
+		hasCommandsToUndo: boolean,
+		hasCommandsToRedo: boolean,
+	): void;
 }

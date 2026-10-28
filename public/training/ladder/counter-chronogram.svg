@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 590 276" font-family="sans-serif">
+	<line x1="130" y1="30" x2="130" y2="244" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="154" y1="30" x2="154" y2="244" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="178" y1="30" x2="178" y2="244" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="202" y1="30" x2="202" y2="244" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="226" y1="30" x2="226" y2="244" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="250" y1="30" x2="250" y2="244" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="274" y1="30" x2="274" y2="244" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="298" y1="30" x2="298" y2="244" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="322" y1="30" x2="322" y2="244" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="346" y1="30" x2="346" y2="244" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="370" y1="30" x2="370" y2="244" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="394" y1="30" x2="394" y2="244" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="418" y1="30" x2="418" y2="244" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="442" y1="30" x2="442" y2="244" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="466" y1="30" x2="466" y2="244" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="490" y1="30" x2="490" y2="244" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="514" y1="30" x2="514" y2="244" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="538" y1="30" x2="538" y2="244" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="562" y1="30" x2="562" y2="244" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+
+	<text x="8" y="18" font-size="12" font-weight="bold" text-anchor="start" fill="#263238">PV = 3</text>
+	<text x="8" y="58" font-size="12" font-weight="bold" text-anchor="start" fill="#263238">CU</text>
+	<path d="M 130 66 L 154 66 L 154 44 L 178 44 L 178 66 L 214 66 L 214 44 L 238 44 L 238 66 L 274 66 L 274 44 L 346 44 L 346 66 L 382 66 L 382 44 L 406 44 L 406 66 L 442 66 L 442 44 L 466 44 L 466 66 L 562 66" fill="none" stroke="#263238" stroke-width="2.2" stroke-linejoin="round" />
+	<text x="166" y="38" font-size="11" text-anchor="middle" fill="#d84315">+1</text>
+	<text x="226" y="38" font-size="11" text-anchor="middle" fill="#d84315">+1</text>
+	<text x="310" y="38" font-size="11" text-anchor="middle" fill="#d84315">+1 une seule fois</text>
+	<text x="394" y="38" font-size="11" text-anchor="middle" fill="#d84315">+1</text>
+	<text x="454" y="38" font-size="11" text-anchor="middle" fill="#d84315">+1</text>
+	<text x="8" y="108" font-size="12" font-weight="bold" text-anchor="start" fill="#263238">R</text>
+	<path d="M 130 116 L 514 116 L 514 94 L 538 94 L 538 116 L 562 116" fill="none" stroke="#263238" stroke-width="2.2" stroke-linejoin="round" />
+	<text x="544" y="88" font-size="11" text-anchor="end" fill="#d84315">remise à 0</text>
+	<text x="8" y="168" font-size="12" font-weight="bold" text-anchor="start" fill="#263238">CV</text>
+	<path d="M 130 176 L 154 176 L 154 168 L 214 168 L 214 160 L 274 160 L 274 152 L 382 152 L 382 144 L 442 144 L 442 136 L 514 136 L 514 176 L 562 176" fill="none" stroke="#d84315" stroke-width="2.2" stroke-linejoin="round" />
+	<text x="142" y="171" font-size="11" font-weight="bold" text-anchor="middle" fill="#263238">0</text>
+	<text x="184" y="163" font-size="11" font-weight="bold" text-anchor="middle" fill="#263238">1</text>
+	<text x="244" y="155" font-size="11" font-weight="bold" text-anchor="middle" fill="#263238">2</text>
+	<text x="328" y="147" font-size="11" font-weight="bold" text-anchor="middle" fill="#263238">3</text>
+	<text x="412" y="139" font-size="11" font-weight="bold" text-anchor="middle" fill="#263238">4</text>
+	<text x="478" y="131" font-size="11" font-weight="bold" text-anchor="middle" fill="#263238">5</text>
+	<text x="538" y="171" font-size="11" font-weight="bold" text-anchor="middle" fill="#263238">0</text>
+	<text x="8" y="224" font-size="12" font-weight="bold" text-anchor="start" fill="#263238">Q</text>
+	<path d="M 130 232 L 274 232 L 274 210 L 514 210 L 514 232 L 562 232" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" />
+	<text x="394" y="204" font-size="11" text-anchor="middle" fill="#455a64">Q vrai tant que CV ≥ PV</text>
+	<text x="8" y="266" font-size="11" text-anchor="start" fill="#607d8b">Un trait pointillé = une unité de temps. Un front montant de CU ajoute 1 à CV.</text>
+</svg>

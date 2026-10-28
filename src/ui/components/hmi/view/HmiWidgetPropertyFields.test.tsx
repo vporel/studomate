@@ -3,6 +3,7 @@
  */
 import { fireEvent, screen } from "@testing-library/react";
 import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
+import Project from "@/schemas/project/project.schema";
 import { InputBehavior } from "@/schemas/variable/input-behavior";
 import { useHmiStore } from "@/ui/components/hmi/HmiContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
@@ -73,14 +74,14 @@ describe("HmiWidgetPropertyFields — champs imposés par le comportement de l'e
 		);
 		(useProjectStore as unknown as jest.Mock).mockImplementation(
 			selectorImplementation({
-				project: {
+				project: Object.assign(new Project("p1", "Projet", ""), {
 					variables: [
 						{
 							mnemonic: (widget.data as { variable: string }).variable,
 							behavior,
 						},
 					],
-				},
+				}),
 			}),
 		);
 		renderWithI18n(<HmiWidgetPropertyFields widget={widget} />);

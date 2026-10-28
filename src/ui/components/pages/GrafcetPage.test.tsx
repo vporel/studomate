@@ -32,9 +32,9 @@ jest.mock("../grafcet/flow/GrafcetFlow", () => {
 describe("GrafcetPage", () => {
 	const grafcet = new GrafcetBuilder().id("grafcet-1").name("Test").build();
 
-	function setup(activePageId: string | null) {
+	function setup(activePageId: string | null, editingEnabled = true) {
 		(useProjectStore as jest.Mock).mockImplementation(
-			selectorImplementation({ activePageId }),
+			selectorImplementation({ activePageId, editingEnabled }),
 		);
 		return render(<GrafcetPage initialGrafcet={grafcet} />);
 	}
@@ -54,5 +54,11 @@ describe("GrafcetPage", () => {
 			{ display: "none" },
 		);
 		expect(screen.getByText("toolbar")).toBeInTheDocument();
+	});
+
+	it("keeps the toolbar of a project that cannot be edited, its tools greyed out and its zoom available", () => {
+		setup("grafcet-1", false);
+		expect(screen.getByText("toolbar")).toBeInTheDocument();
+		expect(screen.getByText("flow")).toBeInTheDocument();
 	});
 });

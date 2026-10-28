@@ -25,6 +25,26 @@ describe("CoilAnalyser", () => {
 		};
 	}
 
+	it("signale LADDER_COIL_NO_VARIABLE, et non UNDECLARED, quand aucune variable n'est assignée", () => {
+		const rail = createRailTerminalElement(0);
+		const coil = createCoilElement("", "normal", 0, 1);
+		const ladder = new Ladder("l1", "L", [
+			createSectionWith([rail, coil], wireInSeries([rail, coil])),
+		]);
+
+		const codes = analyser
+			.analyseInContext(
+				coil,
+				ladder,
+				variablesContext(),
+				ProjectFactory.createEmpty(),
+			)
+			.map((i) => i.code);
+
+		expect(codes).toContain("LADDER_COIL_NO_VARIABLE");
+		expect(codes).not.toContain("LADDER_COIL_VARIABLE_UNDECLARED");
+	});
+
 	it("signale LADDER_COIL_VARIABLE_UNDECLARED quand la variable n'est pas dans le dictionnaire", () => {
 		const rail = createRailTerminalElement(0);
 		const coil = createCoilElement("Q", "normal", 0, 1);

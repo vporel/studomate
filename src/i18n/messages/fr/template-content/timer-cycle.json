@@ -1,0 +1,8 @@
+{
+	"statement": "## Temporisation\n\nSorties : `sortie1`, `sortie2`. Aucune entrée : le cycle ne dépend que du temps.\n\n### Travail demandé\n\n1. Dans l'étape initiale, activer `sortie1`.\n2. Au bout de 4 secondes, activer `sortie2` à la place.\n3. Au bout de 2 secondes, revenir à l'étape initiale, en boucle.",
+	"texts": {
+		"projectName": "Temporisation",
+		"solutionName": "Temporisation : solution",
+		"grafcetName": "Temporisation"
+	}
+}

@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 270" font-family="sans-serif">
+	<defs>
+		<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+			<path d="M 0 0 L 10 5 L 0 10 z" fill="#263238" />
+		</marker>
+	</defs>
+	<text x="10" y="18" font-size="13" text-anchor="start" fill="#263238" font-weight="bold">One motor, two directions</text>
+	<rect x="70" y="40" width="140" height="80" rx="4" fill="#ffe0b2" stroke="#263238" stroke-width="1.5" />
+	<text x="140" y="56" font-size="11" text-anchor="middle" fill="#263238" font-weight="bold">forward contactor</text>
+	<line x1="36" y1="76" x2="92" y2="76" stroke="#263238" stroke-width="1.5" />
+	<text x="32" y="80" font-size="10" text-anchor="end" fill="#607d8b">L1</text>
+	<line x1="188" y1="76" x2="244" y2="76" stroke="#263238" stroke-width="1.5" />
+	<line x1="36" y1="92" x2="92" y2="92" stroke="#263238" stroke-width="1.5" />
+	<text x="32" y="96" font-size="10" text-anchor="end" fill="#607d8b">L2</text>
+	<line x1="188" y1="92" x2="244" y2="92" stroke="#263238" stroke-width="1.5" />
+	<line x1="36" y1="108" x2="92" y2="108" stroke="#263238" stroke-width="1.5" />
+	<text x="32" y="112" font-size="10" text-anchor="end" fill="#607d8b">L3</text>
+	<line x1="188" y1="108" x2="244" y2="108" stroke="#263238" stroke-width="1.5" />
+	<line x1="92" y1="76" x2="188" y2="76" stroke="#263238" stroke-width="2" />
+	<line x1="92" y1="92" x2="188" y2="92" stroke="#263238" stroke-width="2" />
+	<line x1="92" y1="108" x2="188" y2="108" stroke="#263238" stroke-width="2" />
+	<rect x="70" y="150" width="140" height="80" rx="4" fill="#ffe0b2" stroke="#263238" stroke-width="1.5" />
+	<text x="140" y="166" font-size="11" text-anchor="middle" fill="#263238" font-weight="bold">reverse contactor</text>
+	<line x1="36" y1="186" x2="92" y2="186" stroke="#263238" stroke-width="1.5" />
+	<text x="32" y="190" font-size="10" text-anchor="end" fill="#607d8b">L1</text>
+	<line x1="188" y1="186" x2="244" y2="186" stroke="#263238" stroke-width="1.5" />
+	<line x1="36" y1="202" x2="92" y2="202" stroke="#263238" stroke-width="1.5" />
+	<text x="32" y="206" font-size="10" text-anchor="end" fill="#607d8b">L2</text>
+	<line x1="188" y1="202" x2="244" y2="202" stroke="#263238" stroke-width="1.5" />
+	<line x1="36" y1="218" x2="92" y2="218" stroke="#263238" stroke-width="1.5" />
+	<text x="32" y="222" font-size="10" text-anchor="end" fill="#607d8b">L3</text>
+	<line x1="188" y1="218" x2="244" y2="218" stroke="#263238" stroke-width="1.5" />
+	<line x1="92" y1="186" x2="188" y2="186" stroke="#263238" stroke-width="2" />
+	<line x1="92" y1="202" x2="188" y2="218" stroke="#d84315" stroke-width="2" />
+	<line x1="92" y1="218" x2="188" y2="202" stroke="#d84315" stroke-width="2" />
+	<text x="140" y="244" font-size="11" text-anchor="middle" fill="#d84315">two wires swapped</text>
+	<circle cx="290" cy="135" r="34" fill="#fff" stroke="#263238" stroke-width="2" />
+	<text x="290" y="141" font-size="20" text-anchor="middle" fill="#263238" font-weight="bold">M</text>
+	<line x1="244" y1="76" x2="262" y2="114" stroke="#263238" stroke-width="2.5" marker-end="url(#arrow)" />
+	<line x1="244" y1="206" x2="262" y2="160" stroke="#263238" stroke-width="2.5" marker-end="url(#arrow)" />
+	<text x="276" y="86" font-size="11" text-anchor="start" fill="#607d8b">forward</text>
+	<text x="276" y="206" font-size="11" text-anchor="start" fill="#607d8b">reverse</text>
+	<line x1="344" y1="20" x2="344" y2="250" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="360" y="18" font-size="13" text-anchor="start" fill="#263238" font-weight="bold">Both closed together</text>
+	<rect x="360" y="60" width="124" height="44" rx="4" fill="#ffe0b2" stroke="#263238" stroke-width="1.5" />
+	<text x="422" y="86" font-size="12" text-anchor="middle" fill="#263238" font-family="monospace">motor_fwd = 1</text>
+	<rect x="360" y="150" width="124" height="44" rx="4" fill="#ffe0b2" stroke="#263238" stroke-width="1.5" />
+	<text x="422" y="176" font-size="12" text-anchor="middle" fill="#263238" font-family="monospace">motor_rev = 1</text>
+	<path d="M 409 106 l 26 26 M 435 106 l -26 26" fill="none" stroke="#c62828" stroke-width="3.5" stroke-linecap="round" />
+	<text x="446" y="128" font-size="12" text-anchor="start" fill="#c62828" font-weight="bold">short circuit</text>
+	<text x="360" y="222" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">never both at 1</text>
+	<text x="360" y="240" font-size="11" text-anchor="start" fill="#607d8b">mutual interlock</text>
+</svg>

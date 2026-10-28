@@ -1,23 +1,16 @@
-import {
-	ensureLocalStorageLayout,
-	readLayoutVersion,
-} from "./index";
+import { ensureLocalStorageLayout, readLayoutVersion } from "./index";
 import { LayoutMigration } from "./layout-migration";
 import { LOCAL_STORAGE_LAYOUT_VERSION_KEY } from "./keys";
-
-function installLocalStorage() {
-	const store = new Map<string, string>();
-	(globalThis as any).localStorage = {
-		getItem: (k: string) => store.get(k) ?? null,
-		setItem: (k: string, v: string) => store.set(k, v),
-		removeItem: (k: string) => store.delete(k),
-		clear: () => store.clear(),
-	};
-	return store;
-}
+import { installMemoryLocalStorage } from "@tests/utils/local-storage-stub";
 
 describe("readLayoutVersion", () => {
-	beforeEach(() => installLocalStorage());
+	let restoreLocalStorage: () => void;
+
+	beforeEach(() => {
+		({ restore: restoreLocalStorage } = installMemoryLocalStorage());
+	});
+
+	afterEach(() => restoreLocalStorage());
 
 	it("retourne 0 quand la clé est absente (utilisateur d'avant le versionnement)", () => {
 		expect(readLayoutVersion()).toBe(0);
@@ -35,7 +28,13 @@ describe("readLayoutVersion", () => {
 });
 
 describe("ensureLocalStorageLayout", () => {
-	beforeEach(() => installLocalStorage());
+	let restoreLocalStorage: () => void;
+
+	beforeEach(() => {
+		({ restore: restoreLocalStorage } = installMemoryLocalStorage());
+	});
+
+	afterEach(() => restoreLocalStorage());
 
 	it("applique les migrations manquantes en chaîne et pose la version atteinte", () => {
 		const calls: number[] = [];

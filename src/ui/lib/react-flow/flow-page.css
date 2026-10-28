@@ -18,6 +18,11 @@
   opacity: 1;
 }
 
+/* Rien à connecter quand le projet ne peut pas être modifié (simulation, lecture seule). */
+.flow-page--readonly .react-flow__node:hover .react-flow__handle::before {
+  opacity: 0;
+}
+
 /* Sans `stroke`, ce trait invisible élargissant la zone de clic d'une connexion (stroke-opacity:
    0 seul) n'est pas peint du tout, donc pas hit-testé malgré son stroke-width — `transparent`
    (une couleur, contrairement à `none`) le garde peint tout en restant invisible. */

@@ -1,8 +1,7 @@
 "use client";
 
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import useCanEdit from "@/ui/components/projects/useCanEdit";
 import React, { useCallback, useEffect, useState } from "react";
-import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useGrafcetStore } from "../context/GrafcetContext";
 
 export function getPointsForAdding(
@@ -36,11 +35,11 @@ export default function useAddPointHandler(
 		getPointsForAdding(vertices),
 	);
 	const workflowManager = useGrafcetStore((state) => state.workflowManager);
-	const projectMode = useProjectStore((state) => state.mode);
+	const canEdit = useCanEdit();
 
 	const addPoint = useCallback(
 		(segmentIndex: number) => {
-			if (projectMode !== ProjectMode.DESIGN) return;
+			if (!canEdit) return;
 			workflowManager.updateEdgeData(edgeId, (prevData) => {
 				const newPoints = [...(prevData?.points || [])];
 				newPoints.splice(segmentIndex, 0, pointsForAdding[segmentIndex]);
@@ -49,7 +48,7 @@ export default function useAddPointHandler(
 				};
 			});
 		},
-		[workflowManager, edgeId, pointsForAdding, projectMode],
+		[workflowManager, edgeId, pointsForAdding, canEdit],
 	);
 
 	useEffect(() => {

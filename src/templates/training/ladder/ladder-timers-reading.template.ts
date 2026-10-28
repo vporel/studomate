@@ -1,3 +1,5 @@
+import type { Locale } from "@/i18n/config";
+import createTemplateText from "@/templates/template-text";
 import Project from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
 import {
@@ -13,8 +15,11 @@ import {
 } from "@/templates/training/utils/training-variables";
 
 /** The same input drives a `TON`, a `TOF` and a `TP`. No solution to write. */
-export function createLadderTimersReadingProject(): Project {
-	const project = new Project(createRandomId(), "Lire les temporisations", "");
+export function createLadderTimersReadingProject(
+	locale: Locale = "fr",
+): Project {
+	const t = createTemplateText("ladder-timers-reading", locale);
+	const project = new Project(createRandomId(), t("projectName"), "");
 	project.variables.push(
 		pushButton("bp"),
 		output("q_ton"),
@@ -24,21 +29,21 @@ export function createLadderTimersReadingProject(): Project {
 	setMainSections(project, [
 		section(
 			"TON",
-			"Retard à l'enclenchement de 2 s.",
+			t("tonDescription"),
 			no("bp"),
 			timer("TON", "t_ton", "T#2s"),
 			coil("q_ton"),
 		),
 		section(
 			"TOF",
-			"Retard au déclenchement de 2 s.",
+			t("tofDescription"),
 			no("bp"),
 			timer("TOF", "t_tof", "T#2s"),
 			coil("q_tof"),
 		),
 		section(
 			"TP",
-			"Impulsion de 2 s, non redéclenchable.",
+			t("tpDescription"),
 			no("bp"),
 			timer("TP", "t_tp", "T#2s"),
 			coil("q_tp"),

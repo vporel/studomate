@@ -55,7 +55,9 @@ src/bridge/             mappers between the domain/analysis and the UI (exceptio
 src/lib/                neutral utilities (array, object, heartbeat), no domain dependency
 src/persistence/        migrations (project shape + localStorage layout) + repositories (localStorage, Supabase cloud, hybrid) + share tokens
 src/ui/                 Next.js (App Router) + zustand stores + MUI components
-src/app-info.ts         app identity (name, tagline...), neutral root module
+src/training/            training module and step identifiers (course order), neutral root module
+src/whats-new/          "what's new" carousel: version check and slide ids, neutral root module
+src/app-info.ts         app identity (name, tagline, `APP_VERSION`...), neutral root module
 src/user-profile/       user profile model (database-side schema, not part of the project schema), neutral root module
 ```
 
@@ -79,13 +81,37 @@ environment) in `src/project-analyser/`.
 `local-storage` (default, browser-local storage), `supabase` (cloud: `projects` table + RLS),
 `hybrid` (switches local/cloud based on authentication). Auth (Supabase, `src/ui/stores/auth/`)
 handles sign-up, sign-in, anonymous accounts (username + password), password reset. Sharing a
-project goes through a URL token (`ShareableProjectRepository`, `?share=` handled in
+project goes through a URL token (`ShareableProjectRepository`, `?shareToken=` handled in
 `src/ui/stores/project/url/project-url.ts`). Error monitoring is wired via Sentry
 (`sentry.{client,server,edge}.config.ts` at the root).
 
 This layer is consumed by the UI; it never leaks into the domain (`src/schemas/`).
 Environment variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` for cloud,
 `NEXT_PUBLIC_SENTRY_DSN` for monitoring. Without them, the app stays local-only.
+
+### Project store environment and embedded block
+
+`createProjectStore(env)` (`src/ui/stores/project/project.store.ts`) reaches the outside world
+(repository, URL, storage, analytics, toasts, board, 3D scene host, clipboard) only through a
+`ProjectStoreEnvironment` (`src/ui/stores/project/environment/`). `/app` passes
+`createAppProjectStoreEnvironment()` (the only module that imports Supabase, the auth store and the
+browser storage); an embedded block passes `createEmbeddedProjectStoreEnvironment({ locale })`, which
+has no `persistence`: reaching a save, draft, share or repository path then throws explicitly. A new
+side effect in a manager goes through `env` too, never a direct import of `trackEvent`, `toast`,
+`localStorage` or the URL helpers. `project.store.imports.test.ts` fails if the store module starts
+loading Supabase, the data grid or three.js: keep page constants in `pages-data.ts` and the editors'
+node types as `import type` in the stores.
+
+"Can the project be modified" is one rule, `canEdit(state)` (`stores/project/editability.ts`, hook
+`useCanEdit()`): design mode **and** the `editingEnabled` flag. Use it for anything that edits
+(commands, toolbars, in-place editors, menus); keep `state.mode` for what depends on the simulation
+itself. The clipboard belongs to each store (`state.clipboard`), and what the surrounding interface
+can offer (PDF export, cross-references, board) is read from `state.capabilities`.
+
+`EmbeddedApp` (`src/ui/components/embedded/`) shows a `Project` with its editors inside a page, in
+memory only (copy of the project, nothing saved, `onDirtyChange`/`warnOnLeave` for the host). It
+brings full messages and Three.js/data-grid views, so a consumer must load it with `next/dynamic`
+and run `npm run build` after changing how it is imported.
 
 ### PDF export
 
@@ -175,6 +201,11 @@ Always check `package.json` before quoting a version: this table goes stale at t
   folder — except for `tests/integration/` (end-to-end tests of the analysis → compilation →
   simulation pipeline) and `tests/utils/` (factories and utilities shared between tests,
   importable via `@tests/utils/...`).
+  When the file under test is very long and a single test file would be just as long, the
+  tests may be split into sub-files. Each one starts with the base name of the tested file,
+  followed by the theme: `project.schema.copy.test.ts`, `project.schema.hmi.test.ts` (as
+  `VariablesTable.toolbar.test.tsx` already does). A sub-file only tests the file whose name
+  it carries.
 - **Test environment**: the global `testEnvironment` is `node` (`jest.config.js`). Any test file
   that touches the DOM — `@testing-library/react`, `@testing-library/dom`, `renderHook`,
   `react-dom`, or direct access to `document`/`window` — must declare `/** @jest-environment jsdom */`
@@ -186,12 +217,30 @@ Always check `package.json` before quoting a version: this table goes stale at t
   `exportModalVisible`, ...) when its state is shared between components or when it must be
   openable from several places (keyboard shortcuts, menus, ...). A modal that opens and closes
   itself, with nothing else able to drive it, keeps its visibility in local React state.
+- **Business rules on the schema live with the schema**: when code checks or derives something
+  from a schema entity's structure (a ladder is empty, a program is executed, a page is the main
+  one, a step has a number, a variable is read-only...), write that rule once, as a named method,
+  and call it everywhere. Before writing such a check, look for an existing method or helper that
+  already expresses it, and reuse it rather than re-deriving it from the fields. Placement:
+  - a **method of the class** (`Ladder.isEmpty()`, `Project.getMainHmiPage()`) when the rule only
+    involves the object and its children and is intrinsic to the concept;
+  - a **helper next to it** (`src/schemas/<entity>/helpers/`, static and taking the data) when
+    callers hold plain data rather than class instances (React Flow nodes, raw JSON) or when the
+    rule spans several entities;
+  - a **`src/ui/utils/<editor>/` function** when it's editing geometry (grid footprints,
+    collisions), not a domain rule.
+  A simple field read or a TypeScript union discriminant (`element.type === "block"`) is not a
+  rule and needs no method. Migrations never call schema methods: they work on raw data frozen
+  at their version.
 - **Hook dependencies** (`useEffect`, `useCallback`, `useMemo`): check that they're complete
   after any change touching their body.
 - **`box-sizing`**: already set to `border-box` globally for all elements
   (`src/app/globals.css`, `*` selector) — never redeclare it in an `sx` prop or component style.
 - Minimal, targeted changes; follow the existing style (tabs, no trailing superfluous
   semicolons, etc. — see neighboring files).
+- **Prettier reformatting**: when running prettier on a file reformats parts of it beyond the
+  change at hand, keep the result and never restore the file (`git checkout`, manual revert).
+  The developer accepts that noise.
 - **Never `git commit` unless explicitly asked.** Leave changes staged/unstaged for the
   developer to review and commit themselves.
 - **Comments**: never document decision history (alternatives tried, "before/after",
@@ -228,6 +277,34 @@ Always check `package.json` before quoting a version: this table goes stale at t
   your own initiative. It's up to the user to ask for it if they want. Exception: suggest
   `claude-in-chrome` when going in circles (e.g. several failed attempts at fixing a bug) and a
   visual check would help break out of the loop.
+
+## Public pages and SEO
+
+Public pages are the indexable, localized pages under `src/app/[locale]/` (landing, about,
+user manual, training, legal pages...) and the components they render
+(`src/ui/components/public-pages/`, manual and training content). `/app` is not one. Any change
+to a public page, its content or its i18n messages (`public.json`, manual, training) gets
+particular attention to SEO, and the end-of-task report says what was checked:
+
+- **Metadata**: every page goes through `pageMetadata` / `createGenerateMetadata`
+  (`src/app/metadata.ts`), which sets title, description, `canonical`, `hreflang` and Open
+  Graph. Title and description are specific to the page, in both locales, and stay within
+  reasonable lengths (title around 60 characters before the site suffix, description around
+  150–160).
+- **Indexing**: a new route is reachable from the sitemap (`src/app/sitemap.ts`) and allowed
+  by `robots.ts`; a removed or renamed route doesn't leave dead internal links behind.
+- **Locale parity**: FR and EN carry the same content, translated slugs come from
+  `routing.pathnames`, and internal links go through the localized `Link` / `PublicLink`.
+- **Structure**: one `h1` per page, headings in order without skipped levels, meaningful link
+  text, an `alt` on every informative image (`alt=""` only for decorative ones).
+- **Rendered content**: text meant to be indexed is rendered on the server. Never put it only
+  inside a client-only, lazy or WebGL component (3D illustrations, videos), which crawlers may
+  not run.
+- **Structured data**: the JSON-LD (`src/app/[locale]/*JsonLd.ts`) stays consistent with the
+  visible content when that content changes (FAQ, organization, offers...).
+- **Performance**: the public pages' Core Web Vitals count for ranking. No heavy client
+  JavaScript loaded eagerly above the fold (three.js, data grids...), images sized and in a
+  modern format, no layout shift from content appearing late.
 
 ## Schema changes and migrations
 
@@ -311,6 +388,31 @@ Bumping means changing together `FIRMWARE_VERSION` in the sketch and `SHIPPED_FI
 then rebuilding the precompiled hex with `firmwares/arduino/build-uno-r3.sh` (a test checks that
 all three agree). After **any** firmware change, rebuild the hex even when the version stays the
 same.
+
+## Application version and "what's new" (`APP_VERSION`)
+
+`APP_VERSION` (`src/app-info.ts`, format `vX.Y.Z`) is recorded in `localStorage`
+(`studomate_app_version`, `src/persistence/app-version.storage.ts`). On any route (`/app` and the
+public pages), `WhatsNew` (`src/ui/components/whats-new/`) compares it with the stored one: no
+stored version, it is written silently, unless local projects already exist (`LocalStorageProjectRepository.hasProjects()`:
+an existing user predating the key), in which case the carousel is shown; same version, nothing
+happens; different version, it is updated and the `WhatsNewModal` carousel is shown. A downgrade is
+not handled specially.
+
+The modal's visibility lives in `whatsNewStore` (`src/ui/stores/whats-new/`): the version shown in
+the startup footer and the Help menu's "Nouveautés" entry reopen it at any time.
+
+The carousel presents **the current version's news only** (no cumulative history). Its slides are
+declared by id in `src/whats-new/whats-new-slides.ts`, with a `title` and a `body` under
+`whatsNew.slides.<id>` in every locale (`whatsNew.json`).
+
+Any **notable new feature** (not a minor bug fix or a small interface tweak) must come with a
+"what's new" slide, so before touching the version, **ask the developer whether the current
+`APP_VERSION` has already been deployed**:
+
+- if not, stay on the current version and add the slide(s) to it;
+- if so, the developer chooses the new number: **never guess or increment it yourself**. Then
+  replace the slides with those of the new version.
 
 ## Expression parsing cache (`parseExpressionCached`)
 

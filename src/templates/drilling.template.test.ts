@@ -1,6 +1,7 @@
 import { getSceneDescriptor } from "@/3d-scenes/scene.registry";
 import Project from "@/schemas/project/project.schema";
 import {
+	addDrillingOperativePart,
 	createDrillingProject,
 	createDrillingSolution,
 } from "./drilling.template";
@@ -119,6 +120,39 @@ describe("drilling.template", () => {
 			expect(preCompilation.errors).toHaveLength(0);
 			expect(compilation.errors).toHaveLength(0);
 			expect(compilation.result).toBeDefined();
+		});
+	});
+	describe("langue", () => {
+		it("garde les noms français par défaut et en fr", () => {
+			for (const project of [
+				createDrillingSolution(),
+				createDrillingSolution("fr"),
+			]) {
+				expect(project.name).toBe("Poste de perçage — solution");
+				expect(Object.values(project.grafcets).map((g) => g.name)).toEqual([
+					"Commande",
+				]);
+			}
+		});
+
+		it("nomme le projet et les programmes en anglais, sans accent", () => {
+			const project = createDrillingSolution("en");
+			const ladderNames = Object.values(project.ladders).map((l) => l.name);
+			const grafcetNames = Object.values(project.grafcets).map((g) => g.name);
+			expect(project.name).toBe("Drilling station: solution");
+			expect(grafcetNames).toEqual(["Control"]);
+			expect(createDrillingProject("en").name).toBe("Drilling station");
+			for (const name of [project.name, ...ladderNames, ...grafcetNames]) {
+				expect(name).not.toMatch(/[À-ÿ]/);
+			}
+		});
+
+		it("nomme la partie opérative en anglais", () => {
+			const project = createDrillingProject("en");
+			addDrillingOperativePart(project, {}, "en");
+			const names = Object.values(project.ladders).map((l) => l.name);
+			expect(names).toContain("Operative part");
+			expect(names.join("")).not.toMatch(/[À-ÿ]/);
 		});
 	});
 });

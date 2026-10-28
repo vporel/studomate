@@ -1,11 +1,11 @@
 import Project from "@/schemas/project/project.schema";
 import { StorageLocation } from "@/persistence/repositories/project.repository";
-import HybridProjectRepository from "@/persistence/repositories/hybrid.project.repository";
+import { isStorageLocationAware } from "@/persistence/repositories/project.repository";
 import {
 	getPreferredSaveLocation,
 	setPreferredSaveLocation,
 } from "@/persistence/preferences.storage";
-import { authStore } from "@/ui/stores/auth/auth.store";
+import type { ProjectStoreEnvironment } from "./environment/project-store-environment";
 import {
 	ProjectStoreGetFunction,
 	ProjectStoreSetFunction,
@@ -47,14 +47,16 @@ export default async function resolveSaveLocationIfNeeded(
 	project: Project,
 	get: ProjectStoreGetFunction,
 	set: ProjectStoreSetFunction,
+	env: ProjectStoreEnvironment,
 ): Promise<StorageLocation | undefined | "cancelled"> {
 	const repo = get().projectRepository;
-	if (!(repo instanceof HybridProjectRepository)) return undefined;
+	if (!env.persistence || !isStorageLocationAware(repo)) return undefined;
 	if (repo.locationOf(project.id) === "cloud") return undefined;
 	if ((await repo.get(project.id)) !== null) return undefined;
 
 	const preferred = getPreferredSaveLocation();
-	if (preferred === "cloud" && authStore.getState().user) return "cloud";
+	if (preferred === "cloud" && env.persistence.auth.store.getState().user)
+		return "cloud";
 	if (preferred === "local") return "local";
 
 	// Pas encore de préférence, ou préférence "cloud" sans session active : on demande —

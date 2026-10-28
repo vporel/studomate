@@ -9,7 +9,7 @@ import {
 	canRedoActiveScope,
 	canUndoActiveScope,
 } from "@/ui/stores/project/undo-redo";
-import { useClipboardStore } from "@/ui/stores/shared/clipboard.store";
+import useProjectClipboard from "@/ui/components/projects/useProjectClipboard";
 import { useMemo } from "react";
 import { AppMenuType } from "../app-menu-bar";
 
@@ -23,7 +23,7 @@ export default function useEditMenu(): AppMenuType {
 	const canRedo = useProjectStore(canRedoActiveScope);
 	const undo = useProjectStore((state) => state.undoActiveScope);
 	const redo = useProjectStore((state) => state.redoActiveScope);
-	const clipboardScope = useClipboardStore((s) => s.entry?.scope);
+	const clipboardScope = useProjectClipboard((s) => s.entry?.scope);
 	const t = useT("menu.edit");
 
 	return useMemo(() => {

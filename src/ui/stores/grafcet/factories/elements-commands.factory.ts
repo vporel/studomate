@@ -9,10 +9,8 @@ import ElementsUpdateCommand from "@/schemas/grafcet/commands/elements-update.co
 import { Dialect } from "@/expression-language/dialect.enum";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import StepHelper from "@/schemas/grafcet/helpers/step.helper";
-import {
-	GRAFCET_ELEMENTS_CONFIG,
-	GrafcetNodeType,
-} from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
+import { GRAFCET_ELEMENT_CLASSES } from "@/ui/utils/grafcet/grafcet-element-classes";
+import type { GrafcetNodeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import {
 	NodeChange,
 	NodeDimensionChange,
@@ -32,19 +30,23 @@ export default class ElementsCommandsFactory {
 		commands: AbstractGrafcetCommand<any>[];
 		nodesToAdd: GrafcetNodeType[];
 	} {
+		let nextStepNumber: number | undefined;
 		const nodesToAdd = newNodes
 			.filter(
 				(n) =>
 					!existingNodes.find((en) => en.id === n.id) &&
 					(n.type !== "step" ||
-						!n.data.initial ||
-						!existingNodes.find((en) => en.type === "step" && en.data.initial)),
+						!StepHelper.isInitial(n.data) ||
+						!existingNodes.find(
+							(en) => en.type === "step" && StepHelper.isInitial(en.data),
+						)),
 			)
 			.map((node) => {
 				if (node.type === "step") {
 					//If no number is provided for the step, we will assign it the next available number
-					if (node.data.number === undefined || node.data.number === "") {
-						node.data.number = StepHelper.getNextAvailableNumber(grafcet);
+					if (!StepHelper.hasNumber(node.data)) {
+						nextStepNumber ??= StepHelper.getNextAvailableNumber(grafcet);
+						node.data.number = nextStepNumber++;
 					}
 				}
 				return node;
@@ -61,12 +63,10 @@ export default class ElementsCommandsFactory {
 						size: {
 							width:
 								node.width ??
-								GRAFCET_ELEMENTS_CONFIG[node.type].elementClass
-									.DEFAULT_DIMENSIONS.width,
+								GRAFCET_ELEMENT_CLASSES[node.type].DEFAULT_DIMENSIONS.width,
 							height:
 								node.height ??
-								GRAFCET_ELEMENTS_CONFIG[node.type].elementClass
-									.DEFAULT_DIMENSIONS.height,
+								GRAFCET_ELEMENT_CLASSES[node.type].DEFAULT_DIMENSIONS.height,
 						},
 					})),
 				),

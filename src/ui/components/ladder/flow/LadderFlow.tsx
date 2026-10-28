@@ -18,13 +18,15 @@ import {
 } from "@dnd-kit/sortable";
 import { Box, useTheme } from "@mui/material";
 import { ReactFlowProvider } from "@xyflow/react";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { useT } from "@/ui/i18n/useT";
 import { useLadderStore } from "../context/LadderContext";
 import buildLadderReorderAnnouncements, {
 	ladderReorderScreenReaderInstructions,
 } from "./ladder-reorder-announcements";
 import LadderSection from "./LadderSection";
+import useCanEdit from "@/ui/components/projects/useCanEdit";
+import useCtrlWheelZoom from "@/ui/lib/hooks/useCtrlWheelZoom";
 import useLadderSectionSelection from "./useLadderSectionSelection";
 
 import "@xyflow/react/dist/style.css";
@@ -65,7 +67,13 @@ function LadderFlowContent() {
 		[tReorder],
 	);
 
-	useLadderSectionSelection();
+	const canEdit = useCanEdit();
+	const containerRef = useRef<HTMLDivElement>(null);
+	useLadderSectionSelection(containerRef);
+	const viewManager = useLadderStore((state) => state.viewManager);
+	useCtrlWheelZoom(containerRef, (direction) =>
+		direction > 0 ? viewManager.zoomIn() : viewManager.zoomOut(),
+	);
 
 	const handleDragEnd = useCallback(
 		(event: DragEndEvent) => {
@@ -93,12 +101,13 @@ function LadderFlowContent() {
 
 	return (
 		<Box
-			className="ladder-page flow-page"
+			ref={containerRef}
+			className={`ladder-page flow-page${canEdit ? "" : " flow-page--readonly"}`}
 			sx={{
 				padding: "25px",
 				width: "100%",
 				height: "100%",
-				overflowX: "hidden",
+				overflowX: "auto",
 				overflowY: "auto",
 				background: th.palette.background.default,
 				position: "relative",

@@ -1,3 +1,5 @@
+import type { Locale } from "@/i18n/config";
+import createTemplateText from "@/templates/template-text";
 import Project from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
 import {
@@ -5,6 +7,7 @@ import {
 	createDrillingVariables,
 } from "@/templates/drilling.template";
 import {
+	nf,
 	no,
 	resetCoil,
 	section,
@@ -13,83 +16,111 @@ import {
 } from "@/templates/training/utils/ladder-dsl";
 import {
 	GrafcetLadderSpec,
+	addGrafcetPrograms,
 	grafcetMemories,
-	grafcetSections,
+	grafcetProgramSections,
 } from "@/templates/training/utils/grafcet-ladder";
 import {
 	memory,
+	pushButton,
 	toggleSwitch,
 } from "@/templates/training/utils/training-variables";
 
 export const DESCENT_WATCHDOG_SECONDS = 8;
 
 /**
- * E0 ─dcy→ E1 (descendre, broche) ─b→ E2 (broche, 2 s) ─t_perc→ E3 (monter, broche) ─h→ E0,
- * plus E1 ─t_surv (descent watchdog)→ E3.
+ * E0 ─dcy ET NON defaut→ E1 (descendre, broche) ─b→ E2 (broche, 2 s) ─drill timer→ E3 (monter, broche) ─h→ E0,
+ * plus E1 ─watchdog timer (descent watchdog)→ E3.
  */
-export const DRILLING_SPEC: GrafcetLadderSpec = {
-	steps: ["X0", "X1", "X2", "X3"],
-	initial: ["X0"],
-	transitions: [
-		{ name: "T0", from: ["X0"], to: ["X1"], receptivity: [no("dcy")] },
-		{ name: "T1", from: ["X1"], to: ["X2"], receptivity: [no("b")] },
-		{ name: "T2", from: ["X2"], to: ["X3"], receptivity: [no("t_perc.Q")] },
-		{ name: "T3", from: ["X3"], to: ["X0"], receptivity: [no("h")] },
-		{ name: "T4", from: ["X1"], to: ["X3"], receptivity: [no("t_surv.Q")] },
-	],
-};
+function createDrillingSpec(
+	drillTimer: string,
+	watchdogTimer: string,
+): GrafcetLadderSpec {
+	return {
+		steps: ["X0", "X1", "X2", "X3"],
+		initial: ["X0"],
+		transitions: [
+			{
+				from: ["X0"],
+				to: ["X1"],
+				receptivity: [no("dcy"), nf("defaut")],
+			},
+			{ from: ["X1"], to: ["X2"], receptivity: [no("b")] },
+			{
+				from: ["X2"],
+				to: ["X3"],
+				receptivity: [timer("TON", drillTimer, "T#2s")],
+			},
+			{ from: ["X3"], to: ["X0"], receptivity: [no("h")] },
+			{
+				from: ["X1"],
+				to: ["X3"],
+				receptivity: [
+					timer("TON", watchdogTimer, `T#${DESCENT_WATCHDOG_SECONDS}s`),
+				],
+			},
+		],
+	};
+}
 
-/** Drilling variables with the `blocage` switch, the operative part called by the Main, no control. */
-function createBase(name: string): Project {
+/** Drilling variables with the `blocage` switch and the `acquittement` button, the operative part called by the Main, no control. */
+function createBase(
+	name: string,
+	spec: GrafcetLadderSpec,
+	locale: Locale,
+): Project {
 	const project = new Project(createRandomId(), name, "");
 	project.variables.push(
-		...createDrillingVariables(),
+		...createDrillingVariables(locale),
 		toggleSwitch("blocage"),
+		pushButton("acquittement"),
 		memory("defaut"),
-		...grafcetMemories(DRILLING_SPEC),
+		...grafcetMemories(spec),
 	);
-	addDrillingOperativePart(project, { blockable: true });
+	addDrillingOperativePart(project, { blockable: true }, locale);
 	return project;
 }
 
-export function createDrillingLadderProject(): Project {
-	return createBase("Poste de perçage en Ladder");
+export function createDrillingLadderProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("drilling-ladder", locale);
+	const spec = createDrillingSpec(t("drillTimer"), t("watchdogTimer"));
+	return createBase(t("projectName"), spec, locale);
 }
 
-export function createDrillingLadderSolution(): Project {
-	const project = createBase("Poste de perçage en Ladder : solution");
-	const [callSection] = project.main.sections;
-	project.main.sections = [
-		callSection,
-		section(
-			"Temporisation de perçage",
-			"Le TON mesure le perçage.",
-			no("X2"),
-			timer("TON", "t_perc", "T#2s"),
-		),
-		section(
-			"Surveillance de la descente",
-			`Le TON surveille la descente : au bout de ${DESCENT_WATCHDOG_SECONDS} s sans atteindre le bas, la transition de repli est franchie.`,
-			no("X1"),
-			timer("TON", "t_surv", `T#${DESCENT_WATCHDOG_SECONDS}s`),
-		),
-		section(
-			"Défaut mémorisé",
-			"Le défaut de descente est mémorisé.",
-			no("t_surv.Q"),
-			setCoil("defaut"),
-		),
-		...grafcetSections(DRILLING_SPEC, [
-			{ variable: "descendre", steps: ["X1"] },
-			{ variable: "broche", steps: ["X1", "X2", "X3"] },
-			{ variable: "monter", steps: ["X3"] },
-		]),
-		section(
-			"Acquittement du défaut",
-			"Un nouveau cycle efface le défaut.",
-			no("T0"),
-			resetCoil("defaut"),
-		),
-	];
+export function createDrillingLadderSolution(locale: Locale = "fr"): Project {
+	const t = createTemplateText("drilling-ladder", locale);
+	const drillTimer = t("drillTimer");
+	const watchdogTimer = t("watchdogTimer");
+	const spec = createDrillingSpec(drillTimer, watchdogTimer);
+	const project = createBase(t("solutionName"), spec, locale);
+	addGrafcetPrograms(
+		project,
+		{
+			faults: [
+				section(
+					t("faultAcknowledgeTitle"),
+					t("faultAcknowledgeDescription"),
+					no("acquittement"),
+					resetCoil("defaut"),
+				),
+				section(
+					t("faultTitle"),
+					t("faultDescription"),
+					no(`${watchdogTimer}.Q`),
+					setCoil("defaut"),
+				),
+			],
+			...grafcetProgramSections(
+				spec,
+				[
+					{ variable: "descendre", steps: ["X1"] },
+					{ variable: "broche", steps: ["X1", "X2", "X3"] },
+					{ variable: "monter", steps: ["X3"] },
+				],
+				locale,
+			),
+		},
+		locale,
+	);
 	return project;
 }

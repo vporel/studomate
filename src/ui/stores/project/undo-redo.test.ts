@@ -23,6 +23,7 @@ function makeState(overrides: {
 	const grafcetStack = { undoOperation: jest.fn(), redoOperation: jest.fn() };
 	const state = {
 		mode: overrides.mode ?? ProjectMode.DESIGN,
+		editingEnabled: true,
 		activeScopeType: overrides.activeScopeType ?? "project",
 		hasCommandsToUndo: overrides.hasCommandsToUndo ?? false,
 		hasCommandsToRedo: overrides.hasCommandsToRedo ?? false,

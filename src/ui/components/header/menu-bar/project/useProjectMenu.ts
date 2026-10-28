@@ -1,9 +1,5 @@
 "use client";
 
-import { EXERCISE_PAGE_DATA } from "@/ui/components/pages/ExercisePage";
-import { HARDWARE_CONFIGURATION_PAGE_DATA } from "@/ui/components/pages/HardwareConfigurationPage";
-import { SCENE3D_CONFIGURATION_PAGE_DATA } from "@/ui/components/pages/Scene3dConfigurationPage";
-import { PROJECT_PROPERTIES_PAGE_DATA } from "@/ui/components/pages/ProjectPropertiesPage";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useT } from "@/ui/i18n/useT";
 import { platformShortcut } from "@/ui/lib/platform";
@@ -11,6 +7,12 @@ import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { useMemo } from "react";
 import { useShallow } from "zustand/shallow";
 import { AppMenuType } from "../app-menu-bar";
+import {
+	EXERCISE_PAGE_DATA,
+	HARDWARE_CONFIGURATION_PAGE_DATA,
+	PROJECT_PROPERTIES_PAGE_DATA,
+	SCENE3D_CONFIGURATION_PAGE_DATA,
+} from "@/ui/stores/project/pages-data";
 
 export default function useProjectMenu(): AppMenuType {
 	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);

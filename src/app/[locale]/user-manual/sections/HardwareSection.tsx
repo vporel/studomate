@@ -1,6 +1,7 @@
 "use client";
 
 import { useT } from "@/ui/i18n/useT";
+import { ManualH2, ManualH3 } from "../manual-heading";
 import { Divider, Typography } from "@mui/material";
 import { ManualFigure, ManualList } from "./manual-ui";
 
@@ -8,13 +9,13 @@ export default function HardwareSection() {
 	const t = useT("manual.hardware");
 	return (
 		<section id="hardware">
-			<Typography variant="h2" mb={3}>
+			<Typography variant="h2" component={ManualH2} mb={3}>
 				{t("title")}
 			</Typography>
 			<Typography mb={2}>{t("p1")}</Typography>
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h4" mb={2}>
+			<Typography variant="h4" component={ManualH3} mb={2}>
 				{t("configTitle")}
 			</Typography>
 			<Typography mb={2}>{t("configIntro")}</Typography>
@@ -27,7 +28,7 @@ export default function HardwareSection() {
 			/>
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h4" mb={2}>
+			<Typography variant="h4" component={ManualH3} mb={2}>
 				{t("actionsTitle")}
 			</Typography>
 			<Typography mb={2}>{t("actionsIntro")}</Typography>
@@ -35,27 +36,27 @@ export default function HardwareSection() {
 			<Typography mb={2}>{t("actionsOutro")}</Typography>
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h4" mb={2}>
+			<Typography variant="h4" component={ManualH3} mb={2}>
 				{t("modesTitle")}
 			</Typography>
 			<Typography mb={2}>{t("modesIntro")}</Typography>
 			<ManualList items={t.raw("modesItems") as string[]} />
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h4" mb={2}>
+			<Typography variant="h4" component={ManualH3} mb={2}>
 				{t("observationTitle")}
 			</Typography>
 			<Typography mb={2}>{t("observationIntro")}</Typography>
 			<Typography mb={2}>{t("observationOutro")}</Typography>
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h4" mb={2}>
+			<Typography variant="h4" component={ManualH3} mb={2}>
 				{t("behaviorTitle")}
 			</Typography>
 			<ManualList items={t.raw("behaviorItems") as string[]} />
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h4" mb={2}>
+			<Typography variant="h4" component={ManualH3} mb={2}>
 				{t("limitsTitle")}
 			</Typography>
 			<ManualList items={t.raw("limitsItems") as string[]} />

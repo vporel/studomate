@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 330" font-family="sans-serif">
+	<defs>
+		<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+			<path d="M 0 0 L 10 5 L 0 10 z" fill="#263238" />
+		</marker>
+	</defs>
+	<rect x="20" y="16" width="150" height="64" rx="10" fill="#e3f2fd" stroke="#263238" stroke-width="2" />
+	<rect x="205" y="16" width="150" height="64" rx="10" fill="#eceff1" stroke="#263238" stroke-width="2" />
+	<rect x="390" y="16" width="150" height="64" rx="10" fill="#ffe0b2" stroke="#263238" stroke-width="2" />
+	<text x="95" y="44" font-size="13" text-anchor="middle" fill="#263238" font-weight="bold">1. Lire les entrées</text>
+	<text x="95" y="64" font-size="11" text-anchor="middle" fill="#607d8b">(boutons, capteurs)</text>
+	<text x="280" y="44" font-size="13" text-anchor="middle" fill="#263238" font-weight="bold">2. Exécuter les réseaux</text>
+	<text x="280" y="64" font-size="11" text-anchor="middle" fill="#607d8b">de haut en bas</text>
+	<text x="465" y="44" font-size="13" text-anchor="middle" fill="#263238" font-weight="bold">3. Écrire les sorties</text>
+	<text x="465" y="64" font-size="11" text-anchor="middle" fill="#607d8b">(lampes, moteurs...)</text>
+	<line x1="170" y1="48" x2="203" y2="48" stroke="#263238" stroke-width="2.5" marker-end="url(#arrow)" />
+	<line x1="355" y1="48" x2="388" y2="48" stroke="#263238" stroke-width="2.5" marker-end="url(#arrow)" />
+	<path d="M 465 82 L 465 104 L 95 104 L 95 84" fill="none" stroke="#263238" stroke-width="2.5" marker-end="url(#arrow)" />
+	<text x="280" y="122" font-size="11" text-anchor="middle" fill="#607d8b">puis on recommence : cycle suivant</text>
+
+	<line x1="20" y1="140" x2="540" y2="140" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="20" y="162" font-size="13" text-anchor="start" fill="#263238" font-weight="bold">Pendant l'étape 2, un réseau après l'autre</text>
+	<!-- Network 1: a -> m -->
+	<text x="8" y="205" font-size="11" text-anchor="start" fill="#607d8b">1</text>
+	<line x1="40" y1="180" x2="40" y2="290" stroke="#263238" stroke-width="3" />
+	<line x1="400" y1="180" x2="400" y2="290" stroke="#263238" stroke-width="3" />
+	<line x1="40" y1="206" x2="114" y2="206" stroke="#263238" stroke-width="2" />
+	<line x1="114" y1="196" x2="114" y2="216" stroke="#263238" stroke-width="2.5" />
+	<line x1="126" y1="196" x2="126" y2="216" stroke="#263238" stroke-width="2.5" />
+	<line x1="126" y1="206" x2="192" y2="206" stroke="#263238" stroke-width="2" />
+	<path d="M 192 196 Q 185 206 192 216" fill="none" stroke="#263238" stroke-width="2.5" />
+	<path d="M 208 196 Q 215 206 208 216" fill="none" stroke="#263238" stroke-width="2.5" />
+	<line x1="215" y1="206" x2="400" y2="206" stroke="#263238" stroke-width="2" />
+	<text x="120" y="188" font-size="11" text-anchor="middle" fill="#263238" font-weight="bold">a</text>
+	<text x="200" y="188" font-size="11" text-anchor="middle" fill="#263238" font-weight="bold">m</text>
+	<text x="410" y="210" font-size="11" text-anchor="start" fill="#607d8b">exécuté en premier</text>
+	<!-- Network 2: m -> s -->
+	<text x="8" y="265" font-size="11" text-anchor="start" fill="#607d8b">2</text>
+	<line x1="40" y1="262" x2="114" y2="262" stroke="#263238" stroke-width="2" />
+	<line x1="114" y1="252" x2="114" y2="272" stroke="#263238" stroke-width="2.5" />
+	<line x1="126" y1="252" x2="126" y2="272" stroke="#263238" stroke-width="2.5" />
+	<line x1="126" y1="262" x2="192" y2="262" stroke="#263238" stroke-width="2" />
+	<path d="M 192 252 Q 185 262 192 272" fill="none" stroke="#263238" stroke-width="2.5" />
+	<path d="M 208 252 Q 215 262 208 272" fill="none" stroke="#263238" stroke-width="2.5" />
+	<line x1="215" y1="262" x2="400" y2="262" stroke="#263238" stroke-width="2" />
+	<text x="120" y="244" font-size="11" text-anchor="middle" fill="#d84315" font-weight="bold">m</text>
+	<text x="200" y="244" font-size="11" text-anchor="middle" fill="#263238" font-weight="bold">s</text>
+	<text x="410" y="266" font-size="11" text-anchor="start" fill="#607d8b">exécuté en second</text>
+	<line x1="198" y1="220" x2="124" y2="238" stroke="#d84315" stroke-width="1.5" stroke-dasharray="4 3" />
+	<text x="280" y="308" font-size="11" text-anchor="middle" fill="#d84315">Le réseau 2 lit déjà la valeur de m calculée</text>
+	<text x="280" y="322" font-size="11" text-anchor="middle" fill="#d84315">par le réseau 1 : dans le même cycle, s suit a.</text>
+</svg>

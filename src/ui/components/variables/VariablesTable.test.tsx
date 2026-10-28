@@ -20,16 +20,20 @@ jest.mock("@/ui/pdf/variables-table-pdf", () => ({
 function setupWithVariables(
 	variables: Variable[],
 	removeVariables = jest.fn(),
+	{ editingEnabled = true, pdfExport = true } = {},
 ) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			variablesManager: {
 				existsByMnemonic: () => undefined,
+				isMnemonicUsedByBlock: () => false,
 				getByAddress: () => null,
 				removeVariables,
 			},
 			project: { variables },
 			mode: ProjectMode.DESIGN,
+			editingEnabled,
+			capabilities: { pdfExport, crossReference: true },
 		}),
 	);
 	renderWithI18n(
@@ -38,6 +42,50 @@ function setupWithVariables(
 	return { removeVariables };
 }
 
+describe("VariablesTable — projet en lecture seule", () => {
+	const variable = new Variable({
+		id: "v1",
+		mnemonic: "I0",
+		zone: "logic-input",
+		type: "BOOL",
+		dialect: Dialect.FR,
+	});
+
+	it("n'offre ni ajout ni suppression", () => {
+		setupWithVariables([variable], jest.fn(), { editingEnabled: false });
+
+		expect(
+			screen.queryByRole("button", { name: "Nouvelle variable" }),
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole("button", { name: "Supprimer la sélection" }),
+		).not.toBeInTheDocument();
+	});
+
+	it("n'ajoute pas la ligne vide de saisie", () => {
+		setupWithVariables([variable], jest.fn(), { editingEnabled: false });
+
+		expect(screen.getAllByRole("row")).toHaveLength(2);
+	});
+
+	it("offre l'ajout et la suppression quand le projet est modifiable", () => {
+		setupWithVariables([variable]);
+
+		expect(
+			screen.getByRole("button", { name: "Nouvelle variable" }),
+		).toBeInTheDocument();
+	});
+
+	it("ne propose pas l'export PDF quand le store ne sait pas exporter", async () => {
+		setupWithVariables([variable], jest.fn(), { pdfExport: false });
+
+		fireEvent.click(screen.getByRole("button", { name: "Exporter" }));
+
+		expect(await screen.findByText("Exporter en CSV")).toBeInTheDocument();
+		expect(screen.queryByText("Exporter en PDF")).not.toBeInTheDocument();
+	});
+});
+
 describe("VariablesTable", () => {
 	it("lève si aucune zone n'est fournie", () => {
 		(useProjectStore as unknown as jest.Mock).mockImplementation(
@@ -45,6 +93,8 @@ describe("VariablesTable", () => {
 				variablesManager: {},
 				project: { variables: [] },
 				mode: ProjectMode.DESIGN,
+				editingEnabled: true,
+				capabilities: { pdfExport: true, crossReference: true },
 			}),
 		);
 		expect(() =>
@@ -57,6 +107,7 @@ describe("VariablesTable", () => {
 			selectorImplementation({
 				variablesManager: {
 					existsByMnemonic: () => undefined,
+					isMnemonicUsedByBlock: () => false,
 					getByAddress: () => null,
 				},
 				project: {
@@ -78,6 +129,8 @@ describe("VariablesTable", () => {
 					],
 				},
 				mode: ProjectMode.DESIGN,
+				editingEnabled: true,
+				capabilities: { pdfExport: true, crossReference: true },
 			}),
 		);
 
@@ -148,10 +201,13 @@ describe("VariablesTable", () => {
 			selectorImplementation({
 				variablesManager: {
 					existsByMnemonic: () => undefined,
+					isMnemonicUsedByBlock: () => false,
 					getByAddress: () => null,
 				},
 				project: { variables: [userVar, blockVar] },
 				mode: ProjectMode.DESIGN,
+				editingEnabled: true,
+				capabilities: { pdfExport: true, crossReference: true },
 			}),
 		);
 
@@ -196,11 +252,14 @@ describe("VariablesTable", () => {
 			selectorImplementation({
 				variablesManager: {
 					existsByMnemonic: () => undefined,
+					isMnemonicUsedByBlock: () => false,
 					getByAddress: () => null,
 					removeVariables: jest.fn(),
 				},
 				project: { variables: [] },
 				mode: ProjectMode.DESIGN,
+				editingEnabled: true,
+				capabilities: { pdfExport: true, crossReference: true },
 			}),
 		);
 
@@ -231,6 +290,7 @@ describe("VariablesTable", () => {
 				selectorImplementation({
 					variablesManager: {
 						existsByMnemonic: () => undefined,
+						isMnemonicUsedByBlock: () => false,
 						getByAddress: () => null,
 						addVariables: jest.fn(),
 					},
@@ -253,6 +313,8 @@ describe("VariablesTable", () => {
 						],
 					},
 					mode: ProjectMode.DESIGN,
+					editingEnabled: true,
+					capabilities: { pdfExport: true, crossReference: true },
 				}),
 			);
 			renderWithI18n(
@@ -276,6 +338,7 @@ describe("VariablesTable", () => {
 				selectorImplementation({
 					variablesManager: {
 						existsByMnemonic: () => undefined,
+						isMnemonicUsedByBlock: () => false,
 						getByAddress: () => null,
 						addVariables,
 					},
@@ -291,6 +354,8 @@ describe("VariablesTable", () => {
 						],
 					},
 					mode: ProjectMode.DESIGN,
+					editingEnabled: true,
+					capabilities: { pdfExport: true, crossReference: true },
 				}),
 			);
 			renderWithI18n(
@@ -339,11 +404,14 @@ describe("VariablesTable", () => {
 			selectorImplementation({
 				variablesManager: {
 					existsByMnemonic: () => undefined,
+					isMnemonicUsedByBlock: () => false,
 					getByAddress: () => null,
 					addVariables,
 				},
 				project: { variables: [] },
 				mode: ProjectMode.DESIGN,
+				editingEnabled: true,
+				capabilities: { pdfExport: true, crossReference: true },
 			}),
 		);
 		renderWithI18n(<VariablesTable zones={zones} pageTitle="Variables" />);
@@ -426,7 +494,9 @@ describe("VariablesTable", () => {
 		fireEvent.click(screen.getByRole("button", { name: "Exporter" }));
 		fireEvent.click(await screen.findByText("Exporter en PDF"));
 
-		expect(exportVariablesTablePdf).toHaveBeenCalledTimes(1);
+		await waitFor(() =>
+			expect(exportVariablesTablePdf).toHaveBeenCalledTimes(1),
+		);
 		const arg = (exportVariablesTablePdf as jest.Mock).mock.calls[0][0];
 		expect(arg.variables).toHaveLength(2);
 		expect(arg.filename).toContain("Variables");
@@ -442,6 +512,7 @@ describe("VariablesTable", () => {
 				selectorImplementation({
 					variablesManager: {
 						existsByMnemonic: () => undefined,
+						isMnemonicUsedByBlock: () => false,
 						getByAddress: () => null,
 					},
 					project: {
@@ -463,6 +534,8 @@ describe("VariablesTable", () => {
 						],
 					},
 					mode: ProjectMode.DESIGN,
+					editingEnabled: true,
+					capabilities: { pdfExport: true, crossReference: true },
 					variableToReveal,
 					setVariableToReveal,
 				}),
@@ -500,6 +573,7 @@ describe("VariablesTable: page des constantes", () => {
 			selectorImplementation({
 				variablesManager: {
 					existsByMnemonic: () => undefined,
+					isMnemonicUsedByBlock: () => false,
 					getByAddress: () => null,
 				},
 				project: {
@@ -530,6 +604,8 @@ describe("VariablesTable: page des constantes", () => {
 					],
 				},
 				mode: ProjectMode.DESIGN,
+				editingEnabled: true,
+				capabilities: { pdfExport: true, crossReference: true },
 			}),
 		);
 		renderWithI18n(

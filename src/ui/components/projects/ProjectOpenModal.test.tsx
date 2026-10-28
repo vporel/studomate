@@ -4,7 +4,7 @@
 import { renderWithI18n } from "@tests/utils/i18n";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import Project from "@/schemas/project/project.schema";
-import { parseProjectFromFile } from "@/persistence/project-file";
+import { importProjectFromFile } from "@/persistence/project-file";
 import {
 	openFileDialog,
 	openFileViaInput,
@@ -66,7 +66,7 @@ describe("ProjectOpenModal", () => {
 			const project = new Project("p1", "Importé", "");
 			(openFileDialog as jest.Mock).mockResolvedValue({});
 			(readFile as jest.Mock).mockResolvedValue('{"id":"p1"}');
-			(parseProjectFromFile as jest.Mock).mockReturnValue(project);
+			(importProjectFromFile as jest.Mock).mockReturnValue(project);
 			const { openProject, setOpenModalVisible, save } = setup();
 
 			fireEvent.click(screen.getByText("Ouvrir depuis un fichier..."));
@@ -92,7 +92,7 @@ describe("ProjectOpenModal", () => {
 			const alertSpy = jest.spyOn(window, "alert").mockImplementation(() => {});
 			(openFileDialog as jest.Mock).mockResolvedValue({});
 			(readFile as jest.Mock).mockResolvedValue("pas du json valide");
-			(parseProjectFromFile as jest.Mock).mockImplementation(() => {
+			(importProjectFromFile as jest.Mock).mockImplementation(() => {
 				throw new Error("invalid");
 			});
 			const { openProject } = setup();
@@ -112,7 +112,7 @@ describe("ProjectOpenModal", () => {
 			const project = new Project("p1", "Importé", "");
 			(openFileDialog as jest.Mock).mockResolvedValue({});
 			(readFile as jest.Mock).mockResolvedValue('{"id":"p1"}');
-			(parseProjectFromFile as jest.Mock).mockReturnValue(project);
+			(importProjectFromFile as jest.Mock).mockReturnValue(project);
 			const { openProject } = setup({
 				save: jest.fn().mockResolvedValue({ ok: false }),
 			});
@@ -129,7 +129,7 @@ describe("ProjectOpenModal", () => {
 		it("charge le projet via openFileViaInput quand l'API n'est pas disponible", async () => {
 			const project = new Project("p1", "Importé", "");
 			(openFileViaInput as jest.Mock).mockResolvedValue('{"id":"p1"}');
-			(parseProjectFromFile as jest.Mock).mockReturnValue(project);
+			(importProjectFromFile as jest.Mock).mockReturnValue(project);
 			const { openProject } = setup();
 
 			fireEvent.click(screen.getByText("Ouvrir depuis un fichier..."));

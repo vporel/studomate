@@ -24,7 +24,7 @@ describe("simulator ↔ VM conformity on templates", () => {
 	)(
 		"%s",
 		(_id, solution) => {
-			const compiled = compileProject(solution.create());
+			const compiled = compileProject(solution.create("fr"));
 			expect(compiled).not.toBeNull();
 			for (const [seed, changeProbability] of [
 				[1, 0.05],
@@ -47,7 +47,7 @@ describe("simulator ↔ VM conformity on templates", () => {
 
 	it.each(NOT_EMBEDDABLE)("refuses %s, which uses REAL", (id) => {
 		const solution = SOLUTIONS.find((candidate) => candidate.id === id)!;
-		const compiled = compileProject(solution.create());
+		const compiled = compileProject(solution.create("fr"));
 		expect(() =>
 			compareSimulatorAndVm(compiled!, {
 				cycles: 1,
@@ -172,7 +172,7 @@ describe("simulator ↔ VM conformity on typed programs", () => {
 
 	it("forces the variables of a template as the simulator does", () => {
 		const compiled = compileProject(
-			PROJECT_TEMPLATES.find((t) => t.id === "traffic-light")!.solution!(),
+			PROJECT_TEMPLATES.find((t) => t.id === "traffic-light")!.solution!("fr"),
 		)!;
 		const stepNames = compiled.variables
 			.map((variable) => variable.getName())

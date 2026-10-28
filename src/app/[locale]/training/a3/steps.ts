@@ -1,6 +1,6 @@
 import type { StepData } from "../ModuleStepper";
 import type { TrainingTranslator } from "../training-translator";
-import A3_STEP_IDS from "./step-ids";
+import A3_STEP_IDS from "@/training/step-ids/a3";
 
 export default function buildA3Steps(t: TrainingTranslator): StepData[] {
 	return [
@@ -15,9 +15,13 @@ export default function buildA3Steps(t: TrainingTranslator): StepData[] {
 			kind: "exercise",
 			title: t("a3ExerciseTimersReadingTitle"),
 			body: t.raw("a3ExerciseTimersReadingBody") as string[],
+			embeddedTemplateId: "ladder-timers-reading",
+			embeddedWatchOpen: true,
 			cta: {
 				templateId: "ladder-timers-reading",
-				exerciseLabel: t("openExerciseCta"),
+				exerciseLabel: t("observeSimulationCta"),
+				primaryMode: "solution",
+				autostartSimulation: true,
 			},
 		},
 		{
@@ -27,7 +31,7 @@ export default function buildA3Steps(t: TrainingTranslator): StepData[] {
 			body: t.raw("a3ExerciseTimersBody") as string[],
 			cta: {
 				templateId: "ladder-timers",
-				exerciseLabel: t("openExerciseCta"),
+				exerciseLabel: t("openEditorCta"),
 				solutionLabel: t("ctaSolution"),
 			},
 		},
@@ -44,7 +48,7 @@ export default function buildA3Steps(t: TrainingTranslator): StepData[] {
 			body: t.raw("a3ExerciseCountersBody") as string[],
 			cta: {
 				templateId: "ladder-counters",
-				exerciseLabel: t("openExerciseCta"),
+				exerciseLabel: t("openEditorCta"),
 				solutionLabel: t("ctaSolution"),
 			},
 		},
@@ -61,7 +65,7 @@ export default function buildA3Steps(t: TrainingTranslator): StepData[] {
 			body: t.raw("a3ExerciseTankBody") as string[],
 			cta: {
 				templateId: "ladder-tank",
-				exerciseLabel: t("openExerciseCta"),
+				exerciseLabel: t("openEditorCta"),
 				solutionLabel: t("ctaSolution"),
 			},
 		},
@@ -78,7 +82,7 @@ export default function buildA3Steps(t: TrainingTranslator): StepData[] {
 			body: t.raw("a3ExerciseScalingBody") as string[],
 			cta: {
 				templateId: "ladder-scaling",
-				exerciseLabel: t("openExerciseCta"),
+				exerciseLabel: t("openEditorCta"),
 				solutionLabel: t("ctaSolution"),
 			},
 		},
@@ -89,13 +93,24 @@ export default function buildA3Steps(t: TrainingTranslator): StepData[] {
 			body: t.raw("a3TheoryStructureBody") as string[],
 		},
 		{
+			id: A3_STEP_IDS.exerciseSubprograms,
+			kind: "exercise",
+			title: t("a3ExerciseSubprogramsTitle"),
+			body: t.raw("a3ExerciseSubprogramsBody") as string[],
+			cta: {
+				templateId: "ladder-subprograms",
+				exerciseLabel: t("openEditorCta"),
+				solutionLabel: t("ctaSolution"),
+			},
+		},
+		{
 			id: A3_STEP_IDS.synthesisPacking,
 			kind: "synthesis",
 			title: t("a3SynthesisPackingTitle"),
 			body: t.raw("a3SynthesisPackingBody") as string[],
 			cta: {
 				templateId: "ladder-packing",
-				exerciseLabel: t("ctaExercise"),
+				exerciseLabel: t("openEditorCta"),
 				solutionLabel: t("ctaSolution"),
 			},
 		},

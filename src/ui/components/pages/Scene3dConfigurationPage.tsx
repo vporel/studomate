@@ -7,7 +7,6 @@ import {
 } from "@/3d-scenes/scene.registry";
 import { getCandidateVariables } from "@/3d-scenes/scene3d-wiring";
 import { useT } from "@/ui/i18n/useT";
-import { PageData } from "@/ui/stores/project/project.store";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import {
 	Box,
@@ -30,13 +29,7 @@ import { useProjectStore } from "../projects/ProjectContext";
 import Page from "./Page";
 import SceneChoiceModal from "./SceneChoiceModal";
 import { whiteFieldSx } from "./hardware/hardware-target-editor";
-
-export const SCENE3D_CONFIGURATION_PAGE_ID = "scene3d-configuration";
-export const SCENE3D_CONFIGURATION_PAGE_DATA: PageData = {
-	id: SCENE3D_CONFIGURATION_PAGE_ID,
-	type: "scene3d-configuration",
-	title: "Configuration scène 3D",
-};
+import { SCENE3D_CONFIGURATION_PAGE_ID } from "@/ui/stores/project/pages-data";
 
 const NO_VARIABLE = "";
 

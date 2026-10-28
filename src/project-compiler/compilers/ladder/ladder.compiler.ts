@@ -27,21 +27,83 @@ export default class LadderCompiler {
 	 * `PLCRoutine.execute`.
 	 */
 	static compile(preCompiledLadder: PreCompiledLadder): CompiledLadder {
+		const instructions: PLCRoutineInstruction[] = [];
+		const { assignments } = preCompiledLadder;
+		for (let index = 0; index < assignments.length; index++) {
+			const assignment = assignments[index];
+			if (assignment.kind === "call") {
+				instructions.push({
+					kind: "call",
+					programId: assignment.programId,
+					condition: IdentifiersBuilder.buildIdentifierNode(
+						assignment.enMnemonic,
+					),
+				});
+				continue;
+			}
+			const group = this.collectCoilGroup(assignments, index);
+			if (group.length > 1) {
+				instructions.push({
+					kind: "node",
+					node: this.compileCoilGroup(group),
+				});
+				index += group.length - 1;
+				continue;
+			}
+			instructions.push({
+				kind: "node",
+				node: this.compileAssignment(assignment),
+			});
+		}
 		return {
-			instructions: preCompiledLadder.assignments.map((assignment) =>
-				assignment.kind === "call"
-					? {
-							kind: "call",
-							programId: assignment.programId,
-							condition: IdentifiersBuilder.buildIdentifierNode(
-								assignment.enMnemonic,
-							),
-						}
-					: { kind: "node", node: this.compileAssignment(assignment) },
-			),
+			instructions,
 			timers: preCompiledLadder.timers,
 			counters: preCompiledLadder.counters,
 		};
+	}
+
+	/**
+	 * Les bobines consécutives qui partagent la même condition d'alimentation (départ de branches
+	 * parallèles d'un réseau) : leur condition est évaluée une seule fois, avant la première
+	 * écriture, pour qu'une bobine ne voie pas ce que la précédente vient d'écrire.
+	 */
+	private static collectCoilGroup(
+		assignments: PreCompiledLadderAssignment[],
+		start: number,
+	): PreCompiledCoilAssignment[] {
+		const first = assignments[start];
+		if (first.kind !== "coil" || first.reachId === undefined) return [];
+		const group: PreCompiledCoilAssignment[] = [];
+		for (let index = start; index < assignments.length; index++) {
+			const assignment = assignments[index];
+			if (assignment.kind !== "coil" || assignment.reachId !== first.reachId)
+				break;
+			group.push(assignment);
+		}
+		return group;
+	}
+
+	private static compileCoilGroup(group: PreCompiledCoilAssignment[]): ASTNode {
+		const write = (assignment: PreCompiledCoilAssignment, value: boolean) =>
+			StatementsBuilder.buildAssignStatementNode(
+				IdentifiersBuilder.buildIdentifierNode(assignment.variable),
+				LiteralsBuilder.buildBooleanNode(value),
+			);
+		const trueBranch: ASTNode[] = [];
+		const falseBranch: ASTNode[] = [];
+		for (const assignment of group) {
+			if (assignment.mode === "normal") {
+				trueBranch.push(write(assignment, !assignment.inverted));
+				falseBranch.push(write(assignment, Boolean(assignment.inverted)));
+			} else {
+				trueBranch.push(write(assignment, assignment.mode === "set"));
+			}
+		}
+		return ControlsBuilder.buildIfControlNode(
+			group[0].reach!,
+			trueBranch,
+			falseBranch.length > 0 ? falseBranch : null,
+		);
 	}
 
 	/** Un nœud matérialisé par un bloc (`TimerNode`/`CounterNode` d'un timer/compteur, `IfControlNode`

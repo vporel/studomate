@@ -1,0 +1,16 @@
+{
+	"statement": "## Parking in Ladder\n\nCommand GRAFCET: S0 → `entry_request AND spaces < 4` → S1 (`barrier`, `spaces := spaces + 1`) → `car_present` → S2 (`barrier`) → NOT `car_present` → S0; S0 → `exit_request AND spaces > 0` → S3 (`barrier`, `spaces := spaces - 1`) → `car_present` → S4 (`barrier`) → NOT `car_present` → S0. The signalling (`full`) is already implemented in the `Signalling` program, called by the Main.\n\nInputs: `entry_request`, `exit_request` and `car_present` (push buttons), `stop` (wired normally closed). Outputs: `barrier` and `full`. Integer memory: `spaces`. Provided memories: `X0` to `X4`.\n\n### Task\n\n1. Create the `Automatic_cycle` and `Outputs` programs and call them from the Main, after `Signalling`.\n2. In `Automatic_cycle`, implement the command: one network per transition, then a reset of the command on `stop`.\n3. In `Outputs`, write the `barrier` output and the increment and decrement of `spaces` on step edge (P contact on the step).\n4. The barrier never closes while `car_present` is true, even after a press on `stop`.\n5. Think: what happens to `spaces` after a stop? Should it be reset to zero, and in which case?",
+	"texts": {
+		"projectName": "Parking in Ladder",
+		"solutionName": "Parking in Ladder: solution",
+		"signallingProgramName": "Signalling",
+		"signallingTitle": "Signalling",
+		"signallingDescription": "Signalling GRAFCET, provided.",
+		"barrierTitle": "Barrier",
+		"barrierDescription": "Open during the whole passage (steps 1 to 4) and as long as the sensor detects a car.",
+		"vehicleEntryTitle": "Vehicle entry",
+		"vehicleEntryDescription": "Action on step edge: a single unit added per passage.",
+		"vehicleExitTitle": "Vehicle exit",
+		"vehicleExitDescription": "Action on step edge: a single unit removed per passage."
+	}
+}

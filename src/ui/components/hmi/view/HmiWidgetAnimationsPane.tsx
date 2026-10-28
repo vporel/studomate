@@ -16,7 +16,7 @@ import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { READ_ONLY_ZONES } from "@/schemas/variable/variable.schema";
 import VariableSelector from "@/ui/components/variables/VariableSelector";
 import { useT } from "@/ui/i18n/useT";
-import HmiFloatingPane from "./HmiFloatingPane";
+import CustomModal from "@/ui/components/mui/CustomModal";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
@@ -139,9 +139,7 @@ const StyleTab = ({
 		widget.data as { animations?: HmiWidgetAnimations<string> }
 	).animations;
 	const style = animations?.style;
-	const styleVariable = project?.variables.find(
-		(v) => v.mnemonic === style?.variable,
-	);
+	const styleVariable = project?.findVariableByMnemonic(style?.variable ?? "");
 	const isBoolStyle = styleVariable?.getNativeType() === "boolean";
 
 	const setStyle = (next: HmiStyleAnimationRow<string>[]) => {
@@ -159,7 +157,7 @@ const StyleTab = ({
 	// (leurs valeurs forcées à 0/1, la forme imposée par ce type) ; vers une variable numérique,
 	// le tableau est conservé tel quel (les valeurs restent libres, éditables).
 	const handleVariableChange = (mnemonic: string) => {
-		const variable = project?.variables.find((v) => v.mnemonic === mnemonic);
+		const variable = project?.findVariableByMnemonic(mnemonic);
 		const existingRows = style?.rows ?? [];
 		const defaults = defaultRowProperties(widget, styleProps);
 		const rows: HmiStyleAnimationRow<string>[] =
@@ -334,7 +332,13 @@ const StyleTab = ({
  * ouvert depuis `HmiWidgetPropertiesPanel`, visibilité portée par le store (voir `HmiStoreState`).
  * Onglets verticaux : la table de style a besoin de largeur, pas de hauteur, pour rester lisible.
  */
-const HmiWidgetAnimationsPane = ({ widget }: { widget: HmiWidget }) => {
+const HmiWidgetAnimationsPane = ({
+	widget,
+	readOnly = false,
+}: {
+	widget: HmiWidget;
+	readOnly?: boolean;
+}) => {
 	const t = useT("hmiEditor.panel");
 	const visible = useHmiStore((s) => s.animationsPaneVisible);
 	const close = useHmiStore((s) => s.closeAnimationsPane);
@@ -347,10 +351,11 @@ const HmiWidgetAnimationsPane = ({ widget }: { widget: HmiWidget }) => {
 		setActiveTab("position");
 	}, [widget.id]);
 
-	if (!visible) return null;
-
 	return (
-		<HmiFloatingPane
+		<CustomModal
+			open={visible}
+			compact
+			flexColumn
 			title={t("animationsHeading", { name: widget.name })}
 			onClose={close}
 			width="min(90vw, 720px)"
@@ -377,13 +382,15 @@ const HmiWidgetAnimationsPane = ({ widget }: { widget: HmiWidget }) => {
 					)}
 				</Tabs>
 				<Box sx={{ flex: 1, minWidth: 0, overflow: "auto", p: 2 }}>
-					{activeTab === "position" && <PositionTab widget={widget} />}
-					{activeTab === "style" && hasStyleTab && (
-						<StyleTab widget={widget} styleProps={styleProps} />
-					)}
+					<Box inert={readOnly}>
+						{activeTab === "position" && <PositionTab widget={widget} />}
+						{activeTab === "style" && hasStyleTab && (
+							<StyleTab widget={widget} styleProps={styleProps} />
+						)}
+					</Box>
 				</Box>
 			</Box>
-		</HmiFloatingPane>
+		</CustomModal>
 	);
 };
 

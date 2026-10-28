@@ -8,9 +8,7 @@ import { isFromNewerVersion, migrateProject } from "./migrations/schema";
  * - `unreadable`     : migration ou parse en échec
  */
 export type DeserializationFailureReason =
-	| "invalid-id"
-	| "newer-version"
-	| "unreadable";
+	"invalid-id" | "newer-version" | "unreadable";
 
 export type DeserializationResult =
 	| { ok: true; project: Project }
@@ -47,7 +45,10 @@ export function deserializeProject(
 	}
 	try {
 		const { project } = migrateProject(raw);
-		return { ok: true, project: Project.createFromJSON(JSON.stringify(project)) };
+		return {
+			ok: true,
+			project: Project.createFromJSON(JSON.stringify(project)),
+		};
 	} catch (e) {
 		console.error(`Projet "${id}" illisible, ignoré :`, e);
 		return { ok: false, reason: "unreadable", id };

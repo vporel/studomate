@@ -50,6 +50,7 @@ export const GrafcetContextProvider = ({
 			grafcetsManager.getCommandsStack(initialGrafcet.id),
 			//Lu à la demande : le dialecte peut changer pendant la vie de la page
 			() => projectStore?.getState().project?.dialect ?? Dialect.FR,
+			projectStore?.getState().clipboard,
 		);
 	}
 	const contextMenuEvents = useMemo(() => mitt<GrafcetContextMenuEvents>(), []);

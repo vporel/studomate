@@ -6,16 +6,25 @@ import { useT } from "@/ui/i18n/useT";
 import { Container, Divider, Grid } from "@mui/material";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useState, type ReactNode } from "react";
 import ManualContentIndex, {
 	ManualContentIndex as ManualContentIndexType,
 } from "./ManualContentIndex";
+import { ManualHeadingOffsetProvider } from "./manual-heading";
 import ManualNav from "./ManualNav";
 import ManualSearch from "./ManualSearch";
 import ManualSections from "./ManualSections";
 import manualPath from "./manual-path";
+import { MANUAL_DEFAULT_SECTION } from "./manual-sections";
 
-export default function ManualPage({ section }: { section: string }) {
+export default function ManualPage({
+	section,
+	breadcrumb,
+}: {
+	section: string;
+	/** Fil d'Ariane rendu au-dessus du titre. */
+	breadcrumb?: ReactNode;
+}) {
 	const t = useT("manual");
 	const locale = useLocale() as Locale;
 	const router = useRouter();
@@ -29,9 +38,12 @@ export default function ManualPage({ section }: { section: string }) {
 		[locale, router],
 	);
 
+	const isIndex = section === MANUAL_DEFAULT_SECTION;
+
 	return (
 		<Container maxWidth="lg" sx={{ my: 4, minHeight: "70vh" }}>
-			<PageTitle>{t("pageTitle")}</PageTitle>
+			{breadcrumb}
+			<PageTitle as={isIndex ? "h1" : "p"}>{t("pageTitle")}</PageTitle>
 			<Divider sx={{ my: 2 }} />
 
 			<ManualSearch contentIndex={contentIndex} onSelect={handleSelect} />
@@ -41,7 +53,9 @@ export default function ManualPage({ section }: { section: string }) {
 					<ManualNav selected={section} />
 				</Grid>
 				<Grid size={{ xs: 12, md: 9 }}>
-					<ManualSections selected={section} />
+					<ManualHeadingOffsetProvider offset={isIndex ? 0 : 1}>
+						<ManualSections selected={section} />
+					</ManualHeadingOffsetProvider>
 				</Grid>
 			</Grid>
 

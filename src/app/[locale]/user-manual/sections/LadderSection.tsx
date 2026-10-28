@@ -1,6 +1,7 @@
 "use client";
 
 import { useT } from "@/ui/i18n/useT";
+import { ManualH2, ManualH3, ManualH4 } from "../manual-heading";
 import { Divider, Typography } from "@mui/material";
 import { ManualFigure, ManualList } from "./manual-ui";
 
@@ -11,7 +12,7 @@ export default function LadderSection({ selected }: { selected: string }) {
 
 	return (
 		<section id="ladder">
-			<Typography variant="h2" mb={3}>
+			<Typography variant="h2" component={ManualH2} mb={3}>
 				{t("title")}
 			</Typography>
 			<Typography mb={2}>{t("p1")}</Typography>
@@ -20,7 +21,7 @@ export default function LadderSection({ selected }: { selected: string }) {
 
 			{show("ladder-sections") && (
 				<article id="ladder-sections">
-					<Typography variant="h3" mb={2}>
+					<Typography variant="h3" component={ManualH3} mb={2}>
 						{t("sectionsTitle")}
 					</Typography>
 					<Typography mb={2}>{t("sectionsIntro")}</Typography>
@@ -31,7 +32,7 @@ export default function LadderSection({ selected }: { selected: string }) {
 
 			{show("ladder-contacts") && (
 				<article id="ladder-contacts">
-					<Typography variant="h3" mb={2}>
+					<Typography variant="h3" component={ManualH3} mb={2}>
 						{t("contactsTitle")}
 					</Typography>
 					<Typography mb={2}>{t("contactsIntro")}</Typography>
@@ -48,7 +49,7 @@ export default function LadderSection({ selected }: { selected: string }) {
 
 			{show("ladder-coils") && (
 				<article id="ladder-coils">
-					<Typography variant="h3" mb={2}>
+					<Typography variant="h3" component={ManualH3} mb={2}>
 						{t("coilsTitle")}
 					</Typography>
 					<Typography mb={2}>{t("coilsIntro")}</Typography>
@@ -65,7 +66,7 @@ export default function LadderSection({ selected }: { selected: string }) {
 
 			{show("ladder-blocks") && (
 				<article id="ladder-blocks">
-					<Typography variant="h3" mb={2}>
+					<Typography variant="h3" component={ManualH3} mb={2}>
 						{t("blocksTitle")}
 					</Typography>
 					<Typography mb={2}>{t("blocksIntro1")}</Typography>
@@ -75,7 +76,7 @@ export default function LadderSection({ selected }: { selected: string }) {
 						alt={t("timerBlockFigureAlt")}
 						width={440}
 					/>
-					<Typography variant="h5" mb={1}>
+					<Typography variant="h5" component={ManualH4} mb={1}>
 						{t("timerTitle")}
 					</Typography>
 					<Typography mb={2}>{t("timerIntro")}</Typography>
@@ -86,29 +87,29 @@ export default function LadderSection({ selected }: { selected: string }) {
 						width={590}
 					/>
 					<Typography mb={2}>{t("timerOutro")}</Typography>
-					<Typography variant="h5" mb={1}>
+					<Typography variant="h5" component={ManualH4} mb={1}>
 						{t("counterTitle")}
 					</Typography>
 					<Typography mb={2}>{t("counterIntro")}</Typography>
 					<ManualList items={t.raw("counterItems") as string[]} />
 					<Typography mb={2}>{t("counterOutro")}</Typography>
-					<Typography variant="h5" mb={1}>
+					<Typography variant="h5" component={ManualH4} mb={1}>
 						{t("compareTitle")}
 					</Typography>
 					<Typography mb={2}>{t("compareBody")}</Typography>
-					<Typography variant="h5" mb={1}>
+					<Typography variant="h5" component={ManualH4} mb={1}>
 						{t("assignTitle")}
 					</Typography>
 					<Typography mb={2}>{t("assignBody")}</Typography>
-					<Typography variant="h5" mb={1}>
+					<Typography variant="h5" component={ManualH4} mb={1}>
 						{t("calcTitle")}
 					</Typography>
 					<Typography mb={2}>{t("calcBody")}</Typography>
-					<Typography variant="h5" mb={1}>
+					<Typography variant="h5" component={ManualH4} mb={1}>
 						{t("convertTitle")}
 					</Typography>
 					<Typography mb={2}>{t("convertBody")}</Typography>
-					<Typography variant="h5" mb={1}>
+					<Typography variant="h5" component={ManualH4} mb={1}>
 						{t("programCallTitle")}
 					</Typography>
 					<Typography mb={2}>{t("programCallBody")}</Typography>
@@ -118,7 +119,7 @@ export default function LadderSection({ selected }: { selected: string }) {
 
 			{show("ladder-connections") && (
 				<article id="ladder-connections">
-					<Typography variant="h3" mb={2}>
+					<Typography variant="h3" component={ManualH3} mb={2}>
 						{t("connectionsTitle")}
 					</Typography>
 					<Typography mb={2}>{t("connectionsIntro")}</Typography>

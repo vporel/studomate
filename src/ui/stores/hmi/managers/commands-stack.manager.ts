@@ -32,4 +32,11 @@ export default class HmiCommandsStackManager extends AbstractCommandsStackManage
 			hasCommandsToRedo: this.commandsStack.commandsToRedo.length > 0,
 		}));
 	}
+
+	protected setFlags(
+		hasCommandsToUndo: boolean,
+		hasCommandsToRedo: boolean,
+	): void {
+		this.setStoreState(() => ({ hasCommandsToUndo, hasCommandsToRedo }));
+	}
 }

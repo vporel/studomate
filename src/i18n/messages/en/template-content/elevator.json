@@ -1,0 +1,11 @@
+{
+	"statement": "## 3-floor elevator\n\nAn elevator serves three floors (0, 1, 2). Calls: `call_0..2` (landings) and `cabin_0..2` (console).\nOutputs: `up`, `down` (movement) and `door` (opening). Floor position sensors\n`floor_0..2` and `door_open`, as well as the cabin height `position`, are provided by the 3D scene\n(Interface → 3D scene menu): the cabin and its door are animated there, and the door stays open for at least 2 s.\n\n### Work to do\n\n1. On a call, move the cabin to the requested floor in the right direction.\n2. On arrival, stop the cabin and open the door for 3 s, then close it again.\n3. Ignore a new call while a movement is in progress (one call handled at a time).\n4. Validate in simulation with the floor display and the cabin animation.",
+	"texts": {
+		"projectName": "Elevator",
+		"solutionName": "Elevator: solution",
+		"controlGrafcet": "Control",
+		"displayProgram": "Display",
+		"displaySectionTitle": "Display",
+		"displaySectionDescription": "Output for the console: current floor number."
+	}
+}

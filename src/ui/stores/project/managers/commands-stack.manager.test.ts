@@ -1,3 +1,7 @@
+import CommandsStack from "@/schemas/commands/commands-stack.schema";
+import GrafcetCommandsStackManager from "@/ui/stores/grafcet/managers/commands-stack.manager";
+import HmiCommandsStackManager from "@/ui/stores/hmi/managers/commands-stack.manager";
+import LadderCommandsStackManager from "@/ui/stores/ladder/managers/commands-stack.manager";
 import { Dialect } from "@/expression-language/dialect.enum";
 import Project from "@/schemas/project/project.schema";
 import ProjectFieldSetCommand from "@/schemas/project/commands/project-field-set.command";
@@ -23,7 +27,10 @@ function sceneCommand() {
 	});
 }
 
-function makeStore(mode: ProjectMode = ProjectMode.DESIGN) {
+function makeStore(
+	mode: ProjectMode = ProjectMode.DESIGN,
+	editingEnabled = true,
+) {
 	const project = new Project("p1", "Projet", "");
 	project.variables = [
 		new Variable({
@@ -38,12 +45,22 @@ function makeStore(mode: ProjectMode = ProjectMode.DESIGN) {
 	let state = {
 		project,
 		mode,
+		editingEnabled,
 		hasUnsavedChanges: false,
 		hasCommandsToUndo: false,
 		hasCommandsToRedo: false,
-		grafcetsManager: { syncMountedStoresFromProject: jest.fn() },
-		laddersManager: { syncMountedStoresFromProject: jest.fn() },
-		hmiManager: { syncMountedStoresFromProject: jest.fn() },
+		grafcetsManager: {
+			syncMountedStoresFromProject: jest.fn(),
+			clearCommandsStacksOf: jest.fn(),
+		},
+		laddersManager: {
+			syncMountedStoresFromProject: jest.fn(),
+			clearCommandsStacksOf: jest.fn(),
+		},
+		hmiManager: {
+			syncMountedStoresFromProject: jest.fn(),
+			clearCommandsStacksOf: jest.fn(),
+		},
 		scene3dLinkManager: { onSceneChanged: jest.fn() },
 	} as unknown as ProjectStoreState;
 
@@ -57,6 +74,18 @@ function makeStore(mode: ProjectMode = ProjectMode.DESIGN) {
 
 describe("ProjectCommandsStackManager (project)", () => {
 	describe("executeOperation", () => {
+		it("n'applique rien sur un projet en lecture seule, sans avertir", () => {
+			const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+			const { get, manager } = makeStore(ProjectMode.DESIGN, false);
+
+			manager.executeOperation([renameCommand("moteur", "pompe")]);
+
+			expect(get().project!.variables[0].mnemonic).toBe("moteur");
+			expect(get().hasUnsavedChanges).toBe(false);
+			expect(warn).not.toHaveBeenCalled();
+			warn.mockRestore();
+		});
+
 		it("applique la commande et marque le projet modifié", () => {
 			const { get, manager } = makeStore();
 
@@ -287,6 +316,125 @@ describe("ProjectCommandsStackManager (project)", () => {
 			expect(
 				get().laddersManager.syncMountedStoresFromProject,
 			).toHaveBeenCalledTimes(2);
+		});
+	});
+
+	describe("history of the programs rewritten by a rename", () => {
+		let spy: jest.SpyInstance;
+		beforeEach(() => {
+			//Stands for the rewriting of the programs referencing the renamed variable: only
+			//"G1", "L1" and "Page 1" are touched, toggling so that undo/redo rewrite them too.
+			spy = jest
+				.spyOn(Project.prototype, "renameMnemonicReferences")
+				.mockImplementation(function (this: Project) {
+					const toggle = (item: { name: string }) => {
+						item.name = item.name.endsWith("*")
+							? item.name.slice(0, -1)
+							: item.name + "*";
+					};
+					Object.values(this.grafcets)
+						.filter((g) => g.name === "G1" || g.name === "G1*")
+						.forEach(toggle);
+					Object.values(this.ladders)
+						.filter((l) => l.name === "L1" || l.name === "L1*")
+						.forEach(toggle);
+					Object.values(this.hmiPages)
+						.filter((p) => p.name === "Page 1" || p.name === "Page 1*")
+						.forEach(toggle);
+				});
+		});
+		afterEach(() => spy.mockRestore());
+
+		function setup() {
+			const store = makeStore();
+			const project = store.get().project!;
+			const rewritten = {
+				grafcet: project.createGrafcet("G1").id,
+				ladder: project.createLadder("L1").id,
+				page: project.createHmiPage("Page 1").id,
+			};
+			const untouched = {
+				grafcet: project.createGrafcet("G2").id,
+				ladder: project.createLadder("L2").id,
+				page: project.createHmiPage("Page 2").id,
+			};
+			return { ...store, rewritten, untouched };
+		}
+
+		function expectCleared(
+			get: () => ProjectStoreState,
+			ids: { grafcet: string; ladder: string; page: string },
+			times: number,
+		) {
+			const clearGrafcets = get().grafcetsManager
+				.clearCommandsStacksOf as jest.Mock;
+			const clearLadders = get().laddersManager
+				.clearCommandsStacksOf as jest.Mock;
+			const clearPages = get().hmiManager.clearCommandsStacksOf as jest.Mock;
+			expect(clearGrafcets).toHaveBeenCalledTimes(times);
+			expect(clearGrafcets).toHaveBeenLastCalledWith([ids.grafcet]);
+			expect(clearLadders).toHaveBeenLastCalledWith([ids.ladder]);
+			expect(clearPages).toHaveBeenLastCalledWith([ids.page]);
+		}
+
+		it("clears only the rewritten programs when a variable is renamed", () => {
+			const { get, manager, rewritten } = setup();
+
+			manager.executeOperation([renameCommand("moteur", "pompe")]);
+
+			expectCleared(get, rewritten, 1);
+		});
+
+		it("clears them again when the rename is undone and redone", () => {
+			const { get, manager, rewritten } = setup();
+			manager.executeOperation([renameCommand("moteur", "pompe")]);
+
+			manager.undoOperation();
+			expectCleared(get, rewritten, 2);
+
+			manager.redoOperation();
+			expectCleared(get, rewritten, 3);
+		});
+
+		it("clears nothing when the update does not change a mnemonic", () => {
+			const { get, manager } = setup();
+
+			manager.executeOperation([
+				new VariablesUpdateCommand([
+					{ id: "v1", newData: { comment: "c" }, oldData: { comment: "" } },
+				]),
+			]);
+
+			expect(
+				get().grafcetsManager.clearCommandsStacksOf,
+			).not.toHaveBeenCalled();
+			expect(get().laddersManager.clearCommandsStacksOf).not.toHaveBeenCalled();
+			expect(get().hmiManager.clearCommandsStacksOf).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("refreshFlags of the mounted store managers", () => {
+		it.each([
+			["grafcet", GrafcetCommandsStackManager],
+			["ladder", LadderCommandsStackManager],
+			["hmi", HmiCommandsStackManager],
+		])("%s: flags become false once the stack is cleared", (_, Manager) => {
+			const stack = new CommandsStack<any>();
+			stack.commandsToUndo.push([{} as any]);
+			stack.commandsToRedo.push([{} as any]);
+			let state = { hasCommandsToUndo: true, hasCommandsToRedo: true };
+			const set = (partial: any) => {
+				state = { ...state, ...partial(state) };
+			};
+			const manager = new (Manager as any)(set, () => state, stack);
+
+			stack.clear();
+			manager.refreshFlags();
+
+			expect(state).toEqual({
+				hasCommandsToUndo: false,
+				hasCommandsToRedo: false,
+			});
 		});
 	});
 });

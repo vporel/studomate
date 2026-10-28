@@ -1,0 +1,13 @@
+{
+	"statement": "## Drilling station in Ladder\n\nThe operative part (the machine: drill, motor, sensors) is provided and called by the Main: do not modify it. Inputs: `cycle_start` (push button, cycle start), `acknowledge` (push button), `h` (drill up), `b` (drill down) and `blocked` (switch that simulates a jammed drill: the drill no longer moves down while it is true). Outputs: `down`, `up` and `spindle`. Provided memories: `fault`, `X0` to `X3`.\n\n### Task\n\n1. Create the `Faults`, `Automatic_cycle` and `Outputs` programs and call them from the Main in this order, after the operative part.\n2. In `Automatic_cycle`, implement the station's GRAFCET, one network per transition: `cycle_start` → descent (`down`, `spindle`) until `b` → drilling for 2 s (`spindle`, a `TON`) → rise (`up`, `spindle`) until `h`.\n3. Monitor the descent: if the drill does not reach `b` within 8 s (a second `TON`, in `Automatic_cycle`), the drill rises directly and `Faults` stores `fault`. A press on `acknowledge` clears `fault`, and `cycle_start` only starts a cycle when `fault` is false (`cycle_start AND NOT fault`). Test by operating `blocked`.\n4. In `Outputs`, one network per output.",
+	"texts": {
+		"projectName": "Drilling station in Ladder",
+		"solutionName": "Drilling station in Ladder: solution",
+		"drillTimer": "t_drill",
+		"watchdogTimer": "t_watchdog",
+		"faultTitle": "Stored fault",
+		"faultDescription": "The descent fault is stored.",
+		"faultAcknowledgeTitle": "Fault acknowledgement",
+		"faultAcknowledgeDescription": "Pressing the acknowledge button clears the fault."
+	}
+}

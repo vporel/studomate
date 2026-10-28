@@ -14,18 +14,7 @@ import { createRandomId } from "@/ids";
 import LocalStorageProjectRepository from "./local-storage.project.repository";
 import { GrafcetFactory } from "@tests/utils/grafcet-factory";
 import { VariableFactory } from "@tests/utils/variable-factory";
-
-/** localStorage minimal, l'environnement de test étant en `node`. */
-function installLocalStorage() {
-	const store = new Map<string, string>();
-	(globalThis as any).localStorage = {
-		getItem: (k: string) => store.get(k) ?? null,
-		setItem: (k: string, v: string) => store.set(k, v),
-		removeItem: (k: string) => store.delete(k),
-		clear: () => store.clear(),
-	};
-	return store;
-}
+import { installMemoryLocalStorage } from "@tests/utils/local-storage-stub";
 
 /**
  * Projet exerçant un maximum de la forme persistée : variables de plusieurs types, grafcet
@@ -105,16 +94,22 @@ function buildRichProject(): Project {
 	);
 	project.setMainHmiPage(pageB.id);
 
-	project.exercise = { statement: "# Consigne\n\nDémarrer le convoyeur sur `I0`." };
+	project.exercise = {
+		statement: "# Consigne\n\nDémarrer le convoyeur sur `I0`.",
+	};
 	project.setDialect(Dialect.EN);
 
 	return project;
 }
 
 describe("LocalStorageProjectRepository — aller-retour d'un projet complexe", () => {
+	let restoreLocalStorage: () => void;
+
 	beforeEach(() => {
-		installLocalStorage();
+		({ restore: restoreLocalStorage } = installMemoryLocalStorage());
 	});
+
+	afterEach(() => restoreLocalStorage());
 
 	it("relit à l'identique un projet exerçant toute la forme persistée", async () => {
 		const original = buildRichProject();

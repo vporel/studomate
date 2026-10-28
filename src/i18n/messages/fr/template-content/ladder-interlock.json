@@ -1,0 +1,11 @@
+{
+	"statement": "## Moteur deux sens\n\nEntrées : `avant`, `arriere`, `arret` (trois boutons poussoirs câblés à fermeture (NO), à 0 au repos). Sorties : `moteur_av`, `moteur_ar`.\n\n### Travail demandé\n\n1. `avant` démarre `moteur_av`, qui reste en marche après le relâchement (auto-maintien à arrêt prioritaire).\n2. `arriere` démarre `moteur_ar` de la même façon.\n3. `arret` coupe les deux sorties.\n4. Quand un sens est en marche, un appui sur l'autre bouton est sans effet.\n5. Les deux sorties ne sont jamais vraies en même temps (court-circuit sur de vrais contacteurs).",
+	"texts": {
+		"projectName": "Moteur deux sens",
+		"solutionName": "Moteur deux sens : solution",
+		"forwardTitle": "Marche avant",
+		"forwardDescription": "Auto-maintien à arrêt prioritaire, verrouillé par la marche arrière.",
+		"backwardTitle": "Marche arrière",
+		"backwardDescription": "Auto-maintien à arrêt prioritaire, verrouillé par la marche avant."
+	}
+}

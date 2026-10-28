@@ -9,12 +9,17 @@ import {
 import { getLastMousePosition } from "@/ui/lib/mouse-position";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import {
-	clearClipboard,
-	setClipboardEntry,
+	createClipboardStore,
+	type ClipboardEntry,
 } from "@/ui/stores/shared/clipboard.store";
 import { fakeStoreApi, selectorImplementation } from "@tests/utils/store-mocks";
 import { toast } from "react-toastify";
 import useShortcutsHandler from "./useShortcutsHandler";
+
+const clipboard = createClipboardStore();
+const clearClipboard = () => clipboard.getState().clear();
+const setClipboardEntry = (entry: ClipboardEntry) =>
+	clipboard.getState().setEntry(entry);
 
 jest.mock("@/ui/components/projects/ProjectContext");
 jest.mock("@/ui/lib/mouse-position");
@@ -93,7 +98,9 @@ describe("useShortcutsHandler", () => {
 			})),
 		};
 		const state = {
+			clipboard,
 			mode,
+			editingEnabled: true,
 			activeScopeType,
 			grafcetsManager,
 			laddersManager,

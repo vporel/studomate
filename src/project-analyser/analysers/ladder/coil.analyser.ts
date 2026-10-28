@@ -28,7 +28,11 @@ export default class CoilAnalyser extends LadderElementAnalyser<CoilElement> {
 		const variable = variablesByMnemonic.get(element.data.variable);
 		const issues: ProjectAnalyserIssue[] = [];
 
-		if (!variable) {
+		if (!element.data.variable.trim()) {
+			issues.push(
+				new ProjectAnalyserIssue("error", "LADDER_COIL_NO_VARIABLE", source),
+			);
+		} else if (!variable) {
 			issues.push(
 				new ProjectAnalyserIssue(
 					"error",

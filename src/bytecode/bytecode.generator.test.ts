@@ -26,7 +26,6 @@ import BytecodeGenerationError from "./bytecode.error";
 import { imageChecksum, imageIdentifier } from "./bytecode-image";
 import generateBytecode from "./bytecode.generator";
 import verifyBytecode from "./bytecode.verifier";
-import { crc16CcittFalse, crc32 } from "./crc";
 
 const NO_IO: RemoteIoPlan = { pins: [], inputs: [], outputs: [] };
 const ident = (name: string) => IdentifiersBuilder.buildIdentifierNode(name);
@@ -49,14 +48,6 @@ function generate(
 
 const code = (image: { bytes: Uint8Array }) =>
 	disassemble(image.bytes).map((line) => line.replace(/^\d+: /, ""));
-
-describe("CRC", () => {
-	it("computes the standard check values", () => {
-		const check = new TextEncoder().encode("123456789");
-		expect(crc16CcittFalse(check)).toBe(0x29b1);
-		expect(crc32(check)).toBe(0xcbf43926);
-	});
-});
 
 describe("generateBytecode", () => {
 	describe("header and layout", () => {

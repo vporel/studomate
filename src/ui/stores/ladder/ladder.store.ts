@@ -1,6 +1,10 @@
+import {
+	createClipboardStore,
+	type ClipboardStore,
+} from "@/ui/stores/shared/clipboard.store";
 import CommandsStack from "@/schemas/commands/commands-stack.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
-import { LadderNodeType } from "@/ui/components/ladder/flow/ladder-nodes-definitions";
+import type { LadderNodeType } from "@/ui/components/ladder/flow/ladder-nodes-definitions";
 import {
 	PendingSystemBlockCreation,
 	PendingSystemBlockEdit,
@@ -41,8 +45,8 @@ export interface LadderStoreState {
 	commandsStackManager: LadderCommandsStackManager;
 	copyCutPasteManager: LadderCopyCutPasteManager;
 
-	//=============== VIEW (zoom indépendant par section) ===============
-	zoomBySectionId: Record<string, number>;
+	//=============== VIEW (zoom commun à toutes les sections) ===============
+	zoom: number;
 	viewManager: LadderViewManager;
 
 	highlightedNodesIds: string[];
@@ -82,6 +86,7 @@ export type LadderStoreGetFunction = () => LadderStoreState;
 export const createLadderStore = (
 	ladder: Ladder,
 	commandsStack: CommandsStack<Ladder>,
+	clipboard: ClipboardStore = createClipboardStore(),
 ) => {
 	return createStore<LadderStoreState>((set, get) => ({
 		initialLadder: ladder?.copy(),
@@ -120,10 +125,10 @@ export const createLadderStore = (
 			get,
 			commandsStack,
 		),
-		copyCutPasteManager: new LadderCopyCutPasteManager(set, get),
+		copyCutPasteManager: new LadderCopyCutPasteManager(set, get, clipboard),
 
 		//=============== VIEW (zoom) ===============
-		zoomBySectionId: {},
+		zoom: 1,
 		viewManager: new LadderViewManager(set, get),
 
 		highlightedNodesIds: [],

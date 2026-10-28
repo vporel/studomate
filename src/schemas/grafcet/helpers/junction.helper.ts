@@ -5,6 +5,23 @@ import Junction, { JUNCTION_HANDLE_PIVOT } from "../junction.schema";
  * A helper that generalizes functions related to both 'and' and 'or' junctions'
  */
 export default class JunctionHelper {
+	/** Minimum number of branches of any junction (AND or OR). */
+	static readonly MIN_BRANCHES = 2;
+
+	/**
+	 * Checks if the junction has at least the minimum number of branches
+	 */
+	static hasMinimumBranches(data: { branchesOrder: string[] }): boolean {
+		return data.branchesOrder.length >= JunctionHelper.MIN_BRANCHES;
+	}
+
+	/**
+	 * Checks if a branch can be removed without going under the minimum number of branches
+	 */
+	static canRemoveBranch(data: { branchesOrder: string[] }): boolean {
+		return data.branchesOrder.length > JunctionHelper.MIN_BRANCHES;
+	}
+
 	/**
 	 * Checks if the junction pivot is connected to an element
 	 */

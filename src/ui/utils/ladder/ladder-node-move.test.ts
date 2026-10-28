@@ -4,6 +4,7 @@ import { createRandomId } from "@/ids";
 import {
 	buildKeyboardMoveChanges,
 	cellOf,
+	collidesOnGrid,
 	isFinishedPositionChange,
 	isPositionValidForConnections,
 	singleMoveNeedsRewire,
@@ -52,6 +53,29 @@ describe("ladder-node-move", () => {
 			selected: true,
 		} as NodeChange<LadderNodeType>;
 		expect(snapPositionChange(change)).toBe(change);
+	});
+
+	it("collidesOnGrid exclut tous les nœuds du geste en cours", () => {
+		const a = contactAt("a", 0, 1);
+		const b = contactAt("b", 0, 2);
+		const c = contactAt("c", 0, 3);
+		const section = sectionWith([a, b, c]);
+		const cell = { row: 0, col: 2 };
+
+		expect(collidesOnGrid(section, a as never, cell, new Set(["a"]))).toBe(
+			true,
+		);
+		expect(collidesOnGrid(section, a as never, cell, new Set(["a", "b"]))).toBe(
+			false,
+		);
+		expect(
+			collidesOnGrid(
+				section,
+				a as never,
+				{ row: 0, col: 3 },
+				new Set(["a", "b"]),
+			),
+		).toBe(true);
 	});
 
 	it("cellOf convertit une position pixel en cellule", () => {

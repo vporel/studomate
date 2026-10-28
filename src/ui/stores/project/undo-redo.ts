@@ -1,5 +1,5 @@
 import { ProjectStoreState } from "./project.store";
-import { ProjectMode } from "./ProjectMode.enum";
+import { canEdit } from "./editability";
 
 /**
  * Undo/redo is scoped to the active document, like in any multi-document editor: Ctrl+Z in
@@ -35,7 +35,7 @@ function activeCommandsStackManager(state: ProjectStoreState) {
 }
 
 export function canUndoActiveScope(state: ProjectStoreState): boolean {
-	if (state.mode !== ProjectMode.DESIGN) return false;
+	if (!canEdit(state)) return false;
 	if (state.activeScopeType === "grafcet") {
 		return (
 			state.grafcetsManager.getActiveStoreValues()?.hasCommandsToUndo ?? false
@@ -53,7 +53,7 @@ export function canUndoActiveScope(state: ProjectStoreState): boolean {
 }
 
 export function canRedoActiveScope(state: ProjectStoreState): boolean {
-	if (state.mode !== ProjectMode.DESIGN) return false;
+	if (!canEdit(state)) return false;
 	if (state.activeScopeType === "grafcet") {
 		return (
 			state.grafcetsManager.getActiveStoreValues()?.hasCommandsToRedo ?? false

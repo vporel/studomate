@@ -1,14 +1,15 @@
 "use client";
 
+import useCanEdit from "@/ui/components/projects/useCanEdit";
 import ExcludedFromExecutionWarning from "@/ui/components/programs/ExcludedFromExecutionWarning";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { Divider } from "@mui/material";
 import React from "react";
 import { useGrafcetStore } from "../context/GrafcetContext";
 import ActionTool from "./ActionTool";
 import CommentTool from "./CommentTool";
+import GrafcetZoomTools from "./GrafcetZoomTools";
 import JunctionAndEndTool from "./JunctionAndEndTool";
 import JunctionAndStartTool from "./JunctionAndStartTool";
 import JunctionOrEndTool from "./JunctionOrEndTool";
@@ -17,8 +18,6 @@ import StepReferralSourceTool from "./StepReferralSourceTool";
 import StepReferralTargetTool from "./StepReferralTargetTool";
 import StepTool from "./StepTool";
 import TransitionTool from "./TransitionTool";
-import ZoomInTool from "./ZoomInTool";
-import ZoomOutTool from "./ZoomOutTool";
 
 const GrafcetToolbar = ({ style }: { style?: React.CSSProperties }) => {
 	const grafcetId = useGrafcetStore((state) => state.grafcet.id);
@@ -26,9 +25,7 @@ const GrafcetToolbar = ({ style }: { style?: React.CSSProperties }) => {
 		(state) => state.grafcet.excludedFromExecution,
 	);
 	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
-	const designing = useProjectStore(
-		(state) => state.mode === ProjectMode.DESIGN,
-	);
+	const designing = useCanEdit();
 
 	return (
 		<FlexBox
@@ -70,8 +67,7 @@ const GrafcetToolbar = ({ style }: { style?: React.CSSProperties }) => {
 						}
 					/>
 				)}
-				<ZoomInTool />
-				<ZoomOutTool />
+				<GrafcetZoomTools />
 			</FlexBox>
 		</FlexBox>
 	);

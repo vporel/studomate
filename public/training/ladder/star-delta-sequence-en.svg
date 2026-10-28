@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 624 372" font-family="sans-serif">
+	<line x1="140" y1="30" x2="140" y2="296" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="140" y="312" font-size="11" text-anchor="middle" fill="#607d8b">0</text>
+	<line x1="230" y1="30" x2="230" y2="296" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="230" y="312" font-size="11" text-anchor="middle" fill="#607d8b">5</text>
+	<line x1="320" y1="30" x2="320" y2="296" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="320" y="312" font-size="11" text-anchor="middle" fill="#607d8b">10</text>
+	<line x1="410" y1="30" x2="410" y2="296" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="410" y="312" font-size="11" text-anchor="middle" fill="#607d8b">15</text>
+	<line x1="500" y1="30" x2="500" y2="296" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="500" y="312" font-size="11" text-anchor="middle" fill="#607d8b">20</text>
+	<line x1="590" y1="30" x2="590" y2="296" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="590" y="312" font-size="11" text-anchor="middle" fill="#607d8b">25</text>
+	<text x="604" y="312" font-size="11" text-anchor="start" fill="#607d8b">s</text>
+
+	<text x="8" y="56" font-size="11" font-family="monospace" font-weight="bold" text-anchor="start" fill="#263238">start</text>
+	<text x="8" y="100" font-size="11" font-family="monospace" font-weight="bold" text-anchor="start" fill="#263238">stop</text>
+	<text x="8" y="144" font-size="11" font-family="monospace" font-weight="bold" text-anchor="start" fill="#263238">km_line</text>
+	<text x="8" y="188" font-size="11" font-family="monospace" font-weight="bold" text-anchor="start" fill="#263238">km_star</text>
+	<text x="8" y="232" font-size="11" font-family="monospace" font-weight="bold" text-anchor="start" fill="#263238">km_delta</text>
+	<text x="8" y="276" font-size="11" font-family="monospace" font-weight="bold" text-anchor="start" fill="#263238">fan</text>
+	<path d="M 140 64 L 158 64 L 158 42 L 167 42 L 167 64 L 590 64" fill="none" stroke="#263238" stroke-width="2.2" stroke-linejoin="round" />
+	<path d="M 140 108 L 410 108 L 410 86 L 419 86 L 419 108 L 590 108" fill="none" stroke="#263238" stroke-width="2.2" stroke-linejoin="round" />
+	<path d="M 140 152 L 158 152 L 158 130 L 410 130 L 410 152 L 590 152" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" />
+	<path d="M 140 196 L 158 196 L 158 174 L 248 174 L 248 196 L 590 196" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" />
+	<path d="M 140 240 L 248 240 L 248 218 L 410 218 L 410 240 L 590 240" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" />
+	<path d="M 140 284 L 158 284 L 158 262 L 590 262 L 590 284 L 590 284" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" />
+
+	<!-- Annotations -->
+	<line x1="248" y1="170" x2="248" y2="244" stroke="#d84315" stroke-width="1.5" stroke-dasharray="4 3" />
+	<text x="203" y="188" font-size="11" text-anchor="middle" fill="#607d8b">5 s</text>
+	<text x="500" y="272" font-size="11" text-anchor="middle" fill="#607d8b">10 s after the stop</text>
+	<line x1="410" y1="256" x2="410" y2="268" stroke="#607d8b" stroke-width="1" />
+	<text x="8" y="340" font-size="11" text-anchor="start" fill="#455a64">Interlock: star and delta are never true at the same time.</text>
+	<text x="8" y="358" font-size="11" text-anchor="start" fill="#455a64">The fan stays on for 10 s after the motor stops (km_line).</text>
+</svg>

@@ -28,7 +28,7 @@ function setup({
 	expression = "compteur := 1",
 	type = ActionType.NUMERIC_VARIABLE,
 	executionMode = null as ActionExecutionMode | null,
-	stepNumber = 1 as number | "",
+	stepNumber = 1 as number | "" | undefined,
 	simulationVariablesStates = {} as Record<
 		string,
 		{ mnemonic: string; value: boolean }
@@ -37,7 +37,7 @@ function setup({
 } = {}) {
 	const step = new StepBuilder()
 		.id("step-1")
-		.number(stepNumber)
+		.number(stepNumber as number | "")
 		.initial()
 		.position(0, 0)
 		.build();
@@ -155,6 +155,18 @@ describe("ActionNode", () => {
 
 	it("reste en noir quand l'étape porteuse n'est pas active", () => {
 		setup({ stepNumber: 1, simulationVariablesStates: {} });
+		expect(document.querySelector(".grafcet-action-node")).toHaveStyle({
+			color: "rgb(0, 0, 0)",
+		});
+	});
+
+	it("reste en noir quand le numéro de l'étape porteuse est indéfini", () => {
+		setup({
+			stepNumber: undefined,
+			simulationVariablesStates: {
+				"grafcet-g1-step-undefined": { mnemonic: "X", value: true },
+			},
+		});
 		expect(document.querySelector(".grafcet-action-node")).toHaveStyle({
 			color: "rgb(0, 0, 0)",
 		});

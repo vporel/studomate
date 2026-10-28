@@ -27,6 +27,10 @@ export const routing = defineRouting({
 			en: "/user-manual/[section]",
 		},
 		"/training": { fr: "/formations", en: "/training" },
+		"/training/glossary": {
+			fr: "/formations/glossaire",
+			en: "/training/glossary",
+		},
 		"/training/a0": { fr: "/formations/a0", en: "/training/a0" },
 		"/training/a0/[step]": {
 			fr: "/formations/a0/[step]",
@@ -51,6 +55,11 @@ export const routing = defineRouting({
 		"/training/a4/[step]": {
 			fr: "/formations/a4/[step]",
 			en: "/training/a4/[step]",
+		},
+		"/training/a5": { fr: "/formations/a5", en: "/training/a5" },
+		"/training/a5/[step]": {
+			fr: "/formations/a5/[step]",
+			en: "/training/a5/[step]",
 		},
 	},
 });

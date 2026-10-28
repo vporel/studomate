@@ -5,30 +5,24 @@ import {
 	setStoredUserProfile,
 	shouldAskUserProfile,
 } from "./user-profile.storage";
+import { installMemoryLocalStorage } from "@tests/utils/local-storage-stub";
 
 const mockGetShareToken = jest.fn();
 jest.mock("@/ui/stores/project/url/project-url", () => ({
 	getShareTokenFromUrl: () => mockGetShareToken(),
 }));
 
-function installLocalStorage() {
-	const store = new Map<string, string>();
-	(globalThis as any).localStorage = {
-		getItem: (k: string) => store.get(k) ?? null,
-		setItem: (k: string, v: string) => store.set(k, v),
-	};
-	return store;
-}
-
 describe("user-profile.storage", () => {
 	let store: Map<string, string>;
+	let restoreLocalStorage: () => void;
 
 	beforeEach(() => {
-		store = installLocalStorage();
+		({ store, restore: restoreLocalStorage } = installMemoryLocalStorage());
 		mockGetShareToken.mockReturnValue(null);
 	});
 
 	afterEach(() => {
+		restoreLocalStorage();
 		delete (globalThis as any).localStorage;
 	});
 

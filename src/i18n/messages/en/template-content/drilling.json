@@ -1,0 +1,11 @@
+{
+	"statement": "## Drilling station\n\nAn automatic drill machines a part in one cycle. Input: `cycle_start` (cycle start button).\nOutputs: `down`, `up` (table movement) and `spindle` (drill rotation).\nThe limit switches `h` (drill up) and `b` (drill down), as well as the drill travel `position`,\nare provided by the 3D scene (Interface → 3D scene menu): the drill goes down, rotates and drills the part.\n\n### Work to do\n\n1. At rest, the table is in the up position, spindle stopped.\n2. When `cycle_start` is pressed: start the spindle rotating, then go down until `b`.\n3. Keep drilling for 3 s in the down position, then go back up until `h` and stop the spindle.\n4. The cycle only restarts on a new press of `cycle_start`.\n5. Validate in simulation with the 3D scene and the HMI animation.",
+	"texts": {
+		"projectName": "Drilling station",
+		"solutionName": "Drilling station: solution",
+		"controlGrafcet": "Control",
+		"operativePartProgram": "Operative part",
+		"operativeSectionTitle": "Operative part model",
+		"operativeSectionDescription": "Simulates the drill movement and the limit switches in place of a real operative part. Do not modify: this is not the control program to write."
+	}
+}

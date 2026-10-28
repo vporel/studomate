@@ -1,16 +1,20 @@
 "use client";
 
 import { BlockPortSpec } from "@/schemas/ladder/block-port.schema";
-import {
+import Variable, {
 	READ_ONLY_ZONES,
 	VARIABLE_TYPES,
 	VARIABLE_TYPE_TO_NATIVE_TYPE,
 	VariableType,
 } from "@/schemas/variable/variable.schema";
 import { useLadderStore } from "@/ui/components/ladder/context/LadderContext";
+import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import VariableSelector, {
 	VariableSelectorHandle,
 } from "@/ui/components/variables/VariableSelector";
+import { Dialect } from "@/expression-language/dialect.enum";
+import { formatTypedValue } from "@/ui/components/variables/format-variable-value";
+import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { Box, Typography } from "@mui/material";
 import { Fragment, useRef } from "react";
 
@@ -49,17 +53,39 @@ export default function ParamPin({
 	side,
 	spec,
 	value,
+	validate,
+	liveMnemonic,
 	onCommit,
 }: {
 	side: "left" | "right";
 	spec: BlockPortSpec;
 	value: string;
+	validate?: (variable: Variable) => string | null;
+	/** Variable générée par le bloc pour ce pin : sa valeur en simulation remplace le champ vide. */
+	liveMnemonic?: string;
 	onCommit: (value: string) => void;
 }) {
 	const selectorRef = useRef<VariableSelectorHandle>(null);
 	const excludedFromExecution = useLadderStore(
 		(state) => state.ladder.excludedFromExecution,
 	);
+
+	const mode = useProjectStore((state) => state.mode);
+	const dialect = useProjectStore(
+		(state) => state.project?.dialect ?? Dialect.FR,
+	);
+	const liveValue = useProjectStore((state) =>
+		liveMnemonic
+			? state.simulationVariablesStatesByMnemonic[liveMnemonic]?.value
+			: undefined,
+	);
+	const liveText =
+		!value &&
+		mode === ProjectMode.SIMULATION &&
+		spec.type !== "ANY" &&
+		!excludedFromExecution
+			? formatTypedValue(spec.type, liveValue, dialect)
+			: undefined;
 
 	const label = (
 		<Typography
@@ -78,26 +104,45 @@ export default function ParamPin({
 		</Typography>
 	);
 
-	const selector = (
-		<VariableSelector
-			ref={selectorRef}
-			value={value}
-			onCommit={onCommit}
-			suppressStatus={excludedFromExecution}
-			typeFilter={getTypeFilter(spec)}
-			acceptedLiterals={spec.acceptedLiterals}
-			excludeDirection={spec.excludeInputVariable ? "IN" : undefined}
-			excludeZones={spec.excludeInputVariable ? READ_ONLY_ZONES : undefined}
-			className="nodrag"
-			simulationValueProps={{ position: "BOTTOM" }}
-			align={side === "left" ? "right" : "left"}
-			sx={{
-				position: "absolute",
-				top: "7px",
-				[side === "left" ? "right" : "left"]: "100%",
-			}}
-		/>
-	);
+	const selector =
+		liveText !== undefined ? (
+			<Typography
+				className="nodrag"
+				sx={{
+					position: "absolute",
+					top: "7px",
+					[side === "left" ? "right" : "left"]: "100%",
+					fontSize: "0.7rem",
+					lineHeight: 1.2,
+					whiteSpace: "nowrap",
+					px: "3px",
+					background: "rgba(0, 0, 0, 0.15)",
+					pointerEvents: "none",
+				}}
+			>
+				{liveText}
+			</Typography>
+		) : (
+			<VariableSelector
+				ref={selectorRef}
+				value={value}
+				onCommit={onCommit}
+				suppressStatus={excludedFromExecution}
+				typeFilter={getTypeFilter(spec)}
+				validate={validate}
+				acceptedLiterals={spec.acceptedLiterals}
+				excludeDirection={spec.excludeInputVariable ? "IN" : undefined}
+				excludeZones={spec.excludeInputVariable ? READ_ONLY_ZONES : undefined}
+				className="nodrag"
+				simulationValueProps={{ position: "BOTTOM" }}
+				align={side === "left" ? "right" : "left"}
+				sx={{
+					position: "absolute",
+					top: "7px",
+					[side === "left" ? "right" : "left"]: "100%",
+				}}
+			/>
+		);
 
 	return (
 		<Box>

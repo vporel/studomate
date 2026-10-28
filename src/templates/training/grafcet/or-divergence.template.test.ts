@@ -47,10 +47,22 @@ describe("or-divergence.template", () => {
 			});
 		});
 
-		it("passe l'analyse sans erreur (projet sans programme est valide)", () => {
-			const { analysis } = compilePipelineDetailed(project);
+		it("fournit un grafcet vide à dessiner, nommé comme la solution", () => {
+			const grafcets = Object.values(project.grafcets);
+			expect(grafcets).toHaveLength(1);
+			expect(grafcets[0].isEmpty()).toBe(true);
+			expect(grafcets[0].name).toBe(
+				Object.values(createOrDivergenceSolution().grafcets)[0].name,
+			);
+		});
+
+		it("passe l'analyse, la pré-compilation et la compilation sans erreur (le grafcet vide n'est pas exécuté)", () => {
+			const { analysis, preCompilation, compilation } =
+				compilePipelineDetailed(project);
 			const errors = analysis.issues.filter((i) => i.severity === "error");
 			expect(errors).toHaveLength(0);
+			expect(preCompilation.errors).toHaveLength(0);
+			expect(compilation.errors).toHaveLength(0);
 		});
 	});
 
@@ -87,6 +99,32 @@ describe("or-divergence.template", () => {
 
 			const [jos] = Object.values(grafcet.junctionsOrStarts);
 			expect(jos.data.branchesOrder).toHaveLength(2);
+		});
+	});
+
+	describe("langue", () => {
+		it("garde les noms français par défaut et en fr", () => {
+			for (const project of [
+				createOrDivergenceSolution(),
+				createOrDivergenceSolution("fr"),
+			]) {
+				expect(project.name).toBe("Divergence en OU : solution");
+				expect(Object.values(project.grafcets).map((g) => g.name)).toEqual([
+					"Divergence en OU",
+				]);
+			}
+			expect(createOrDivergenceProject().name).toBe("Divergence en OU");
+		});
+
+		it("nomme le projet et le programme en anglais, sans accent", () => {
+			const project = createOrDivergenceSolution("en");
+			const names = [
+				project.name,
+				...Object.values(project.grafcets).map((g) => g.name),
+			];
+			expect(names).toEqual(["OR divergence: solution", "OR divergence"]);
+			expect(createOrDivergenceProject("en").name).toBe("OR divergence");
+			expect(names.join("")).not.toMatch(/[À-ÿ]/);
 		});
 	});
 });

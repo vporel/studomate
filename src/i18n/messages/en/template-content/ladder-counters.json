@@ -1,0 +1,24 @@
+{
+	"statement": "## Counting\n\nAll variables are provided. Counting is done on the rising edge. For each counter, only the count input is wired to the rail; PV, R, LD and CD (of a CTUD) are entered on the pins.\n\n### Task\n\n1. Conveyor (`CTU`, preset 5): input `part_sensor`, reset by `clear`. The conveyor (`conveyor`) runs and stops at the 5th part.\n2. Buffer zone (`CTUD`, capacity 3): `entry_sensor` counts up, `exit_sensor` counts down, `clear_buffer` resets and `buffer_load` loads PV. Indicator `buffer_full` on `QU` (the buffer holds PV parts), indicator `buffer_empty` on `QD`.\n3. Optional: part stock (`CTD`, 4 parts at start): `stock_load` loads PV on LD, `pickup_sensor` counts down, indicator `stock_empty` on `Q`.",
+	"texts": {
+		"projectName": "Counting",
+		"solutionName": "Counting: solution",
+		"piecesCounter": "piece_counter",
+		"bufferCounter": "buffer",
+		"stockCounter": "stock",
+		"piecesTitle": "Part counting",
+		"piecesDescription": "The CTU counts on the sensor's rising edge, reset by clear.",
+		"conveyorTitle": "Conveyor",
+		"conveyorDescription": "Stops at the preset.",
+		"bufferTitle": "Buffer zone",
+		"bufferDescription": "The entry sensor counts up, the exit sensor counts down.",
+		"bufferFullTitle": "Buffer full",
+		"bufferFullDescription": "QU equals CV >= PV.",
+		"bufferEmptyTitle": "Buffer empty",
+		"bufferEmptyDescription": "QD equals CV <= 0.",
+		"stockTitle": "Part stock",
+		"stockDescription": "The CTD is loaded to PV by LD and counts down for each part picked.",
+		"stockEmptyTitle": "Stock empty",
+		"stockEmptyDescription": "Q equals CV <= 0."
+	}
+}

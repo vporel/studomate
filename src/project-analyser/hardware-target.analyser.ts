@@ -136,7 +136,7 @@ function analyseUnboundInputs(
 	return project.variables
 		.filter(
 			(variable) =>
-				(variable.zone === "logic-input" || variable.zone === "analog-input") &&
+				variable.getDirection() === "IN" &&
 				!variable.address &&
 				readByPrograms.has(variable.mnemonic),
 		)

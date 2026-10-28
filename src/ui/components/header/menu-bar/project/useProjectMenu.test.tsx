@@ -9,27 +9,6 @@ import { selectorImplementation } from "@tests/utils/store-mocks";
 import useProjectMenu from "./useProjectMenu";
 
 jest.mock("@/ui/components/projects/ProjectContext");
-jest.mock("@/ui/components/pages/ProjectPropertiesPage", () => ({
-	PROJECT_PROPERTIES_PAGE_DATA: {
-		id: "project-properties",
-		type: "project-properties",
-		title: "Propriétés",
-	},
-}));
-jest.mock("@/ui/components/pages/HardwareConfigurationPage", () => ({
-	HARDWARE_CONFIGURATION_PAGE_DATA: {
-		id: "hardware-configuration",
-		type: "hardware-configuration",
-		title: "Configuration matérielle",
-	},
-}));
-jest.mock("@/ui/components/pages/ExercisePage", () => ({
-	EXERCISE_PAGE_DATA: {
-		id: "exercise",
-		type: "exercise",
-		title: "Énoncé de l'exercice",
-	},
-}));
 
 describe("useProjectMenu", () => {
 	const grafcetsManager = { newGrafcet: jest.fn() };
@@ -174,7 +153,7 @@ describe("useProjectMenu", () => {
 		expect(pagesManager.openPage).toHaveBeenCalledWith({
 			id: "project-properties",
 			type: "project-properties",
-			title: "Propriétés",
+			title: "Propriétés du projet",
 		});
 	});
 

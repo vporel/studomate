@@ -1,35 +1,20 @@
 import { StoreApi } from "zustand";
 import HmiManager from "@/ui/stores/project/managers/hmi.manager";
 import { HmiStoreState } from "@/ui/stores/hmi/hmi.store";
+import syncEditorStoreToProject from "@/ui/stores/shared/sync-editor-store-to-project";
 
 /**
- * Répercute les changements du store d'une page HMI vers le projet — même principe que
- * `syncGrafcetToProject` (voir ce fichier pour le détail du garde-fou sur la référence).
+ * Forwards the changes of an HMI page store to the project.
  *
- * @returns La fonction de désabonnement.
+ * @returns The unsubscribe function.
  */
 export function syncHmiPageToProject(
 	store: StoreApi<HmiStoreState>,
 	hmiManager: HmiManager,
 ): () => void {
-	let lastHmiPage = store.getState().hmiPage;
-	let lastHasCommandsToUndo = store.getState().hasCommandsToUndo;
-	let lastHasCommandsToRedo = store.getState().hasCommandsToRedo;
-	return store.subscribe((state) => {
-		if (state.hmiPage !== lastHmiPage) {
-			lastHmiPage = state.hmiPage;
-			hmiManager.updateHmiPageData(state.hmiPage);
-		}
-		if (
-			state.hasCommandsToUndo !== lastHasCommandsToUndo ||
-			state.hasCommandsToRedo !== lastHasCommandsToRedo
-		) {
-			lastHasCommandsToUndo = state.hasCommandsToUndo;
-			lastHasCommandsToRedo = state.hasCommandsToRedo;
-			hmiManager.setStoreValues(state.hmiPage.id, {
-				hasCommandsToUndo: state.hasCommandsToUndo,
-				hasCommandsToRedo: state.hasCommandsToRedo,
-			});
-		}
+	return syncEditorStoreToProject(store, {
+		select: (state) => state.hmiPage,
+		push: (hmiPage) => hmiManager.updateHmiPageData(hmiPage),
+		setStoreValues: (id, values) => hmiManager.setStoreValues(id, values),
 	});
 }

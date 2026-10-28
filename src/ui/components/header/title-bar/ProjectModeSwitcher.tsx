@@ -17,7 +17,17 @@ const DESIGN_MODE_BACKGROUND_COLOR = "lightgray";
 const SIMULATION_MODE_BACKGROUND_COLOR = "orange";
 const OBSERVATION_MODE_BACKGROUND_COLOR = "lightblue";
 
-const ProjectModeSwitcher = () => {
+/**
+ * @param withBoardModes False where no board can be linked (the modes using one are not offered).
+ * @param designAvailable False where the project can only be simulated: design mode is not offered.
+ */
+const ProjectModeSwitcher = ({
+	withBoardModes = true,
+	designAvailable = true,
+}: {
+	withBoardModes?: boolean;
+	designAvailable?: boolean;
+}) => {
 	const {
 		mode,
 		kind,
@@ -56,14 +66,14 @@ const ProjectModeSwitcher = () => {
 		return () => clearInterval(interval);
 	}, [blinking]);
 
-	const choice = modeChoiceOf(mode, kind);
+	const choice = designAvailable ? modeChoiceOf(mode, kind) : "SIMULATION";
 	const backgroundColor =
 		choice === "OBSERVATION"
 			? OBSERVATION_MODE_BACKGROUND_COLOR
 			: mode === ProjectMode.SIMULATION && !blinkOff
 				? SIMULATION_MODE_BACKGROUND_COLOR
 				: DESIGN_MODE_BACKGROUND_COLOR;
-	const boardModes = hasBoard && serialSupported;
+	const boardModes = withBoardModes && hasBoard && serialSupported;
 
 	return (
 		<Box
@@ -79,7 +89,7 @@ const ProjectModeSwitcher = () => {
 				backgroundColor: backgroundColor,
 			}}
 		>
-			<option value="DESIGN">{t("design")}</option>
+			{designAvailable && <option value="DESIGN">{t("design")}</option>}
 			<option value="SIMULATION">{t("simulation")}</option>
 			{boardModes && (
 				<option value="SIMULATION_HARDWARE_IO">

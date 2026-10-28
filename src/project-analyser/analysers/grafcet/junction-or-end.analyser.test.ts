@@ -3,6 +3,7 @@ import { analyserEnvironment } from "@tests/utils/test-helpers";
 import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import JunctionOrEndBuilder from "@/schemas/grafcet/builders/junction-or-end.builder";
+import StepReferralSourceBuilder from "@/schemas/grafcet/builders/step-referral-source.builder";
 import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
 import JunctionOrEndAnalyser from "./junction-or-end.analyser";
 
@@ -123,6 +124,56 @@ describe("JunctionOrEndAnalyser", () => {
 				.id("grafcet-1")
 				.addJunctionOrEnd(junction)
 				.addTransitions(trans1, trans2)
+				.addConnections(c1, c2, c3)
+				.build();
+
+			const issues = analyser.analyseInContext(
+				junction,
+				grafcet,
+				analyserEnvironment(),
+			);
+
+			expect(issues).toHaveLength(0);
+		});
+
+		it("returns no issues when the pivot leads to a step referral", () => {
+			const junction = new JunctionOrEndBuilder()
+				.id("junction-1")
+				.nBranches(2)
+				.build();
+			const branchIds = junction.data.branchesOrder;
+			const trans1 = new TransitionBuilder()
+				.id("trans-2")
+				.expression("Btn1")
+				.build();
+			const trans2 = new TransitionBuilder()
+				.id("trans-3")
+				.expression("NON Btn1")
+				.build();
+			const referral = new StepReferralSourceBuilder()
+				.id("referral-1")
+				.targetStepNumber(0)
+				.build();
+			const c1 = new ConnectionBuilder()
+				.id("c1")
+				.source("junction-or-end", "junction-1", "pivot")
+				.target("step-referral-source", "referral-1", "target:predecessor")
+				.build();
+			const c2 = new ConnectionBuilder()
+				.id("c2")
+				.source("transition", "trans-2", "source:successor")
+				.target("junction-or-end", "junction-1", branchIds[0])
+				.build();
+			const c3 = new ConnectionBuilder()
+				.id("c3")
+				.source("transition", "trans-3", "source:successor")
+				.target("junction-or-end", "junction-1", branchIds[1])
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addJunctionOrEnd(junction)
+				.addTransitions(trans1, trans2)
+				.addStepReferralSource(referral)
 				.addConnections(c1, c2, c3)
 				.build();
 

@@ -2,26 +2,23 @@
 
 import {
 	getAutoOpenHmiSimulationOnStart,
+	getDefaultDialect,
 	getPreferredSaveLocation,
 	setAutoOpenHmiSimulationOnStart,
+	setDefaultDialect,
 	setPreferredSaveLocation,
 } from "@/persistence/preferences.storage";
+import { Dialect } from "@/expression-language/dialect.enum";
 import { StorageLocation } from "@/persistence/repositories/project.repository";
 import { useLocaleContext } from "@/ui/i18n/LocaleProvider";
 import { useT } from "@/ui/i18n/useT";
-import { PageData } from "@/ui/stores/project/project.store";
 import { Box, Checkbox, FormControlLabel, Typography } from "@mui/material";
 import { useState } from "react";
 import StorageLocationRadioGroup from "../projects/StorageLocationRadioGroup";
+import DialectRadioGroup from "./DialectRadioGroup";
 import LanguageRadioGroup from "./LanguageRadioGroup";
 import Page from "./Page";
-
-export const PREFERENCES_PAGE_ID = "preferences";
-export const PREFERENCES_PAGE_DATA: PageData = {
-	id: PREFERENCES_PAGE_ID,
-	type: "preferences",
-	title: "Préférences",
-};
+import { PREFERENCES_PAGE_ID } from "@/ui/stores/project/pages-data";
 
 const PreferencesPage = () => {
 	const t = useT("preferences");
@@ -30,6 +27,9 @@ const PreferencesPage = () => {
 	const [location, setLocation] = useState<StorageLocation>(
 		() => getPreferredSaveLocation() ?? "local",
 	);
+	const [dialect, setDialect] = useState<Dialect>(
+		() => getDefaultDialect() ?? (locale === "en" ? Dialect.EN : Dialect.FR),
+	);
 	const [autoOpenHmi, setAutoOpenHmi] = useState<boolean>(() =>
 		getAutoOpenHmiSimulationOnStart(),
 	);
@@ -37,6 +37,11 @@ const PreferencesPage = () => {
 	const handleChange = (next: StorageLocation) => {
 		setLocation(next);
 		setPreferredSaveLocation(next);
+	};
+
+	const handleDialectChange = (next: Dialect) => {
+		setDialect(next);
+		setDefaultDialect(next);
 	};
 
 	const handleAutoOpenHmiChange = (next: boolean) => {
@@ -52,11 +57,17 @@ const PreferencesPage = () => {
 			<Box sx={{ padding: "2rem 1rem", width: 600 }}>
 				<Typography variant="h2">{t("heading")}</Typography>
 				<Box sx={{ mt: 3 }}>
-					<Typography variant="h6">{tCommon("label")}</Typography>
-					<Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+					<Typography variant="h6" sx={{ mb: 1 }}>
 						{tCommon("description")}
 					</Typography>
 					<LanguageRadioGroup value={locale} onChange={setLocale} />
+				</Box>
+				<Box sx={{ mt: 3 }}>
+					<Typography variant="h6">{t("defaultDialect.heading")}</Typography>
+					<Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+						{t("defaultDialect.description")}
+					</Typography>
+					<DialectRadioGroup value={dialect} onChange={handleDialectChange} />
 				</Box>
 				<Box sx={{ mt: 3 }}>
 					<Typography variant="h6">{t("storageLocation.heading")}</Typography>

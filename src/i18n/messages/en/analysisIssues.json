@@ -75,6 +75,7 @@
 	"JUNCTION_AND_CONVERGENCE_WITHOUT_DIVERGENCE": "The AND convergence does not come from an AND divergence.",
 	"JUNCTION_AND_BRANCH_COUNT_MISMATCH": "The number of branches of the AND divergence and of the AND convergence do not match.",
 	"JUNCTION_AND_DIVERGENCE_NOT_CLOSED": "The AND divergence is not closed by an AND convergence.",
+	"JUNCTION_AND_MIN_BRANCHES": "An AND junction must have at least two branches.",
 	"JUNCTION_OR_MIN_BRANCHES": "An OR junction must have at least two branches.",
 	"JUNCTION_OR_START_BRANCH_NOT_TRANSITION": "An OR divergence must branch out to transitions.",
 	"JUNCTION_OR_END_BRANCH_NOT_TRANSITION": "An OR convergence must come from transitions.",
@@ -92,8 +93,10 @@
 	"STEP_REFERRAL_SOURCE_MISMATCH": "The referenced source step does not match the step linked to the referral.",
 
 	"LADDER_SECTION_NO_COIL": "This branch does not drive any coil.",
+	"LADDER_CONTACT_NO_VARIABLE": "No variable assigned.",
 	"LADDER_CONTACT_VARIABLE_UNDECLARED": "Variable \"{variableName}\" is not declared.",
 	"LADDER_CONTACT_VARIABLE_NOT_BOOLEAN": "Variable \"{variableName}\" must be boolean.",
+	"LADDER_COIL_NO_VARIABLE": "No variable assigned.",
 	"LADDER_COIL_VARIABLE_UNDECLARED": "Variable \"{variableName}\" is not declared.",
 	"LADDER_COIL_VARIABLE_NOT_BOOLEAN": "Variable \"{variableName}\" must be boolean.",
 	"LADDER_COIL_DUPLICATE_NORMAL_ASSIGNMENT": "Variable \"{variableName}\" is driven by {count} separate normal coils.",
@@ -158,5 +161,7 @@
 	"BLOCK_CONVERT_IN_NOT_A_VARIABLE": "The IN parameter must be a variable mnemonic.",
 	"BLOCK_CONVERT_OUT_NOT_A_VARIABLE": "The OUT parameter must be a variable mnemonic.",
 	"BLOCK_CONVERT_OUT_INVALID_TYPE": "Variable \"{variableName}\" (OUT) must be of type INT, DINT, WORD, DWORD or REAL.",
+	"BLOCK_CONVERT_IN_TYPE_MISMATCH": "Variable \"{variableName}\" (IN) must be of type {expected}, not {actual}.",
+	"BLOCK_CONVERT_OUT_TYPE_MISMATCH": "Variable \"{variableName}\" (OUT) must be of type {expected}, not {actual}.",
 	"BLOCK_CONVERT_INVALID": "{detail}"
 }

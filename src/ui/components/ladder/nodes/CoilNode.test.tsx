@@ -53,6 +53,7 @@ function setup({
 				variables: projectVariables,
 				getAllTimerBlockElements: () => [],
 				getAllCounterBlockElements: () => [],
+				getExecutedGrafcets: () => [],
 				grafcets: {},
 			},
 		}),

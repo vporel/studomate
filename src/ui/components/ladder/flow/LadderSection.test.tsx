@@ -17,6 +17,8 @@ import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { useLadderContext, useLadderStore } from "../context/LadderContext";
 import { ThemeProvider as AppThemeProvider } from "@/ui/theme/ThemeContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
+import { RAIL_LANE_WIDTH } from "@/ui/utils/ladder/ladder-flow-builder";
+import { computeLadderFlowDimensions } from "@/ui/utils/ladder/ladder-flow-dimensions";
 import LadderSection from "./LadderSection";
 
 jest.mock("@/ui/components/projects/ProjectContext");
@@ -68,6 +70,7 @@ function setup({
 	activeSectionId = null as string | null,
 	section = new Section("s1", "Ma section", ""),
 	excludedFromExecution = false,
+	zoom = 1,
 } = {}) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({ mode }),
@@ -83,7 +86,7 @@ function setup({
 				resetViewport: jest.fn(),
 				syncFromInstance: jest.fn(),
 			},
-			zoomBySectionId: { s1: 1 },
+			zoom,
 			workflowManager: {
 				handleNodesChange: jest.fn(),
 				handleEdgesChange: jest.fn(),
@@ -95,7 +98,11 @@ function setup({
 			setActiveSectionId: jest.fn(),
 			selectedSectionIds: [],
 			commandsStackManager: { executeOperation: jest.fn() },
-			ladder: { sections: [section], excludedFromExecution },
+			ladder: {
+				sections: [section],
+				excludedFromExecution,
+				canDeleteSection: () => false,
+			},
 		}),
 	);
 
@@ -125,7 +132,7 @@ function setup({
 						resetViewport: jest.fn(),
 						syncFromInstance: jest.fn(),
 					},
-					zoomBySectionId: { s1: 1 },
+					zoom: 1,
 					workflowManager: {
 						handleNodesChange: jest.fn(),
 						handleEdgesChange: jest.fn(),
@@ -136,7 +143,7 @@ function setup({
 					setActiveSectionId: jest.fn(),
 					selectedSectionIds: [],
 					commandsStackManager: { executeOperation: jest.fn() },
-					ladder: { sections: [section] },
+					ladder: { sections: [section], canDeleteSection: () => false },
 				}),
 			);
 			rendered.rerender(
@@ -180,6 +187,57 @@ describe("LadderSection", () => {
 		expect(
 			container.querySelector('[data-section-id="s1"]'),
 		).toBeInTheDocument();
+	});
+
+	describe("zoom commun", () => {
+		const FRAME_MARGINS = 20;
+		const fullWidth = () =>
+			computeLadderFlowDimensions(0).width + RAIL_LANE_WIDTH * 2;
+		const sectionOf = (zoom: number) =>
+			setup({ zoom }).container.querySelector('[data-section-id="s1"]');
+
+		it("part du zoom du store pour le viewport de React Flow", () => {
+			setup({ zoom: 0.7 });
+			expect(reactFlowProps.at(-1)).toMatchObject({
+				defaultViewport: { x: 0, y: 0, zoom: 0.7 },
+				minZoom: 0.5,
+				maxZoom: 2,
+			});
+		});
+
+		it("garde sa largeur à 100 %", () => {
+			expect(sectionOf(1)).toHaveStyle({
+				width: `${fullWidth() + FRAME_MARGINS}px`,
+			});
+		});
+
+		it("rétrécit avec le zoom sous 100 %, marges comprises hors zoom", () => {
+			expect(sectionOf(0.5)).toHaveStyle({
+				width: `${fullWidth() * 0.5 + FRAME_MARGINS}px`,
+			});
+		});
+
+		it("s'élargit avec le zoom au-delà de 100 %", () => {
+			expect(sectionOf(1.25)).toHaveStyle({
+				width: `${fullWidth() * 1.25 + FRAME_MARGINS}px`,
+			});
+		});
+
+		it("garde sa largeur à partir de 150 %", () => {
+			const atLimit = `${fullWidth() * 1.5 + FRAME_MARGINS}px`;
+			expect(sectionOf(1.5)).toHaveStyle({ width: atLimit });
+			expect(sectionOf(2)).toHaveStyle({ width: atLimit });
+		});
+	});
+
+	it("se centre par des marges automatiques, sans translation qui rendrait son bord gauche inaccessible", () => {
+		const { container } = setup();
+		const section = container.querySelector('[data-section-id="s1"]');
+		expect(section).toHaveStyle({ marginLeft: "auto", marginRight: "auto" });
+		expect(section).not.toHaveStyle({ marginLeft: "50%" });
+		expect((section as HTMLElement).style.transform).not.toContain(
+			"translate(-50%",
+		);
 	});
 
 	describe("barre d'alimentation", () => {

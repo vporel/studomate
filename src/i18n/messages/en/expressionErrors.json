@@ -33,10 +33,15 @@
 			"COUNTER_BLOCK": "Counter block",
 			"IF_CONTROL": "Conditional control",
 			"CONVERSION_EXPRESSION": "Type conversion"
+		},
+		"dialect": {
+			"FR": "French",
+			"EN": "English"
 		}
 	},
 	"UNKNOWN_VARIABLE_NAME": "Unknown variable name: {variableName}",
 	"UNKNOWN_IDENTIFIER": "Unknown variable: {identifier}",
+	"FOREIGN_KEYWORD": "\"{word}\" is a keyword of the {dialect} dialect. Write {equivalent} or change the project's dialect in its properties.",
 	"UNAUTHORIZED_NODE": "Unauthorized node of type: {nodeType}",
 	"INVALID_UNARY_OPERAND_TYPE": "Invalid type for operator \"{operator}\": expected {expected}, got {actual}",
 	"INVALID_BINARY_OPERAND_TYPE": "Invalid type for operator \"{operator}\" on the {side} side: expected {expected}, got {actual}",

@@ -1,0 +1,7 @@
+{
+	"statement": "## OR divergence in Ladder\n\nGRAFCET: S0 → `cycle_start1` → S1 (`output1`) → `end1` → S0; S0 → `cycle_start2` → S2 (`output2`) → `end2` → S0.\n\nInputs: `cycle_start1` and `cycle_start2` (push buttons), `end1` and `end2` (limit switches). Outputs: `output1` and `output2`. Provided memories: `X0` to `X2`. The project provides the empty programs `Automatic_cycle` and `Outputs`, called by the Main in this order.\n\n### Task\n\n1. Implement the GRAFCET: one network per transition in `Automatic_cycle`, one network per output in `Outputs`.\n2. Simulate `cycle_start1` alone, then `cycle_start2` alone: only one branch is crossed.\n3. Make `cycle_start1` and `cycle_start2` true at the same time: only the branch whose network is written first is crossed, because the second network reads `X0` already deactivated. Making the receptivities exclusive (`cycle_start1 AND NOT cycle_start2`, `cycle_start2 AND NOT cycle_start1`) is an optional extension.",
+	"texts": {
+		"projectName": "OR divergence in Ladder",
+		"solutionName": "OR divergence in Ladder: solution"
+	}
+}

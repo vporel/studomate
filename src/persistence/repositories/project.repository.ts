@@ -8,6 +8,8 @@ import { SkippedProjectInfo } from "../project-deserialization";
 export type ProjectListResult = {
 	projects: Project[];
 	skipped: SkippedProjectInfo[];
+	/** The storage could not be read: `projects` is empty for that reason, not for lack of projects. */
+	failed?: true;
 };
 
 /**
@@ -72,5 +74,23 @@ export function isShareable(repo: unknown): repo is ShareableProjectRepository {
 		typeof candidate.getShareToken === "function" &&
 		typeof candidate.createShareToken === "function" &&
 		typeof candidate.deleteShareToken === "function"
+	);
+}
+
+/** Repository that stores each project either locally or in the cloud (`HybridProjectRepository`). */
+export interface StorageLocationAwareRepository extends ProjectRepository {
+	locationOf(projectId: string): StorageLocation;
+	moveToCloud(project: Project): Promise<SaveResult>;
+	moveToLocal(project: Project): Promise<SaveResult>;
+}
+
+export function isStorageLocationAware(
+	repo: unknown,
+): repo is StorageLocationAwareRepository {
+	const candidate = repo as StorageLocationAwareRepository;
+	return (
+		typeof candidate.locationOf === "function" &&
+		typeof candidate.moveToCloud === "function" &&
+		typeof candidate.moveToLocal === "function"
 	);
 }

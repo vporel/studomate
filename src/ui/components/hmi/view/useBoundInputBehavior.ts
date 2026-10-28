@@ -10,8 +10,7 @@ export default function useBoundInputBehavior(
 ): InputBehavior | null {
 	return useProjectStore((s) =>
 		mnemonic
-			? (s.project?.variables.find((v) => v.mnemonic === mnemonic)?.behavior ??
-				null)
+			? (s.project?.findVariableByMnemonic(mnemonic)?.behavior ?? null)
 			: null,
 	);
 }

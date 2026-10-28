@@ -92,7 +92,10 @@ describe("createBlockVariables", () => {
 	it("ne crée une variable que pour les ports qui en génèrent une", () => {
 		const variables = createBlockVariables("el-1", "Tempo1", portSpecs);
 
-		expect(variables.map((v) => v.mnemonic)).toEqual(["Tempo1.IN", "Tempo1.ET"]);
+		expect(variables.map((v) => v.mnemonic)).toEqual([
+			"Tempo1.IN",
+			"Tempo1.ET",
+		]);
 	});
 
 	it("renseigne id, zone, type et propriétaire", () => {

@@ -30,7 +30,9 @@ describe("getAllowedInputBehaviorKinds", () => {
 	it.each(["INT", "WORD", "DWORD"] as const)(
 		"propose le curseur pour une entrée analogique %s",
 		(type) => {
-			expect(getAllowedInputBehaviorKinds("analog-input", type)).toEqual(["slider"]);
+			expect(getAllowedInputBehaviorKinds("analog-input", type)).toEqual([
+				"slider",
+			]);
 		},
 	);
 
@@ -45,14 +47,18 @@ describe("getAllowedInputBehaviorKinds", () => {
 describe("prédicats", () => {
 	it("distingue boutons poussoirs, commutateurs et contacts NF", () => {
 		expect([pbNo, pbNc, tsNo, tsNc, null].map(isPushButtonBehavior)).toEqual([
-			true, true, false, false, false,
+			true,
+			true,
+			false,
+			false,
+			false,
 		]);
-		expect([pbNo, pbNc, tsNo, tsNc, undefined].map(isToggleSwitchBehavior)).toEqual([
-			false, false, true, true, false,
-		]);
-		expect([pbNo, pbNc, tsNo, tsNc, slider(0, 10), null].map(isNormallyClosed)).toEqual([
-			false, true, false, true, false, false,
-		]);
+		expect(
+			[pbNo, pbNc, tsNo, tsNc, undefined].map(isToggleSwitchBehavior),
+		).toEqual([false, false, true, true, false]);
+		expect(
+			[pbNo, pbNc, tsNo, tsNc, slider(0, 10), null].map(isNormallyClosed),
+		).toEqual([false, true, false, true, false, false]);
 	});
 });
 

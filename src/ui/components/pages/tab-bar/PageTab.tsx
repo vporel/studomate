@@ -13,6 +13,7 @@ import { PageType } from "@/ui/stores/project/project.store";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import CloseIcon from "@mui/icons-material/Close";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import MemoryIcon from "@mui/icons-material/Memory";
 import SettingsIcon from "@mui/icons-material/Settings";
 import ViewInArIcon from "@mui/icons-material/ViewInAr";
@@ -33,7 +34,7 @@ import { useShallow } from "zustand/shallow";
  * a sa propre icône selon qu'il est le Main) : ajouter un `PageType` sans l'y référencer est une
  * erreur de compilation, pas un onglet silencieusement affiché avec la mauvaise icône.
  */
-const TYPE_ICONS: Record<Exclude<PageType, "ladder">, ElementType> = {
+export const TYPE_ICONS: Record<Exclude<PageType, "ladder">, ElementType> = {
 	"project-startup": ProjectStartupIcon,
 	"project-properties": ProjectPropertiesIcon,
 	preferences: SettingsIcon,
@@ -45,6 +46,8 @@ const TYPE_ICONS: Record<Exclude<PageType, "ladder">, ElementType> = {
 	"system-variables": VariablesIcon,
 	hmi: HmiIcon,
 	"hmi-simulation": HmiIcon,
+	"embedded-unavailable": ErrorOutlineIcon,
+	"scene3d-view": ViewInArIcon,
 };
 
 export type PageTabProps = {
@@ -55,6 +58,7 @@ export type PageTabProps = {
 
 import { useT } from "@/ui/i18n/useT";
 import { usePageTitle } from "../usePageTitle";
+import PageLockIcon from "./PageLockIcon";
 
 const PageTab = ({ id, title, type }: PageTabProps) => {
 	const pageTitle = usePageTitle();
@@ -69,7 +73,8 @@ const PageTab = ({ id, title, type }: PageTabProps) => {
 	// Le Main a sa propre icône dans l'onglet, comme dans l'explorateur (voir `getProgramIcon`
 	// d'`ExplorerProgramsItems`) : l'id de page d'un ladder est son id de programme.
 	const isMain = useProjectStore(
-		(state) => type === "ladder" && state.project?.ladders[id]?.role === "main",
+		(state) =>
+			type === "ladder" && state.project?.ladders[id]?.isMain() === true,
 	);
 	const active = id === activePageId;
 	const TypeIconComponent =
@@ -158,6 +163,7 @@ const PageTab = ({ id, title, type }: PageTabProps) => {
 				>
 					{pageTitle({ id, title, type })}
 				</Typography>
+				<PageLockIcon pageId={id} />
 			</Box>
 			{/* La "Simulation HMI" est un onglet unique, réouvert via le bouton de la bottom bar
 			(voir `RightActions`) — jamais fermable, pour rester à portée en un clic. */}

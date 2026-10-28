@@ -81,12 +81,6 @@ export function getBlockPortVariableMnemonic(
 	return `BLOCK_${blockId.replace(/-/g, "")}_${portName}`;
 }
 
-function executedLadders(project: Project): Ladder[] {
-	return Object.values(project.ladders).filter(
-		(ladder) => !ladder.excludedFromExecution,
-	);
-}
-
 /**
  * Analyseur du Ladder — parcourt les éléments et connexions à plat : chaque vérification
  * structurelle se réduit à une recherche locale dans `connections`.
@@ -198,9 +192,9 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 	 * ladders du projet, pas sur un seul — appelée une fois par `ProjectAnalyser`.
 	 */
 	static checkMainUniqueness(project: Project): ProjectAnalyserIssue[] {
-		const mains = executedLadders(project).filter(
-			(ladder) => ladder.role === "main",
-		);
+		const mains = project
+			.getExecutedLadders()
+			.filter((ladder) => ladder.isMain());
 		if (mains.length === 1) return [];
 		if (mains.length === 0) {
 			return [
@@ -285,7 +279,7 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 		project: Project,
 	): Map<string, string[]> {
 		const graph = new Map<string, string[]>();
-		for (const ladder of executedLadders(project)) {
+		for (const ladder of project.getExecutedLadders()) {
 			const targets = ladder
 				.getAllElements()
 				.filter(
@@ -318,8 +312,8 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 		const referencedIds = new Set(Array.from(graph.values()).flat());
 
 		const issues: ProjectAnalyserIssue[] = [];
-		for (const ladder of executedLadders(project)) {
-			if (ladder.role === "main" || referencedIds.has(ladder.id)) continue;
+		for (const ladder of project.getExecutedLadders()) {
+			if (ladder.isMain() || referencedIds.has(ladder.id)) continue;
 			issues.push(
 				new ProjectAnalyserIssue(
 					"warning",
@@ -382,7 +376,7 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 	 * Deux variables mémoire cachées par contact en mode P/N : la valeur de sa variable lue au
 	 * balayage précédent, et le front détecté au balayage courant ; une seule (la condition du
 	 * balayage précédent) par bobine de front — même mécanisme que les
-	 * variables d'étape `Xn` du GRAFCET (`GrafcetAnalyser.buildstepsVariables`).
+	 * variables d'étape `Xn` du GRAFCET (`GrafcetAnalyser.buildStepsVariables`).
 	 */
 	private buildEdgeMemoryVariables(
 		ladder: Ladder,

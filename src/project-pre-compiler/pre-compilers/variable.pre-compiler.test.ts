@@ -1,5 +1,11 @@
 import { Dialect } from "@/expression-language/dialect.enum";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
+import {
+	VARIABLE_TYPE_TO_NATIVE_TYPE,
+	VARIABLE_TYPES,
+	VariableZone,
+} from "@/schemas/variable/variable.schema";
+import { PLCVariableScope } from "@/simulator/core/plc/plc-variable";
 import VariableCompiler from "./variable.pre-compiler";
 
 describe("VariableCompiler", () => {
@@ -14,6 +20,42 @@ describe("VariableCompiler", () => {
 			const [plcVariable] = VariableCompiler.compile([brut], Dialect.FR);
 			expect(plcVariable.getDeclaredType()).toBe("INT");
 		});
+
+		it.each(VARIABLE_TYPES)(
+			"compile a %s variable into exactly one PLC variable of its native type",
+			(type) => {
+				const variable = new VariableBuilder().mnemonic("V").type(type).build();
+				const compiled = VariableCompiler.compile([variable], Dialect.FR);
+
+				expect(compiled).toHaveLength(1);
+				expect(compiled[0].getType()).toBe(VARIABLE_TYPE_TO_NATIVE_TYPE[type]);
+			},
+		);
+
+		const EXPECTED_SCOPE_BY_ZONE: Record<VariableZone, PLCVariableScope> = {
+			"logic-input": "input",
+			"analog-input": "input",
+			"logic-output": "output",
+			"analog-output": "output",
+			memory: "memory",
+			constant: "memory",
+		};
+
+		it.each(Object.entries(EXPECTED_SCOPE_BY_ZONE))(
+			"maps the %s zone to the %s scope",
+			(zone, scope) => {
+				const builder = new VariableBuilder()
+					.mnemonic("V")
+					.zone(zone as VariableZone);
+				if (zone.startsWith("analog") || zone === "constant")
+					builder.type("INT");
+				if (zone === "constant") builder.value("0");
+				const variable = builder.build();
+				const [compiled] = VariableCompiler.compile([variable], Dialect.FR);
+
+				expect(compiled.getScope()).toBe(scope);
+			},
+		);
 
 		it("porte le type déclaré des variables système", () => {
 			for (const variable of VariableCompiler.compileSystemVariables()) {

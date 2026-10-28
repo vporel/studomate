@@ -1,0 +1,9 @@
+{
+	"statement": "## Poste de tri de caisses\n\nDes caisses arrivent une à une sur le tapis `Cmd_T1` jusqu'à un poste de détection.\nLe capteur `cpt_psce_c` signale la présence d'une caisse, `cpt_c_hte` indique qu'elle est haute.\nTrois vérins double effet `P1`, `P2`, `P3` (commandes `Cmd_Px_out` / `Cmd_Px_in`,\nfins de course `cpt_px_out` / `cpt_px_in`) aiguillent la caisse. `P1` la pousse hors de\n`T1` sur le canal, puis `Cmd_T2T3` la conduit le long du canal : elle s'arrête au niveau de\n`P2` (capteur `cpt_psce_p2`) si elle est basse, au niveau de `P3` (capteur `cpt_psce_p3`)\nsi elle est haute. Le compteur `C` totalise les caisses triées.\n\n### Travail demandé\n\n1. Sur `dcy`, démarrer les tapis (`Cmd_T2T3` mémorisé, `Cmd_T1` tant qu'une caisse circule).\n2. Caisse **basse** : la pousser avec `P1`, attendre qu'elle soit au niveau de `P2`, puis l'évacuer vers `T2` avec `P2`.\n3. Caisse **haute** : la pousser avec `P1`, attendre qu'elle soit au niveau de `P3`, puis l'évacuer vers `T3` avec `P3`.\n4. Incrémenter `C` à chaque caisse triée ; après 2 caisses, réinitialiser le cycle complet.\n5. Vérifier le tri en simulation dans la scène 3D (bouton « Placer la caisse », sélecteur de hauteur de caisse).",
+	"texts": {
+		"projectName": "Poste de tri de caisses",
+		"counterComment": "compteur de caisses triées",
+		"solutionName": "Poste de tri de caisses — solution",
+		"controlGrafcet": "Commande"
+	}
+}

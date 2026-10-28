@@ -100,28 +100,45 @@ describe("PLC", () => {
 
 	describe("physical input management", () => {
 		it("sets physical input value by id", () => {
+			const ast = new Parser(
+				new Lexer(Dialect.FR).tokenize("result := x"),
+			).parse();
 			const plc = new PLC({
 				scanTimeMs: 100,
-				program: [],
-				variables: [inputVar],
+				program: [PLCRoutine.fromNodes([ast])],
+				variables: [inputVar, outputVar],
 			});
 			plc.setPhysicalInputValueById("id1", 20);
-			// Value will be reflected after a cycle
 			plc.start();
 			jest.advanceTimersByTime(100);
 			plc.stop();
+
+			const snapshot = plc.getVariablesSnapshot();
+			expect(snapshot.find((v) => v.getName() === "x")?.getValue()).toBe(20);
+			expect(snapshot.find((v) => v.getName() === "result")?.getValue()).toBe(
+				20,
+			);
 		});
 
 		it("sets physical input value by name", () => {
+			const ast = new Parser(
+				new Lexer(Dialect.FR).tokenize("result := x"),
+			).parse();
 			const plc = new PLC({
 				scanTimeMs: 100,
-				program: [],
-				variables: [inputVar],
+				program: [PLCRoutine.fromNodes([ast])],
+				variables: [inputVar, outputVar],
 			});
 			plc.setPhysicalInputValueByName("x", 30);
 			plc.start();
 			jest.advanceTimersByTime(100);
 			plc.stop();
+
+			const snapshot = plc.getVariablesSnapshot();
+			expect(snapshot.find((v) => v.getName() === "x")?.getValue()).toBe(30);
+			expect(snapshot.find((v) => v.getName() === "result")?.getValue()).toBe(
+				30,
+			);
 		});
 
 		it("returns the stored value, brought back into the input's range", () => {

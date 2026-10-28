@@ -1,3 +1,5 @@
+import type { Locale } from "@/i18n/config";
+import createTemplateText from "@/templates/template-text";
 import Project from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
 import {
@@ -22,20 +24,21 @@ function createToggleVariables(project: Project): void {
 }
 
 /** The Main holds the naive two-section solution, on which the lamp never lights. */
-export function createLadderToggleProject(): Project {
-	const project = new Project(createRandomId(), "Télérupteur", "");
+export function createLadderToggleProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("ladder-toggle", locale);
+	const project = new Project(createRandomId(), t("projectName"), "");
 	createToggleVariables(project);
 	setMainSections(project, [
 		section(
-			"Allumer",
-			"Front de bp et lampe éteinte : allumer.",
+			t("turnOnTitle"),
+			t("turnOnDescription"),
 			rising("bp"),
 			nf("lampe"),
 			setCoil("lampe"),
 		),
 		section(
-			"Éteindre",
-			"Front de bp et lampe allumée : éteindre.",
+			t("turnOffTitle"),
+			t("turnOffDescription"),
 			rising("bp"),
 			no("lampe"),
 			resetCoil("lampe"),
@@ -45,19 +48,15 @@ export function createLadderToggleProject(): Project {
 }
 
 /** `imp` memorises the pulse of a single `P` contact: `lampe = imp·/lampe + /imp·lampe`. */
-export function createLadderToggleSolution(): Project {
-	const project = new Project(createRandomId(), "Télérupteur : solution", "");
+export function createLadderToggleSolution(locale: Locale = "fr"): Project {
+	const t = createTemplateText("ladder-toggle", locale);
+	const project = new Project(createRandomId(), t("solutionName"), "");
 	createToggleVariables(project);
 	setMainSections(project, [
+		section(t("pulseTitle"), t("pulseDescription"), rising("bp"), coil("imp")),
 		section(
-			"Impulsion",
-			"Un seul contact P mémorise le front dans imp.",
-			rising("bp"),
-			coil("imp"),
-		),
-		section(
-			"Bascule",
-			"La lampe change d'état à chaque impulsion.",
+			t("toggleTitle"),
+			t("toggleDescription"),
 			or([no("imp"), nf("lampe")], [nf("imp"), no("lampe")]),
 			coil("lampe"),
 		),

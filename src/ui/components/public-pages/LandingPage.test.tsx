@@ -70,7 +70,7 @@ describe("LandingPage", () => {
 			expect(screen.getByText(landing[`${key}Text`])).toBeInTheDocument();
 			expect(
 				screen.getByRole("img", {
-					name: landing[`${key}Alt`].replace("{name}", APP_NAME),
+					name: landing[`${key}Alt`],
 				}),
 			).toBeInTheDocument();
 		}
@@ -147,7 +147,7 @@ describe("LandingPage", () => {
 	it("renvoie vers chaque module de formation et vers la liste des formations", () => {
 		renderWithI18n(<LandingPage />);
 
-		for (const id of ["a0", "a1", "a2", "a3", "a4"]) {
+		for (const id of ["a0", "a1", "a2", "a3", "a4", "a5"]) {
 			expect(
 				screen.getByRole("link", {
 					name: new RegExp(`^Module ${id.toUpperCase()} :`),
@@ -163,7 +163,7 @@ describe("LandingPage", () => {
 		renderWithI18n(<LandingPage />);
 		const landing = messages.landing as Record<string, string>;
 
-		for (const id of ["A0", "A1", "A2", "A3", "A4"]) {
+		for (const id of ["A0", "A1", "A2", "A3", "A4", "A5"]) {
 			const title = screen.getByRole("heading", {
 				name: new RegExp(`^Module ${id} :`),
 				level: 3,
@@ -260,9 +260,7 @@ describe("LandingPage", () => {
 			.getAllByRole("heading", { level: 2 })
 			.map((h) => h.textContent);
 
-		expect(sectionTitles[0]).toBe(
-			messages.landing.demoTitle.replace("{name}", APP_NAME),
-		);
+		expect(sectionTitles[0]).toBe(messages.landing.demoTitle);
 		expect(sectionTitles[1]).toBe(messages.landing.logicTitle);
 		expect(sectionTitles[2]).toBe(messages.landing.machineTitle);
 		expect(sectionTitles.at(-1)).toBe(messages.landing.stepsTitle);

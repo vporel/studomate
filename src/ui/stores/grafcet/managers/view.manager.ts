@@ -1,8 +1,9 @@
-import {
+import type {
 	GrafcetEdgeType,
 	GrafcetNodeType,
 } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import { ReactFlowInstance } from "@xyflow/react";
+import { clamp } from "@/lib/number";
 import AbstractHighlightingViewManager from "@/ui/stores/shared/abstract-highlighting-view-manager";
 import {
 	GrafcetStoreGetFunction,
@@ -10,8 +11,14 @@ import {
 	GrafcetStoreState,
 } from "../grafcet.store";
 
-export const GRAFCET_FLOW_MIN_ZOOM = 1;
-export const GRAFCET_FLOW_MAX_ZOOM = 2.5;
+export const GRAFCET_FLOW_MIN_ZOOM = 0.5;
+export const GRAFCET_FLOW_MAX_ZOOM = 2;
+
+/** Facteur de pas d'un clic sur zoom in/out — celui de React Flow (`scaleBy(1.2)`). */
+const ZOOM_STEP_FACTOR = 1.2;
+
+/** Tolérance sur les coordonnées du viewport verrouillé (voir `syncFromInstance`). */
+const VIEWPORT_EPSILON = 1e-3;
 
 /**
  * Aspects de la vue qui ne relèvent pas du domaine : sélection, surlignage, zoom, et
@@ -27,6 +34,13 @@ export default class GrafcetViewManager extends AbstractHighlightingViewManager<
 	private getStoreState: GrafcetStoreGetFunction;
 
 	rfInstance: ReactFlowInstance | null = null;
+
+	/**
+	 * Vrai quand la page est affichée à sa taille réelle (zoom compris) dans un conteneur qui
+	 * défile : le viewport reste alors verrouillé à (0,0) et le zoom du store en est la seule
+	 * donnée. Faux quand le grafcet est ajusté à son conteneur (`fitView`).
+	 */
+	private viewportPinned = false;
 
 	/**
 	 * Élément racine de la page du grafcet dans le DOM, tenu à jour par `GrafcetFlow` via un
@@ -106,6 +120,64 @@ export default class GrafcetViewManager extends AbstractHighlightingViewManager<
 
 	setReactFlowInstance(instance: ReactFlowInstance): void {
 		this.rfInstance = instance;
+		if (this.getStoreState().zoom === null) this.setZoom(instance.getZoom());
+	}
+
+	setViewportPinned(pinned: boolean): void {
+		this.viewportPinned = pinned;
+	}
+
+	/**
+	 * Verrouille le viewport à (0,0) au zoom du store : la lib zoome par défaut autour du centre
+	 * ou du curseur, ce qui décalerait la page par rapport à son cadre, dont la taille suit le
+	 * zoom. Sans effet quand la page est ajustée à son conteneur.
+	 */
+	pinViewport(): void {
+		if (!this.viewportPinned || !this.rfInstance) return;
+		void this.rfInstance.setViewport({
+			x: 0,
+			y: 0,
+			zoom: this.getStoreState().zoom ?? 1,
+		});
+	}
+
+	/** Applique `zoom` (borné) au store et au viewport verrouillé. */
+	applyZoom(zoom: number): void {
+		this.setZoom(clamp(zoom, GRAFCET_FLOW_MIN_ZOOM, GRAFCET_FLOW_MAX_ZOOM));
+		this.pinViewport();
+	}
+
+	/**
+	 * À appeler en fin de déplacement du viewport : un geste (Ctrl/Cmd + molette, pincement) l'a
+	 * peut-être décalé ou zoomé. Reprend son zoom et le re-verrouille à (0,0). Sans effet quand
+	 * le viewport est déjà au zoom du store et à l'origine, ce qui évite de boucler sur le
+	 * déplacement que `pinViewport` provoque lui-même.
+	 */
+	syncFromInstance(viewport: { x: number; y: number; zoom: number }): void {
+		if (!this.viewportPinned) return;
+		const zoom = clamp(
+			viewport.zoom,
+			GRAFCET_FLOW_MIN_ZOOM,
+			GRAFCET_FLOW_MAX_ZOOM,
+		);
+		const settled =
+			Math.abs(viewport.x) < VIEWPORT_EPSILON &&
+			Math.abs(viewport.y) < VIEWPORT_EPSILON &&
+			Math.abs(viewport.zoom - zoom) < VIEWPORT_EPSILON &&
+			this.getStoreState().zoom === zoom;
+		if (settled) return;
+		this.applyZoom(zoom);
+	}
+
+	/** Reflects the zoom of the flow in the store, so that the zoom tools follow it. */
+	setZoom(zoom: number): void {
+		if (this.getStoreState().zoom === zoom) return;
+		this.setStoreState({ zoom });
+	}
+
+	setMinZoom(minZoom: number): void {
+		if (this.getStoreState().minZoom === minZoom) return;
+		this.setStoreState({ minZoom });
 	}
 
 	getNodes(): GrafcetNodeType[] {
@@ -201,14 +273,24 @@ export default class GrafcetViewManager extends AbstractHighlightingViewManager<
 		return this.rfInstance.getZoom();
 	}
 
+	/** Un pas qui traverse 100 % s'y arrête, pour que le zoom initial reste atteignable. */
+	private stepPinnedZoom(factor: number): void {
+		const current = this.getStoreState().zoom ?? 1;
+		const next = current * factor;
+		const crossesDefault = (current - 1) * (next - 1) < 0;
+		this.applyZoom(crossesDefault ? 1 : next);
+	}
+
 	zoomIn(): void {
 		if (!this.rfInstance) return;
-		void this.rfInstance.zoomIn();
+		if (this.viewportPinned) this.stepPinnedZoom(ZOOM_STEP_FACTOR);
+		else void this.rfInstance.zoomIn();
 	}
 
 	zoomOut(): void {
 		if (!this.rfInstance) return;
-		void this.rfInstance.zoomOut();
+		if (this.viewportPinned) this.stepPinnedZoom(1 / ZOOM_STEP_FACTOR);
+		else void this.rfInstance.zoomOut();
 	}
 
 	fitView() {

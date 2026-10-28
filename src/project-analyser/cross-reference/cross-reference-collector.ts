@@ -24,11 +24,11 @@ export default class CrossReferenceCollector {
 	static collect(project: Project): CrossReference[] {
 		const dialect = project.dialect;
 		const raw = [
-			...Object.values(project.ladders)
-				.filter((ladder) => !ladder.excludedFromExecution)
+			...project
+				.getExecutedLadders()
 				.flatMap((ladder) => collectLadderReferences(ladder, dialect)),
-			...Object.values(project.grafcets)
-				.filter((grafcet) => !grafcet.excludedFromExecution)
+			...project
+				.getExecutedGrafcets()
 				.flatMap((grafcet) => collectGrafcetReferences(grafcet, dialect)),
 			...Object.values(project.hmiPages).flatMap((page) =>
 				collectHmiReferences(page),

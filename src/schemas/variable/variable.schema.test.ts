@@ -24,6 +24,27 @@ describe("Variable", () => {
 		);
 	});
 
+	describe("isReadOnly", () => {
+		it.each([
+			["logic-input", false],
+			["analog-input", false],
+			["logic-output", false],
+			["analog-output", false],
+			["memory", false],
+			["constant", true],
+		] as [VariableZone, boolean][])("zone %s → %s", (zone, expected) => {
+			const variable = new Variable({
+				id: "id",
+				mnemonic: "M",
+				zone,
+				type: zone === "constant" ? "INT" : ZONES_TO_TYPES[zone][0],
+				value: zone === "constant" ? "1" : undefined,
+				dialect: Dialect.FR,
+			});
+			expect(variable.isReadOnly()).toBe(expected);
+		});
+	});
+
 	describe("constructor", () => {
 		it("lève quand la variable est invalide", () => {
 			expect(

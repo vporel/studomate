@@ -1,9 +1,8 @@
 "use client";
 
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import useCanEdit from "@/ui/components/projects/useCanEdit";
 import { Box } from "@mui/material";
 import React from "react";
-import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import {
 	DraggedGrafcetElement,
 	useGrafcetToolbarDnD,
@@ -19,8 +18,8 @@ const GrafcetTool = ({
 	children: React.ReactElement;
 }) => {
 	const { setDraggedElement } = useGrafcetToolbarDnD();
-	const mode = useProjectStore((state) => state.mode);
-	disabled = disabled || mode !== ProjectMode.DESIGN;
+	const canEdit = useCanEdit();
+	disabled = disabled || !canEdit;
 
 	return (
 		<Box

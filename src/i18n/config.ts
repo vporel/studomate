@@ -11,7 +11,9 @@ export type Locale = (typeof LOCALES)[number];
 export const DEFAULT_LOCALE: Locale = "fr";
 
 export function isLocale(value: unknown): value is Locale {
-	return typeof value === "string" && (LOCALES as readonly string[]).includes(value);
+	return (
+		typeof value === "string" && (LOCALES as readonly string[]).includes(value)
+	);
 }
 
 /** Restreint une valeur de segment d'URL à une `Locale`, repli sur `DEFAULT_LOCALE`. */
@@ -25,10 +27,7 @@ export function toLocale(value: string): Locale {
  */
 export function detectBrowserLocale(): Locale {
 	if (typeof navigator === "undefined") return DEFAULT_LOCALE;
-	const candidates = [
-		navigator.language,
-		...(navigator.languages ?? []),
-	];
+	const candidates = [navigator.language, ...(navigator.languages ?? [])];
 	for (const candidate of candidates) {
 		const base = candidate?.toLowerCase().split("-")[0];
 		if (isLocale(base)) return base;

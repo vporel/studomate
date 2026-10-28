@@ -74,7 +74,7 @@
 			"Front montant / descendant (Grafcet) : instant où une condition passe respectivement de faux à vrai, ou de vrai à faux.",
 			"Contact (Ladder) : teste une variable booléenne. NO (normalement ouvert) laisse passer si elle est vraie, NF (normalement fermé) si elle est fausse.",
 			"Bobine (Ladder) : affecte une variable booléenne en sortie d'un circuit de contacts.",
-			"Réseau / rung (Ladder) : ligne de circuit indépendante, alimentée par le rail vertical de gauche.",
+			"Réseau / rung (Ladder) : bloc du programme délimité par les deux rails verticaux, qui contient des lignes de contacts menant à des bobines.",
 			"Mnémonique : nom d'une variable tel qu'on l'écrit dans les expressions (« capteur1 »), unique dans le projet.",
 			"Dialecte : langue des mots-clés des expressions (ET, OU, NON, VRAI, FAUX en français ; AND, OR, NOT, TRUE, FALSE en anglais). C'est une propriété du projet, indépendante de la langue de l'interface.",
 			"Automate programmable (PLC) / cycle : l'appareil industriel qui exécute le programme en boucle. Un cycle (ou « scan ») enchaîne la lecture des entrées, l'exécution du programme et l'écriture des sorties ; Studomate simule ce fonctionnement.",
@@ -82,21 +82,6 @@
 			"Broche (Ladder) : point de connexion d'un bloc (entrée ou sortie), où l'on renseigne une variable ou une constante.",
 			"Widget (HMI) : élément graphique d'une page HMI ; un widget interactif est lié à une variable.",
 			"Animation (HMI) : variation de position ou d'apparence d'un widget pilotée par une variable pendant la simulation."
-		],
-		"taskMapTitle": "Je veux…",
-		"taskMapIntro": "Un index par tâche, pour aller directement à la bonne section :",
-		"taskMapItems": [
-			"voir un grafcet tourner sans rien écrire : Démarrer, « Premier projet en quelques minutes » ;",
-			"attendre un délai : une temporisation dans la réceptivité d'une transition (Grafcet, Transitions) ou un bloc TON en Ladder (Ladder, Blocs) ;",
-			"faire clignoter une lampe : les bases de temps « _SYS_TB_… » (Variables, Variables système) ;",
-			"compter des pièces : le bloc Compteur (Ladder, Blocs) ;",
-			"mémoriser un état : les bobines Set et Reset (Ladder, Bobines) ou les actions Set et Reset d'une étape (Grafcet, Actions) ;",
-			"produire une impulsion d'un cycle : une bobine de front montant ou descendant (Ladder, Bobines) ;",
-			"recommencer un cycle : Dépannage, « Comment faire boucler un cycle ? » ;",
-			"actionner un capteur pendant la simulation : Dépannage, « Comment actionner un capteur en simulation ? » ;",
-			"afficher une interface de pilotage : Interfaces HMI ;",
-			"relier une carte Arduino ou une scène 3D : Matériel (Arduino) et Scène 3D ;",
-			"préparer et distribuer un TP : Projets, « Préparer et distribuer un TP »."
 		],
 		"readingOrder": "Si vous découvrez l'automatisme, commencez par les Formations (menu Aide) : une théorie courte suivie d'exercices auto-corrigés, sans compte requis. La progression est gardée dans le navigateur, et sauvegardée sur votre compte si vous êtes connecté. Pour une première découverte de l'outil, commencez par Démarrer, puis parcourez la notation visée : Grafcet (Canvas, Étapes, Transitions, Actions) ou Ladder (Réseaux, Contacts, Bobines, Blocs), avant Simulation et Analyse. Les sections Variables, Interfaces HMI, Explorateur, Barre d'outils et Raccourcis se consultent au besoin. Les sections Matériel (Arduino) et Scène 3D concernent les projets reliés à une carte réelle ou à une partie opérative virtuelle."
 	},
@@ -150,7 +135,7 @@
 			"Écran : l'éditeur est prévu pour un ordinateur. Quand la fenêtre fait moins de 768 pixels de large (téléphone, fenêtre très réduite), Studomate affiche « Application desktop uniquement » ; agrandissez la fenêtre ou passez sur un ordinateur.",
 			"Souris et clavier : de nombreuses actions passent par le clic droit (menus contextuels), le glisser-déposer et les raccourcis clavier. L'usage tactile (tablette) n'est pas garanti ; un Chromebook convient comme n'importe quel ordinateur avec un navigateur Chromium.",
 			"Navigateur : tout fonctionne dans les navigateurs de bureau courants ; seule la liaison avec une carte Arduino demande un navigateur basé sur Chromium (Chrome, Edge...), voir la section Matériel (Arduino).",
-			"Connexion : il n'y a pas de mode hors ligne. L'application se charge depuis le web, une connexion est donc nécessaire pour l'ouvrir (en salle de TP, vérifiez l'accès réseau avant la séance)."
+			"Connexion : une fois chargée, l'application fonctionne sans réseau (édition, simulation, scène 3D, liaison Arduino, ce manuel) et peut s'installer depuis le navigateur. La première visite sur un appareil demande une connexion, ainsi que les projets cloud, les liens de partage, les comptes et les autres pages du site. En salle de TP dont le profil est effacé à la déconnexion, ouvrez l'application au début de la séance pendant que le réseau est disponible."
 		],
 		"preferencesTitle": "Préférences",
 		"preferencesBody": "Fichier → Préférences ouvre la page des réglages de l'application, qui sont au nombre de trois :",
@@ -369,6 +354,8 @@
 		"canvasOutro2": "Copier / Couper / Coller (Ctrl+C, Ctrl+X, Ctrl+V) fonctionnent sur la sélection courante, y compris les sélections multi-éléments. Les éléments collés sont placés légèrement décalés par rapport aux originaux.",
 		"stepsTitle": "Étapes",
 		"stepsIntro": "Les étapes représentent les états stables du système. Une étape peut être active ou inactive à tout moment de l'exécution.",
+		"symbolsFigureAlt": "Les symboles du GRAFCET : étape inactive, étape active, étape initiale à double contour, transition avec sa réceptivité, action accrochée à une étape, liaison orientée avec une flèche de retour",
+		"symbolsFigureSrc": "/user-manual/grafcet/grafcet-symbols-fr.svg",
 		"stepsFigureAlt": "Schéma : une étape initiale (numéro 0, double bordure), suivie d'une transition (barre horizontale), puis d'une étape normale (numéro 1) reliée à une action (rectangle à droite).",
 		"stepsTypesTitle": "Types d'étapes",
 		"stepsTypes": [
@@ -552,7 +539,7 @@
 		"calcTitle": "Calcul",
 		"calcBody": "Évalue une opération arithmétique (out := in1 op in2, avec op parmi +, -, *, /) lorsque le circuit qui l'alimente (EN) est vrai. S'insère en fin de réseau comme une bobine. Les opérandes in1 et in2, la destination out et l'opérateur se renseignent sur le bloc dans le canvas.",
 		"convertTitle": "Conversion",
-		"convertBody": "Convertit la valeur de la variable in vers le type de la variable out lorsque le circuit qui l'alimente (EN) est vrai. Le bloc affiche le nom normalisé de la conversion appliquée, par exemple DINT_TO_INT. Un entier trop grand pour le type de destination y est ramené par rebouclage, comme sur un automate ; un REAL est arrondi à l'entier le plus proche. in et out se renseignent sur les broches du bloc (variables uniquement).",
+		"convertBody": "Convertit la valeur de la variable in vers le type de la variable out lorsque le circuit qui l'alimente (EN) est vrai. Les deux listes sous le libellé CONV choisissent le type de départ et le type d'arrivée (INT vers REAL par défaut), ce qui donne la conversion normalisée appliquée, par exemple DINT_TO_INT ; seules les paires prises en charge sont proposées. Une variable dont le type diffère de celui choisi pour sa broche est signalée en rouge, et l'analyse la refuse. Un entier trop grand pour le type de destination y est ramené par rebouclage, comme sur un automate ; un REAL est arrondi à l'entier le plus proche. in et out se renseignent sur les broches du bloc (variables uniquement).",
 		"programCallTitle": "Appel de programme",
 		"programCallBody": "Appelle un autre ladder depuis le ladder Main. Le ladder ciblé s'exécute à chaque cycle où l'entrée EN est vraie, à l'endroit du bloc : avant les réseaux placés en dessous, qui voient donc ses écritures du même cycle. C'est le mécanisme par lequel le Main orchestre les autres ladders du projet : un ladder non appelé par le Main ne sera jamais exécuté (l'analyse le signale comme avertissement).",
 		"connectionsTitle": "Connexions",
@@ -952,7 +939,7 @@
 				"title": "Application et stockage",
 				"items": [
 					"application pour ordinateur : elle s'efface sous 768 pixels de large, et l'usage tactile (tablette) n'est pas garanti ;",
-					"pas de mode hors ligne : une connexion est nécessaire pour ouvrir l'application ;",
+					"hors ligne, seuls les projets stockés dans le navigateur sont disponibles : les projets cloud, les liens de partage et la connexion à un compte demandent le réseau, et l'application doit avoir été ouverte au moins une fois sur l'appareil avec une connexion ;",
 					"par défaut, les projets ne sont stockés que dans le navigateur de l'appareil : exportez-les ou créez un compte pour les sauvegarder dans le cloud (section Démarrer) ;",
 					"pas de vue enseignant : un professeur ne voit pas les projets cloud de ses élèves, ils lui envoient un fichier ou un lien de partage (section Projets)."
 				]

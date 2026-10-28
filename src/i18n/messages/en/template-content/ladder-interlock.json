@@ -1,0 +1,11 @@
+{
+	"statement": "## Two-direction motor\n\nInputs: `forward`, `backward`, `stop` (three push buttons wired normally open (NO), at 0 at rest). Outputs: `motor_fwd`, `motor_rev`.\n\n### Task\n\n1. `forward` starts `motor_fwd`, which keeps running after release (self-holding with stop priority).\n2. `backward` starts `motor_rev` the same way.\n3. `stop` cuts both outputs.\n4. When one direction is running, pressing the other button has no effect.\n5. The two outputs are never true at the same time (short circuit on real contactors).",
+	"texts": {
+		"projectName": "Two-direction motor",
+		"solutionName": "Two-direction motor: solution",
+		"forwardTitle": "Forward run",
+		"forwardDescription": "Self-holding with stop priority, interlocked by the reverse run.",
+		"backwardTitle": "Reverse run",
+		"backwardDescription": "Self-holding with stop priority, interlocked by the forward run."
+	}
+}

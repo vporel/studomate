@@ -74,13 +74,20 @@ describe("createGenerateMetadata", () => {
 			type: "website",
 			siteName: "Studomate",
 			locale: "en_US",
-			images: [{ url: "/images/og.png", width: 1200, height: 630 }],
+			images: [
+				{
+					url: "/api/og/en/default",
+					width: 1200,
+					height: 630,
+					alt: "msg:aboutTitle — Studomate",
+				},
+			],
 		});
 		expect(metadata.twitter).toMatchObject({
 			card: "summary_large_image",
 			title: "msg:aboutTitle — Studomate",
 			description: "msg:aboutDescription",
-			images: ["/images/og.png"],
+			images: ["/api/og/en/default"],
 		});
 	});
 

@@ -47,10 +47,7 @@ export function ensureLocalStorageLayout(
 		try {
 			migration.migrate();
 			current = migration.from + 1;
-			localStorage.setItem(
-				LOCAL_STORAGE_LAYOUT_VERSION_KEY,
-				String(current),
-			);
+			localStorage.setItem(LOCAL_STORAGE_LAYOUT_VERSION_KEY, String(current));
 		} catch (e) {
 			console.error(
 				`Migration de disposition localStorage depuis la v${migration.from} interrompue :`,

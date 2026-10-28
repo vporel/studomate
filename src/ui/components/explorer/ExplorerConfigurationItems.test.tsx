@@ -6,9 +6,11 @@ import { SimpleTreeView } from "@mui/x-tree-view";
 import { i18nWrapper } from "@tests/utils/i18n";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import { useProjectStore } from "../projects/ProjectContext";
-import { HARDWARE_CONFIGURATION_PAGE_DATA } from "../pages/HardwareConfigurationPage";
-import { SCENE3D_CONFIGURATION_PAGE_DATA } from "../pages/Scene3dConfigurationPage";
 import ExplorerConfigurationItems from "./ExplorerConfigurationItems";
+import {
+	HARDWARE_CONFIGURATION_PAGE_DATA,
+	SCENE3D_CONFIGURATION_PAGE_DATA,
+} from "@/ui/stores/project/pages-data";
 
 jest.mock("../projects/ProjectContext");
 jest.mock("../pages/HardwareConfigurationPage", () => ({

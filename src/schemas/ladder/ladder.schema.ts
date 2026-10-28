@@ -8,6 +8,7 @@ import {
 	LadderElement,
 	LadderElementDataChanges,
 } from "./element.schema";
+import { BLOCK_PIN_PARAM_KEYS } from "./block.schema";
 import Section from "./section.schema";
 
 /** Base du nom auto-généré ("Ladder_1", "Ladder_2"...) à la création — voir
@@ -60,6 +61,11 @@ export default class Ladder extends Program {
 		return this.sections.find((section) => section.id === sectionId);
 	}
 
+	/** Sections matching `sectionIds`, in the ladder's order (not the ids' order). */
+	getSectionsInOrder(sectionIds: string[]): Section[] {
+		return this.sections.filter((section) => sectionIds.includes(section.id));
+	}
+
 	createSection(
 		title: string = DEFAULT_SECTION_TITLE,
 		description: string = "",
@@ -79,12 +85,16 @@ export default class Ladder extends Program {
 		if (section) section.description = description;
 	}
 
+	canDeleteSection(): boolean {
+		return this.sections.length > 1;
+	}
+
 	/**
 	 * Ne supprime pas la dernière section restante : un ladder porte toujours au moins une
 	 * section.
 	 */
 	deleteSection(sectionId: string): void {
-		if (this.sections.length <= 1) return;
+		if (!this.canDeleteSection()) return;
 		const index = this.sections.findIndex(
 			(section) => section.id === sectionId,
 		);
@@ -301,6 +311,15 @@ export default class Ladder extends Program {
 
 		this.sections.forEach((section) => {
 			section.elements.forEach((element) => {
+				if (element.type === "block") {
+					const params = element.data.params as Record<string, unknown>;
+					for (const key of BLOCK_PIN_PARAM_KEYS) {
+						const pin = params[key];
+						if (typeof pin === "string" && renames[pin])
+							params[key] = renames[pin];
+					}
+					return;
+				}
 				if (element.type !== "contact" && element.type !== "coil") return;
 				const data = element.data as ContactData | CoilData;
 				const newName = renames[data.variable];
@@ -320,9 +339,17 @@ export default class Ladder extends Program {
 		return ladder;
 	}
 
+	isEmpty(): boolean {
+		return this.sections.every((section) => section.isEmpty());
+	}
+
 	/** The Main is the project's execution entry point. */
+	isMain(): boolean {
+		return this.role === "main";
+	}
+
 	canBeExcludedFromExecution(): boolean {
-		return this.role !== "main";
+		return !this.isMain();
 	}
 
 	translateExpressionsKeywords(): void {

@@ -39,10 +39,22 @@ describe("traffic-light.template", () => {
 			);
 		});
 
-		it("passe l'analyse sans erreur (projet sans programme est valide)", () => {
-			const { analysis } = compilePipelineDetailed(project);
+		it("fournit un grafcet vide à dessiner, nommé comme la solution", () => {
+			const grafcets = Object.values(project.grafcets);
+			expect(grafcets).toHaveLength(1);
+			expect(grafcets[0].isEmpty()).toBe(true);
+			expect(grafcets[0].name).toBe(
+				Object.values(createTrafficLightSolution().grafcets)[0].name,
+			);
+		});
+
+		it("passe l'analyse, la pré-compilation et la compilation sans erreur (le grafcet vide n'est pas exécuté)", () => {
+			const { analysis, preCompilation, compilation } =
+				compilePipelineDetailed(project);
 			const errors = analysis.issues.filter((i) => i.severity === "error");
 			expect(errors).toHaveLength(0);
+			expect(preCompilation.errors).toHaveLength(0);
+			expect(compilation.errors).toHaveLength(0);
 		});
 	});
 
@@ -81,6 +93,37 @@ describe("traffic-light.template", () => {
 			const { compilation } = compilePipelineDetailed(project);
 			// 1 grafcet + sorties en niveau + mémos d'étape + initialisation + 1 Main + observation des réceptivités
 			expect(compilation.result!.routines).toHaveLength(6);
+		});
+	});
+
+	describe("langue", () => {
+		it("garde les noms français par défaut et en fr", () => {
+			for (const project of [
+				createTrafficLightSolution(),
+				createTrafficLightSolution("fr"),
+			]) {
+				expect(project.name).toBe("Feu tricolore — solution");
+				expect(Object.values(project.grafcets).map((g) => g.name)).toEqual([
+					"Feu tricolore",
+				]);
+				expect(Object.values(project.hmiPages).map((p) => p.name)).toEqual([
+					"Feu tricolore",
+				]);
+			}
+		});
+
+		it("nomme le projet, le programme, la page et les widgets en anglais, sans accent", () => {
+			const project = createTrafficLightSolution("en");
+			const [page] = Object.values(project.hmiPages);
+			const names = [
+				project.name,
+				...Object.values(project.grafcets).map((g) => g.name),
+				page.name,
+				...Object.values(page.widgets).map((w) => w.name ?? ""),
+			];
+			expect(project.name).toBe("Traffic light: solution");
+			expect(page.name).toBe("Traffic light");
+			expect(names.join("")).not.toMatch(/[À-ÿ]/);
 		});
 	});
 });

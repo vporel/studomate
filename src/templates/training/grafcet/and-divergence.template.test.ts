@@ -45,10 +45,22 @@ describe("and-divergence.template", () => {
 			});
 		});
 
-		it("passe l'analyse sans erreur (projet sans programme est valide)", () => {
-			const { analysis } = compilePipelineDetailed(project);
+		it("fournit un grafcet vide à dessiner, nommé comme la solution", () => {
+			const grafcets = Object.values(project.grafcets);
+			expect(grafcets).toHaveLength(1);
+			expect(grafcets[0].isEmpty()).toBe(true);
+			expect(grafcets[0].name).toBe(
+				Object.values(createAndDivergenceSolution().grafcets)[0].name,
+			);
+		});
+
+		it("passe l'analyse, la pré-compilation et la compilation sans erreur (le grafcet vide n'est pas exécuté)", () => {
+			const { analysis, preCompilation, compilation } =
+				compilePipelineDetailed(project);
 			const errors = analysis.issues.filter((i) => i.severity === "error");
 			expect(errors).toHaveLength(0);
+			expect(preCompilation.errors).toHaveLength(0);
+			expect(compilation.errors).toHaveLength(0);
 		});
 	});
 
@@ -87,6 +99,32 @@ describe("and-divergence.template", () => {
 			const [jae] = Object.values(grafcet.junctionsAndEnds);
 			expect(jas.data.branchesOrder).toHaveLength(2);
 			expect(jae.data.branchesOrder).toHaveLength(2);
+		});
+	});
+
+	describe("langue", () => {
+		it("garde les noms français par défaut et en fr", () => {
+			for (const project of [
+				createAndDivergenceSolution(),
+				createAndDivergenceSolution("fr"),
+			]) {
+				expect(project.name).toBe("Divergence en ET : solution");
+				expect(Object.values(project.grafcets).map((g) => g.name)).toEqual([
+					"Divergence en ET",
+				]);
+			}
+			expect(createAndDivergenceProject().name).toBe("Divergence en ET");
+		});
+
+		it("nomme le projet et le programme en anglais, sans accent", () => {
+			const project = createAndDivergenceSolution("en");
+			const names = [
+				project.name,
+				...Object.values(project.grafcets).map((g) => g.name),
+			];
+			expect(names).toEqual(["AND divergence: solution", "AND divergence"]);
+			expect(createAndDivergenceProject("en").name).toBe("AND divergence");
+			expect(names.join("")).not.toMatch(/[À-ÿ]/);
 		});
 	});
 });

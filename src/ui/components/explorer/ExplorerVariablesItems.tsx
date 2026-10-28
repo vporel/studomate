@@ -4,11 +4,13 @@ import VariablesIcon from "../icons/VariablesIcon";
 import { ElementType, Fragment } from "react";
 import { useT } from "@/ui/i18n/useT";
 import CustomTreeItem from "../mui/CustomTreeItem";
-import { getVariablesPageData } from "../pages/VariablesPage";
 import type { VariablesPageId } from "@/ui/stores/project/variables-pages";
-import { SYSTEM_VARIABLES_PAGE_DATA } from "../pages/SystemVariablesPage";
 import { useProjectStore } from "../projects/ProjectContext";
 import { ExplorerItemsProps } from "./explorer-items-props";
+import {
+	SYSTEM_VARIABLES_PAGE_DATA,
+	getVariablesPageData,
+} from "@/ui/stores/project/pages-data";
 
 const ExplorerVariablesItem = ({
 	id,

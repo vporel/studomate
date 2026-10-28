@@ -1,0 +1,15 @@
+{
+	"statement": "## Télérupteur\n\nEntrée : `bp` (bouton poussoir). Sortie : `lampe`. Mémoire : `imp`. L'exercice part d'une solution naïve à deux réseaux (un contact P sur `bp`, une bobine S puis une bobine R sur `lampe`), sur laquelle la lampe ne s'allume jamais.\n\n### Travail demandé\n\n1. Simuler la solution naïve : constater que la lampe ne s'allume jamais.\n2. Expliquer pourquoi, en déroulant un cycle réseau par réseau sur papier.\n3. Corriger le programme : la lampe doit basculer une seule fois par appui, même bouton maintenu plusieurs cycles.",
+	"texts": {
+		"projectName": "Télérupteur",
+		"solutionName": "Télérupteur : solution",
+		"turnOnTitle": "Allumer",
+		"turnOnDescription": "Front de bp et lampe éteinte : allumer.",
+		"turnOffTitle": "Éteindre",
+		"turnOffDescription": "Front de bp et lampe allumée : éteindre.",
+		"pulseTitle": "Impulsion",
+		"pulseDescription": "Un seul contact P mémorise le front dans imp.",
+		"toggleTitle": "Bascule",
+		"toggleDescription": "La lampe change d'état à chaque impulsion."
+	}
+}

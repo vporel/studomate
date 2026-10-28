@@ -1,0 +1,11 @@
+{
+	"statement": "## Linear sequence: textbook method\n\nGRAFCET: S0 (initial) → `cycle_start` → S1 (`output1`) → `end1` → S2 (`output2`) → `end2` → S3 → TRUE → S0. The Main implements it with one self-holding per step: each step is activated by the previous step and deactivated by the next step.\n\nInputs: `cycle_start` (push button), `end1` and `end2` (limit switches). Outputs: `output1` and `output2`. Step memories: `X0` to `X3`.\n\nThe GRAFCET is drawn in the project (\"Sequence\" program in the explorer): look at it to compare with the Main. It is excluded from execution, only the Ladder is simulated.\n\n### Task\n\n1. Start the simulation in step-by-step mode (\"Advance one cycle\") and add `X0` to `X3`, `cycle_start`, `end1`, `output1` and `output2` to the watch table.\n2. Activate `cycle_start`, then `end1`: how many steps are active after the crossing, and for how many cycles?\n3. Go back to step `X0`, then make `cycle_start` and `end1` true at the same time: what happens?\n4. Explain what happens. No program to write.",
+	"texts": {
+		"projectName": "Linear sequence: textbook method",
+		"stepTitle": "Step {step}",
+		"stepDescription": "Self-holding: activated by the previous step, deactivated by the next step.",
+		"initialStepDescription": "Initial step: activated on the first cycle or by the end of the sequence.",
+		"output1Title": "Output output1",
+		"output2Title": "Output output2"
+	}
+}

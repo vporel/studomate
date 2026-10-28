@@ -12,11 +12,17 @@ jest.mock("@/ui/components/projects/ProjectContext");
 
 function setup({
 	mode = ProjectMode.DESIGN,
+	editingEnabled = true,
 	disabled = false,
 	label,
-}: { mode?: ProjectMode; disabled?: boolean; label?: string } = {}) {
+}: {
+	mode?: ProjectMode;
+	editingEnabled?: boolean;
+	disabled?: boolean;
+	label?: string;
+} = {}) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
-		selectorImplementation({ mode }),
+		selectorImplementation({ mode, editingEnabled }),
 	);
 
 	render(
@@ -38,6 +44,11 @@ describe("LadderSystemBlockTool", () => {
 	it("est draggable et actif en mode DESIGN", () => {
 		setup({ mode: ProjectMode.DESIGN, disabled: false });
 		expect(tool()).toHaveAttribute("draggable", "true");
+	});
+
+	it("n'est pas draggable sur un projet en lecture seule", () => {
+		setup({ mode: ProjectMode.DESIGN, editingEnabled: false });
+		expect(tool()).toHaveAttribute("draggable", "false");
 	});
 
 	it("n'est pas draggable hors du mode DESIGN", () => {

@@ -1,0 +1,17 @@
+{
+	"statement": "## Portail motorisé\n\nSeules les sorties `ouvrir` et `fermer` sont déclarées. Six entrées à déclarer : `bp_ouvrir` et `bp_fermer` (boutons poussoirs), `arret` (bouton poussoir câblé à ouverture), `fc_ouvert` et `fc_ferme` (fins de course, vraies quand le portail est au bout), `barriere_immaterielle` (cellule photoélectrique, vraie quand le faisceau est coupé).\n\n### Travail demandé\n\n1. Déclarer les six entrées dans la table des variables (mnémonique, type booléen, comportement).\n2. `bp_ouvrir` ouvre le portail jusqu'à `fc_ouvert`, `bp_fermer` le ferme jusqu'à `fc_ferme`.\n3. Les deux sens sont verrouillés : un appui sur l'autre bouton en cours de mouvement est ignoré.\n4. `arret` coupe le mouvement en cours (arrêt prioritaire).\n5. Si la cellule est coupée pendant la fermeture, le portail s'arrête et se rouvre. Pendant l'ouverture ou à l'arrêt, la cellule est ignorée.\n6. Ce type d'équipement relève de l'EN 12453.",
+	"texts": {
+		"projectName": "Portail motorisé",
+		"solutionName": "Portail motorisé : solution",
+		"openTitle": "Ouverture",
+		"openDescription": "Ordre d'ouverture, verrouillé par la fermeture.",
+		"closeTitle": "Fermeture",
+		"closeDescription": "Ordre de fermeture, verrouillé par l'ouverture.",
+		"reopenTitle": "Réouverture sur barrière immatérielle",
+		"reopenDescription": "Barrière immatérielle coupée pendant la fermeture : la fermeture s'arrête et le portail se rouvre.",
+		"stopOpeningTitle": "Arrêt de l'ouverture",
+		"stopOpeningDescription": "Arrêt (contact NF) ou fin de course ouvert : le mouvement s'arrête, l'arrêt l'emporte.",
+		"stopClosingTitle": "Arrêt de la fermeture",
+		"stopClosingDescription": "Arrêt (contact NF) ou fin de course fermé."
+	}
+}

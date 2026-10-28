@@ -1,3 +1,5 @@
+import type { Locale } from "@/i18n/config";
+import createTemplateText from "@/templates/template-text";
 import Project from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
 import {
@@ -17,8 +19,9 @@ import {
  * "Reading a Ladder program" project: a Main of combinational sections is provided, the student
  * predicts the outputs and checks in simulation. No solution to write.
  */
-export function createLadderReadingProject(): Project {
-	const project = new Project(createRandomId(), "Lire un programme Ladder", "");
+export function createLadderReadingProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("ladder-reading", locale);
+	const project = new Project(createRandomId(), t("projectName"), "");
 	project.variables.push(
 		toggleSwitch("a"),
 		toggleSwitch("b"),
@@ -30,28 +33,28 @@ export function createLadderReadingProject(): Project {
 	);
 	setMainSections(project, [
 		section(
-			"Série",
-			"s1 est vraie quand a ET b sont vraies.",
+			t("network1Title"),
+			t("network1Description"),
 			no("a"),
 			no("b"),
 			coil("s1"),
 		),
 		section(
-			"Parallèle",
-			"s2 est vraie quand a OU b est vraie.",
+			t("network2Title"),
+			t("network2Description"),
 			or([no("a")], [no("b")]),
 			coil("s2"),
 		),
 		section(
-			"Contact à ouverture",
-			"s3 est vraie quand a est vraie ET b est fausse.",
+			t("network3Title"),
+			t("network3Description"),
 			no("a"),
 			nf("b"),
 			coil("s3"),
 		),
 		section(
-			"Combinaison",
-			"s4 est vraie quand (a OU b) est vraie ET c est fausse.",
+			t("network4Title"),
+			t("network4Description"),
 			or([no("a")], [no("b")]),
 			nf("c"),
 			coil("s4"),

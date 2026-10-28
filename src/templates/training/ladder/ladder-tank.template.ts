@@ -1,3 +1,5 @@
+import type { Locale } from "@/i18n/config";
+import createTemplateText from "@/templates/template-text";
 import Project from "@/schemas/project/project.schema";
 import Section from "@/schemas/ladder/section.schema";
 import { createRandomId } from "@/ids";
@@ -35,23 +37,24 @@ export function createTankVariables(
 }
 
 /** Pump hysteresis (compare + memory) and high-level alarm. */
-export function createTankControlSections(): Section[] {
+export function createTankControlSections(locale: Locale = "fr"): Section[] {
+	const t = createTemplateText("ladder-tank", locale);
 	return [
 		section(
-			"Démarrage de la pompe",
-			"Niveau bas : mémoriser la marche.",
+			t("pumpStartTitle"),
+			t("pumpStartDescription"),
 			compare("niveau", "<", `${LEVEL_LOW}`),
 			setCoil("pompe"),
 		),
 		section(
-			"Arrêt de la pompe",
-			"Niveau haut : arrêter.",
+			t("pumpStopTitle"),
+			t("pumpStopDescription"),
 			compare("niveau", ">", `${LEVEL_HIGH}`),
 			resetCoil("pompe"),
 		),
 		section(
-			"Alarme",
-			"Niveau très haut.",
+			t("alarmTitle"),
+			t("alarmDescription"),
 			compare("niveau", ">", `${LEVEL_ALARM}`),
 			coil("alarme"),
 		),
@@ -59,13 +62,14 @@ export function createTankControlSections(): Section[] {
 }
 
 /** The Main increments a counter under a NO contact: it counts on every scan. */
-export function createLadderTankProject(): Project {
-	const project = new Project(createRandomId(), "Cuve", "");
+export function createLadderTankProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("ladder-tank", locale);
+	const project = new Project(createRandomId(), t("projectName"), "");
 	createTankVariables(project, true);
 	setMainSections(project, [
 		section(
-			"Compteur de démarrages",
-			"Le bloc s'exécute à chaque cycle tant que la pompe est en marche.",
+			t("startCountTitle"),
+			t("startCountDescription"),
 			no("pompe"),
 			arithmetic("nb_demarrages", "nb_demarrages", "+", "1"),
 		),
@@ -73,14 +77,15 @@ export function createLadderTankProject(): Project {
 	return project;
 }
 
-export function createLadderTankSolution(): Project {
-	const project = new Project(createRandomId(), "Cuve : solution", "");
+export function createLadderTankSolution(locale: Locale = "fr"): Project {
+	const t = createTemplateText("ladder-tank", locale);
+	const project = new Project(createRandomId(), t("solutionName"), "");
 	createTankVariables(project, true);
 	setMainSections(project, [
-		...createTankControlSections(),
+		...createTankControlSections(locale),
 		section(
-			"Compteur de démarrages",
-			"Un contact P n'incrémente qu'une fois par démarrage.",
+			t("startCountTitle"),
+			t("solutionStartCountDescription"),
 			rising("pompe"),
 			arithmetic("nb_demarrages", "nb_demarrages", "+", "1"),
 		),

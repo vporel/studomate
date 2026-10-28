@@ -1,4 +1,12 @@
 {
+	"modal": {
+		"close": "Fermer"
+	},
+	"languageSwitch": {
+		"label": "Langue",
+		"fr": "Français",
+		"en": "English"
+	},
 	"language": {
 		"label": "Langue",
 		"description": "Langue de l'interface de l'application.",

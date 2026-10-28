@@ -143,6 +143,7 @@ export default function useLadderDropHandlers(
 			);
 			const dropRow = Math.floor(yToRow(position.y));
 			const dropCol = Math.floor(xToCol(position.x));
+			if (dropRow < 0 || dropCol < 0) return;
 
 			if (programId) {
 				const newElement = createUserProgramBlockElement(

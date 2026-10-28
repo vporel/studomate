@@ -28,6 +28,20 @@ describe("ProjectAnalyser", () => {
 			expect(result.generatedVariables).toEqual([]);
 		});
 
+		it("ignores an empty grafcet instead of reporting a missing initial step", () => {
+			const project = new ProjectBuilder()
+				.id("project-1")
+				.name("Test Project")
+				.author("Test Author")
+				.build();
+			project.createGrafcet("Vide");
+
+			const result = ProjectAnalyser.analyse(project);
+
+			expect(result.issues).toEqual([]);
+			expect(result.generatedVariables).toEqual([]);
+		});
+
 		it("reports an issue for a program whose notation has no analyser, instead of failing silently", () => {
 			const project = new ProjectBuilder()
 				.id("project-1")
@@ -40,6 +54,8 @@ describe("ProjectAnalyser", () => {
 				id: "unknown-1",
 				name: "Mystère",
 				type: "unknown",
+				isEmpty: () => false,
+				isSkippedWhenEmpty: () => false,
 			} as any;
 
 			const result = ProjectAnalyser.analyse(project);
@@ -545,14 +561,24 @@ describe("ProjectAnalyser", () => {
 					.id("g1")
 					.name("G1")
 					.addStep(
-						new StepBuilder().id("s1").number(1).initial().position(0, 0).build(),
+						new StepBuilder()
+							.id("s1")
+							.number(1)
+							.initial()
+							.position(0, 0)
+							.build(),
 					)
 					.build();
 				const g2 = new GrafcetBuilder()
 					.id("g2")
 					.name("G2")
 					.addStep(
-						new StepBuilder().id("s2").number(1).initial().position(0, 0).build(),
+						new StepBuilder()
+							.id("s2")
+							.number(1)
+							.initial()
+							.position(0, 0)
+							.build(),
 					)
 					.build();
 				project.addProgram(g1);
@@ -563,15 +589,16 @@ describe("ProjectAnalyser", () => {
 				const rail = createRailTerminalElement(0);
 				const selfCall = createUserProgramBlockElement(ladder.id, 0, 1);
 				ladder.sections = [
-					createSectionWith(
-						[rail, selfCall],
-						wireInSeries([rail, selfCall]),
-					),
+					createSectionWith([rail, selfCall], wireInSeries([rail, selfCall])),
 				];
 
-				const codes = ProjectAnalyser.analyse(project).issues.map((i) => i.code);
+				const codes = ProjectAnalyser.analyse(project).issues.map(
+					(i) => i.code,
+				);
 
-				expect(codes).toContain("PROJECT_DUPLICATE_STEP_NUMBER_ACROSS_GRAFCETS");
+				expect(codes).toContain(
+					"PROJECT_DUPLICATE_STEP_NUMBER_ACROSS_GRAFCETS",
+				);
 				expect(codes).toContain("BLOCK_PROGRAM_CALL_CYCLE");
 			});
 		});

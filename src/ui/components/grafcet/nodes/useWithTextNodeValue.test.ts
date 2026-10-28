@@ -6,9 +6,11 @@ import GrafcetElementAnalyserFactory from "@/project-analyser/analysers/grafcet/
 import { act, renderHook } from "@testing-library/react";
 import { useGrafcetContext, useGrafcetStore } from "../context/GrafcetContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
+import useCanEdit from "@/ui/components/projects/useCanEdit";
 import useWithTextNodeValue from "./useWithTextNodeValue";
 
 jest.mock("../context/GrafcetContext");
+jest.mock("@/ui/components/projects/useCanEdit");
 
 type StepElement = {
 	id: string;
@@ -60,7 +62,38 @@ describe("useWithTextNodeValue", () => {
 		);
 	}
 
+	beforeEach(() => (useCanEdit as jest.Mock).mockReturnValue(true));
 	afterEach(() => jest.clearAllMocks());
+
+	describe("when the project cannot be edited", () => {
+		beforeEach(() => (useCanEdit as jest.Mock).mockReturnValue(false));
+
+		it("does not enter the editing mode", () => {
+			const { result } = setup({ number: 3 });
+
+			act(() => result.current[3](true));
+
+			expect(result.current[2]).toBe(false);
+		});
+
+		it("does not enter the editing mode through an updater function", () => {
+			const { result } = setup({ number: 3 });
+
+			act(() => result.current[3]((editing) => !editing));
+
+			expect(result.current[2]).toBe(false);
+		});
+	});
+
+	it("enters and leaves the editing mode when the project can be edited", () => {
+		const { result } = setup({ number: 3 });
+
+		act(() => result.current[3](true));
+		expect(result.current[2]).toBe(true);
+
+		act(() => result.current[3](false));
+		expect(result.current[2]).toBe(false);
+	});
 
 	it("initializes the value from the node data", () => {
 		const { result } = setup({ number: 3 });

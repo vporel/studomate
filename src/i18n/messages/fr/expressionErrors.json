@@ -33,10 +33,15 @@
 			"COUNTER_BLOCK": "Bloc compteur",
 			"IF_CONTROL": "Contrôle conditionnel",
 			"CONVERSION_EXPRESSION": "Conversion de type"
+		},
+		"dialect": {
+			"FR": "français",
+			"EN": "anglais"
 		}
 	},
 	"UNKNOWN_VARIABLE_NAME": "Variable inconnue : {variableName}",
 	"UNKNOWN_IDENTIFIER": "Variable inconnue : {identifier}",
+	"FOREIGN_KEYWORD": "« {word} » est un mot-clé du dialecte {dialect}. Écrivez {equivalent} ou changez le dialecte du projet dans ses propriétés.",
 	"UNAUTHORIZED_NODE": "Nœud non autorisé de type : {nodeType}",
 	"INVALID_UNARY_OPERAND_TYPE": "Type invalide pour l'opérateur « {operator} » : attendu {expected}, obtenu {actual}",
 	"INVALID_BINARY_OPERAND_TYPE": "Type invalide pour l'opérateur « {operator} » côté {side} : attendu {expected}, obtenu {actual}",

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 190" font-family="sans-serif">
+	<line x1="20" y1="25" x2="20" y2="175" stroke="#263238" stroke-width="3" />
+	<line x1="290" y1="25" x2="290" y2="175" stroke="#263238" stroke-width="3" />
+	<line x1="20" y1="55" x2="60" y2="55" stroke="#263238" stroke-width="2" />
+	<line x1="60" y1="45" x2="60" y2="65" stroke="#263238" stroke-width="2.5" />
+	<line x1="80" y1="45" x2="80" y2="65" stroke="#263238" stroke-width="2.5" />
+	<text x="70" y="37" font-size="12" text-anchor="middle" fill="#263238">a</text>
+	<line x1="80" y1="55" x2="140" y2="55" stroke="#263238" stroke-width="2" />
+	<line x1="140" y1="45" x2="140" y2="65" stroke="#263238" stroke-width="2.5" />
+	<line x1="160" y1="45" x2="160" y2="65" stroke="#263238" stroke-width="2.5" />
+	<text x="150" y="37" font-size="12" text-anchor="middle" fill="#263238">b</text>
+	<line x1="160" y1="55" x2="238" y2="55" stroke="#263238" stroke-width="2" />
+	<path d="M 240 43 Q 233 55 240 67" fill="none" stroke="#263238" stroke-width="2.5" />
+	<path d="M 250 43 Q 257 55 250 67" fill="none" stroke="#263238" stroke-width="2.5" />
+	<text x="245" y="37" font-size="12" text-anchor="middle" fill="#263238">s1</text>
+	<line x1="257" y1="55" x2="290" y2="55" stroke="#263238" stroke-width="2" />
+	<text x="315" y="60" font-size="13" text-anchor="start" fill="#263238" font-weight="bold">a AND b</text>
+	<line x1="20" y1="125" x2="50" y2="125" stroke="#263238" stroke-width="2" />
+	<line x1="50" y1="125" x2="50" y2="165" stroke="#263238" stroke-width="2" />
+	<line x1="50" y1="125" x2="60" y2="125" stroke="#263238" stroke-width="2" />
+	<line x1="60" y1="115" x2="60" y2="135" stroke="#263238" stroke-width="2.5" />
+	<line x1="80" y1="115" x2="80" y2="135" stroke="#263238" stroke-width="2.5" />
+	<text x="70" y="107" font-size="12" text-anchor="middle" fill="#263238">a</text>
+	<line x1="80" y1="125" x2="140" y2="125" stroke="#263238" stroke-width="2" />
+	<line x1="50" y1="165" x2="60" y2="165" stroke="#263238" stroke-width="2" />
+	<line x1="60" y1="155" x2="60" y2="175" stroke="#263238" stroke-width="2.5" />
+	<line x1="80" y1="155" x2="80" y2="175" stroke="#263238" stroke-width="2.5" />
+	<text x="70" y="147" font-size="12" text-anchor="middle" fill="#263238">b</text>
+	<line x1="80" y1="165" x2="140" y2="165" stroke="#263238" stroke-width="2" />
+	<line x1="140" y1="125" x2="140" y2="165" stroke="#263238" stroke-width="2" />
+	<line x1="140" y1="125" x2="238" y2="125" stroke="#263238" stroke-width="2" />
+	<path d="M 240 113 Q 233 125 240 137" fill="none" stroke="#263238" stroke-width="2.5" />
+	<path d="M 250 113 Q 257 125 250 137" fill="none" stroke="#263238" stroke-width="2.5" />
+	<text x="245" y="107" font-size="12" text-anchor="middle" fill="#263238">s2</text>
+	<line x1="257" y1="125" x2="290" y2="125" stroke="#263238" stroke-width="2" />
+	<text x="315" y="130" font-size="13" text-anchor="start" fill="#263238" font-weight="bold">a OR b</text>
+</svg>

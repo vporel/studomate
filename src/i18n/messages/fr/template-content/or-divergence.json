@@ -1,0 +1,8 @@
+{
+	"statement": "## Divergence en OU\n\nEntrées : `dcy1`, `dcy2`, `fin1`, `fin2`. Sorties : `sortie1`, `sortie2`.\n\n### Travail demandé\n\n1. Sur `dcy1`, activer `sortie1` ; sur `fin1`, revenir à l'état initial.\n2. Sur `dcy2` (exclusif de `dcy1`), activer `sortie2` ; sur `fin2`, revenir à l'état initial.\n3. Donnez la même réceptivité aux deux branches et lisez le message du panneau d'analyse,\n   puis rétablissez des réceptivités exclusives.",
+	"texts": {
+		"projectName": "Divergence en OU",
+		"solutionName": "Divergence en OU : solution",
+		"grafcetName": "Divergence en OU"
+	}
+}

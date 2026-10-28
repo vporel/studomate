@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 340" font-family="sans-serif">
+	<defs>
+		<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+			<path d="M 0 0 L 10 5 L 0 10 z" fill="#263238" />
+		</marker>
+	</defs>
+	<rect x="85" y="22" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<rect x="90" y="27" width="20" height="20" fill="none" stroke="#263238" stroke-width="1.8" />
+	<text x="100" y="42" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">0</text>
+	<line x1="100" y1="52" x2="100" y2="72" stroke="#263238" stroke-width="1.8" />
+	<line x1="90" y1="72" x2="110" y2="72" stroke="#263238" stroke-width="3" />
+	<text x="114" y="76" font-size="12" text-anchor="start" fill="#263238">dcy</text>
+	<line x1="100" y1="72" x2="100" y2="92" stroke="#263238" stroke-width="1.8" />
+	<rect x="85" y="92" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<text x="100" y="112" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">1</text>
+	<rect x="129" y="95" width="80" height="24" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<line x1="115" y1="107" x2="129" y2="107" stroke="#263238" stroke-width="1.8" />
+	<text x="169" y="111" font-size="12" text-anchor="middle" fill="#263238">sortie1</text>
+	<line x1="100" y1="122" x2="100" y2="144" stroke="#263238" stroke-width="1.8" />
+	<line x1="90" y1="144" x2="110" y2="144" stroke="#263238" stroke-width="3" />
+	<text x="114" y="148" font-size="12" text-anchor="start" fill="#263238">fin1</text>
+	<line x1="100" y1="144" x2="100" y2="164" stroke="#263238" stroke-width="1.8" />
+	<rect x="85" y="164" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<text x="100" y="184" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">2</text>
+	<rect x="129" y="167" width="80" height="24" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<line x1="115" y1="179" x2="129" y2="179" stroke="#263238" stroke-width="1.8" />
+	<text x="169" y="183" font-size="12" text-anchor="middle" fill="#263238">sortie2</text>
+	<line x1="100" y1="194" x2="100" y2="216" stroke="#263238" stroke-width="1.8" />
+	<line x1="90" y1="216" x2="110" y2="216" stroke="#263238" stroke-width="3" />
+	<text x="114" y="220" font-size="12" text-anchor="start" fill="#263238">fin2</text>
+	<line x1="100" y1="216" x2="100" y2="236" stroke="#263238" stroke-width="1.8" />
+	<rect x="85" y="236" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<text x="100" y="256" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">3</text>
+	<line x1="100" y1="266" x2="100" y2="286" stroke="#263238" stroke-width="1.8" />
+	<line x1="90" y1="286" x2="110" y2="286" stroke="#263238" stroke-width="3" />
+	<text x="114" y="290" font-size="12" text-anchor="start" fill="#263238">VRAI</text>
+	<line x1="100" y1="286" x2="100" y2="310" stroke="#263238" stroke-width="1.8" />
+	<path d="M 100 310 V 326 H 50 V 8 H 100 V 20" fill="none" stroke="#263238" stroke-width="1.8" marker-end="url(#arrow)" />
+</svg>

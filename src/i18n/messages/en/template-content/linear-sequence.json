@@ -1,0 +1,8 @@
+{
+	"statement": "## Linear sequence\n\nInputs: `cycle_start`, `end1`, `end2`. Outputs: `output1`, `output2`.\n\n### Work to do\n\n1. On `cycle_start`, activate `output1`.\n2. On `end1`, deactivate `output1` and activate `output2`.\n3. On `end2`, deactivate `output2`.\n4. On a new press of `cycle_start`, resume the cycle from the beginning.",
+	"texts": {
+		"projectName": "Linear sequence",
+		"solutionName": "Linear sequence: solution",
+		"grafcetName": "Sequence"
+	}
+}

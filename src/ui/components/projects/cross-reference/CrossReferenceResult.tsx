@@ -17,7 +17,7 @@ import { useMemo } from "react";
 import BottomPanel from "../BottomPanel";
 import { useProjectStore } from "../ProjectContext";
 import useGotoProgram from "../useGotoProgram";
-import { SCENE3D_CONFIGURATION_PAGE_DATA } from "@/ui/components/pages/Scene3dConfigurationPage";
+import { SCENE3D_CONFIGURATION_PAGE_DATA } from "@/ui/stores/project/pages-data";
 
 type GotoLocation = (location: CrossReferenceLocation) => void;
 

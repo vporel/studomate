@@ -5,7 +5,11 @@
 		"about": "About",
 		"training": "Training",
 		"openApp": "Open the app",
-		"menu": "Menu"
+		"menu": "Menu",
+		"back": "Back"
+	},
+	"breadcrumb": {
+		"label": "Breadcrumb"
 	},
 	"footer": {
 		"resources": "Resources",
@@ -19,14 +23,9 @@
 		"license": "AGPL v3 licence",
 		"contact": "Contact",
 		"reportIssue": "Report an issue",
-		"copyright": "© {year} {name}",
+		"copyright": "© {year} Studomate",
 		"createdBy": "Created by",
 		"slogan": "Design, Simulate, Automate"
-	},
-	"languageSwitch": {
-		"label": "Language",
-		"fr": "Français",
-		"en": "English"
 	},
 	"landing": {
 		"heroTitle": "Learn GRAFCET and Ladder<br></br>by simulating them",
@@ -34,11 +33,11 @@
 		"heroBadges": "Free and open source · No install · No account · No personal data",
 		"heroSceneLabel": "3D animation of a box-sorting station: a conveyor brings each box and cylinders sort it by height.",
 		"followTraining": "Take the course",
-		"showcaseGrafcetAlt": "The {name} editor simulating a GRAFCET",
-		"showcaseLadderAlt": "The {name} editor simulating a Ladder diagram",
-		"showcaseHmiAlt": "The {name} HMI editor",
-		"demoTitle": "See {name} in action",
-		"demoVideoLabel": "Demo of building and simulating a project with {name}",
+		"showcaseGrafcetAlt": "The Studomate editor simulating a GRAFCET",
+		"showcaseLadderAlt": "The Studomate editor simulating a Ladder diagram",
+		"showcaseHmiAlt": "The Studomate HMI editor",
+		"demoTitle": "See Studomate in action",
+		"demoVideoLabel": "Demo of building and simulating a project with Studomate",
 		"demoVideoPause": "Pause the demo",
 		"demoVideoPlay": "Play the demo",
 		"logicTitle": "Write the logic",
@@ -53,12 +52,12 @@
 		"showcaseHmiText": "Build animated supervision pages (lights, buttons, tanks, moving objects) wired to the same variables as your programs.",
 		"showcaseScene3dTitle": "3D scenes",
 		"showcaseScene3dText": "Connect your program to a virtual 3D plant (conveyors, cylinders, sensors) and watch the machine respond in real time.",
-		"showcaseScene3dAlt": "3D scene of a box-sorting station driven by {name}",
+		"showcaseScene3dAlt": "3D scene of a box-sorting station driven by Studomate",
 		"showcaseArduinoTitle": "Arduino",
 		"showcaseArduinoText": "Load your program onto a real Arduino Uno R3 board, or use its inputs and outputs during simulation, straight from Chrome or Edge.",
 		"showcaseArduinoAlt": "Arduino Uno R3 board",
-		"whyTitle": "Why {name}?",
-		"whyIntro": "The value of {name} isn't being more powerful than industrial software, but cutting the friction of learning automation down to almost nothing.",
+		"whyTitle": "Why Studomate?",
+		"whyIntro": "Studomate exists to cut the friction of learning automation down to almost nothing.",
 		"reasonFrictionTitle": "Zero friction",
 		"reasonFrictionText": "No install, no licence, no PLC or I/O cards to set up. You focus on the logic, not the tool.",
 		"reasonAllInOneTitle": "All-in-one",
@@ -92,7 +91,9 @@
 		"trainingA3Topic": "Ladder",
 		"trainingA3Summary": "Timers, counters, calculations and subroutines.",
 		"trainingA4Topic": "GRAFCET → Ladder",
-		"trainingA4Summary": "Implement a GRAFCET in Ladder with the three-block method.",
+		"trainingA4Summary": "Implement a GRAFCET in Ladder: one network per transition, two programs, actions, time and faults.",
+		"trainingA5Topic": "GRAFCET → Ladder (continued)",
+		"trainingA5Summary": "OR and AND divergences, stopping a sequence, limits of one network per transition and the three-block method.",
 		"trainingCta": "Browse all training",
 		"templatesTitle": "Examples to get you started",
 		"templatesIntro": "Open a pre-configured project and explore it at your own pace.",
@@ -113,17 +114,10 @@
 		"title": "About Studomate",
 		"missionTitle": "Mission",
 		"missionBody": "<strong>Studomate</strong> is a teaching tool for <strong>automation</strong>: learning, designing and simulating GRAFCET, Ladder and HMIs, right in the browser.",
-		"missionBody2": "Its value isn't being more powerful than industrial software, but cutting the friction of learning automation down to almost nothing: no install, no licence, no PLC to configure.",
+		"missionBody2": "It exists to cut the friction of learning automation down to almost nothing: no install, no licence, no PLC to configure.",
 		"differentiatorLabel": "Its differentiator: everything in the same environment",
-		"differentiatorEditors": [
-			"GRAFCET",
-			"Ladder",
-			"Animated HMIs"
-		],
-		"differentiatorItems": [
-			"Shared variables",
-			"3D scene"
-		],
+		"differentiatorEditors": ["GRAFCET", "Ladder", "Animated HMIs"],
+		"differentiatorItems": ["Shared variables", "3D scene"],
 		"offeringTitle": "What Studomate offers",
 		"offeringItems": [
 			{
@@ -175,13 +169,7 @@
 			}
 		],
 		"causalityLabel": "The causality chain, made visible",
-		"causalityItems": [
-			"Inputs",
-			"Transitions",
-			"Steps",
-			"Actions",
-			"Outputs"
-		],
+		"causalityItems": ["Inputs", "Transitions", "Steps", "Actions", "Outputs"],
 		"ownershipTitle": "Your projects are yours",
 		"ownershipItems": [
 			{
@@ -303,7 +291,7 @@
 	},
 	"metadata": {
 		"homeTitle": "Studomate: Online GRAFCET and Ladder Simulator",
-		"homeDescription": "Design and simulate GRAFCET, Ladder and animated HMIs in the same browser — no install, no account.",
+		"homeDescription": "Design and simulate GRAFCET, Ladder and animated HMIs in the same browser: no install, no account.",
 		"aboutTitle": "About",
 		"aboutDescription": "Studomate: a free teaching tool to learn, design and simulate GRAFCET, Ladder and HMIs in the browser.",
 		"contactTitle": "Contact",
@@ -316,18 +304,22 @@
 		"privacyDescription": "How Studomate handles users' personal and technical data.",
 		"manualTitle": "User manual",
 		"manualDescription": "Studomate user manual: getting started, GRAFCET, Ladder, HMI, simulation.",
-		"trainingTitle": "Training",
+		"trainingTitle": "Free GRAFCET and Ladder training",
 		"trainingDescription": "Automation control training path with Studomate: theory, self-corrected exercises, summary assignments.",
+		"glossaryTitle": "Automation glossary: GRAFCET and Ladder",
+		"glossaryDescription": "Automation glossary: step, transition, contact, coil, TON, counter, edge... every GRAFCET and Ladder term defined simply, with diagrams.",
 		"trainingA0Title": "Module A0: Before you start",
-		"trainingA0Description": "Module A0: what an automated system is, variables and basic logic, the scan cycle — the prerequisites before GRAFCET.",
+		"trainingA0Description": "Module A0: what an automated system is, variables and basic logic, the scan cycle. The prerequisites before GRAFCET.",
 		"trainingA1Title": "Module A1: GRAFCET basics",
-		"trainingA1Description": "Module A1: steps, transitions, receptivities, actions, OR and AND divergences — theory and self-corrected exercises.",
+		"trainingA1Description": "Module A1: steps, transitions, receptivities, actions, OR and AND divergences. Theory and self-corrected exercises.",
 		"trainingA2Title": "Module A2: Ladder, logic and memory",
 		"trainingA2Description": "Module A2: from the relay diagram to Ladder, contacts and coils, self-holding, S/R coils, edges and network execution order.",
 		"trainingA3Title": "Module A3: Ladder, time and calculation",
 		"trainingA3Description": "Module A3: timers, counters, calculation and numeric types, subprograms: theory and self-corrected exercises.",
-		"trainingA4Title": "Module A4: From GRAFCET to Ladder",
-		"trainingA4Description": "Module A4: implementing a GRAFCET in Ladder, three-block method, actions, divergences and reset.",
+		"trainingA4Title": "Module A4: From GRAFCET to Ladder (part 1)",
+		"trainingA4Description": "Module A4: implementing a GRAFCET in Ladder, from step to outputs: one network per transition, two programs, actions, timers and faults.",
+		"trainingA5Title": "Module A5: From GRAFCET to Ladder (part 2)",
+		"trainingA5Description": "Module A5: OR and AND divergences, stopping a sequence, limits of one network per transition and the three-block method for a GRAFCET in Ladder.",
 		"manualSections": {
 			"getting-started": {
 				"title": "Getting started with Studomate: manual",
@@ -408,6 +400,10 @@
 				"scan-cycle": {
 					"title": "The PLC and its scan cycle: training",
 					"description": "How a programmable controller runs its program in a loop: the scan cycle, illustrated with a traffic light."
+				},
+				"conclusion": {
+					"title": "Module A0 conclusion: automation basics",
+					"description": "Module A0 recap: sensors, actuators, PLC, variables, AND/OR/NOT logic and the scan cycle, then what comes next with GRAFCET."
 				}
 			},
 			"a1": {
@@ -427,6 +423,10 @@
 					"title": "GRAFCET OR divergence and convergence: training",
 					"description": "Choose between several sequences: OR divergence and convergence in a GRAFCET, with examples."
 				},
+				"theory-and-divergence": {
+					"title": "GRAFCET AND divergence and convergence: training",
+					"description": "Start several branches in parallel and resynchronise them: AND divergence and convergence in a GRAFCET, with examples."
+				},
 				"reading-errors": {
 					"title": "Reading GRAFCET analysis errors: training",
 					"description": "Analyze a GRAFCET without simulating it and understand Studomate's errors and warnings to fix your program."
@@ -435,7 +435,7 @@
 			"a2": {
 				"theory-contacts-coils": {
 					"title": "Contacts, coils and internal memories in Ladder: training",
-					"description": "The standard Ladder symbols: normally open and normally closed contacts, coils and internal memories."
+					"description": "Ladder symbols: NO and NC contacts, normally open or normally closed button wiring, coils and internal memories."
 				},
 				"theory-self-holding": {
 					"title": "Self-holding in Ladder: training",
@@ -469,33 +469,63 @@
 				},
 				"theory-structure": {
 					"title": "Structuring a Ladder program into subprograms: training",
-					"description": "Split a program: Main calls subprograms, one per machine function."
+					"description": "Split a Ladder program into subprograms: the Main program calls one subprogram per machine function, so each part stays readable."
 				},
 				"conclusion": {
 					"title": "Module A3 conclusion: Studomate and the standard",
-					"description": "Module A3 recap: timers, counters, numeric values and Ladder program structure."
+					"description": "Module A3 recap: timers, counters, numeric values and how to structure a Ladder program into subprograms."
 				}
 			},
 			"a4": {
 				"theory-method-ladder": {
-					"title": "From GRAFCET to Ladder: the three-block method",
-					"description": "The three blocks of networks, in order, to implement a GRAFCET in Ladder."
+					"title": "From GRAFCET to Ladder: one network per transition",
+					"description": "Implement a GRAFCET in Ladder: one network per transition (upstream reset, downstream set), order of the networks and activation of the initial step."
+				},
+				"theory-two-programs": {
+					"title": "Two Ladder programs for a GRAFCET: training",
+					"description": "Arrange a GRAFCET implemented in Ladder into two programs, Automatic_cycle and Outputs, called by the Main: a complete example and a checklist."
 				},
 				"theory-actions-ladder": {
-					"title": "Implementing GRAFCET actions in Ladder: training",
-					"description": "Non-timed and conditional actions (step AND condition) of a GRAFCET translated into Ladder."
+					"title": "Continuous and stored actions in Ladder: training",
+					"description": "Implement a GRAFCET's continuous, stored and conditional actions in Ladder: one network per output, in the Outputs program."
 				},
-				"theory-timed-actions-ladder": {
-					"title": "Time in a GRAFCET implemented in Ladder: training",
-					"description": "Translate a receptivity timing (5s/X10) into a TON in Ladder, and handle timed actions."
+				"theory-edge-actions-ladder": {
+					"title": "Edge and numeric actions in Ladder: training",
+					"description": "Implement a GRAFCET's edge actions in Ladder with P and N contacts, and numeric assignments, on a car-counting example."
 				},
-				"theory-divergences-ladder": {
-					"title": "GRAFCET divergences and convergences in Ladder: training",
-					"description": "Implement a GRAFCET's OR and AND divergences in Ladder: one transition condition per branch."
+				"theory-receptivity-timer": {
+					"title": "A delay in a receptivity in Ladder: training",
+					"description": "Place the TON of a receptivity delay in the transition's network, and delay or limit an output with a step and a timed transition."
+				},
+				"theory-movement-supervision": {
+					"title": "Supervising a movement in Ladder: training",
+					"description": "Supervise a movement with a TON and a fallback transition, latch the fault in the Faults program and acknowledge it without clearing it if the cause persists."
+				},
+				"conclusion": {
+					"title": "Module A4 conclusion: GRAFCET in Ladder, part 1",
+					"description": "Module A4 recap: steps as memories, network per transition, Automatic_cycle and Outputs programs, actions, time and faults of a GRAFCET implemented in Ladder."
+				}
+			},
+			"a5": {
+				"theory-and-divergence-ladder": {
+					"title": "AND divergence and convergence in Ladder: training",
+					"description": "Implement a GRAFCET's AND divergence and convergence in Ladder: a single network for the divergence and a single one for the convergence."
 				},
 				"theory-grafcet-reset": {
 					"title": "Stopping a GRAFCET sequence in Ladder: training",
-					"description": "The two ways of stopping a sequence in Ladder, including resetting the GRAFCET."
+					"description": "The two ways of stopping a sequence in Ladder: immediate stop by reinitialisation and end-of-cycle stop, and where to place the reset network."
+				},
+				"theory-going-further": {
+					"title": "Limits of one network per transition: training",
+					"description": "When one network per transition reaches its limit (one press read by several transitions), on a single-button remote gate example."
+				},
+				"theory-three-blocks": {
+					"title": "The three-block method in Ladder: training",
+					"description": "The three-block method to implement a GRAFCET in Ladder: crossing conditions, all the resets then all the sets, then the outputs."
+				},
+				"conclusion": {
+					"title": "Module A5 conclusion: GRAFCET in Ladder, part 2",
+					"description": "Module A5 recap: OR and AND divergences, stopping a sequence, the car park's programs and the limits of one network per transition."
 				}
 			}
 		}

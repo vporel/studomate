@@ -75,6 +75,7 @@
 	"JUNCTION_AND_CONVERGENCE_WITHOUT_DIVERGENCE": "La convergence en ET ne provient pas d'une divergence en ET.",
 	"JUNCTION_AND_BRANCH_COUNT_MISMATCH": "Le nombre de branches de la divergence en ET et de la convergence en ET ne correspond pas.",
 	"JUNCTION_AND_DIVERGENCE_NOT_CLOSED": "La divergence en ET n'est pas fermée par une convergence en ET.",
+	"JUNCTION_AND_MIN_BRANCHES": "Une jonction en ET doit avoir au moins deux branches.",
 	"JUNCTION_OR_MIN_BRANCHES": "Une jonction en OU doit avoir au moins deux branches.",
 	"JUNCTION_OR_START_BRANCH_NOT_TRANSITION": "Une divergence en OU doit distribuer vers des transitions.",
 	"JUNCTION_OR_END_BRANCH_NOT_TRANSITION": "Une convergence en OU doit provenir de transitions.",
@@ -92,8 +93,10 @@
 	"STEP_REFERRAL_SOURCE_MISMATCH": "L'étape source référencée ne correspond pas à l'étape liée au tenant.",
 
 	"LADDER_SECTION_NO_COIL": "Cette branche ne pilote aucune bobine.",
+	"LADDER_CONTACT_NO_VARIABLE": "Aucune variable assignée.",
 	"LADDER_CONTACT_VARIABLE_UNDECLARED": "La variable « {variableName} » n'est pas déclarée.",
 	"LADDER_CONTACT_VARIABLE_NOT_BOOLEAN": "La variable « {variableName} » doit être booléenne.",
+	"LADDER_COIL_NO_VARIABLE": "Aucune variable assignée.",
 	"LADDER_COIL_VARIABLE_UNDECLARED": "La variable « {variableName} » n'est pas déclarée.",
 	"LADDER_COIL_VARIABLE_NOT_BOOLEAN": "La variable « {variableName} » doit être booléenne.",
 	"LADDER_COIL_DUPLICATE_NORMAL_ASSIGNMENT": "La variable « {variableName} » est pilotée par {count} bobines normales distinctes.",
@@ -158,5 +161,7 @@
 	"BLOCK_CONVERT_IN_NOT_A_VARIABLE": "Le paramètre IN doit être un mnémonique de variable.",
 	"BLOCK_CONVERT_OUT_NOT_A_VARIABLE": "Le paramètre OUT doit être un mnémonique de variable.",
 	"BLOCK_CONVERT_OUT_INVALID_TYPE": "La variable « {variableName} » (OUT) doit être de type INT, DINT, WORD, DWORD ou REAL.",
+	"BLOCK_CONVERT_IN_TYPE_MISMATCH": "La variable « {variableName} » (IN) doit être de type {expected} et non {actual}.",
+	"BLOCK_CONVERT_OUT_TYPE_MISMATCH": "La variable « {variableName} » (OUT) doit être de type {expected} et non {actual}.",
 	"BLOCK_CONVERT_INVALID": "{detail}"
 }

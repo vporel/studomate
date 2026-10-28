@@ -17,8 +17,7 @@ import { PROJECTS_INDEX_KEY, ProjectIndex, projectKey } from "./keys";
  */
 const v0ToV1: LayoutMigration = {
 	from: 0,
-	description:
-		"One localStorage key per project plus an {id: {name}} index",
+	description: "One localStorage key per project plus an {id: {name}} index",
 	migrate: () => {
 		const parsed = safeParse(localStorage.getItem(PROJECTS_INDEX_KEY));
 

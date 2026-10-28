@@ -39,44 +39,44 @@ export function computeAutoConnectionsForElements(
 		const dropRow = newElement.position.row;
 		const dropCol = newElement.position.col;
 
+		const connectionTo = (sourceElement: LadderElement) =>
+			new Connection(
+				createRandomId(),
+				{
+					id: sourceElement.id,
+					type: sourceElement.type as any,
+					handle: "source",
+				},
+				{ id: newElement.id, type: newElement.type as any, handle: "target" },
+				{
+					points: initialConnectionPoints(
+						sourceElement.position,
+						newElement.position,
+						getElementWidth(sourceElement),
+					),
+				},
+			);
+		const connectionFrom = (targetElement: LadderElement) =>
+			new Connection(
+				createRandomId(),
+				{ id: newElement.id, type: newElement.type as any, handle: "source" },
+				{
+					id: targetElement.id,
+					type: targetElement.type as any,
+					handle: "target",
+				},
+				{
+					points: initialConnectionPoints(
+						newElement.position,
+						targetElement.position,
+						getElementWidth(newElement),
+					),
+				},
+			);
+
 		const crossings = findCellCrossings(section, dropRow, dropCol);
 
 		if (crossings.through || crossings.left || crossings.right) {
-			const connectionTo = (sourceElement: LadderElement) =>
-				new Connection(
-					createRandomId(),
-					{
-						id: sourceElement.id,
-						type: sourceElement.type as any,
-						handle: "source",
-					},
-					{ id: newElement.id, type: newElement.type as any, handle: "target" },
-					{
-						points: initialConnectionPoints(
-							sourceElement.position,
-							newElement.position,
-							getElementWidth(sourceElement),
-						),
-					},
-				);
-			const connectionFrom = (targetElement: LadderElement) =>
-				new Connection(
-					createRandomId(),
-					{ id: newElement.id, type: newElement.type as any, handle: "source" },
-					{
-						id: targetElement.id,
-						type: targetElement.type as any,
-						handle: "target",
-					},
-					{
-						points: initialConnectionPoints(
-							newElement.position,
-							targetElement.position,
-							getElementWidth(newElement),
-						),
-					},
-				);
-
 			if (crossings.through) {
 				const throughSource = section.getElement(crossings.through.source.id);
 				const throughTarget = section.getElement(crossings.through.target.id);
@@ -131,28 +131,7 @@ export function computeAutoConnectionsForElements(
 			}
 
 			if (leftSource) {
-				connectionsToAdd.push(
-					new Connection(
-						createRandomId(),
-						{
-							id: leftSource.id,
-							type: leftSource.type as any,
-							handle: "source",
-						},
-						{
-							id: newElement.id,
-							type: newElement.type as any,
-							handle: "target",
-						},
-						{
-							points: initialConnectionPoints(
-								leftSource.position,
-								newElement.position,
-								getElementWidth(leftSource),
-							),
-						},
-					),
-				);
+				connectionsToAdd.push(connectionTo(leftSource));
 			}
 
 			// 2. Voisin de droite
@@ -167,28 +146,7 @@ export function computeAutoConnectionsForElements(
 					);
 
 				if (rightNeighbor) {
-					connectionsToAdd.push(
-						new Connection(
-							createRandomId(),
-							{
-								id: newElement.id,
-								type: newElement.type as any,
-								handle: "source",
-							},
-							{
-								id: rightNeighbor.id,
-								type: rightNeighbor.type as any,
-								handle: "target",
-							},
-							{
-								points: initialConnectionPoints(
-									newElement.position,
-									rightNeighbor.position,
-									newElementWidth,
-								),
-							},
-						),
-					);
+					connectionsToAdd.push(connectionFrom(rightNeighbor));
 				}
 			}
 		}

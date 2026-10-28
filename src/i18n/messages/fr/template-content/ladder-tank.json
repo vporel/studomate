@@ -1,0 +1,16 @@
+{
+	"statement": "## Cuve\n\n| Variable | Rôle | Nature |\n| --- | --- | --- |\n| `niveau` | niveau de la cuve, de 0 à 100 % | entrée analogique (curseur) |\n| `pompe` | pompe de remplissage | sortie |\n| `alarme` | alarme de niveau très haut | sortie |\n| `nb_demarrages` | nombre de démarrages de la pompe | mémoire (entier) |\n\n### Travail demandé\n\n1. La pompe démarre sous 20 %, s'arrête au-dessus de 80 % (hystérésis : la pompe garde son état entre les deux seuils, il faut donc une mémoire).\n2. Alarme au-dessus de 95 %.\n3. Le Main contient déjà un réseau qui incrémente `nb_demarrages` sous un contact NO : régler `niveau` avec le curseur et constater en simulation que le compteur augmente à chaque cycle tant que la pompe tourne, puis corriger avec un contact P.",
+	"texts": {
+		"projectName": "Cuve",
+		"solutionName": "Cuve : solution",
+		"pumpStartTitle": "Démarrage de la pompe",
+		"pumpStartDescription": "Niveau bas : mémoriser la marche.",
+		"pumpStopTitle": "Arrêt de la pompe",
+		"pumpStopDescription": "Niveau haut : arrêter.",
+		"alarmTitle": "Alarme",
+		"alarmDescription": "Niveau très haut.",
+		"startCountTitle": "Compteur de démarrages",
+		"startCountDescription": "Compte les démarrages de la pompe.",
+		"solutionStartCountDescription": "Un contact P n'incrémente qu'une fois par démarrage."
+	}
+}

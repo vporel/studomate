@@ -3,7 +3,7 @@
 import { platformShortcut } from "@/ui/lib/platform";
 import GrafcetCopyCutPasteManager from "@/ui/stores/grafcet/managers/copy-cut-paste.manager";
 import GrafcetViewManager from "@/ui/stores/grafcet/managers/view.manager";
-import { MenuTranslate } from "./menu-translate";
+import type { MenuTranslate } from "@/ui/lib/context-menu/context-menu";
 
 export default function paneContextMenuItems(
 	viewManager: GrafcetViewManager,
@@ -11,7 +11,7 @@ export default function paneContextMenuItems(
 	screenPosition: { x: number; y: number },
 	canPaste: boolean,
 	t: MenuTranslate,
-	onExport: () => void,
+	onExport: (() => void) | null,
 ): {
 	label: string;
 	shortcut?: string;
@@ -42,12 +42,16 @@ export default function paneContextMenuItems(
 				disabled: !canPaste,
 			},
 		],
-		[
-			{
-				label: t("export"),
-				onClick: onExport,
-				disabled: nodes.length == 0 && edges.length == 0,
-			},
-		],
+		...(onExport
+			? [
+					[
+						{
+							label: t("export"),
+							onClick: onExport,
+							disabled: nodes.length == 0 && edges.length == 0,
+						},
+					],
+				]
+			: []),
 	];
 }

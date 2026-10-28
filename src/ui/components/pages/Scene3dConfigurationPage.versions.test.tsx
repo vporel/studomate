@@ -7,9 +7,8 @@ import { fireEvent, screen } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import { useProjectStore } from "../projects/ProjectContext";
-import Scene3dConfigurationPage, {
-	SCENE3D_CONFIGURATION_PAGE_ID,
-} from "./Scene3dConfigurationPage";
+import Scene3dConfigurationPage from "./Scene3dConfigurationPage";
+import { SCENE3D_CONFIGURATION_PAGE_ID } from "@/ui/stores/project/pages-data";
 
 jest.mock("../projects/ProjectContext");
 jest.mock("@/3d-scenes/scene.registry", () => {

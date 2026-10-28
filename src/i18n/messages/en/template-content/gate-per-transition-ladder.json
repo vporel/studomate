@@ -1,0 +1,6 @@
+{
+	"statement": "## Remote-controlled gate: one network per transition\n\nThe same gate GRAFCET, implemented with one network per transition (`X0 -> X1` to `X5 -> X1`), in the order of the GRAFCET, in the `Automatic_cycle` program, then the outputs `open` and `close` in `Outputs`.\n\n### To observe\n\n1. Closed (`limit_closed` true), a press on `remote` should open the gate: watch `open` and the steps `X0` to `X5` in the watch table.\n2. Why does `X0` become active again?",
+	"texts": {
+		"projectName": "Remote-controlled gate: one network per transition"
+	}
+}

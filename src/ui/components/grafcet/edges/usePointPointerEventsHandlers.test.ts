@@ -40,7 +40,7 @@ describe("usePointPointerEventsHandlers", () => {
 			selectorImplementation({ workflowManager }),
 		);
 		(useProjectStore as jest.Mock).mockImplementation(
-			selectorImplementation({ mode }),
+			selectorImplementation({ mode, editingEnabled: true }),
 		);
 		(useReactFlow as jest.Mock).mockReturnValue({ screenToFlowPosition });
 		const points: [number, number][] = [
@@ -119,7 +119,13 @@ describe("usePointPointerEventsHandlers", () => {
 	describe("handlePointPointerMove", () => {
 		it("updates the moved coude's position when the left button is held", () => {
 			const { result, setPoints } = setup(ProjectMode.DESIGN);
-			const event = fakePointerEvent({ buttons: 1, clientX: 99, clientY: 42, pageX: 500, pageY: 600 });
+			const event = fakePointerEvent({
+				buttons: 1,
+				clientX: 99,
+				clientY: 42,
+				pageX: 500,
+				pageY: 600,
+			});
 
 			act(() => result.current.handlePointPointerMove(event, 1));
 

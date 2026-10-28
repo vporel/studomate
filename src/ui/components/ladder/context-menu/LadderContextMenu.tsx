@@ -2,16 +2,17 @@
 
 import { ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";
 import ContextMenu from "@/ui/lib/context-menu/ContextMenu";
+import useContextMenuBus from "@/ui/lib/context-menu/useContextMenuBus";
 import useBooleanState from "@/ui/lib/hooks/useBooleanState";
 import { OnDelete } from "@xyflow/react";
 import { XYPosition } from "@xyflow/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "react-toastify";
-import { useClipboardStore } from "@/ui/stores/shared/clipboard.store";
+import useCanEdit from "@/ui/components/projects/useCanEdit";
+import useProjectClipboard from "@/ui/components/projects/useProjectClipboard";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import useLadderRenderContext from "@/ui/pdf/useLadderRenderContext";
-import trackEvent from "@/ui/services/analytics";
-import { exportProgramPdf } from "@/ui/pdf/program-pdf";
+import trackPdfExported from "@/ui/pdf/track-pdf-exported";
 import { useT } from "@/ui/i18n/useT";
 import { useLadderContext } from "../context/LadderContext";
 import { useLadderStore } from "../context/LadderContext";
@@ -19,7 +20,7 @@ import {
 	LadderContextMenuElement,
 	LadderContextMenuProps,
 } from "./ladder-context-menu";
-import type { MenuTranslate } from "./menu-translate";
+import type { MenuTranslate } from "@/ui/lib/context-menu/context-menu";
 import nodeOrEdgeContextMenuItems from "./node-or-edge-context-menu-items";
 import paneContextMenuItems from "./pane-context-menu-items";
 
@@ -40,24 +41,27 @@ const LadderContextMenu = ({
 	);
 	// Le menu du flow ne colle que des éléments : un presse-papiers contenant une section
 	// entière se colle par Ctrl+V ou le menu Édition, pas ici.
-	const canPaste = useClipboardStore(
+	const canPaste = useProjectClipboard(
 		(s) =>
 			s.entry?.scope === "ladder" &&
 			(s.entry.data as { kind?: string })?.kind === "elements",
 	);
+	const canEdit = useCanEdit();
+	const pdfExport = useProjectStore((s) => s.capabilities.pdfExport);
 	const projectName = useProjectStore((s) => s.project?.name ?? "export");
 	const ladderContext = useLadderRenderContext();
 	const tExport = useT("projects.export");
 	const onExport = useCallback(() => {
-		void exportProgramPdf({
-			config: { type: "ladder", program: ladder },
-			filename: `${projectName} - ${ladder.name}`,
-			sectionTitle: tExport("sectionTitleLadder", { name: ladder.name }),
-			ladderContext,
-		})
-			.then(() =>
-				trackEvent("pdf-exported", { programs: 1, withVariablesTable: false }),
+		void import("@/ui/pdf/program-pdf")
+			.then(({ exportProgramPdf }) =>
+				exportProgramPdf({
+					config: { type: "ladder", program: ladder },
+					filename: `${projectName} - ${ladder.name}`,
+					sectionTitle: tExport("sectionTitleLadder", { name: ladder.name }),
+					ladderContext,
+				}),
 			)
+			.then(() => trackPdfExported({ programs: 1, withVariablesTable: false }))
 			.catch(() => toast.error(tExport("errorAssembling")));
 	}, [ladder, projectName, ladderContext, tExport]);
 	const setCrossReferenceFilter = useProjectStore(
@@ -97,7 +101,7 @@ const LadderContextMenu = ({
 				screenPosition,
 				canPaste,
 				t,
-				onExport,
+				pdfExport ? onExport : null,
 				ladder.getAllElements().length === 0,
 			);
 		}
@@ -124,30 +128,28 @@ const LadderContextMenu = ({
 		sectionId,
 		handleDelete,
 		onExport,
+		pdfExport,
 		openCrossReferences,
 		t,
 	]);
 
-	useEffect(() => {
-		const showMenu = (props: LadderContextMenuProps) => {
+	const showMenu = useCallback(
+		(props: LadderContextMenuProps) => {
 			// Bus mitt partagé par toutes les sections : n'afficher que dans la section cliquée, et
 			// refermer les menus des autres sections.
 			if (props.sectionId !== sectionId) {
 				hide();
 				return;
 			}
+			if (props.element.type === "pane" && !canEdit && !pdfExport) return;
 			setElement(props.element);
 			setPosition(props.position);
 			setScreenPosition(props.screenPosition);
 			show();
-		};
-		contextMenuEvents.on("show", showMenu);
-		contextMenuEvents.on("hide", hide);
-		return () => {
-			contextMenuEvents.off("show", showMenu);
-			contextMenuEvents.off("hide", hide);
-		};
-	}, [contextMenuEvents, hide, show, sectionId]);
+		},
+		[hide, show, sectionId, canEdit, pdfExport],
+	);
+	useContextMenuBus(contextMenuEvents, showMenu, hide);
 
 	return (
 		<ContextMenu

@@ -40,11 +40,9 @@ export default class LadderElementOpsManager {
 	 */
 	deleteSections(sectionIds: string[]): void {
 		const ladder = this.getStoreState().ladder;
-		if (ladder.sections.length <= 1) return;
+		if (!ladder.canDeleteSection()) return;
 
-		const orderedTargets = ladder.sections.filter((s) =>
-			sectionIds.includes(s.id),
-		);
+		const orderedTargets = ladder.getSectionsInOrder(sectionIds);
 		if (orderedTargets.length === 0) return;
 
 		const toDelete =

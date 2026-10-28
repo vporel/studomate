@@ -1,6 +1,5 @@
 "use client";
 
-import { getConvertBlockFunctionName } from "@/schemas/ladder/block.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useT } from "@/ui/i18n/useT";
 import { LadderRenderContext } from "@/ui/pdf/drawing/ladder-render-context";
@@ -27,12 +26,6 @@ export default function useLadderRenderContext(): LadderRenderContext {
 						: blockType === "convert"
 							? tBlock("convertStaticLabel")
 							: undefined,
-			convertFunctionName: (params) =>
-				getConvertBlockFunctionName(
-					params,
-					(mnemonic) =>
-						project?.variables.find((v) => v.mnemonic === mnemonic)?.type,
-				) ?? undefined,
 			sectionHeading: (number, title) =>
 				title
 					? tSectionHeader("pdfHeadingWithTitle", { number, title })

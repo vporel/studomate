@@ -1,3 +1,5 @@
+import type { Locale } from "@/i18n/config";
+import createTemplateText from "@/templates/template-text";
 import Project from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
 import {
@@ -24,8 +26,9 @@ import {
 export const PACKING_PRESET = 5;
 
 /** Specification only: the student builds and declares the whole variable table. */
-export function createLadderPackingProject(): Project {
-	return new Project(createRandomId(), "Mise en caisse", "");
+export function createLadderPackingProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("ladder-packing", locale);
+	return new Project(createRandomId(), t("projectName"), "");
 }
 
 /**
@@ -33,12 +36,11 @@ export function createLadderPackingProject(): Project {
  * lamp blinks while the fault is not acknowledged, stays on once acknowledged but still present,
  * and goes out when the fault has disappeared.
  */
-export function createLadderPackingSolution(): Project {
-	const project = new Project(
-		createRandomId(),
-		"Mise en caisse : solution",
-		"",
-	);
+export function createLadderPackingSolution(locale: Locale = "fr"): Project {
+	const t = createTemplateText("ladder-packing", locale);
+	const piecesCounter = t("piecesCounter");
+	const boxTimer = t("boxTimer");
+	const project = new Project(createRandomId(), t("solutionName"), "");
 	project.variables.push(
 		pushButton("marche"),
 		pushButton("arret"),
@@ -52,23 +54,23 @@ export function createLadderPackingSolution(): Project {
 		memory("raz_comptage"),
 	);
 
-	const faultAndStart = project.createLadder("Défaut et marche");
+	const faultAndStart = project.createLadder(t("faultAndStartProgram"));
 	faultAndStart.sections = [
 		section(
-			"Mémoire de défaut",
-			"Le relais thermique est câblé à ouverture : son déclenchement est un front descendant.",
+			t("faultMemoryTitle"),
+			t("faultMemoryDescription"),
 			falling("thermique"),
 			setCoil("defaut_mem"),
 		),
 		section(
-			"Acquittement",
-			"L'acquittement efface le clignotement, même si le défaut est encore présent.",
+			t("ackTitle"),
+			t("ackDescription"),
 			no("acquit"),
 			resetCoil("defaut_mem"),
 		),
 		section(
-			"Voyant de défaut",
-			"Clignotant tant que le défaut n'est pas acquitté, fixe s'il est acquitté mais présent. Une base de temps système est un signal carré, directement utilisable pour clignoter.",
+			t("faultLampTitle"),
+			t("faultLampDescription"),
 			or(
 				[no("defaut_mem"), no("_SYS_TB_500ms")],
 				[nf("thermique"), nf("defaut_mem")],
@@ -76,47 +78,47 @@ export function createLadderPackingSolution(): Project {
 			coil("voyant_defaut"),
 		),
 		section(
-			"Marche",
-			"Auto-maintien à arrêt prioritaire : un défaut l'annule, il faut un nouvel appui sur Marche.",
+			t("startTitle"),
+			t("startDescription"),
 			or([no("marche")], [no("marche_mem")]),
 			nf("arret"),
 			no("thermique"),
 			coil("marche_mem"),
 		),
 		section(
-			"Convoyeur",
-			"Arrêt à la présélection du compteur de pièces.",
+			t("conveyorTitle"),
+			t("conveyorDescription"),
 			no("marche_mem"),
-			nf("cpt_pieces.Q"),
+			nf(`${piecesCounter}.Q`),
 			coil("convoyeur"),
 		),
 	];
 
-	const counting = project.createLadder("Comptage");
+	const counting = project.createLadder(t("countingProgram"));
 	counting.sections = [
 		section(
-			"Comptage des pièces",
-			"Le CTU compte sur front du capteur.",
+			t("countingTitle"),
+			t("countingDescription"),
 			no("capteur_piece"),
-			counter("CTU", "cpt_pieces", {
+			counter("CTU", piecesCounter, {
 				control: "raz_comptage",
 				pv: `${PACKING_PRESET}`,
 			}),
 		),
 	];
 
-	const boxChange = project.createLadder("Changement de caisse");
+	const boxChange = project.createLadder(t("boxChangeProgram"));
 	boxChange.sections = [
 		section(
-			"Temps de changement",
-			"Le TON mesure le changement de caisse.",
-			no("cpt_pieces.Q"),
-			timer("TON", "t_caisse", "T#5s"),
+			t("changeTimeTitle"),
+			t("changeTimeDescription"),
+			no(`${piecesCounter}.Q`),
+			timer("TON", boxTimer, "T#5s"),
 		),
 		section(
-			"Remise à zéro",
-			"Redémarrage automatique : le compteur repart de zéro.",
-			no("t_caisse.Q"),
+			t("resetTitle"),
+			t("resetDescription"),
+			no(`${boxTimer}.Q`),
 			coil("raz_comptage"),
 		),
 	];

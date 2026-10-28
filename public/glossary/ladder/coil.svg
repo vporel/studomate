@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 106" font-family="sans-serif">
+	<line x1="20" y1="20" x2="20" y2="90" stroke="#263238" stroke-width="3" />
+	<line x1="280" y1="20" x2="280" y2="90" stroke="#263238" stroke-width="3" />
+	<line x1="20" y1="55" x2="80" y2="55" stroke="#263238" stroke-width="2" />
+	<line x1="80" y1="45" x2="80" y2="65" stroke="#263238" stroke-width="2.5" />
+	<line x1="100" y1="45" x2="100" y2="65" stroke="#263238" stroke-width="2.5" />
+	<text x="90" y="37" font-size="12" text-anchor="middle" fill="#263238">marche</text>
+	<line x1="100" y1="55" x2="195" y2="55" stroke="#263238" stroke-width="2" />
+	<path d="M 195 43 Q 188 55 195 67" fill="none" stroke="#263238" stroke-width="2.5" />
+	<path d="M 205 43 Q 212 55 205 67" fill="none" stroke="#263238" stroke-width="2.5" />
+	<text x="200" y="37" font-size="12" text-anchor="middle" fill="#263238">pompe</text>
+	<line x1="212" y1="55" x2="280" y2="55" stroke="#263238" stroke-width="2" />
+</svg>

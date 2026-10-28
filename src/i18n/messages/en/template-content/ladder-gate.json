@@ -1,0 +1,17 @@
+{
+	"statement": "## Motorized gate\n\nOnly the outputs `open` and `close` are declared. Six inputs to declare: `pb_open` and `pb_close` (push buttons), `stop` (push button wired normally closed), `limit_open` and `limit_closed` (limit switches, true when the gate is at the end of travel), `photocell` (photoelectric cell, true when the beam is broken).\n\n### Task\n\n1. Declare the six inputs in the variables table (mnemonic, boolean type, behavior).\n2. `pb_open` opens the gate up to `limit_open`, `pb_close` closes it up to `limit_closed`.\n3. Both directions are interlocked: pressing the other button during a movement is ignored.\n4. `stop` cuts the current movement (stop priority).\n5. If the cell is broken while closing, the gate stops and reopens. While opening or stopped, the cell is ignored.\n6. This type of equipment falls under EN 12453.",
+	"texts": {
+		"projectName": "Motorized gate",
+		"solutionName": "Motorized gate: solution",
+		"openTitle": "Opening",
+		"openDescription": "Open command, interlocked by closing.",
+		"closeTitle": "Closing",
+		"closeDescription": "Close command, interlocked by opening.",
+		"reopenTitle": "Reopening on photocell",
+		"reopenDescription": "Photocell beam broken while closing: closing stops and the gate reopens.",
+		"stopOpeningTitle": "Opening stop",
+		"stopOpeningDescription": "Stop (NC contact) or open limit switch: the movement stops, stop takes priority.",
+		"stopClosingTitle": "Closing stop",
+		"stopClosingDescription": "Stop (NC contact) or closed limit switch."
+	}
+}

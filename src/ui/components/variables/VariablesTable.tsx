@@ -1,5 +1,6 @@
 "use client";
 
+import useCanEdit from "../projects/useCanEdit";
 import { DEFAULT_LOGIC_INPUT_BEHAVIOR } from "@/schemas/variable/input-behavior";
 import {
 	VariableType,
@@ -60,6 +61,10 @@ const VariablesTable = ({
 }) => {
 	if (zones.length === 0) throw new Error("At least one zone must be provided");
 	const variablesManager = useProjectStore((state) => state.variablesManager);
+	const canEdit = useCanEdit();
+	const crossReference = useProjectStore(
+		(state) => state.capabilities.crossReference,
+	);
 	const projectVariables = useProjectStore(
 		useShallow((state) => state.project?.variables ?? EMPTY_ARRAY),
 	);
@@ -200,17 +205,18 @@ const VariablesTable = ({
 		for (const v of zoneVariables) {
 			if (!seen.has(v.id)) rows.push(byId.get(v.id)!);
 		}
-		//Add an empty row
-		rows.push({
-			id: "new-variable",
-			mnemonic: "",
-			type: "BOOL",
-			address: "",
-			declaredValue: "",
-			comment: "",
-		});
+		if (canEdit) {
+			rows.push({
+				id: "new-variable",
+				mnemonic: "",
+				type: "BOOL",
+				address: "",
+				declaredValue: "",
+				comment: "",
+			});
+		}
 		return rows;
-	}, [zoneVariables, order, draft]);
+	}, [zoneVariables, order, draft, canEdit]);
 
 	const onRowEditStop = useCallback(
 		(params: GridRowEditStopParams) => {
@@ -277,6 +283,7 @@ const VariablesTable = ({
 			const id = event.currentTarget.getAttribute("data-id");
 			// La ligne d'ajout vide (`new-variable`) n'a pas de variable à cibler.
 			if (!id || id === "new-variable" || !containerRef.current) return;
+			if (!canEdit && !crossReference) return;
 			const variable = projectVariables.find((v) => v.id === id);
 			if (!variable) return;
 			event.preventDefault();
@@ -290,7 +297,7 @@ const VariablesTable = ({
 				},
 			});
 		},
-		[projectVariables],
+		[projectVariables, canEdit, crossReference],
 	);
 
 	const closeContextMenu = useCallback(

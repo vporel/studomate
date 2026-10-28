@@ -183,6 +183,10 @@ export default class Variable {
 				: "INOUT";
 	}
 
+	isReadOnly(): boolean {
+		return READ_ONLY_ZONES.includes(this.zone);
+	}
+
 	getNativeType(): NativeType {
 		return VARIABLE_TYPE_TO_NATIVE_TYPE[this.type];
 	}

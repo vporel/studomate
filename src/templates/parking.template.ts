@@ -28,11 +28,13 @@ import Variable from "@/schemas/variable/variable.schema";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import { PUSH_BUTTON_NO_BEHAVIOR } from "@/schemas/variable/input-behavior";
 import { createRandomId } from "@/ids";
+import type { Locale } from "@/i18n/config";
+import createTemplateText from "@/templates/template-text";
 
 /** Nombre de places du parking (celles de la scène 3D), borne du compteur `places`. */
 export const CAPACITE = PARKING_CAPACITY;
 
-export function createParkingVariables(): Variable[] {
+export function createParkingVariables(_locale: Locale = "fr"): Variable[] {
 	return [
 		VariableBuilder.buildLogicInput(
 			createRandomId(),
@@ -65,8 +67,9 @@ export function createParkingVariables(): Variable[] {
  * — scène 3D « Parking » câblée sur ces variables
  * — aucun programme (l'étudiant l'écrit)
  */
-export function createParkingProject(): Project {
-	const project = new Project(createRandomId(), "Parking à barrière", "");
+export function createParkingProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("parking", locale);
+	const project = new Project(createRandomId(), t("projectName"), "");
 
 	project.variables.push(
 		VariableBuilder.buildLogicInput(createRandomId(), "dem_entree"),
@@ -101,15 +104,16 @@ export function createParkingProject(): Project {
  * GRAFCET "Commande" — sélection de séquence entrée / sortie :
  *   E0 (initial) ─[dem_entree ET places < CAPACITE]→ E1 : barrière d'entrée ouverte, places += 1
  *                ─[dem_sortie ET places > 0]────────→ E3 : barrière de sortie ouverte, places -= 1
- *   E1 ─[passage]→ E2 ─[NON passage]→ E0
- *   E3 ─[passage]→ E4 ─[NON passage]→ E0
+ *   E1 ─[passage]→ E2 ─[NON passage]→ E0   (E2 : barrière d'entrée restée ouverte)
+ *   E3 ─[passage]→ E4 ─[NON passage]→ E0   (E4 : barrière de sortie restée ouverte)
  *
  * GRAFCET "Signalisation" — voyant complet piloté par le seul niveau du compteur :
  *   E10 ─[places >= CAPACITE]→ E11 (complet) ─[places < CAPACITE]→ E10
  */
-export function createParkingSolution(): Project {
-	const project = createParkingProject();
-	project.name = "Parking à barrière — solution";
+export function createParkingSolution(locale: Locale = "fr"): Project {
+	const t = createTemplateText("parking", locale);
+	const project = createParkingProject(locale);
+	project.name = t("solutionName");
 
 	// — GRAFCET "Commande" ————————————————————————————————————————————————
 	// Sélection de séquence entrée / sortie : divergence en OU sous l'étape 0. La branche
@@ -195,6 +199,22 @@ export function createParkingSolution(): Project {
 		.width(135)
 		.position(XL + 55, 220)
 		.build();
+	const aBarriere2 = new ActionBuilder()
+		.id(createRandomId())
+		.expression("barriere_entree")
+		.type(ActionType.BOOLEAN_VARIABLE)
+		.executionMode(ActionExecutionMode.CONTINUOUS)
+		.width(135)
+		.position(XL + 55, 380)
+		.build();
+	const aBarriere4 = new ActionBuilder()
+		.id(createRandomId())
+		.expression("barriere_sortie")
+		.type(ActionType.BOOLEAN_VARIABLE)
+		.executionMode(ActionExecutionMode.CONTINUOUS)
+		.width(135)
+		.position(XR + 55, 380)
+		.build();
 	const aInc = new ActionBuilder()
 		.id(createRandomId())
 		.expression("places := places + 1")
@@ -251,11 +271,11 @@ export function createParkingSolution(): Project {
 
 	const commande = new GrafcetBuilder()
 		.id(createRandomId())
-		.name("Commande")
+		.name(t("controlGrafcet"))
 		.addSteps(e0, e1, e2, e3, e4)
 		.addTransitions(t01, t03, t12, t34, t20, t40)
 		.addJunctionOrStart(orStart)
-		.addActions(aBarriere1, aInc, aBarriere3, aDec)
+		.addActions(aBarriere1, aBarriere2, aInc, aBarriere3, aBarriere4, aDec)
 		.addStepReferralsSources(renvoiEntree, renvoiSortie)
 		.addConnections(
 			ConnectionBuilder.betweenElements(
@@ -333,6 +353,20 @@ export function createParkingSolution(): Project {
 				aDec,
 				ACTION_HANDLE_TARGET_STEP,
 			),
+			ConnectionBuilder.betweenElements(
+				createRandomId(),
+				e2,
+				STEP_HANDLE_SOURCE_ACTION,
+				aBarriere2,
+				ACTION_HANDLE_TARGET_STEP,
+			),
+			ConnectionBuilder.betweenElements(
+				createRandomId(),
+				e4,
+				STEP_HANDLE_SOURCE_ACTION,
+				aBarriere4,
+				ACTION_HANDLE_TARGET_STEP,
+			),
 		)
 		.build();
 	project.addProgram(commande);
@@ -370,7 +404,7 @@ export function createParkingSolution(): Project {
 
 	const signalisation = new GrafcetBuilder()
 		.id(createRandomId())
-		.name("Signalisation")
+		.name(t("signalingGrafcet"))
 		.addSteps(ef0, ef1)
 		.addTransitions(tf01, tf10)
 		.addActions(aComplet)

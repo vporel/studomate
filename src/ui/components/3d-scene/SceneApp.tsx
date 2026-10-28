@@ -16,10 +16,10 @@ const PHASE_KEYS = {
 	running: "running",
 	paused: "paused",
 	"editor-closed": "editorClosed",
+	"protocol-mismatch": "protocolMismatch",
 } as const satisfies Record<SceneViewPhase, string>;
 
 export default function SceneApp({ session }: { session: string }) {
-	const t = useTranslations("scene3d");
 	const [view, setView] = useState<SceneView | null>(null);
 
 	useEffect(() => {
@@ -53,7 +53,14 @@ const NO_SNAPSHOT = {
 	projectName: null,
 } as const;
 
-function SceneContent({ view }: { view: SceneView }) {
+/** @param inline The scene fills its parent instead of the window, and shows neither the project title nor the title of the document. */
+export function SceneContent({
+	view,
+	inline = false,
+}: {
+	view: SceneView;
+	inline?: boolean;
+}) {
 	const t = useTranslations("scene3d");
 	const { phase, sceneId, sceneVersion, projectName } = useSyncExternalStore(
 		view.subscribe,
@@ -61,10 +68,11 @@ function SceneContent({ view }: { view: SceneView }) {
 		() => NO_SNAPSHOT,
 	);
 	useEffect(() => {
+		if (inline) return;
 		document.title = projectName
 			? t("titleWithProject", { project: projectName })
 			: t("title");
-	}, [projectName, t]);
+	}, [inline, projectName, t]);
 	const definition =
 		sceneId && sceneVersion !== null
 			? getSceneViewDefinition(sceneId, sceneVersion)
@@ -78,7 +86,13 @@ function SceneContent({ view }: { view: SceneView }) {
 	);
 
 	return (
-		<div style={{ position: "fixed", inset: 0, background: "#eef1f3" }}>
+		<div
+			style={{
+				position: inline ? "absolute" : "fixed",
+				inset: 0,
+				background: "#eef1f3",
+			}}
+		>
 			<Canvas
 				key={`${sceneId}@${sceneVersion}`}
 				camera={{ position: camera.position, fov: 50 }}
@@ -95,7 +109,7 @@ function SceneContent({ view }: { view: SceneView }) {
 				<gridHelper args={[20, 20]} position={[4, -0.06, 1.5]} />
 				<OrbitControls target={camera.target} />
 			</Canvas>
-			<ProjectTitle name={projectName} />
+			{!inline && <ProjectTitle name={projectName} />}
 			{definition?.Controls && (
 				<div style={{ position: "absolute", top: 12, right: 12 }}>
 					<definition.Controls

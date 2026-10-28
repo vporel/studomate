@@ -1,5 +1,5 @@
 import Section from "@/schemas/ladder/section.schema";
-import { LadderNodeType } from "@/ui/components/ladder/flow/ladder-nodes-definitions";
+import type { LadderNodeType } from "@/ui/components/ladder/flow/ladder-nodes-definitions";
 import AbstractNodesFactory from "@/ui/stores/shared/abstract-nodes.factory";
 import { buildTargetNodes } from "@/ui/utils/ladder/ladder-flow-builder";
 

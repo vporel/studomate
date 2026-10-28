@@ -20,7 +20,7 @@ module.exports = {
 		],
 	},
 	transformIgnorePatterns: [
-		"/node_modules/(?!(nanoid|marked|next-intl|use-intl|@formatjs|intl-messageformat)/)",
+		"/node_modules/(?!(nanoid|marked|next-intl|use-intl|@formatjs|intl-messageformat|three)/)",
 	],
 	moduleNameMapper: {
 		"\\.css$": "<rootDir>/tests/utils/cssStub.js",

@@ -141,4 +141,205 @@ describe("ElementsCommandsFactory (sans instance React Flow)", () => {
 			expect(nodesIdsToDelete).toEqual([]);
 		});
 	});
+
+	describe("onNodesAdd", () => {
+		function stepNode(id: string, number: unknown) {
+			return {
+				id,
+				type: "step",
+				position: { x: 0, y: 0 },
+				data: { number },
+			} as unknown as GrafcetNodeType;
+		}
+
+		it.each([
+			["undefined", undefined],
+			["une chaîne vide", ""],
+			["null", null],
+		])(
+			"attribue le prochain numéro disponible à une étape dont le numéro est %s",
+			(_label, number) => {
+				const grafcet = grafcetWithStep(3);
+
+				const { nodesToAdd } = ElementsCommandsFactory.onNodesAdd(
+					[stepNode("step-2", number)],
+					grafcet,
+					[],
+				);
+
+				expect((nodesToAdd[0].data as StepData).number).toBe(4);
+			},
+		);
+
+		it("attribue des numéros distincts à plusieurs étapes sans numéro, à la suite du maximum", () => {
+			const { nodesToAdd } = ElementsCommandsFactory.onNodesAdd(
+				[
+					stepNode("a", undefined),
+					stepNode("b", undefined),
+					stepNode("c", undefined),
+				],
+				grafcetWithStep(3),
+				[],
+			);
+
+			expect(nodesToAdd.map((n) => (n.data as StepData).number)).toEqual([
+				4, 5, 6,
+			]);
+		});
+
+		it("laisse intact le numéro fourni et numérote les autres à la suite", () => {
+			const { nodesToAdd } = ElementsCommandsFactory.onNodesAdd(
+				[stepNode("a", 9), stepNode("b", undefined), stepNode("c", "")],
+				grafcetWithStep(3),
+				[],
+			);
+
+			expect(nodesToAdd.map((n) => (n.data as StepData).number)).toEqual([
+				9, 4, 5,
+			]);
+		});
+
+		it("numérote 0, 1, 2 dans un grafcet sans étape", () => {
+			const { nodesToAdd } = ElementsCommandsFactory.onNodesAdd(
+				[
+					stepNode("a", undefined),
+					stepNode("b", undefined),
+					stepNode("c", undefined),
+				],
+				new GrafcetBuilder().build(),
+				[],
+			);
+
+			expect(nodesToAdd.map((n) => (n.data as StepData).number)).toEqual([
+				0, 1, 2,
+			]);
+		});
+
+		it("conserve le numéro 0 d'une étape ajoutée", () => {
+			const { nodesToAdd } = ElementsCommandsFactory.onNodesAdd(
+				[stepNode("step-2", 0)],
+				grafcetWithStep(3),
+				[],
+			);
+
+			expect((nodesToAdd[0].data as StepData).number).toBe(0);
+		});
+	});
+	describe("onNodeChange", () => {
+		function grafcetAt(x: number, y: number) {
+			return new GrafcetBuilder()
+				.addStep(
+					new StepBuilder()
+						.id("step-1")
+						.number(1)
+						.position(x, y)
+						.dimensions(40, 50)
+						.build(),
+				)
+				.build();
+		}
+
+		const positionChange = (
+			position: { x: number; y: number } | undefined,
+			dragging: boolean,
+			id = "step-1",
+		) => ({ type: "position" as const, id, position, dragging });
+
+		const dimensionsChange = (
+			dimensions: { width: number; height: number } | undefined,
+			resizing: boolean,
+			id = "step-1",
+		) => ({ type: "dimensions" as const, id, dimensions, resizing });
+
+		it("ne produit aucune commande pendant le glisser", () => {
+			const { commands } = ElementsCommandsFactory.onNodeChange(
+				[positionChange({ x: 30, y: 30 }, true)],
+				grafcetAt(10, 20),
+			);
+
+			expect(commands).toHaveLength(0);
+		});
+
+		it("produit une commande avec la position précédente quand la position finale diffère", () => {
+			const { commands } = ElementsCommandsFactory.onNodeChange(
+				[positionChange({ x: 30, y: 40 }, false)],
+				grafcetAt(10, 20),
+			);
+
+			expect(commands).toHaveLength(1);
+			expect(commands[0]).toBeInstanceOf(ElementsUpdateCommand);
+			expect(commands[0].payload[0]).toMatchObject({
+				id: "step-1",
+				type: "step",
+				position: { x: 30, y: 40 },
+				previousPosition: { x: 10, y: 20 },
+			});
+		});
+
+		it("ne produit aucune commande si la position finale est inchangée", () => {
+			const { commands } = ElementsCommandsFactory.onNodeChange(
+				[positionChange({ x: 10, y: 20 }, false)],
+				grafcetAt(10, 20),
+			);
+
+			expect(commands).toHaveLength(0);
+		});
+
+		it("ne produit aucune commande pendant le redimensionnement", () => {
+			const { commands } = ElementsCommandsFactory.onNodeChange(
+				[dimensionsChange({ width: 100, height: 100 }, true)],
+				grafcetAt(10, 20),
+			);
+
+			expect(commands).toHaveLength(0);
+		});
+
+		it("produit une commande avec la taille précédente quand les dimensions finales diffèrent", () => {
+			const { commands } = ElementsCommandsFactory.onNodeChange(
+				[dimensionsChange({ width: 100, height: 60 }, false)],
+				grafcetAt(10, 20),
+			);
+
+			expect(commands).toHaveLength(1);
+			expect(commands[0]).toBeInstanceOf(ElementsUpdateCommand);
+			expect(commands[0].payload[0]).toMatchObject({
+				id: "step-1",
+				size: { width: 100, height: 60 },
+				previousSize: { width: 40, height: 50 },
+			});
+		});
+
+		it("ne produit aucune commande si les dimensions finales sont inchangées", () => {
+			const { commands } = ElementsCommandsFactory.onNodeChange(
+				[dimensionsChange({ width: 40, height: 50 }, false)],
+				grafcetAt(10, 20),
+			);
+
+			expect(commands).toHaveLength(0);
+		});
+
+		it("ignore un changement sans position ni dimensions", () => {
+			const { commands } = ElementsCommandsFactory.onNodeChange(
+				[positionChange(undefined, false), dimensionsChange(undefined, false)],
+				grafcetAt(10, 20),
+			);
+
+			expect(commands).toHaveLength(0);
+		});
+
+		it("lève une erreur pour un identifiant inconnu", () => {
+			expect(() =>
+				ElementsCommandsFactory.onNodeChange(
+					[positionChange({ x: 1, y: 1 }, false, "inconnu")],
+					grafcetAt(10, 20),
+				),
+			).toThrow(/inconnu/);
+			expect(() =>
+				ElementsCommandsFactory.onNodeChange(
+					[dimensionsChange({ width: 1, height: 1 }, false, "inconnu")],
+					grafcetAt(10, 20),
+				),
+			).toThrow(/inconnu/);
+		});
+	});
 });

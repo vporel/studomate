@@ -5,6 +5,7 @@ import { SkippedProjectInfo } from "@/persistence/project-deserialization";
 import { isSupabaseConfigured } from "@/persistence/repositories/supabase-client";
 import Project from "@/schemas/project/project.schema";
 import { clearPagesSession } from "@/persistence/pages-session.storage";
+import { isSafari, isStandaloneDisplay } from "@/ui/lib/platform";
 import { useAuthStore } from "@/ui/stores/auth/auth.store";
 import { useProjectStore } from "./ProjectContext";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
@@ -42,6 +43,7 @@ export default function ProjectsList({
 	const tc = useT("projects.common");
 	const [projects, setProjects] = useState<Project[]>([]);
 	const [skipped, setSkipped] = useState<SkippedProjectInfo[]>([]);
+	const [cloudUnavailable, setCloudUnavailable] = useState(false);
 	const [loading, setLoading] = useState(true);
 	const [tab, setTab] = useState<ProjectsTab>("local");
 	const projectRepository = useProjectStore(
@@ -55,10 +57,14 @@ export default function ProjectsList({
 	const reload = useCallback(async () => {
 		setLoading(true);
 		try {
-			const { projects: loadedProjects, skipped: skippedProjects } =
-				await projectRepository.list();
+			const {
+				projects: loadedProjects,
+				skipped: skippedProjects,
+				failed,
+			} = await projectRepository.list();
 			setProjects(loadedProjects);
 			setSkipped(skippedProjects);
+			setCloudUnavailable(!!failed);
 		} catch (error) {
 			console.error("Erreur lors du chargement des projets:", error);
 		} finally {
@@ -77,6 +83,13 @@ export default function ProjectsList({
 			),
 		[projects, projectRepository, tab],
 	);
+
+	const showSafariAppNotice =
+		tab === "local" &&
+		!loading &&
+		visibleProjects.length === 0 &&
+		isSafari() &&
+		isStandaloneDisplay();
 
 	const skippedNewerVersion = skipped.some((s) => s.reason === "newer-version");
 
@@ -133,11 +146,23 @@ export default function ProjectsList({
 				</Tabs>
 			)}
 
+			{cloudUnavailable && (
+				<Typography variant="body2" color="warning.main" sx={{ mb: 1, px: 1 }}>
+					{t("cloudUnavailable")}
+				</Typography>
+			)}
+
 			{skipped.length > 0 && (
 				<Typography variant="body2" color="warning.main" sx={{ mb: 1, px: 1 }}>
 					{skippedNewerVersion
 						? t("skippedProjectsNewerVersion", { count: skipped.length })
 						: t("skippedProjects", { count: skipped.length })}
+				</Typography>
+			)}
+
+			{showSafariAppNotice && (
+				<Typography variant="body2" color="warning.main" sx={{ mb: 1, px: 1 }}>
+					{t("safariAppStorage")}
 				</Typography>
 			)}
 

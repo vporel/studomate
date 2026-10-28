@@ -1,9 +1,24 @@
+import { calledPrograms } from "@tests/utils/execution-sections";
 import PlcScenario from "@tests/utils/plc-scenario";
-import { createOrDivergenceLadderSolution } from "./or-divergence-ladder.template";
+import {
+	createOrDivergenceLadderProject,
+	createOrDivergenceLadderSolution,
+} from "./or-divergence-ladder.template";
 
 describe("or-divergence-ladder.template", () => {
 	beforeEach(() => jest.useFakeTimers());
 	afterEach(() => jest.useRealTimers());
+
+	it("l'énoncé fournit Cycle_automatique et Sorties vides, le corrigé les remplit", () => {
+		const exercise = calledPrograms(createOrDivergenceLadderProject());
+		expect(exercise.map((p) => p.name)).toEqual([
+			"Cycle_automatique",
+			"Sorties",
+		]);
+		expect(exercise.every((p) => p.isEmpty())).toBe(true);
+		const solution = calledPrograms(createOrDivergenceLadderSolution());
+		expect(solution.map((p) => p.sections.length)).toEqual([5, 2]);
+	});
 
 	it.each([
 		["dcy1", "fin1", "sortie1", "sortie2"],
@@ -25,13 +40,13 @@ describe("or-divergence-ladder.template", () => {
 		},
 	);
 
-	it("deux réceptivités vraies ensemble activent les deux branches (règle 4)", async () => {
+	it("deux réceptivités vraies ensemble : seule la première branche écrite est franchie", async () => {
 		const scenario = new PlcScenario(createOrDivergenceLadderSolution());
 		await scenario.cycles(2);
 		await scenario.press("dcy1");
 		await scenario.press("dcy2", 2);
 		expect(scenario.get("sortie1")).toBe(true);
-		expect(scenario.get("sortie2")).toBe(true);
+		expect(scenario.get("sortie2")).toBe(false);
 		scenario.stop();
 	});
 });

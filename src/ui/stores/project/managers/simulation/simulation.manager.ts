@@ -1,10 +1,5 @@
-import type { HeartbeatScheduler } from "@/lib/heartbeat/heartbeat-scheduler";
 import AnalysisIssuesMapper from "@/bridge/analysis-issues.mapper";
 import SimulatorExceptionsMapper from "@/bridge/simulator-exceptions.mapper";
-import {
-	getAutoOpenHmiSimulationOnStart,
-	resolveUiLocale,
-} from "@/persistence/preferences.storage";
 import ProjectAnalyser, {
 	ProjectAnalysisResult,
 } from "@/project-analyser/project.analyser";
@@ -26,16 +21,12 @@ import {
 import { getSceneDescriptor } from "@/3d-scenes/scene.registry";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { SimulationMode } from "@/ui/stores/project/SimulationMode.enum";
-import { readString, writeString } from "@/persistence/safe-local-storage";
-import trackEvent from "@/ui/services/analytics";
+import type { SimulationManagerEnvironment } from "@/ui/stores/project/environment/project-store-environment";
 import BoardMirror from "./board-mirror";
 import Scene3dSimulationBridge, {
 	type Scene3dStateSnapshot,
 } from "../3d-scene/scene3d-simulation.bridge";
 import type { SimulationKind } from "@/ui/stores/project/SimulationKind";
-import SimulationNotifier from "./simulation.notifier";
-
-const SIMULATION_MODE_STORAGE_KEY = "studomate:simulationMode";
 
 export default class SimulationManager {
 	private setStoreState: ProjectStoreSetFunction;
@@ -74,7 +65,6 @@ export default class SimulationManager {
 	 */
 	private lastPublishedValues: Map<string, unknown> | null = null;
 
-	private notifier: SimulationNotifier;
 	private readonly scene3dBridge = new Scene3dSimulationBridge({
 		getProject: () => this.getStoreState().project,
 		applyExternalInputs: (values) => this.applyExternalInputs(values),
@@ -83,19 +73,14 @@ export default class SimulationManager {
 	constructor(
 		setStoreState: ProjectStoreSetFunction,
 		getStoreState: ProjectStoreGetFunction,
-		notifier: SimulationNotifier,
-		private readonly heartbeat?: HeartbeatScheduler,
+		private readonly env: SimulationManagerEnvironment,
 	) {
 		this.setStoreState = setStoreState;
 		this.getStoreState = getStoreState;
-		this.notifier = notifier;
 	}
 
-	static getPersistedSimulationMode(): SimulationMode {
-		const stored = readString(SIMULATION_MODE_STORAGE_KEY);
-		if (stored === SimulationMode.STEP_BY_STEP)
-			return SimulationMode.STEP_BY_STEP;
-		return SimulationMode.CONTINUOUS;
+	private get notifier() {
+		return this.env.simulationNotifier;
 	}
 
 	/**
@@ -120,22 +105,24 @@ export default class SimulationManager {
 			(i) => i.severity === "warning",
 		);
 
-		this.notifier.analysisCompleted({
-			analysedElements: projectAnalysisResult.totalAnalysedElements,
-			errors: errors.length,
-			warnings: warnings.length,
-		});
+		const automatic = !showOnWarningsOnly;
+		if (!automatic || errors.length > 0 || warnings.length > 0)
+			this.notifier.analysisCompleted({
+				analysedElements: projectAnalysisResult.totalAnalysedElements,
+				errors: errors.length,
+				warnings: warnings.length,
+			});
 
 		this.setStoreState((state) => ({
 			analysisHasErrors: errors.length > 0,
 			analysisHasWarnings: warnings.length > 0,
 			analysisErrors: AnalysisIssuesMapper.analyserToApp(
 				errors,
-				resolveUiLocale(),
+				this.env.getLocale(),
 			),
 			analysisWarnings: AnalysisIssuesMapper.analyserToApp(
 				warnings,
-				resolveUiLocale(),
+				this.env.getLocale(),
 			),
 			ui: {
 				...state.ui,
@@ -148,10 +135,12 @@ export default class SimulationManager {
 	}
 
 	setDesignMode() {
+		const wasSimulating = this.plc !== null;
 		this.stopSimulation();
 		this.getStoreState().hmiManager.closeHmiSimulationPage();
 		this.setStoreState(() => ({ mode: ProjectMode.DESIGN }));
 		void this.getStoreState().hardwareLinkManager.onModeSettled();
+		if (wasSimulating) this.env.feedback?.notify("simulation-ended");
 	}
 
 	/** Changes what the simulation in progress is made of, without restarting it. */
@@ -242,12 +231,13 @@ export default class SimulationManager {
 			mode: ProjectMode.SIMULATION,
 			simulationPaused: startPaused,
 		}));
-		trackEvent("simulation-started", {
+		this.env.analytics.trackEvent("simulation-started", {
 			mode: simulationMode,
 			hardware: kind !== "virtual",
 			scene3d: Boolean(this.getStoreState().project?.scene3d),
 		});
-		if (getAutoOpenHmiSimulationOnStart()) this.openSimulationView();
+		if (this.env.preferences.getAutoOpenHmiSimulationOnStart())
+			this.openSimulationView();
 		void this.getStoreState().hardwareLinkManager.onModeSettled();
 		return true;
 	}
@@ -311,7 +301,7 @@ export default class SimulationManager {
 			simulationPaused: false,
 			simulationKind: "observation",
 		}));
-		if (getAutoOpenHmiSimulationOnStart()) {
+		if (this.env.preferences.getAutoOpenHmiSimulationOnStart()) {
 			this.getStoreState().hmiManager.openHmiSimulationPageIfAny();
 		}
 		void this.getStoreState().hardwareLinkManager.onModeSettled();
@@ -346,7 +336,7 @@ export default class SimulationManager {
 	}
 
 	setPlcSimulationMode(mode: SimulationMode): void {
-		writeString(SIMULATION_MODE_STORAGE_KEY, mode);
+		this.env.preferences.setSimulationMode(mode);
 		this.setStoreState(() => ({ simulationMode: mode }));
 
 		if (this.getStoreState().mode !== ProjectMode.SIMULATION) return;
@@ -389,12 +379,12 @@ export default class SimulationManager {
 				);
 			},
 			//L'erreur est déjà journalisée par le PLC lui-même (voir PLC.tick)
-			heartbeat: this.heartbeat,
+			heartbeat: this.env.heartbeat,
 			onCycleError: (error) => {
 				this.notifier.simulationCrashed(
 					SimulatorExceptionsMapper.getUserFriendlyMessage(
 						error,
-						resolveUiLocale(),
+						this.env.getLocale(),
 					),
 				);
 				this.setDesignMode();
@@ -608,12 +598,11 @@ export default class SimulationManager {
 		return this.scene3dBridge.getSnapshot();
 	}
 
-	private isConstantVariable(variableId: string): boolean {
+	private isReadOnlyVariable(variableId: string): boolean {
 		return (
-			this.getStoreState().project?.variables.some(
-				(variable) =>
-					variable.id === variableId && variable.zone === "constant",
-			) ?? false
+			this.getStoreState()
+				.project?.variables.find((variable) => variable.id === variableId)
+				?.isReadOnly() ?? false
 		);
 	}
 
@@ -622,7 +611,7 @@ export default class SimulationManager {
 		if (mode !== ProjectMode.SIMULATION) {
 			throw new Error("Cannot set memory value when not in simulation mode");
 		}
-		if (this.isConstantVariable(variableId)) return;
+		if (this.isReadOnlyVariable(variableId)) return;
 		if (this.mirror) {
 			this.writeToBoard(variableId, value);
 			return;
@@ -676,7 +665,7 @@ export default class SimulationManager {
 	}
 
 	public forceVariable(variableId: string, value: any): void {
-		if (this.isConstantVariable(variableId)) return;
+		if (this.isReadOnlyVariable(variableId)) return;
 		if (this.mirror) {
 			const name = this.mirror.nameOf(variableId);
 			const numeric = toBoardValue(value);

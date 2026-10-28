@@ -1,6 +1,9 @@
 "use client";
 import Ladder from "@/schemas/ladder/ladder.schema";
-import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import {
+	useProjectContext,
+	useProjectStore,
+} from "@/ui/components/projects/ProjectContext";
 import {
 	createLadderStore,
 	LadderStoreState,
@@ -36,6 +39,7 @@ export const LadderContextProvider = ({
 	children: ReactNode;
 }) => {
 	const laddersManager = useProjectStore((state) => state.laddersManager);
+	const projectStore = useProjectContext();
 	const storeRef = useRef<StoreApi<LadderStoreState> | null>(null);
 
 	if (!storeRef.current) {
@@ -43,6 +47,7 @@ export const LadderContextProvider = ({
 		storeRef.current = createLadderStore(
 			initialLadder,
 			laddersManager.getCommandsStack(initialLadder.id),
+			projectStore?.getState().clipboard,
 		);
 	}
 	const contextMenuEvents = useMemo(() => mitt<LadderContextMenuEvents>(), []);

@@ -11,5 +11,16 @@
 			"label": "Ouvrir automatiquement la vue de simulation",
 			"description": "À l'entrée en simulation, bascule automatiquement sur l'onglet « Simulation HMI » si le projet a au moins une page HMI, sinon ouvre l'onglet de la scène 3D si le projet en a une."
 		}
+	},
+	"defaultDialect": {
+		"heading": "Langage des expressions par défaut",
+		"description": "Appliqué aux nouveaux projets vierges. Le langage d'un projet existant se change dans ses propriétés.",
+		"FR": "Français : ET, OU, NON, VRAI, FAUX",
+		"EN": "Anglais : AND, OR, NOT, TRUE, FALSE",
+		"firstProject": {
+			"title": "Vos préférences",
+			"body": "Choisissez le langage des expressions de vos projets (conditions, actions, équations). Vous pourrez le modifier plus tard dans les Préférences.",
+			"confirm": "Valider"
+		}
 	}
 }

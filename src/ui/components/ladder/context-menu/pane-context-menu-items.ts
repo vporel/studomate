@@ -3,7 +3,7 @@
 import { platformShortcut } from "@/ui/lib/platform";
 import LadderCopyCutPasteManager from "@/ui/stores/ladder/managers/copy-cut-paste.manager";
 import LadderWorkflowManager from "@/ui/stores/ladder/managers/workflow.manager";
-import { MenuTranslate } from "./menu-translate";
+import type { MenuTranslate } from "@/ui/lib/context-menu/context-menu";
 
 export default function paneContextMenuItems(
 	workflowManager: LadderWorkflowManager,
@@ -12,7 +12,7 @@ export default function paneContextMenuItems(
 	screenPosition: { x: number; y: number },
 	canPaste: boolean,
 	t: MenuTranslate,
-	onExport: () => void,
+	onExport: (() => void) | null,
 	exportDisabled: boolean,
 ): {
 	label: string;
@@ -44,12 +44,16 @@ export default function paneContextMenuItems(
 				disabled: !canPaste,
 			},
 		],
-		[
-			{
-				label: t("export"),
-				onClick: onExport,
-				disabled: exportDisabled,
-			},
-		],
+		...(onExport
+			? [
+					[
+						{
+							label: t("export"),
+							onClick: onExport,
+							disabled: exportDisabled,
+						},
+					],
+				]
+			: []),
 	];
 }

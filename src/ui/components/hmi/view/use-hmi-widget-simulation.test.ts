@@ -2,6 +2,7 @@
  * @jest-environment jsdom
  */
 import { Dialect } from "@/expression-language/dialect.enum";
+import Project from "@/schemas/project/project.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
@@ -105,7 +106,7 @@ describe("useHmiSimulationValue: constantes", () => {
 	it("ignore un mnémonique lié qui est devenu une constante", () => {
 		(useProjectStore as unknown as jest.Mock).mockImplementation(
 			selectorImplementation({
-				project: {
+				project: Object.assign(new Project("p1", "Projet", ""), {
 					variables: [
 						new Variable({
 							id: "k",
@@ -116,7 +117,7 @@ describe("useHmiSimulationValue: constantes", () => {
 							dialect: Dialect.FR,
 						}),
 					],
-				},
+				}),
 				simulationVariablesStatesByMnemonic: {
 					SEUIL: { id: "k", mnemonic: "SEUIL", value: 4 },
 				},

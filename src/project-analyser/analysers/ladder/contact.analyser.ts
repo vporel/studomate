@@ -25,7 +25,11 @@ export default class ContactAnalyser extends LadderElementAnalyser<ContactElemen
 		const variable = variablesByMnemonic.get(element.data.variable);
 		const issues: ProjectAnalyserIssue[] = [];
 
-		if (!variable) {
+		if (!element.data.variable.trim()) {
+			issues.push(
+				new ProjectAnalyserIssue("error", "LADDER_CONTACT_NO_VARIABLE", source),
+			);
+		} else if (!variable) {
 			issues.push(
 				new ProjectAnalyserIssue(
 					"error",

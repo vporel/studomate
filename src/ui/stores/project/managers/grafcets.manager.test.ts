@@ -4,16 +4,17 @@ import { ProjectStoreState } from "../project.store";
 import GrafcetsManager from "./grafcets.manager";
 
 const mockTrackEvent = jest.fn();
-jest.mock("@/ui/services/analytics", () => ({
-	__esModule: true,
-	default: (...args: any[]) => mockTrackEvent(...args),
-}));
+const mockFeedbackNotify = jest.fn();
 
-beforeEach(() => mockTrackEvent.mockClear());
+beforeEach(() => {
+	mockTrackEvent.mockClear();
+	mockFeedbackNotify.mockClear();
+});
 
 function makeManager(initial: {
 	project?: Project | null;
 	mode?: ProjectMode;
+	editingEnabled?: boolean;
 	activeScope?: string;
 	activeScopeType?: "project" | "grafcet" | "ladder";
 	grafcetsStoresValues?: Record<string, any>;
@@ -23,6 +24,7 @@ function makeManager(initial: {
 	let state = {
 		project: initial.project ?? null,
 		mode: initial.mode ?? ProjectMode.DESIGN,
+		editingEnabled: initial.editingEnabled ?? true,
 		activeScope: initial.activeScope ?? "project",
 		activeScopeType: initial.activeScopeType ?? "project",
 		grafcetsStoresValues: initial.grafcetsStoresValues ?? {},
@@ -37,7 +39,17 @@ function makeManager(initial: {
 	};
 	const get = () => state;
 
-	return { manager: new GrafcetsManager(set, get), getState: () => state };
+	return {
+		manager: new GrafcetsManager(
+			set,
+			get,
+			{ trackEvent: mockTrackEvent },
+			{
+				notify: mockFeedbackNotify,
+			},
+		),
+		getState: () => state,
+	};
 }
 
 function projectWithGrafcet() {
@@ -83,6 +95,15 @@ describe("GrafcetsManager", () => {
 			expect(manager.newGrafcet("G1")).toBeNull();
 		});
 
+		it("refuse la création sur un projet en lecture seule", () => {
+			const { manager } = makeManager({
+				project: new Project("p1", "Projet", "auteur"),
+				editingEnabled: false,
+			});
+
+			expect(manager.newGrafcet("G1")).toBeNull();
+		});
+
 		it("crée le grafcet, ouvre sa page et marque le projet comme modifié", () => {
 			const { manager, getState } = makeManager({
 				project: new Project("p1", "Projet", "auteur"),
@@ -101,6 +122,18 @@ describe("GrafcetsManager", () => {
 			expect(mockTrackEvent).toHaveBeenCalledWith("program-created", {
 				type: "grafcet",
 			});
+			expect(mockFeedbackNotify).toHaveBeenCalledWith("program-created");
+		});
+
+		it("ne signale rien pour l'avis quand la création est refusée", () => {
+			const { manager } = makeManager({
+				project: new Project("p1", "Projet", "auteur"),
+				mode: ProjectMode.SIMULATION,
+			});
+
+			manager.newGrafcet("G1");
+
+			expect(mockFeedbackNotify).not.toHaveBeenCalled();
 		});
 
 		it("génère un nom unique au format Grafcet_N quand rien n'est fourni", () => {
@@ -307,6 +340,44 @@ describe("GrafcetsManager", () => {
 			manager.syncMountedStoresFromProject();
 
 			expect(adoptGrafcet).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("clearCommandsStacksOf", () => {
+		it("empties the existing stacks in place, only for the given ids", () => {
+			const { manager } = makeManager({});
+			const target = manager.getCommandsStack("a");
+			const other = manager.getCommandsStack("b");
+			target.commandsToUndo.push([{} as any]);
+			other.commandsToUndo.push([{} as any]);
+
+			manager.clearCommandsStacksOf(["a"]);
+
+			expect(manager.getCommandsStack("a")).toBe(target);
+			expect(target.commandsToUndo).toHaveLength(0);
+			expect(other.commandsToUndo).toHaveLength(1);
+		});
+
+		it("does not create a stack for an unknown id", () => {
+			const { manager } = makeManager({});
+
+			manager.clearCommandsStacksOf(["unknown"]);
+
+			expect(manager.getCommandsStack("unknown").commandsToUndo).toEqual([]);
+			expect((manager as any).commandsStacks.size).toBe(1);
+		});
+
+		it("refreshes the flags of the mounted store", () => {
+			const refreshFlags = jest.fn();
+			const { manager } = makeManager({
+				grafcetsStoresManagers: {
+					a: { commandsStackManager: { refreshFlags } },
+				},
+			});
+
+			manager.clearCommandsStacksOf(["a", "no-store"]);
+
+			expect(refreshFlags).toHaveBeenCalledTimes(1);
 		});
 	});
 });

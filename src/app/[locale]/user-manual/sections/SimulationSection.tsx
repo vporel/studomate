@@ -1,6 +1,7 @@
 "use client";
 
 import { useT } from "@/ui/i18n/useT";
+import { ManualH2, ManualH3, ManualH4 } from "../manual-heading";
 import { Divider, Typography } from "@mui/material";
 import { ManualFigure, ManualList } from "./manual-ui";
 
@@ -11,13 +12,13 @@ export default function SimulationSection({ selected }: { selected: string }) {
 
 	return (
 		<section id="simulation">
-			<Typography variant="h2" mb={3}>
+			<Typography variant="h2" component={ManualH2} mb={3}>
 				{t("title")}
 			</Typography>
 			<Typography mb={2}>{t("p1")}</Typography>
 			{!isChild && (
 				<>
-					<Typography variant="h5" mb={1}>
+					<Typography variant="h5" component={ManualH4} mb={1}>
 						{t("modesCompareTitle")}
 					</Typography>
 					<ManualList items={t.raw("modesCompareItems") as string[]} />
@@ -26,7 +27,7 @@ export default function SimulationSection({ selected }: { selected: string }) {
 
 			{show("simulation-start") && (
 				<article id="simulation-start">
-					<Typography variant="h3" mb={2}>
+					<Typography variant="h3" component={ManualH3} mb={2}>
 						{t("startTitle")}
 					</Typography>
 					<Typography mb={2}>{t("startIntro")}</Typography>
@@ -41,11 +42,11 @@ export default function SimulationSection({ selected }: { selected: string }) {
 
 			{show("simulation-running") && (
 				<article id="simulation-running">
-					<Typography variant="h3" mb={2}>
+					<Typography variant="h3" component={ManualH3} mb={2}>
 						{t("runningTitle")}
 					</Typography>
 					<ManualList items={t.raw("runningItems") as string[]} />
-					<Typography variant="h5" mb={1}>
+					<Typography variant="h5" component={ManualH4} mb={1}>
 						{t("cycleOrderTitle")}
 					</Typography>
 					<Typography mb={1}>{t("cycleOrderIntro")}</Typography>
@@ -62,7 +63,7 @@ export default function SimulationSection({ selected }: { selected: string }) {
 
 			{show("simulation-watch-tables") && (
 				<article id="simulation-watch-tables">
-					<Typography variant="h3" mb={2}>
+					<Typography variant="h3" component={ManualH3} mb={2}>
 						{t("watchTitle")}
 					</Typography>
 					<Typography mb={2}>{t("watchIntro")}</Typography>
@@ -74,7 +75,7 @@ export default function SimulationSection({ selected }: { selected: string }) {
 
 			{show("simulation-stop") && (
 				<article id="simulation-stop">
-					<Typography variant="h3" mb={2}>
+					<Typography variant="h3" component={ManualH3} mb={2}>
 						{t("stopTitle")}
 					</Typography>
 					<Typography mb={2}>{t("stopBody")}</Typography>

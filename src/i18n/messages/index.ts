@@ -1,10 +1,12 @@
 import type { Locale } from "@/i18n/config";
+import type { TemplateContent } from "./template-content.types";
 
 import frCommon from "./fr/common.json";
 import frPreferences from "./fr/preferences.json";
 import frAnalysisIssues from "./fr/analysisIssues.json";
 import frExpressionErrors from "./fr/expressionErrors.json";
 import frTemplates from "./fr/templates.json";
+import frTemplateContent from "./fr/template-content";
 import frMenu from "./fr/menu.json";
 import frAuth from "./fr/auth.json";
 import frExplorer from "./fr/explorer.json";
@@ -25,11 +27,16 @@ import frVariableSelectorMenu from "./fr/variableSelectorMenu.json";
 import frProfile from "./fr/profile.json";
 import frTour from "./fr/tour.json";
 import frScene3d from "./fr/scene3d.json";
+import frGlossary from "./fr/glossary.json";
+import frEmbedded from "./fr/embedded.json";
+import frFeedback from "./fr/feedback.json";
+import frWhatsNew from "./fr/whatsNew.json";
 import enCommon from "./en/common.json";
 import enPreferences from "./en/preferences.json";
 import enAnalysisIssues from "./en/analysisIssues.json";
 import enExpressionErrors from "./en/expressionErrors.json";
 import enTemplates from "./en/templates.json";
+import enTemplateContent from "./en/template-content";
 import enMenu from "./en/menu.json";
 import enAuth from "./en/auth.json";
 import enExplorer from "./en/explorer.json";
@@ -50,6 +57,10 @@ import enVariableSelectorMenu from "./en/variableSelectorMenu.json";
 import enProfile from "./en/profile.json";
 import enTour from "./en/tour.json";
 import enScene3d from "./en/scene3d.json";
+import enGlossary from "./en/glossary.json";
+import enEmbedded from "./en/embedded.json";
+import enFeedback from "./en/feedback.json";
+import enWhatsNew from "./en/whatsNew.json";
 
 export type Messages = {
 	common: typeof frCommon;
@@ -57,6 +68,7 @@ export type Messages = {
 	analysisIssues: typeof frAnalysisIssues;
 	expressionErrors: typeof frExpressionErrors;
 	templates: typeof frTemplates;
+	templateContent: Record<string, TemplateContent>;
 	menu: typeof frMenu;
 	auth: typeof frAuth;
 	explorer: typeof frExplorer;
@@ -77,6 +89,10 @@ export type Messages = {
 	profile: typeof frProfile;
 	tour: typeof frTour;
 	scene3d: typeof frScene3d;
+	glossary: typeof frGlossary;
+	embedded: typeof frEmbedded;
+	feedback: typeof frFeedback;
+	whatsNew: typeof frWhatsNew;
 };
 
 const MESSAGES: Record<Locale, Messages> = {
@@ -86,6 +102,7 @@ const MESSAGES: Record<Locale, Messages> = {
 		analysisIssues: frAnalysisIssues,
 		expressionErrors: frExpressionErrors,
 		templates: frTemplates,
+		templateContent: frTemplateContent,
 		menu: frMenu,
 		auth: frAuth,
 		explorer: frExplorer,
@@ -106,6 +123,10 @@ const MESSAGES: Record<Locale, Messages> = {
 		profile: frProfile,
 		tour: frTour,
 		scene3d: frScene3d,
+		glossary: frGlossary,
+		embedded: frEmbedded,
+		feedback: frFeedback,
+		whatsNew: frWhatsNew,
 	},
 	en: {
 		common: enCommon,
@@ -113,6 +134,7 @@ const MESSAGES: Record<Locale, Messages> = {
 		analysisIssues: enAnalysisIssues,
 		expressionErrors: enExpressionErrors,
 		templates: enTemplates,
+		templateContent: enTemplateContent,
 		menu: enMenu,
 		auth: enAuth,
 		explorer: enExplorer,
@@ -133,6 +155,10 @@ const MESSAGES: Record<Locale, Messages> = {
 		profile: enProfile,
 		tour: enTour,
 		scene3d: enScene3d,
+		glossary: enGlossary,
+		embedded: enEmbedded,
+		feedback: enFeedback,
+		whatsNew: enWhatsNew,
 	},
 };
 

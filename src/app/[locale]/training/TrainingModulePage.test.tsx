@@ -25,7 +25,8 @@ const setup = (props = {}) =>
 	render(
 		<TrainingModulePage
 			title="Module A0"
-			intro="Introduction du module"
+			intro={"Introduction du module\n\n- point un\n- point deux"}
+			introLabel="Présentation et prérequis"
 			steps={steps}
 			moduleId="a0"
 			prevLabel="Précédent"
@@ -44,10 +45,69 @@ describe("TrainingModulePage", () => {
 			screen.getByRole("heading", { level: 1, name: "Module A0" }),
 		).toBeInTheDocument();
 		expect(screen.getByText("Introduction du module")).toBeInTheDocument();
+		expect(screen.getAllByRole("listitem")).toHaveLength(2);
+	});
+
+	it("place l'introduction dans un bloc dépliable, ouvert tant qu'aucune étape n'est passée", () => {
+		setup();
+
+		const details = screen
+			.getByText("Introduction du module")
+			.closest("details");
+		expect(details).toHaveAttribute("open");
+		expect(details).toHaveTextContent("Présentation et prérequis");
+	});
+
+	it("sur une page d'étape, rend le titre du module sans balise de titre et sans introduction", () => {
+		setup({ initialStepId: "s1" });
+
+		expect(screen.getByText("Module A0")).toBeInTheDocument();
+		expect(screen.queryByRole("heading")).not.toBeInTheDocument();
+		expect(
+			screen.queryByText("Introduction du module"),
+		).not.toBeInTheDocument();
+		expect(mockStepper.mock.calls[0][0].initialStepId).toBe("s1");
+	});
+
+	it("affiche le sous-titre sous le titre de la page du module, hors du titre de niveau 1", () => {
+		setup({ subtitle: "Une séquence, de l'étape aux sorties" });
+
+		const subtitle = screen.getByText("Une séquence, de l'étape aux sorties");
+		const title = screen.getByRole("heading", { level: 1 });
+		expect(title).toHaveTextContent("Module A0");
+		expect(title).not.toHaveTextContent("Une séquence");
+		expect(
+			title.compareDocumentPosition(subtitle) &
+				Node.DOCUMENT_POSITION_FOLLOWING,
+		).toBeTruthy();
+	});
+
+	it("n'affiche pas le sous-titre sur une page d'étape", () => {
+		setup({
+			subtitle: "Une séquence, de l'étape aux sorties",
+			initialStepId: "s1",
+		});
+
+		expect(
+			screen.queryByText("Une séquence, de l'étape aux sorties"),
+		).not.toBeInTheDocument();
+	});
+
+	it("rend le fil d'Ariane avant le titre", () => {
+		setup({ breadcrumb: <nav>fil</nav> });
+
+		const nav = screen.getByText("fil");
+		const title = screen.getByRole("heading", { level: 1 });
+		expect(
+			nav.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING,
+		).toBeTruthy();
 	});
 
 	it("transmet ses propriétés au stepper", () => {
-		const nextModule = { href: "/training/a1" as const, label: "Module suivant" };
+		const nextModule = {
+			href: "/training/a1" as const,
+			label: "Module suivant",
+		};
 		setup({ nextModule });
 
 		expect(mockStepper).toHaveBeenCalledWith({

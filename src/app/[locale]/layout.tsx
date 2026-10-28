@@ -5,11 +5,14 @@ import { rootMetadata, rootViewport } from "@/app/root-metadata";
 import { routing } from "@/i18n/routing";
 import Footer from "@/ui/components/public-pages/Footer";
 import Header from "@/ui/components/public-pages/Header";
+import StandaloneBackButton from "@/ui/components/public-pages/StandaloneBackButton";
+import WhatsNew from "@/ui/components/whats-new/WhatsNew";
 import PUBLIC_PAGES_CLASS from "@/ui/components/public-pages/public-pages-class";
-import { hasLocale, NextIntlClientProvider } from "next-intl";
+import { hasLocale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import ClientMessagesProvider from "./ClientMessagesProvider";
 import organizationJsonLd from "./organizationJsonLd";
 
 export const viewport = rootViewport;
@@ -36,7 +39,16 @@ export default async function LocaleLayout({
 
 	return (
 		<RootDocument lang={locale}>
-			<NextIntlClientProvider>
+			<ClientMessagesProvider
+				namespaces={[
+					"public.header",
+					"public.footer",
+					"common.languageSwitch",
+					"auth",
+					"profile",
+					"whatsNew",
+				]}
+			>
 				<script
 					type="application/ld+json"
 					dangerouslySetInnerHTML={{ __html: organizationJsonLd }}
@@ -45,8 +57,10 @@ export default async function LocaleLayout({
 					<Header />
 					<main>{children}</main>
 					<Footer />
+					<StandaloneBackButton />
+					<WhatsNew />
 				</div>
-			</NextIntlClientProvider>
+			</ClientMessagesProvider>
 		</RootDocument>
 	);
 }

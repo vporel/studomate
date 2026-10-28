@@ -9,6 +9,8 @@ import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { ThemeProvider as AppThemeProvider } from "@/ui/theme/ThemeContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
+import { Dialect } from "@/expression-language/dialect.enum";
+import Variable from "@/schemas/variable/variable.schema";
 import BlockNode, {
 	BLOCK_NODE_DIMENSIONS,
 	BlockNodeData,
@@ -27,23 +29,35 @@ function setup({
 	highlightedNodesIds = [] as string[],
 	data,
 	executeOperation = jest.fn(),
+	variables = [] as Variable[],
+	mode = ProjectMode.DESIGN,
+	simulationVariablesStatesByMnemonic = {} as Record<
+		string,
+		{ value: unknown }
+	>,
 }: {
 	programId?: string;
 	ladders?: Record<string, { name: string }>;
 	highlightedNodesIds?: string[];
 	data?: BlockNodeData;
 	executeOperation?: jest.Mock;
+	variables?: Variable[];
+	mode?: ProjectMode;
+	simulationVariablesStatesByMnemonic?: Record<string, { value: unknown }>;
 } = {}) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			project: {
 				ladders,
+				variables,
 				getAllTimerBlockElements: () => [],
 				getAllCounterBlockElements: () => [],
+				getExecutedGrafcets: () => [],
 				grafcets: {},
 			},
-			mode: ProjectMode.DESIGN,
+			mode,
 			simulationVariablesStates: {},
+			simulationVariablesStatesByMnemonic,
 		}),
 	);
 	(useLadderStore as unknown as jest.Mock).mockImplementation(
@@ -153,6 +167,104 @@ describe("BlockNode", () => {
 		});
 	});
 
+	describe("bloc convert", () => {
+		const convertData = (
+			overrides: Partial<{
+				in: string;
+				out: string;
+				inType: "INT" | "DINT" | "WORD" | "DWORD" | "REAL";
+				outType: "INT" | "DINT" | "WORD" | "DWORD" | "REAL";
+			}> = {},
+		): BlockNodeData => ({
+			blockType: "convert",
+			params: {
+				in: "",
+				out: "",
+				inType: "INT",
+				outType: "REAL",
+				...overrides,
+			},
+		});
+		const memory = (mnemonic: string, type: Variable["type"]) =>
+			new Variable({
+				id: mnemonic,
+				mnemonic,
+				zone: "memory",
+				type,
+				dialect: Dialect.FR,
+			});
+		const selects = (container: HTMLElement) =>
+			container.querySelectorAll<HTMLElement>(".MuiSelect-select");
+
+		it("affiche le libellé CONV et la paire de types choisie", () => {
+			const { container } = setup({ data: convertData() });
+
+			expect(screen.getByText("CONV")).toBeInTheDocument();
+			expect(screen.getByText("TO")).toBeInTheDocument();
+			const [from, to] = Array.from(selects(container));
+			expect(from).toHaveTextContent("INT");
+			expect(to).toHaveTextContent("REAL");
+		});
+
+		it("n'offre en sortie que les conversions prises en charge depuis le type d'entrée", () => {
+			const { container } = setup({
+				data: convertData({ inType: "REAL", outType: "INT" }),
+			});
+
+			fireEvent.mouseDown(selects(container)[1]);
+
+			expect(
+				screen.getAllByRole("option").map((option) => option.textContent),
+			).toEqual(["INT", "DINT"]);
+		});
+
+		it("change le type d'entrée et replace la sortie sur une conversion valide", () => {
+			const { container, executeOperation } = setup({
+				data: convertData({
+					in: "a",
+					out: "b",
+					inType: "INT",
+					outType: "REAL",
+				}),
+			});
+
+			fireEvent.mouseDown(selects(container)[0]);
+			fireEvent.click(screen.getByRole("option", { name: "WORD" }));
+
+			expect(executeOperation).toHaveBeenCalledTimes(1);
+			expect(executeOperation.mock.calls[0][0][0]).toMatchObject({
+				payload: {
+					changes: {
+						data: {
+							params: {
+								in: "a",
+								out: "b",
+								inType: "WORD",
+								outType: "INT",
+							},
+						},
+					},
+				},
+			});
+		});
+
+		it("signale en rouge une variable dont le type diffère de celui du bloc, sans l'effacer", () => {
+			setup({
+				data: convertData({ in: "brut", out: "niveau", outType: "REAL" }),
+				variables: [memory("brut", "INT"), memory("niveau", "DINT")],
+			});
+
+			const pinIn = screen.getByDisplayValue("brut");
+			const pinOut = screen.getByDisplayValue("niveau");
+			expect(pinIn).toHaveAttribute("data-variable-status", "ok");
+			expect(pinOut).toHaveAttribute("data-variable-status", "invalid");
+			expect(pinOut).toHaveAttribute(
+				"title",
+				"Type attendu : REAL (la variable est de type DINT)",
+			);
+		});
+	});
+
 	describe("bloc timer", () => {
 		const timerData: BlockNodeData = {
 			blockType: "timer",
@@ -212,6 +324,53 @@ describe("BlockNode", () => {
 			expect(ptField).toHaveValue("T#5s");
 			expect(etField).toHaveValue("Sortie");
 			expect(ptField).toHaveAttribute("placeholder", "?");
+		});
+
+		describe("valeur de ET en simulation", () => {
+			const unassignedData: BlockNodeData = {
+				blockType: "timer",
+				params: { name: "Tempo1", timerType: "TON", pt: "T#5s", et: "" },
+			};
+			const running = {
+				mode: ProjectMode.SIMULATION,
+				simulationVariablesStatesByMnemonic: {
+					"Tempo1.ET": { value: 1500 },
+				},
+			};
+
+			it("affiche le temps écoulé de la variable générée quand ET n'a pas de variable", () => {
+				setup({ data: unassignedData, ...running });
+
+				expect(screen.getByText("1.5s")).toBeInTheDocument();
+				expect(screen.getAllByRole("combobox")).toHaveLength(2);
+			});
+
+			it("affiche le champ ET en mode conception", () => {
+				setup({
+					data: unassignedData,
+					...running,
+					mode: ProjectMode.DESIGN,
+				});
+
+				expect(screen.queryByText("1.5s")).not.toBeInTheDocument();
+				expect(screen.getAllByRole("combobox")).toHaveLength(3);
+			});
+
+			it("laisse le champ de la variable assignée quand ET en a une", () => {
+				setup({ data: timerData, ...running });
+
+				expect(screen.queryByText("1.5s")).not.toBeInTheDocument();
+				expect(screen.getAllByRole("combobox")[1]).toHaveValue("Sortie");
+			});
+
+			it("garde le champ tant que la simulation n'a pas publié de valeur", () => {
+				setup({
+					data: unassignedData,
+					mode: ProjectMode.SIMULATION,
+				});
+
+				expect(screen.getAllByRole("combobox")).toHaveLength(3);
+			});
 		});
 
 		it("un double-clic sur le libellé PT donne le focus au champ PT", () => {
