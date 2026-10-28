@@ -4,6 +4,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { i18nWrapper } from "@tests/utils/i18n";
 import { feedbackStore } from "@/ui/stores/feedback/feedback.store";
+import { whatsNewStore } from "@/ui/stores/whats-new/whats-new.store";
 import useHelpMenu from "./useHelpMenu";
 
 const startProductTour = jest.fn();
@@ -23,14 +24,26 @@ describe("useHelpMenu", () => {
 		});
 		expect(result.current.id).toBe("help");
 		expect(result.current.items).toHaveLength(2);
-		expect(result.current.items[0]).toHaveLength(4);
+		expect(result.current.items[0]).toHaveLength(5);
 		expect(result.current.items[0][0].label).toBe("Manuel utilisateur");
 		expect(result.current.items[0][1].label).toBe("Formations");
 		expect(result.current.items[0][2].label).toBe("Raccourcis clavier");
 		expect(result.current.items[0][3].label).toBe("Revoir la visite guidée");
+		expect(result.current.items[0][4].label).toBe("Nouveautés");
 		expect(result.current.items[1]).toHaveLength(2);
 		expect(result.current.items[1][0].label).toBe("Donner un avis");
 		expect(result.current.items[1][1].label).toBe("Signaler un problème");
+	});
+
+	it("opens the what's new modal when 'Nouveautés' is clicked", () => {
+		const { result } = renderHook(() => useHelpMenu(onShortcutsOpen), {
+			wrapper: i18nWrapper(),
+		});
+
+		act(() => result.current.items[0][4].onClick?.());
+
+		expect(whatsNewStore.getState().visible).toBe(true);
+		whatsNewStore.getState().close();
 	});
 
 	it("opens the feedback box when 'Donner un avis' is clicked", () => {

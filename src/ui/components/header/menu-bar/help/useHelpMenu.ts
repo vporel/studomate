@@ -3,6 +3,7 @@
 import routes from "@/app/routes";
 import { useT } from "@/ui/i18n/useT";
 import { openFeedbackFromMenu } from "@/ui/services/feedback-prompt";
+import { whatsNewStore } from "@/ui/stores/whats-new/whats-new.store";
 import { openReportIssue } from "@/ui/services/report-issue";
 import { useMemo } from "react";
 import useStartProductTour from "@/ui/components/product-tour/useStartProductTour";
@@ -38,6 +39,10 @@ export default function useHelpMenu(onShortcutsOpen: () => void): AppMenuType {
 						onClick: () => {
 							void startProductTour();
 						},
+					},
+					{
+						label: t("whatsNew"),
+						onClick: () => whatsNewStore.getState().open(),
 					},
 				],
 				[

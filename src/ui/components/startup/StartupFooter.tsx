@@ -1,8 +1,10 @@
 "use client";
 
+import { APP_VERSION } from "@/app-info";
 import routes from "@/app/routes";
 import { useT } from "@/ui/i18n/useT";
 import { openReportIssue } from "@/ui/services/report-issue";
+import { whatsNewStore } from "@/ui/stores/whats-new/whats-new.store";
 import { Box, Link as MuiLink, Typography } from "@mui/material";
 import Link from "next/link";
 import { Fragment, type ReactNode } from "react";
@@ -23,9 +25,21 @@ export default function StartupFooter() {
 	];
 
 	const items: ReactNode[] = [
-		<Typography key="copyright" variant="body2">
-			{t("copyright", { year: new Date().getFullYear() })}
-		</Typography>,
+		<Box key="copyright" sx={{ display: "flex", columnGap: 0.75 }}>
+			<Typography variant="body2">
+				{t("copyright", { year: new Date().getFullYear() })}
+			</Typography>
+			<MuiLink
+				component="button"
+				type="button"
+				variant="body2"
+				title={t("whatsNew", { version: APP_VERSION })}
+				onClick={() => whatsNewStore.getState().open()}
+				sx={linkSx}
+			>
+				{APP_VERSION}
+			</MuiLink>
+		</Box>,
 		...links.map(({ href, label }) => (
 			<Typography
 				key={href}

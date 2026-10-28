@@ -1,9 +1,11 @@
 /**
  * @jest-environment jsdom
  */
+import { APP_VERSION } from "@/app-info";
 import routes from "@/app/routes";
 import { openReportIssue } from "@/ui/services/report-issue";
 import { fireEvent, screen } from "@testing-library/react";
+import { whatsNewStore } from "@/ui/stores/whats-new/whats-new.store";
 import { renderWithI18n } from "@tests/utils/i18n";
 import StartupFooter from "./StartupFooter";
 
@@ -46,6 +48,16 @@ describe("StartupFooter", () => {
 		);
 
 		expect(openReportIssue).toHaveBeenCalledTimes(1);
+	});
+
+	it("affiche la version à côté du copyright et rouvre les nouveautés au clic", () => {
+		renderWithI18n(<StartupFooter />);
+		whatsNewStore.getState().close();
+
+		fireEvent.click(screen.getByRole("button", { name: APP_VERSION }));
+
+		expect(whatsNewStore.getState().visible).toBe(true);
+		whatsNewStore.getState().close();
 	});
 
 	it("sépare chaque élément par un point médian masqué aux lecteurs d'écran", () => {

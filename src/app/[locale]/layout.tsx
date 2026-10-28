@@ -6,6 +6,7 @@ import { routing } from "@/i18n/routing";
 import Footer from "@/ui/components/public-pages/Footer";
 import Header from "@/ui/components/public-pages/Header";
 import StandaloneBackButton from "@/ui/components/public-pages/StandaloneBackButton";
+import WhatsNew from "@/ui/components/whats-new/WhatsNew";
 import PUBLIC_PAGES_CLASS from "@/ui/components/public-pages/public-pages-class";
 import { hasLocale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
@@ -45,6 +46,7 @@ export default async function LocaleLayout({
 					"common.languageSwitch",
 					"auth",
 					"profile",
+					"whatsNew",
 				]}
 			>
 				<script
@@ -56,6 +58,7 @@ export default async function LocaleLayout({
 					<main>{children}</main>
 					<Footer />
 					<StandaloneBackButton />
+					<WhatsNew />
 				</div>
 			</ClientMessagesProvider>
 		</RootDocument>

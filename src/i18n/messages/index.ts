@@ -30,6 +30,7 @@ import frScene3d from "./fr/scene3d.json";
 import frGlossary from "./fr/glossary.json";
 import frEmbedded from "./fr/embedded.json";
 import frFeedback from "./fr/feedback.json";
+import frWhatsNew from "./fr/whatsNew.json";
 import enCommon from "./en/common.json";
 import enPreferences from "./en/preferences.json";
 import enAnalysisIssues from "./en/analysisIssues.json";
@@ -59,6 +60,7 @@ import enScene3d from "./en/scene3d.json";
 import enGlossary from "./en/glossary.json";
 import enEmbedded from "./en/embedded.json";
 import enFeedback from "./en/feedback.json";
+import enWhatsNew from "./en/whatsNew.json";
 
 export type Messages = {
 	common: typeof frCommon;
@@ -90,6 +92,7 @@ export type Messages = {
 	glossary: typeof frGlossary;
 	embedded: typeof frEmbedded;
 	feedback: typeof frFeedback;
+	whatsNew: typeof frWhatsNew;
 };
 
 const MESSAGES: Record<Locale, Messages> = {
@@ -123,6 +126,7 @@ const MESSAGES: Record<Locale, Messages> = {
 		glossary: frGlossary,
 		embedded: frEmbedded,
 		feedback: frFeedback,
+		whatsNew: frWhatsNew,
 	},
 	en: {
 		common: enCommon,
@@ -154,6 +158,7 @@ const MESSAGES: Record<Locale, Messages> = {
 		glossary: enGlossary,
 		embedded: enEmbedded,
 		feedback: enFeedback,
+		whatsNew: enWhatsNew,
 	},
 };
 

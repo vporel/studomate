@@ -1,0 +1,16 @@
+{
+	"title": "Nouveautés de Studomate {version}",
+	"previous": "Précédent",
+	"next": "Suivant",
+	"done": "Compris",
+	"slides": {
+		"offline": {
+			"title": "Studomate fonctionne hors connexion",
+			"body": "Une fois l'application chargée, vous pouvez continuer à concevoir et simuler vos projets sans réseau. Un message vous prévient lorsqu'une mise à jour est disponible."
+		},
+		"scene3d": {
+			"title": "Scènes 3D pour vos simulations",
+			"body": "Associez une scène 3D à votre projet et regardez la partie opérative réagir à votre programme, en plus des pages HMI."
+		}
+	}
+}

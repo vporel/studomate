@@ -1,0 +1,16 @@
+{
+	"title": "What's new in Studomate {version}",
+	"previous": "Previous",
+	"next": "Next",
+	"done": "Got it",
+	"slides": {
+		"offline": {
+			"title": "Studomate works offline",
+			"body": "Once the app has loaded, you can keep designing and simulating your projects without a network. A message tells you when an update is available."
+		},
+		"scene3d": {
+			"title": "3D scenes for your simulations",
+			"body": "Attach a 3D scene to your project and watch the physical process react to your program, on top of the HMI pages."
+		}
+	}
+}

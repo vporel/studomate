@@ -127,7 +127,8 @@
 			"legalMentions": "Legal notice",
 			"terms": "Terms of use",
 			"privacy": "Privacy policy",
-			"reportIssue": "Report an issue"
+			"reportIssue": "Report an issue",
+			"whatsNew": "See what's new in version {version}"
 		},
 		"sceneLabels": {
 			"crossroads": "3D animation of a crossroads: cars arrive on all four roads and stop at red while the two axes take turns on green.",

@@ -416,4 +416,35 @@ describe("LocalStorageProjectRepository", () => {
 			).toEqual([]);
 		});
 	});
+
+	describe("hasProjects", () => {
+		it("est faux sans aucun stockage", () => {
+			expect(new LocalStorageProjectRepository().hasProjects()).toBe(false);
+		});
+
+		it("est faux pour un index ou un tableau vide", () => {
+			const repository = new LocalStorageProjectRepository();
+			store.set(STORAGE_KEY, "{}");
+			expect(repository.hasProjects()).toBe(false);
+			store.set(STORAGE_KEY, "[]");
+			expect(repository.hasProjects()).toBe(false);
+		});
+
+		it("est vrai après l'enregistrement d'un projet (disposition v1)", async () => {
+			const repository = new LocalStorageProjectRepository();
+			await repository.save(newProject("p1", "A"));
+			expect(repository.hasProjects()).toBe(true);
+		});
+
+		it("est vrai pour un tableau hérité (disposition v0), sans migrer", () => {
+			store.set(STORAGE_KEY, legacyStoredValue([{ id: "p1", name: "A" }]));
+			expect(new LocalStorageProjectRepository().hasProjects()).toBe(true);
+			expect(store.has(LAYOUT_VERSION_KEY)).toBe(false);
+		});
+
+		it("est faux pour un stockage corrompu", () => {
+			store.set(STORAGE_KEY, "{pas du json");
+			expect(new LocalStorageProjectRepository().hasProjects()).toBe(false);
+		});
+	});
 });

@@ -6,6 +6,7 @@ import AppStartup from "@/ui/components/AppStartup";
 import FeedbackPrompt from "@/ui/components/feedback/FeedbackPrompt";
 import FullScreenLoader from "@/ui/components/FullScreenLoader";
 import ServiceWorkerUpdater from "@/ui/components/offline/ServiceWorkerUpdater";
+import WhatsNew from "@/ui/components/whats-new/WhatsNew";
 import { ProjectContextProvider } from "@/ui/components/projects/ProjectContextProvider";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import dynamic from "next/dynamic";
@@ -56,6 +57,7 @@ export default function App() {
 	return (
 		<LocaleProvider>
 			<NoIndexOnQuery />
+			<WhatsNew />
 			<AppContextProvider>
 				<ProjectContextProvider>
 					<ServiceWorkerUpdater />

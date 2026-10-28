@@ -127,7 +127,8 @@
 			"legalMentions": "Mentions légales",
 			"terms": "Conditions d'utilisation",
 			"privacy": "Politique de confidentialité",
-			"reportIssue": "Signaler un problème"
+			"reportIssue": "Signaler un problème",
+			"whatsNew": "Voir les nouveautés de la version {version}"
 		},
 		"sceneLabels": {
 			"crossroads": "Animation 3D d'un carrefour : des voitures arrivent sur les quatre branches et s'arrêtent au rouge, les deux axes passant au vert à tour de rôle.",

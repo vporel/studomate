@@ -56,7 +56,8 @@ src/lib/                neutral utilities (array, object, heartbeat), no domain 
 src/persistence/        migrations (project shape + localStorage layout) + repositories (localStorage, Supabase cloud, hybrid) + share tokens
 src/ui/                 Next.js (App Router) + zustand stores + MUI components
 src/training/            training module and step identifiers (course order), neutral root module
-src/app-info.ts         app identity (name, tagline...), neutral root module
+src/whats-new/          "what's new" carousel: version check and slide ids, neutral root module
+src/app-info.ts         app identity (name, tagline, `APP_VERSION`...), neutral root module
 src/user-profile/       user profile model (database-side schema, not part of the project schema), neutral root module
 ```
 
@@ -387,6 +388,31 @@ Bumping means changing together `FIRMWARE_VERSION` in the sketch and `SHIPPED_FI
 then rebuilding the precompiled hex with `firmwares/arduino/build-uno-r3.sh` (a test checks that
 all three agree). After **any** firmware change, rebuild the hex even when the version stays the
 same.
+
+## Application version and "what's new" (`APP_VERSION`)
+
+`APP_VERSION` (`src/app-info.ts`, format `vX.Y.Z`) is recorded in `localStorage`
+(`studomate_app_version`, `src/persistence/app-version.storage.ts`). On any route (`/app` and the
+public pages), `WhatsNew` (`src/ui/components/whats-new/`) compares it with the stored one: no
+stored version, it is written silently, unless local projects already exist (`LocalStorageProjectRepository.hasProjects()`:
+an existing user predating the key), in which case the carousel is shown; same version, nothing
+happens; different version, it is updated and the `WhatsNewModal` carousel is shown. A downgrade is
+not handled specially.
+
+The modal's visibility lives in `whatsNewStore` (`src/ui/stores/whats-new/`): the version shown in
+the startup footer and the Help menu's "Nouveautés" entry reopen it at any time.
+
+The carousel presents **the current version's news only** (no cumulative history). Its slides are
+declared by id in `src/whats-new/whats-new-slides.ts`, with a `title` and a `body` under
+`whatsNew.slides.<id>` in every locale (`whatsNew.json`).
+
+Any **notable new feature** (not a minor bug fix or a small interface tweak) must come with a
+"what's new" slide, so before touching the version, **ask the developer whether the current
+`APP_VERSION` has already been deployed**:
+
+- if not, stay on the current version and add the slide(s) to it;
+- if so, the developer chooses the new number: **never guess or increment it yourself**. Then
+  replace the slides with those of the new version.
 
 ## Expression parsing cache (`parseExpressionCached`)
 
