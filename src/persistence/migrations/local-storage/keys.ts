@@ -2,7 +2,8 @@
  * Clés `localStorage` de la disposition courante du stockage des projets locaux, et version de
  * cette disposition. Partagées par le repository et les migrations de disposition.
  */
-export const LOCAL_STORAGE_LAYOUT_VERSION_KEY = "studomate_local_storage_version";
+export const LOCAL_STORAGE_LAYOUT_VERSION_KEY =
+	"studomate_local_storage_version";
 
 /** Version de disposition que cette version de l'app sait produire et lire. */
 export const CURRENT_LAYOUT_VERSION = 1;

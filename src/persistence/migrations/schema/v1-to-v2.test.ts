@@ -74,7 +74,10 @@ describe("Migration v1 → v2 — retrait de `format` des GRAFCET", () => {
 	});
 
 	it("ne touche pas un projet sans `programs` exploitable", () => {
-		const migrated = v1ToV2.migrate({ ...makeV1Project(0), programs: undefined });
+		const migrated = v1ToV2.migrate({
+			...makeV1Project(0),
+			programs: undefined,
+		});
 
 		expect(migrated.programs).toBeUndefined();
 	});

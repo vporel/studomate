@@ -3,6 +3,7 @@
 import { LocaleProvider } from "@/ui/i18n/LocaleProvider";
 import { AppContextProvider } from "@/ui/components/AppContext";
 import AppStartup from "@/ui/components/AppStartup";
+import FeedbackPrompt from "@/ui/components/feedback/FeedbackPrompt";
 import FullScreenLoader from "@/ui/components/FullScreenLoader";
 import ServiceWorkerUpdater from "@/ui/components/offline/ServiceWorkerUpdater";
 import { ProjectContextProvider } from "@/ui/components/projects/ProjectContextProvider";
@@ -58,6 +59,7 @@ export default function App() {
 			<AppContextProvider>
 				<ProjectContextProvider>
 					<ServiceWorkerUpdater />
+					<FeedbackPrompt />
 					<AppComponent />
 				</ProjectContextProvider>
 			</AppContextProvider>

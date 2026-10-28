@@ -10,7 +10,7 @@ import { XYPosition } from "@xyflow/react";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import trackEvent from "@/ui/services/analytics";
+import trackPdfExported from "@/ui/pdf/track-pdf-exported";
 import { useT } from "@/ui/i18n/useT";
 import useCanEdit from "@/ui/components/projects/useCanEdit";
 import useProjectClipboard from "@/ui/components/projects/useProjectClipboard";
@@ -83,9 +83,7 @@ const GrafcetContextMenu = ({
 					sectionTitle: tExport("sectionTitleGrafcet", { name: grafcet.name }),
 				}),
 			)
-			.then(() =>
-				trackEvent("pdf-exported", { programs: 1, withVariablesTable: false }),
-			)
+			.then(() => trackPdfExported({ programs: 1, withVariablesTable: false }))
 			.catch(() => toast.error(tExport("errorAssembling")));
 	}, [grafcet, projectName, tExport]);
 

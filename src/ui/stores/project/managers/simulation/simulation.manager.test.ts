@@ -1663,4 +1663,41 @@ describe("SimulationManager", () => {
 			manager.setDesignMode();
 		});
 	});
+
+	describe("signal d'avis", () => {
+		function makeManager() {
+			const inputVar = VariableFactory.createLogicInput("I0");
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create([inputVar], [grafcet]);
+			const { get, set } = makeStore(project);
+			const notify = jest.fn();
+			const manager = new SimulationManager(
+				set,
+				get,
+				createAppProjectStoreEnvironment({
+					simulationNotifier: stubNotifier(),
+					feedback: { notify },
+				}),
+			);
+			return { manager, notify };
+		}
+
+		it("signale la fin d'une simulation quand on revient en conception", () => {
+			const { manager, notify } = makeManager();
+			manager.setSimulationMode();
+
+			manager.setDesignMode();
+
+			expect(notify).toHaveBeenCalledTimes(1);
+			expect(notify).toHaveBeenCalledWith("simulation-ended");
+		});
+
+		it("ne signale rien quand aucune simulation n'était en cours", () => {
+			const { manager, notify } = makeManager();
+
+			manager.setDesignMode();
+
+			expect(notify).not.toHaveBeenCalled();
+		});
+	});
 });

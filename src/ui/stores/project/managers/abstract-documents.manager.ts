@@ -7,7 +7,10 @@ import {
 } from "../project.store";
 import Project from "@/schemas/project/project.schema";
 import { ProjectDocumentType } from "../project.store.types";
-import type { ProjectStoreAnalytics } from "../environment/project-store-environment";
+import type {
+	ProjectStoreAnalytics,
+	ProjectStoreFeedback,
+} from "../environment/project-store-environment";
 
 const COMMANDS_STACK_SIZE = 100;
 
@@ -38,6 +41,7 @@ export default abstract class AbstractDocumentsManager<
 		setStoreState: ProjectStoreSetFunction,
 		getStoreState: ProjectStoreGetFunction,
 		protected readonly analytics: ProjectStoreAnalytics,
+		protected readonly feedback?: ProjectStoreFeedback,
 	) {
 		this.setStoreState = setStoreState;
 		this.getStoreState = getStoreState;

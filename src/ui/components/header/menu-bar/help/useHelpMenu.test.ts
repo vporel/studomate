@@ -3,6 +3,7 @@
  */
 import { act, renderHook } from "@testing-library/react";
 import { i18nWrapper } from "@tests/utils/i18n";
+import { feedbackStore } from "@/ui/stores/feedback/feedback.store";
 import useHelpMenu from "./useHelpMenu";
 
 const startProductTour = jest.fn();
@@ -27,7 +28,20 @@ describe("useHelpMenu", () => {
 		expect(result.current.items[0][1].label).toBe("Formations");
 		expect(result.current.items[0][2].label).toBe("Raccourcis clavier");
 		expect(result.current.items[0][3].label).toBe("Revoir la visite guidée");
-		expect(result.current.items[1][0].label).toBe("Signaler un problème");
+		expect(result.current.items[1]).toHaveLength(2);
+		expect(result.current.items[1][0].label).toBe("Donner un avis");
+		expect(result.current.items[1][1].label).toBe("Signaler un problème");
+	});
+
+	it("opens the feedback box when 'Donner un avis' is clicked", () => {
+		const { result } = renderHook(() => useHelpMenu(onShortcutsOpen), {
+			wrapper: i18nWrapper(),
+		});
+
+		result.current.items[1][0].onClick?.();
+
+		expect(feedbackStore.getState().source).toBe("menu");
+		feedbackStore.getState().close();
 	});
 
 	it("ouvre le mailto de signalement au clic sur 'Signaler un problème'", () => {
@@ -36,7 +50,7 @@ describe("useHelpMenu", () => {
 			wrapper: i18nWrapper(),
 		});
 
-		result.current.items[1][0].onClick?.();
+		result.current.items[1][1].onClick?.();
 
 		expect(openSpy).toHaveBeenCalledWith(
 			expect.stringContaining("mailto:"),

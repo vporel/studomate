@@ -135,7 +135,9 @@ describe("project store with the embedded environment", () => {
 		const { store } = openedStore();
 		store.getState().simulationManager.analyze();
 		expect(toast.success).toHaveBeenCalledTimes(1);
-		expect(toast.success).toHaveBeenCalledWith(expect.stringContaining("Analyse terminée"));
+		expect(toast.success).toHaveBeenCalledWith(
+			expect.stringContaining("Analyse terminée"),
+		);
 	});
 
 	it("opens only the given pages and activates the first one", () => {

@@ -9,9 +9,7 @@ describe("classifyStorageWriteError", () => {
 
 	it("reconnaît le quota dépassé quel que soit le nom du navigateur", () => {
 		expect(
-			classifyStorageWriteError(
-				new DOMException("full", "QuotaExceededError"),
-			),
+			classifyStorageWriteError(new DOMException("full", "QuotaExceededError")),
 		).toBe("quota-exceeded");
 		expect(
 			classifyStorageWriteError(

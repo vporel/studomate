@@ -39,6 +39,7 @@ export default abstract class AbstractProgramsManager<
 		const newProject = project.copy();
 		const program = create(newProject);
 		this.analytics.trackEvent("program-created", { type: this.programType });
+		this.feedback?.notify("program-created");
 		this.getStoreState().pagesManager.openPage({
 			id: program.id,
 			type: this.programType,

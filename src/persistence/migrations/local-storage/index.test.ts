@@ -1,7 +1,4 @@
-import {
-	ensureLocalStorageLayout,
-	readLayoutVersion,
-} from "./index";
+import { ensureLocalStorageLayout, readLayoutVersion } from "./index";
 import { LayoutMigration } from "./layout-migration";
 import { LOCAL_STORAGE_LAYOUT_VERSION_KEY } from "./keys";
 import { installMemoryLocalStorage } from "@tests/utils/local-storage-stub";

@@ -409,12 +409,17 @@ export const createProjectStore = (env: ProjectStoreEnvironment) => {
 			//=============== GRAFCETS ===============
 			grafcetsStoresValues: {},
 			grafcetsStoresManagers: {},
-			grafcetsManager: new GrafcetsManager(set, get, env.analytics),
+			grafcetsManager: new GrafcetsManager(
+				set,
+				get,
+				env.analytics,
+				env.feedback,
+			),
 
 			//=============== LADDERS ===============
 			laddersStoresValues: {},
 			laddersStoresManagers: {},
-			laddersManager: new LaddersManager(set, get, env.analytics),
+			laddersManager: new LaddersManager(set, get, env.analytics, env.feedback),
 
 			//=============== HMI ===============
 			hmiStoresValues: {},

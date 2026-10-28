@@ -4,6 +4,9 @@ import { ProjectStoreState } from "../project.store";
 import LaddersManager from "./ladders.manager";
 
 const mockTrackEvent = jest.fn();
+const mockFeedbackNotify = jest.fn();
+
+beforeEach(() => mockFeedbackNotify.mockClear());
 
 function makeManager(initial: {
 	project?: Project | null;
@@ -33,7 +36,14 @@ function makeManager(initial: {
 	const get = () => state;
 
 	return {
-		manager: new LaddersManager(set, get, { trackEvent: mockTrackEvent }),
+		manager: new LaddersManager(
+			set,
+			get,
+			{ trackEvent: mockTrackEvent },
+			{
+				notify: mockFeedbackNotify,
+			},
+		),
 		getState: () => state,
 	};
 }
@@ -96,6 +106,18 @@ describe("LaddersManager", () => {
 				title: "L1",
 			});
 			expect(getState().hasUnsavedChanges).toBe(true);
+			expect(mockFeedbackNotify).toHaveBeenCalledWith("program-created");
+		});
+
+		it("ne signale rien pour l'avis quand la création est refusée", () => {
+			const { manager } = makeManager({
+				project: new Project("p1", "Projet", "auteur"),
+				mode: ProjectMode.SIMULATION,
+			});
+
+			manager.newLadder("L1");
+
+			expect(mockFeedbackNotify).not.toHaveBeenCalled();
 		});
 
 		it("génère un nom unique au format Ladder_N quand aucun nom n'est fourni", () => {

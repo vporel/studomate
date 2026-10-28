@@ -4,7 +4,7 @@ import { JsPdfExporter } from "@/ui/lib/pdf/jspdf.pdf-exporter";
 import { PdfCoverPage, PdfExportSection } from "@/ui/lib/pdf/pdf-exporter";
 import { buildProgramSection, ProgramExportConfig } from "@/ui/pdf/program-pdf";
 import { LadderRenderContext } from "@/ui/pdf/drawing/ladder-render-context";
-import trackEvent from "@/ui/services/analytics";
+import trackPdfExported from "./track-pdf-exported";
 import { useT } from "@/ui/i18n/useT";
 import { useCallback, useState } from "react";
 
@@ -107,7 +107,7 @@ export function usePdfExport(): UsePdfExportResult {
 				return;
 			}
 
-			trackEvent("pdf-exported", {
+			trackPdfExported({
 				programs: programs.length,
 				withVariablesTable: variableSections.length > 0,
 			});

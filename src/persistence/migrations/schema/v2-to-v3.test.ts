@@ -19,7 +19,10 @@ describe("Migration v2 → v3 — version", () => {
 	});
 
 	it("ne touche pas un projet sans `programs` exploitable", () => {
-		const migrated = v2ToV3.migrate({ ...makeV2Project(), programs: undefined });
+		const migrated = v2ToV3.migrate({
+			...makeV2Project(),
+			programs: undefined,
+		});
 
 		expect(migrated.programs).toBeUndefined();
 		expect(migrated.schemaVersion).toBe(3);
@@ -39,7 +42,10 @@ describe("Migration v2 → v3 — port de comptage CTU renommé en CU", () => {
 		};
 	}
 
-	function projectWith(elements: unknown[], extra: Record<string, unknown> = {}) {
+	function projectWith(
+		elements: unknown[],
+		extra: Record<string, unknown> = {},
+	) {
 		return {
 			...makeV2Project(),
 			programs: {
@@ -62,12 +68,19 @@ describe("Migration v2 → v3 — port de comptage CTU renommé en CU", () => {
 				{
 					id: "cmp",
 					type: "block",
-					data: { blockType: "compare", params: { in1: "C1.IN", in2: "x", operator: "=" } },
+					data: {
+						blockType: "compare",
+						params: { in1: "C1.IN", in2: "x", operator: "=" },
+					},
 				},
 			],
 			{
 				hmiPages: {
-					p1: { widgets: [{ id: "w1", data: { variable: "C1.IN", label: "C1.IN" } }] },
+					p1: {
+						widgets: [
+							{ id: "w1", data: { variable: "C1.IN", label: "C1.IN" } },
+						],
+					},
 				},
 			},
 		);
@@ -116,7 +129,11 @@ describe("Migration v2 → v3 — port de comptage CTU renommé en CU", () => {
 						{
 							id: "s2",
 							elements: [
-								{ id: "k1", type: "contact", data: { variable: "C1.IN", type: "NO" } },
+								{
+									id: "k1",
+									type: "contact",
+									data: { variable: "C1.IN", type: "NO" },
+								},
 							],
 						},
 					],
@@ -126,7 +143,9 @@ describe("Migration v2 → v3 — port de comptage CTU renommé en CU", () => {
 
 		const migrated = v2ToV3.migrate(project) as any;
 
-		expect(migrated.programs.l2.sections[0].elements[0].data.variable).toBe("C1.CU");
+		expect(migrated.programs.l2.sections[0].elements[0].data.variable).toBe(
+			"C1.CU",
+		);
 	});
 
 	it("ne modifie pas l'objet d'entrée", () => {
@@ -145,7 +164,11 @@ describe("Migration v2 → v3 — port de comptage CTU renommé en CU", () => {
 		const project = {
 			...makeV2Project(),
 			programs: {
-				l1: { id: "l1", type: "ladder", sections: [null, { elements: [null, {}] }] },
+				l1: {
+					id: "l1",
+					type: "ladder",
+					sections: [null, { elements: [null, {}] }],
+				},
 				l2: { id: "l2", type: "ladder" },
 			},
 		};
@@ -161,14 +184,24 @@ describe("Migration v2 → v3 — contact NO/NF explicite des widgets IHM", () =
 
 	it("passe un bouton poussoir `momentary` ou sans comportement en `momentary-no`", () => {
 		const project = projectWithWidgets({
-			w1: { id: "w1", type: "push-button", data: { variable: "a", behavior: "momentary" } },
+			w1: {
+				id: "w1",
+				type: "push-button",
+				data: { variable: "a", behavior: "momentary" },
+			},
 			w2: { id: "w2", type: "push-button", data: { variable: "b" } },
 		});
 
 		const migrated = v2ToV3.migrate(project) as any;
 
-		expect(migrated.hmiPages.p1.widgets.w1.data).toEqual({ variable: "a", behavior: "momentary-no" });
-		expect(migrated.hmiPages.p1.widgets.w2.data).toEqual({ variable: "b", behavior: "momentary-no" });
+		expect(migrated.hmiPages.p1.widgets.w1.data).toEqual({
+			variable: "a",
+			behavior: "momentary-no",
+		});
+		expect(migrated.hmiPages.p1.widgets.w2.data).toEqual({
+			variable: "b",
+			behavior: "momentary-no",
+		});
 	});
 
 	it("conserve les modes `set`, `reset` et `toggle` d'un bouton poussoir", () => {
@@ -185,22 +218,32 @@ describe("Migration v2 → v3 — contact NO/NF explicite des widgets IHM", () =
 		expect(migrated.hmiPages.p1.widgets.w3.data.behavior).toBe("toggle");
 	});
 
-	it("donne `contact: \"no\"` à un interrupteur et ne touche pas les autres widgets", () => {
+	it('donne `contact: "no"` à un interrupteur et ne touche pas les autres widgets', () => {
 		const indicator = { id: "w2", type: "indicator", data: { variable: "v" } };
 		const project = projectWithWidgets({
-			w1: { id: "w1", type: "toggle-switch", data: { variable: "s", label: "S" } },
+			w1: {
+				id: "w1",
+				type: "toggle-switch",
+				data: { variable: "s", label: "S" },
+			},
 			w2: indicator,
 		});
 
 		const migrated = v2ToV3.migrate(project) as any;
 
-		expect(migrated.hmiPages.p1.widgets.w1.data).toEqual({ variable: "s", label: "S", contact: "no" });
+		expect(migrated.hmiPages.p1.widgets.w1.data).toEqual({
+			variable: "s",
+			label: "S",
+			contact: "no",
+		});
 		expect(migrated.hmiPages.p1.widgets.w2).toEqual(indicator);
 	});
 
 	it("ne modifie pas l'objet d'entrée et tolère des pages malformées", () => {
 		const project = {
-			...projectWithWidgets({ w1: { id: "w1", type: "toggle-switch", data: {} } }),
+			...projectWithWidgets({
+				w1: { id: "w1", type: "toggle-switch", data: {} },
+			}),
 		};
 		(project.hmiPages as any).p2 = null;
 		(project.hmiPages as any).p3 = { id: "p3" };
@@ -219,7 +262,13 @@ describe("Migration v2 → v3 — type LONG remplacé par DINT", () => {
 		const project = {
 			...makeV2Project(),
 			variables: [
-				{ id: "v1", mnemonic: "total", zone: "memory", type: "LONG", comment: "c" },
+				{
+					id: "v1",
+					mnemonic: "total",
+					zone: "memory",
+					type: "LONG",
+					comment: "c",
+				},
 				{ id: "v2", mnemonic: "n", zone: "memory", type: "INT" },
 			],
 		};
@@ -227,7 +276,13 @@ describe("Migration v2 → v3 — type LONG remplacé par DINT", () => {
 		const migrated = v2ToV3.migrate(project) as any;
 
 		expect(migrated.variables).toEqual([
-			{ id: "v1", mnemonic: "total", zone: "memory", type: "DINT", comment: "c" },
+			{
+				id: "v1",
+				mnemonic: "total",
+				zone: "memory",
+				type: "DINT",
+				comment: "c",
+			},
 			{ id: "v2", mnemonic: "n", zone: "memory", type: "INT" },
 		]);
 	});

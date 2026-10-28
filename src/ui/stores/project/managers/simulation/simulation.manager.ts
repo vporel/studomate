@@ -135,10 +135,12 @@ export default class SimulationManager {
 	}
 
 	setDesignMode() {
+		const wasSimulating = this.plc !== null;
 		this.stopSimulation();
 		this.getStoreState().hmiManager.closeHmiSimulationPage();
 		this.setStoreState(() => ({ mode: ProjectMode.DESIGN }));
 		void this.getStoreState().hardwareLinkManager.onModeSettled();
+		if (wasSimulating) this.env.feedback?.notify("simulation-ended");
 	}
 
 	/** Changes what the simulation in progress is made of, without restarting it. */

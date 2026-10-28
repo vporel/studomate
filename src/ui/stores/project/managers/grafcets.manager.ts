@@ -8,7 +8,10 @@ import {
 	ProjectStoreSetFunction,
 	ProjectStoreState,
 } from "../project.store";
-import type { ProjectStoreAnalytics } from "../environment/project-store-environment";
+import type {
+	ProjectStoreAnalytics,
+	ProjectStoreFeedback,
+} from "../environment/project-store-environment";
 import AbstractProgramsManager from "./abstract-programs.manager";
 
 export default class GrafcetsManager extends AbstractProgramsManager<
@@ -22,8 +25,9 @@ export default class GrafcetsManager extends AbstractProgramsManager<
 		setStoreState: ProjectStoreSetFunction,
 		getStoreState: ProjectStoreGetFunction,
 		analytics: ProjectStoreAnalytics,
+		feedback?: ProjectStoreFeedback,
 	) {
-		super(setStoreState, getStoreState, analytics);
+		super(setStoreState, getStoreState, analytics, feedback);
 	}
 
 	protected getDocument(project: Project, id: string): Grafcet | undefined {

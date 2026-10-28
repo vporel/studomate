@@ -12,7 +12,7 @@ import useCanEdit from "@/ui/components/projects/useCanEdit";
 import useProjectClipboard from "@/ui/components/projects/useProjectClipboard";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import useLadderRenderContext from "@/ui/pdf/useLadderRenderContext";
-import trackEvent from "@/ui/services/analytics";
+import trackPdfExported from "@/ui/pdf/track-pdf-exported";
 import { useT } from "@/ui/i18n/useT";
 import { useLadderContext } from "../context/LadderContext";
 import { useLadderStore } from "../context/LadderContext";
@@ -61,9 +61,7 @@ const LadderContextMenu = ({
 					ladderContext,
 				}),
 			)
-			.then(() =>
-				trackEvent("pdf-exported", { programs: 1, withVariablesTable: false }),
-			)
+			.then(() => trackPdfExported({ programs: 1, withVariablesTable: false }))
 			.catch(() => toast.error(tExport("errorAssembling")));
 	}, [ladder, projectName, ladderContext, tExport]);
 	const setCrossReferenceFilter = useProjectStore(

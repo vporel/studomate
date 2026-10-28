@@ -4,8 +4,12 @@ import { ProjectStoreState } from "../project.store";
 import GrafcetsManager from "./grafcets.manager";
 
 const mockTrackEvent = jest.fn();
+const mockFeedbackNotify = jest.fn();
 
-beforeEach(() => mockTrackEvent.mockClear());
+beforeEach(() => {
+	mockTrackEvent.mockClear();
+	mockFeedbackNotify.mockClear();
+});
 
 function makeManager(initial: {
 	project?: Project | null;
@@ -36,7 +40,14 @@ function makeManager(initial: {
 	const get = () => state;
 
 	return {
-		manager: new GrafcetsManager(set, get, { trackEvent: mockTrackEvent }),
+		manager: new GrafcetsManager(
+			set,
+			get,
+			{ trackEvent: mockTrackEvent },
+			{
+				notify: mockFeedbackNotify,
+			},
+		),
 		getState: () => state,
 	};
 }
@@ -111,6 +122,18 @@ describe("GrafcetsManager", () => {
 			expect(mockTrackEvent).toHaveBeenCalledWith("program-created", {
 				type: "grafcet",
 			});
+			expect(mockFeedbackNotify).toHaveBeenCalledWith("program-created");
+		});
+
+		it("ne signale rien pour l'avis quand la création est refusée", () => {
+			const { manager } = makeManager({
+				project: new Project("p1", "Projet", "auteur"),
+				mode: ProjectMode.SIMULATION,
+			});
+
+			manager.newGrafcet("G1");
+
+			expect(mockFeedbackNotify).not.toHaveBeenCalled();
 		});
 
 		it("génère un nom unique au format Grafcet_N quand rien n'est fourni", () => {

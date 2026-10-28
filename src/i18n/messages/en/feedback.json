@@ -1,0 +1,14 @@
+{
+	"title": "We'd like your opinion",
+	"intro": "Is Studomate useful to you? A rating and a few words help us improve it.",
+	"ratingLabel": "Your rating",
+	"ratingValue": "{count, plural, one {# star out of 5} other {# stars out of 5}}",
+	"commentLabel": "Comment (optional)",
+	"commentPlaceholder": "What you like, what is missing, what got you stuck…",
+	"send": "Send",
+	"sending": "Sending…",
+	"later": "Later",
+	"cancel": "Cancel",
+	"thanks": "Thank you for your feedback!",
+	"error": "Sending failed. Please try again in a moment."
+}

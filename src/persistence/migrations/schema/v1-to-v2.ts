@@ -14,9 +14,7 @@ const JUNCTION_COLLECTIONS = [
 ];
 
 function snap(px: number): number {
-	return (
-		Math.round(px / JUNCTION_BRANCH_MARGIN) * JUNCTION_BRANCH_MARGIN || 0
-	);
+	return Math.round(px / JUNCTION_BRANCH_MARGIN) * JUNCTION_BRANCH_MARGIN || 0;
 }
 
 /** Vrai si l'objet a la forme d'un élément de jonction persisté (data + position + size). */
@@ -115,9 +113,10 @@ const v1ToV2: ProjectMigration = {
 		"Store `dialect` as a string (`FR`/`EN`) instead of an enum ordinal, drop `format` from GRAFCET programs, and normalize junction geometry",
 	migrate: (project) => ({
 		...project,
-		dialect: project.dialect === 1 || project.dialect === Dialect.EN
-			? Dialect.EN
-			: Dialect.FR,
+		dialect:
+			project.dialect === 1 || project.dialect === Dialect.EN
+				? Dialect.EN
+				: Dialect.FR,
 		programs:
 			project.programs && typeof project.programs === "object"
 				? migrateGrafcetPrograms(project.programs as Record<string, unknown>)

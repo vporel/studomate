@@ -1,3 +1,4 @@
+import type { FeedbackMilestone } from "@/feedback/feedback-prompt";
 import type { Locale } from "@/i18n/config";
 import type { HeartbeatScheduler } from "@/lib/heartbeat/heartbeat-scheduler";
 import type { PagesSession } from "@/persistence/pages-session.storage";
@@ -33,6 +34,11 @@ export type ProjectCapabilities = {
 
 export type ProjectStoreAnalytics = {
 	trackEvent(eventName: string, eventData?: Record<string, unknown>): void;
+};
+
+/** Lets the interface ask for an opinion after something the user achieved. */
+export type ProjectStoreFeedback = {
+	notify(milestone: FeedbackMilestone): void;
 };
 
 export type ProjectStorePreferences = {
@@ -73,6 +79,7 @@ export type ProjectStoreEnvironment = {
 	getLocale(): Locale;
 	capabilities: Omit<ProjectCapabilities, "hardware">;
 	analytics: ProjectStoreAnalytics;
+	feedback?: ProjectStoreFeedback;
 	simulationNotifier: SimulationNotifier;
 	hardwareNotifier: HardwareLinkNotifier;
 	heartbeat?: HeartbeatScheduler;
@@ -85,7 +92,12 @@ export type ProjectStoreEnvironment = {
 /** What `SimulationManager` needs from the environment. */
 export type SimulationManagerEnvironment = Pick<
 	ProjectStoreEnvironment,
-	"getLocale" | "analytics" | "preferences" | "heartbeat" | "simulationNotifier"
+	| "getLocale"
+	| "analytics"
+	| "feedback"
+	| "preferences"
+	| "heartbeat"
+	| "simulationNotifier"
 >;
 
 export class PersistenceUnavailableError extends Error {

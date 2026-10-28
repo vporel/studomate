@@ -18,7 +18,7 @@ import Tooltip from "@mui/material/Tooltip";
 import { toast } from "react-toastify";
 import Variable from "@/schemas/variable/variable.schema";
 import type { VariablesTableColumns } from "@/ui/pdf/variables-table-pdf";
-import trackEvent from "@/ui/services/analytics";
+import trackPdfExported from "@/ui/pdf/track-pdf-exported";
 import {
 	ExportCsv,
 	FilterPanelTrigger,
@@ -119,9 +119,7 @@ export default function GridToolBar({
 					},
 				}),
 			)
-			.then(() =>
-				trackEvent("pdf-exported", { programs: 0, withVariablesTable: true }),
-			)
+			.then(() => trackPdfExported({ programs: 0, withVariablesTable: true }))
 			.catch(() => toast.error(t("exportPdfError")));
 	};
 

@@ -3,7 +3,11 @@ import v0ToV1 from "./v0-to-v1";
 import { PROJECTS_INDEX_KEY, projectKey } from "./keys";
 import { installMemoryLocalStorage } from "@tests/utils/local-storage-stub";
 
-const raw = (id: string, name: string, extra: Record<string, unknown> = {}) => ({
+const raw = (
+	id: string,
+	name: string,
+	extra: Record<string, unknown> = {},
+) => ({
 	id,
 	name,
 	schemaVersion: 2,
@@ -28,8 +32,12 @@ describe("migration de disposition v0 → v1", () => {
 
 		v0ToV1.migrate();
 
-		expect(JSON.parse(store.get(projectKey("p1"))!)).toEqual(raw("p1", "Alpha"));
-		expect(JSON.parse(store.get(projectKey("p2"))!)).toEqual(raw("p2", "Bravo"));
+		expect(JSON.parse(store.get(projectKey("p1"))!)).toEqual(
+			raw("p1", "Alpha"),
+		);
+		expect(JSON.parse(store.get(projectKey("p2"))!)).toEqual(
+			raw("p2", "Bravo"),
+		);
 		expect(JSON.parse(store.get(PROJECTS_INDEX_KEY)!)).toEqual({
 			p1: { name: "Alpha" },
 			p2: { name: "Bravo" },
@@ -44,7 +52,9 @@ describe("migration de disposition v0 → v1", () => {
 
 		v0ToV1.migrate();
 
-		expect(JSON.parse(store.get(projectKey("p1"))!)).toEqual(raw("p1", "Alpha"));
+		expect(JSON.parse(store.get(projectKey("p1"))!)).toEqual(
+			raw("p1", "Alpha"),
+		);
 	});
 
 	it("écarte les entrées sans identifiant exploitable", () => {
@@ -72,7 +82,10 @@ describe("migration de disposition v0 → v1", () => {
 
 	it("est sans effet si l'index est déjà un objet (ré-essai après pose de version ratée)", () => {
 		store.set(projectKey("p1"), JSON.stringify(raw("p1", "Vrai contenu")));
-		store.set(PROJECTS_INDEX_KEY, JSON.stringify({ p1: { name: "Vrai contenu" } }));
+		store.set(
+			PROJECTS_INDEX_KEY,
+			JSON.stringify({ p1: { name: "Vrai contenu" } }),
+		);
 
 		v0ToV1.migrate();
 

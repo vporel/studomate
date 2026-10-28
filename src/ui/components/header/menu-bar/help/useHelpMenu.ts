@@ -2,6 +2,7 @@
 
 import routes from "@/app/routes";
 import { useT } from "@/ui/i18n/useT";
+import { openFeedbackFromMenu } from "@/ui/services/feedback-prompt";
 import { openReportIssue } from "@/ui/services/report-issue";
 import { useMemo } from "react";
 import useStartProductTour from "@/ui/components/product-tour/useStartProductTour";
@@ -40,6 +41,10 @@ export default function useHelpMenu(onShortcutsOpen: () => void): AppMenuType {
 					},
 				],
 				[
+					{
+						label: t("giveFeedback"),
+						onClick: openFeedbackFromMenu,
+					},
 					{
 						label: t("reportIssue"),
 						onClick: openReportIssue,

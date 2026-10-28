@@ -10,6 +10,7 @@ import {
 import { readString, writeString } from "@/persistence/safe-local-storage";
 import HybridProjectRepository from "@/persistence/repositories/hybrid.project.repository";
 import trackEvent from "@/ui/services/analytics";
+import notifyFeedbackMilestone from "@/ui/services/feedback-prompt";
 import { authStore, isAnonymousUser } from "@/ui/stores/auth/auth.store";
 import createBrowserScene3dLinkHost from "../managers/3d-scene/browser-scene3d-link-host";
 import createBrowserRemoteIoDevice from "../managers/hardware-link/browser-remote-io-device";
@@ -50,6 +51,7 @@ export default function createAppProjectStoreEnvironment(
 			ladder: { floatingSystemBlocksPalette: false },
 		},
 		analytics: { trackEvent },
+		feedback: { notify: notifyFeedbackMilestone },
 		simulationNotifier: new ToastSimulationNotifier(),
 		hardwareNotifier: new ToastHardwareLinkNotifier(),
 		heartbeat: lazyBrowserHeartbeat,
