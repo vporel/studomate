@@ -2,10 +2,12 @@ import Connection from "./connection.schema";
 import Ladder from "./ladder.schema";
 import { createCoilElement, createContactElement } from "./element.schema";
 import {
+	createUserProgramBlockElement,
 	createArithmeticBlockElement,
 	createCompareBlockElement,
 } from "./block.schema";
 import { createTimerBlockElement } from "./function-blocks/timer.schema";
+import { createCounterBlockElement } from "./function-blocks/counter.schema";
 import Section from "./section.schema";
 
 describe("Ladder", () => {
@@ -197,6 +199,59 @@ describe("Ladder", () => {
 			ladder.addElements(sectionB.id, [contactB]);
 
 			expect(ladder.getAllElements()).toEqual([contactA, contactB]);
+		});
+
+		describe("getBlockNames", () => {
+			const timer = (name: string, row = 0) =>
+				createTimerBlockElement(
+					{ name, timerType: "TON", pt: "T#1s", et: "" },
+					row,
+					0,
+				);
+			const counter = (name: string, row = 0) =>
+				createCounterBlockElement(
+					{ name, counterType: "CTU", control: "CU", pv: "10" },
+					row,
+					0,
+				);
+
+			it("renvoie un ensemble vide pour un ladder vide", () => {
+				expect(new Ladder("l1", "L").getBlockNames().size).toBe(0);
+			});
+
+			it("rassemble les noms de timers et compteurs de toutes les sections", () => {
+				const ladder = new Ladder("l1", "L");
+				const [sectionA] = ladder.sections;
+				const sectionB = ladder.createSection("B");
+				ladder.addElements(sectionA.id, [timer("Tempo"), counter("Cpt", 1)]);
+				ladder.addElements(sectionB.id, [timer("Tempo2")]);
+
+				expect(ladder.getBlockNames()).toEqual(
+					new Set(["Tempo", "Cpt", "Tempo2"]),
+				);
+			});
+
+			it("ignore les blocs sans nom", () => {
+				const ladder = new Ladder("l1", "L");
+				ladder.addElements(ladder.sections[0].id, [
+					timer(""),
+					counter("Cpt", 1),
+				]);
+
+				expect(ladder.getBlockNames()).toEqual(new Set(["Cpt"]));
+			});
+
+			it("ignore les éléments non-blocs et les autres types de bloc", () => {
+				const ladder = new Ladder("l1", "L");
+				ladder.addElements(ladder.sections[0].id, [
+					createContactElement("A", "NO", 0, 0),
+					createCoilElement("B", "normal", 1, 0),
+					createUserProgramBlockElement("prog1", 2, 0),
+					createCompareBlockElement(3, 0),
+				]);
+
+				expect(ladder.getBlockNames().size).toBe(0);
+			});
 		});
 	});
 

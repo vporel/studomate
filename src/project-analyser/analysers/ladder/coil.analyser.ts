@@ -6,6 +6,8 @@ import {
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Project from "@/schemas/project/project.schema";
 import LadderElementAnalyser, {
+	checkBooleanVariable,
+	checkHasPredecessor,
 	LadderVariablesContext,
 } from "./element.analyser";
 
@@ -28,32 +30,19 @@ export default class CoilAnalyser extends LadderElementAnalyser<CoilElement> {
 		const variable = variablesByMnemonic.get(element.data.variable);
 		const issues: ProjectAnalyserIssue[] = [];
 
-		if (!element.data.variable.trim()) {
-			issues.push(
-				new ProjectAnalyserIssue("error", "LADDER_COIL_NO_VARIABLE", source),
-			);
-		} else if (!variable) {
-			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"LADDER_COIL_VARIABLE_UNDECLARED",
-					source,
-					{
-						variableName: element.data.variable,
-					},
-				),
-			);
-		} else {
-			if (variable.type !== "BOOL") {
-				issues.push(
-					new ProjectAnalyserIssue(
-						"error",
-						"LADDER_COIL_VARIABLE_NOT_BOOLEAN",
-						source,
-						{ variableName: element.data.variable },
-					),
-				);
-			}
+		const variableIssue = checkBooleanVariable(
+			element.data.variable,
+			variablesByMnemonic,
+			source,
+			{
+				noVariable: "LADDER_COIL_NO_VARIABLE",
+				undeclared: "LADDER_COIL_VARIABLE_UNDECLARED",
+				notBoolean: "LADDER_COIL_VARIABLE_NOT_BOOLEAN",
+			},
+		);
+		if (variableIssue) issues.push(variableIssue);
+
+		if (variable) {
 			if (variable.zone === "constant") {
 				issues.push(
 					new ProjectAnalyserIssue(
@@ -70,28 +59,14 @@ export default class CoilAnalyser extends LadderElementAnalyser<CoilElement> {
 						"error",
 						"LADDER_COIL_VARIABLE_IS_INPUT",
 						source,
-						{
-							variableName: element.data.variable,
-						},
+						{ variableName: element.data.variable },
 					),
 				);
 			}
 		}
 
-		const connections = ladder
-			.getAllConnections()
-			.map(({ connection }) => connection);
-		if (
-			!connections.some((connection) => connection.target.id === element.id)
-		) {
-			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"LADDER_ELEMENT_NO_PREDECESSOR",
-					source,
-				),
-			);
-		}
+		const predecessorIssue = checkHasPredecessor(element, ladder, source);
+		if (predecessorIssue) issues.push(predecessorIssue);
 
 		if (isOverwritingCoilType(element.data.type)) {
 			const sameVariableCoilsCount = ladder

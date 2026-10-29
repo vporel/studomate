@@ -18,6 +18,7 @@ test("crée un projet, y ajoute un grafcet, l'enregistre puis le retrouve après
 			JSON.stringify({ userType: null, schoolType: null }),
 		);
 		localStorage.setItem("studomate_product_tour_seen", "true");
+		localStorage.setItem("studomate_default_dialect", "FR");
 	});
 
 	await page.goto("/app");

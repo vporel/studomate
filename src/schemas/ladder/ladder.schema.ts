@@ -10,6 +10,8 @@ import {
 } from "./element.schema";
 import { BLOCK_PIN_PARAM_KEYS } from "./block.schema";
 import Section from "./section.schema";
+import { getTimerBlockParams } from "./function-blocks/timer.schema";
+import { getCounterBlockParams } from "./function-blocks/counter.schema";
 
 /** Base du nom auto-généré ("Ladder_1", "Ladder_2"...) à la création — voir
  * `Project.nextProgramName`. */
@@ -288,6 +290,19 @@ export default class Ladder extends Program {
 	 */
 	getAllElements(): LadderElement[] {
 		return this.sections.flatMap((section) => section.elements);
+	}
+
+	/** Noms des blocs timer/compteur du ladder (toutes sections). */
+	getBlockNames(): Set<string> {
+		return new Set(
+			this.getAllElements().flatMap((el) => {
+				const params =
+					el.type === "block"
+						? (getTimerBlockParams(el) ?? getCounterBlockParams(el))
+						: null;
+				return params?.name ? [params.name] : [];
+			}),
+		);
 	}
 
 	getAllConnections(): { sectionId: string; connection: Connection }[] {

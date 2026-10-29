@@ -20,7 +20,7 @@ const COMMANDS_STACK_SIZE = 100;
  * command.
  */
 export default abstract class AbstractDocumentsManager<
-	TDocument extends { id: string; copy(): unknown },
+	TDocument extends { id: string; name: string; copy(): unknown },
 	TValues,
 	TManagers extends { commandsStackManager: { refreshFlags(): void } },
 > {
@@ -102,6 +102,43 @@ export default abstract class AbstractDocumentsManager<
 
 	protected deleteCommandsStack(documentId: string): void {
 		this.commandsStacks.delete(documentId);
+	}
+
+	protected deleteDocumentById(
+		id: string,
+		deleteFromProject: (project: Project) => void,
+	): void {
+		const project = this.getStoreState().project;
+		if (!project) return;
+		const newProject = project.copy();
+		deleteFromProject(newProject);
+		this.deleteCommandsStack(id);
+		this.getStoreState().pagesManager.closePage(id);
+		this.setStoreState(() => ({
+			project: newProject,
+			hasUnsavedChanges: true,
+		}));
+	}
+
+	protected renameDocumentById(id: string, newName: string): void {
+		const project = this.getStoreState().project;
+		if (!project) return;
+		const newProject = project.copy();
+		const document = this.getDocument(newProject, id);
+		if (!document) return;
+		document.name = newName;
+		const pagesData = this.getStoreState().pagesData;
+		if (pagesData[id]) {
+			const newPagesData = structuredClone(pagesData);
+			newPagesData[id].title = newName;
+			this.setStoreState(() => ({ pagesData: newPagesData }));
+		}
+		this.setStoreState(() => ({
+			project: newProject,
+			hasUnsavedChanges: true,
+		}));
+		// A mounted store pushes its own copy back to the project on its next change.
+		this.syncMountedStoresFromProject();
 	}
 
 	getActiveStoreValues(): TValues | null {

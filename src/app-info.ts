@@ -33,6 +33,8 @@ export const APP_SHORT_DESCRIPTION =
 	"Concevez et simulez GRAFCET, Ladder et HMI animées dans le même navigateur : sans installation, sans compte.";
 export const APP_REPO_URL = "https://github.com/vporel/studomate";
 export const APP_CONTACT_EMAIL = "dev.vporel@gmail.com";
+/** Expéditeur des mails de notification : adresse sur le domaine vérifié chez Resend. */
+export const APP_FEEDBACK_EMAIL_FROM = "Studomate <feedback@studomate.com>";
 export const AUTHOR_NAME = "Vivian NKOUANANG";
 export const AUTHOR_URL = "https://www.vporel.com";
 export const AUTHOR_LINKEDIN_URL =

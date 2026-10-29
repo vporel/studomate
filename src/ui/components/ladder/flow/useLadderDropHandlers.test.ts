@@ -78,12 +78,12 @@ describe("useLadderDropHandlers", () => {
 	function setup(
 		section: Section,
 		leafPositions: { id: string; row: number; col: number }[],
-		draggedElement: unknown,
+		draggedItem: unknown,
 	) {
 		(useLadderStore as jest.Mock).mockImplementation(
 			selectorImplementation({ commandsStackManager }),
 		);
-		(useLadderToolbarDnD as jest.Mock).mockReturnValue({ draggedElement });
+		(useLadderToolbarDnD as jest.Mock).mockReturnValue({ draggedItem });
 		(useReactFlow as jest.Mock).mockReturnValue({ screenToFlowPosition });
 		return renderHook(() => useLadderDropHandlers(section, leafPositions));
 	}

@@ -84,36 +84,14 @@ export default class HmiManager extends AbstractDocumentsManager<
 		const project = this.getStoreState().project;
 		if (!project) return;
 		if (!canEdit(this.getStoreState())) return;
-		const newProject = project.copy();
-		newProject.deleteHmiPage(hmiPageId);
-		this.deleteCommandsStack(hmiPageId);
-		this.getStoreState().pagesManager.closePage(hmiPageId);
-		this.setStoreState(() => ({
-			project: newProject,
-			hasUnsavedChanges: true,
-		}));
+		this.deleteDocumentById(hmiPageId, (p) => p.deleteHmiPage(hmiPageId));
 	}
 
 	renameHmiPage(hmiPageId: string, newName: string): void {
 		const project = this.getStoreState().project;
 		if (!project) return;
 		if (!canEdit(this.getStoreState())) return;
-		const newProject = project.copy();
-		const page = newProject.getHmiPage(hmiPageId);
-		if (!page) return;
-		page.name = newName;
-		const pagesData = this.getStoreState().pagesData;
-		if (pagesData[hmiPageId]) {
-			const newPagesData = structuredClone(pagesData);
-			newPagesData[hmiPageId].title = newName;
-			this.setStoreState(() => ({ pagesData: newPagesData }));
-		}
-		this.setStoreState(() => ({
-			project: newProject,
-			hasUnsavedChanges: true,
-		}));
-		// A mounted store pushes its own copy back to the project on its next change.
-		this.syncMountedStoresFromProject();
+		this.renameDocumentById(hmiPageId, newName);
 	}
 
 	/** Une seule page principale à la fois dans tout le projet (voir `Project.setMainHmiPage`) —

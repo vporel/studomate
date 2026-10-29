@@ -78,14 +78,7 @@ export default abstract class AbstractProgramsManager<
 				`${PROGRAM_TYPE_LABELS[this.programType]} not found in project`,
 			);
 		}
-		const newProject = project.copy();
-		newProject.deleteProgram(programId);
-		this.deleteCommandsStack(programId);
-		this.getStoreState().pagesManager.closePage(programId);
-		this.setStoreState(() => ({
-			project: newProject,
-			hasUnsavedChanges: true,
-		}));
+		this.deleteDocumentById(programId, (p) => p.deleteProgram(programId));
 	}
 
 	renameProgramById(programId: string, newName: string): void {
@@ -97,21 +90,7 @@ export default abstract class AbstractProgramsManager<
 				`${PROGRAM_TYPE_LABELS[this.programType]} not found in project`,
 			);
 		}
-		const newProject = project.copy();
-		//getDocument rend explicite que l'on modifie l'instance, et non un objet temporaire
-		this.getDocument(newProject, programId)!.name = newName;
-		const pagesData = this.getStoreState().pagesData;
-		if (pagesData[programId]) {
-			const newPagesData = structuredClone(pagesData);
-			newPagesData[programId].title = newName;
-			this.setStoreState(() => ({ pagesData: newPagesData }));
-		}
-		this.setStoreState(() => ({
-			project: newProject,
-			hasUnsavedChanges: true,
-		}));
-		// A mounted store pushes its own copy back to the project on its next change.
-		this.syncMountedStoresFromProject();
+		this.renameDocumentById(programId, newName);
 	}
 
 	setExcludedFromExecution(programId: string, excluded: boolean): void {

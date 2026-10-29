@@ -3,6 +3,8 @@ import { ContactElement } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Project from "@/schemas/project/project.schema";
 import LadderElementAnalyser, {
+	checkBooleanVariable,
+	checkHasPredecessor,
 	LadderVariablesContext,
 } from "./element.analyser";
 
@@ -22,54 +24,30 @@ export default class ContactAnalyser extends LadderElementAnalyser<ContactElemen
 			sourceId: element.id,
 			parentId: ladder.id,
 		} as const;
-		const variable = variablesByMnemonic.get(element.data.variable);
 		const issues: ProjectAnalyserIssue[] = [];
 
-		if (!element.data.variable.trim()) {
-			issues.push(
-				new ProjectAnalyserIssue("error", "LADDER_CONTACT_NO_VARIABLE", source),
-			);
-		} else if (!variable) {
-			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"LADDER_CONTACT_VARIABLE_UNDECLARED",
-					source,
-					{ variableName: element.data.variable },
-				),
-			);
-		} else if (variable.type !== "BOOL") {
-			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"LADDER_CONTACT_VARIABLE_NOT_BOOLEAN",
-					source,
-					{ variableName: element.data.variable },
-				),
-			);
-		}
+		const variableIssue = checkBooleanVariable(
+			element.data.variable,
+			variablesByMnemonic,
+			source,
+			{
+				noVariable: "LADDER_CONTACT_NO_VARIABLE",
+				undeclared: "LADDER_CONTACT_VARIABLE_UNDECLARED",
+				notBoolean: "LADDER_CONTACT_VARIABLE_NOT_BOOLEAN",
+			},
+		);
+		if (variableIssue) issues.push(variableIssue);
 
-		const connections = ladder
+		const hasCoil = ladder
 			.getAllConnections()
-			.map(({ connection }) => connection);
-		if (
-			!connections.some((connection) => connection.source.id === element.id)
-		) {
+			.some(({ connection }) => connection.source.id === element.id);
+		if (!hasCoil) {
 			issues.push(
 				new ProjectAnalyserIssue("warning", "LADDER_SECTION_NO_COIL", source),
 			);
 		}
-		if (
-			!connections.some((connection) => connection.target.id === element.id)
-		) {
-			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"LADDER_ELEMENT_NO_PREDECESSOR",
-					source,
-				),
-			);
-		}
+		const predecessorIssue = checkHasPredecessor(element, ladder, source);
+		if (predecessorIssue) issues.push(predecessorIssue);
 
 		return issues;
 	}

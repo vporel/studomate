@@ -2,7 +2,10 @@ import Variable from "@/schemas/variable/variable.schema";
 import { LadderElement } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Project from "@/schemas/project/project.schema";
-import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
+import ProjectAnalyserIssue, {
+	ProjectAnalyserIssueCode,
+	ProjectAnalyserIssueSource,
+} from "@/project-analyser/project.analyser.issue";
 import { Environment } from "@/simulator/interpreter/environment/environment";
 
 /**
@@ -32,4 +35,50 @@ export default abstract class LadderElementAnalyser<E extends LadderElement> {
 		variables: LadderVariablesContext,
 		project: Project,
 	): ProjectAnalyserIssue[];
+}
+
+export function checkHasPredecessor(
+	element: LadderElement,
+	ladder: Ladder,
+	source: ProjectAnalyserIssueSource,
+): ProjectAnalyserIssue | null {
+	const hasPredecessor = ladder
+		.getAllConnections()
+		.some(({ connection }) => connection.target.id === element.id);
+	return hasPredecessor
+		? null
+		: new ProjectAnalyserIssue(
+				"error",
+				"LADDER_ELEMENT_NO_PREDECESSOR",
+				source,
+			);
+}
+
+export type BooleanVariableIssueCodes = {
+	noVariable: ProjectAnalyserIssueCode;
+	undeclared: ProjectAnalyserIssueCode;
+	notBoolean: ProjectAnalyserIssueCode;
+};
+
+export function checkBooleanVariable(
+	variableName: string,
+	variablesByMnemonic: Map<string, Variable>,
+	source: ProjectAnalyserIssueSource,
+	codes: BooleanVariableIssueCodes,
+): ProjectAnalyserIssue | null {
+	if (!variableName.trim()) {
+		return new ProjectAnalyserIssue("error", codes.noVariable, source);
+	}
+	const variable = variablesByMnemonic.get(variableName);
+	if (!variable) {
+		return new ProjectAnalyserIssue("error", codes.undeclared, source, {
+			variableName,
+		});
+	}
+	if (variable.type !== "BOOL") {
+		return new ProjectAnalyserIssue("error", codes.notBoolean, source, {
+			variableName,
+		});
+	}
+	return null;
 }
