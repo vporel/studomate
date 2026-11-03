@@ -12,6 +12,7 @@ import CompareBlockAnalyser from "./compare-block.analyser";
 import ConvertBlockAnalyser from "./convert-block.analyser";
 import CounterBlockAnalyser from "./counter-block.analyser";
 import LadderElementAnalyser, {
+	checkHasPredecessor,
 	LadderVariablesContext,
 } from "./element.analyser";
 import TimerBlockAnalyser from "./timer-block.analyser";
@@ -104,18 +105,8 @@ export default class BlockAnalyser extends LadderElementAnalyser<BlockElement> {
 			project,
 		});
 
-		const hasPredecessor = ladder
-			.getAllConnections()
-			.some(({ connection }) => connection.target.id === element.id);
-		if (!hasPredecessor) {
-			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"LADDER_ELEMENT_NO_PREDECESSOR",
-					source,
-				),
-			);
-		}
+		const predecessorIssue = checkHasPredecessor(element, ladder, source);
+		if (predecessorIssue) issues.push(predecessorIssue);
 
 		return issues;
 	}

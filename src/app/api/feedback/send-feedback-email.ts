@@ -1,11 +1,15 @@
-import { APP_CONTACT_EMAIL, APP_NAME } from "@/app-info";
+import {
+	APP_CONTACT_EMAIL,
+	APP_FEEDBACK_EMAIL_FROM,
+	APP_NAME,
+} from "@/app-info";
 import type { FeedbackSubmission } from "@/feedback/feedback-submission";
 import { FEEDBACK_RATING_MAX } from "@/feedback/feedback-prompt";
 
 const RESEND_URL = "https://api.resend.com/emails";
 
 export function isFeedbackEmailConfigured(): boolean {
-	return Boolean(process.env.RESEND_API_KEY && process.env.FEEDBACK_EMAIL_FROM);
+	return Boolean(process.env.RESEND_API_KEY);
 }
 
 /** True when Resend accepted the message. */
@@ -31,8 +35,8 @@ export default async function sendFeedbackEmail(
 				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({
-				from: process.env.FEEDBACK_EMAIL_FROM,
-				to: process.env.FEEDBACK_EMAIL_TO || APP_CONTACT_EMAIL,
+				from: APP_FEEDBACK_EMAIL_FROM,
+				to: APP_CONTACT_EMAIL,
 				subject: `[${APP_NAME}] Nouvel avis : ${submission.rating}/${FEEDBACK_RATING_MAX}`,
 				text,
 			}),

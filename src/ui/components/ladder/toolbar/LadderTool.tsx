@@ -19,7 +19,7 @@ const LadderTool = ({
 	label?: string;
 	children: React.ReactElement;
 }) => {
-	const { setDraggedElement } = useLadderToolbarDnD();
+	const { setDraggedItem } = useLadderToolbarDnD();
 	const canEdit = useCanEdit();
 	disabled = disabled || !canEdit;
 
@@ -29,10 +29,10 @@ const LadderTool = ({
 			disabled={disabled}
 			label={label}
 			onDragStart={(e) => {
-				setDraggedElement(element);
+				setDraggedItem(element);
 				e.dataTransfer.effectAllowed = "copy";
 			}}
-			onDragEnd={() => setDraggedElement(null)}
+			onDragEnd={() => setDraggedItem(null)}
 		>
 			{children}
 		</DraggableToolCell>

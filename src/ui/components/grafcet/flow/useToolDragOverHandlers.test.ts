@@ -47,11 +47,11 @@ describe("useToolDragOverHandlers", () => {
 
 	afterEach(() => jest.clearAllMocks());
 
-	function setup(draggedElement: { type: string; extraData?: unknown } | null) {
+	function setup(draggedItem: { type: string; extraData?: unknown } | null) {
 		(useGrafcetStore as jest.Mock).mockImplementation(
 			selectorImplementation({ workflowManager }),
 		);
-		(useGrafcetToolbarDnD as jest.Mock).mockReturnValue({ draggedElement });
+		(useGrafcetToolbarDnD as jest.Mock).mockReturnValue({ draggedItem });
 		(useReactFlow as jest.Mock).mockReturnValue({ screenToFlowPosition });
 		return renderHook(() => useToolDragOverHandlers());
 	}

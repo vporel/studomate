@@ -1,0 +1,64 @@
+name: Déploiement
+
+# GitHub construit l'application et publie le résultat sur la branche `deploy`.
+# GitHub ne déploie rien : c'est au serveur de télécharger ce build depuis la branche
+# `deploy`, via un cron (voir ../deploy-o2switch/pull-deploy.sh).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+env:
+  NODE_VERSION: "22.23.4"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        env:
+          NEXT_PUBLIC_APP_ENV: ${{ vars.NEXT_PUBLIC_APP_ENV }}
+          NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+          NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION: ${{ vars.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }}
+          NEXT_PUBLIC_BING_SITE_VERIFICATION: ${{ vars.NEXT_PUBLIC_BING_SITE_VERIFICATION }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_SENTRY_DSN: ${{ vars.NEXT_PUBLIC_SENTRY_DSN }}
+          NEXT_PUBLIC_UMAMI_SRC: ${{ vars.NEXT_PUBLIC_UMAMI_SRC }}
+          NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${{ vars.NEXT_PUBLIC_UMAMI_WEBSITE_ID }}
+        run: npm run build
+
+      - name: Publier sur la branche deploy
+        working-directory: .next/standalone
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git init -q -b deploy
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -f .
+          git commit -q -m "deploy ${GITHUB_SHA::7}" -m "Source: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}"
+          # Un seul commit, historique écrasé à chaque fois : le dépôt côté serveur reste léger
+          git push -q --force "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" deploy

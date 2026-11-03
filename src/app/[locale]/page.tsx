@@ -9,6 +9,7 @@ import PreferredLocaleRedirect from "@/ui/components/public-pages/PreferredLocal
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import ClientMessagesProvider from "./ClientMessagesProvider";
 import buildHomeJsonLd from "./homeJsonLd";
+import buildWebsiteJsonLd from "./websiteJsonLd";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -38,6 +39,10 @@ export default async function Home({ params }: Props) {
 				dangerouslySetInnerHTML={{
 					__html: buildHomeJsonLd(locale, t("homeDescription"), featureList),
 				}}
+			/>
+			<script
+				type="application/ld+json"
+				dangerouslySetInnerHTML={{ __html: buildWebsiteJsonLd(locale) }}
 			/>
 			<PreferredLocaleRedirect />
 			<ClientMessagesProvider

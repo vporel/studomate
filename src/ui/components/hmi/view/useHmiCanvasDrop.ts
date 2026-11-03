@@ -23,23 +23,23 @@ export default function useHmiCanvasDrop(
 	onDrop: (e: ReactDragEvent<HTMLDivElement>) => void,
 ] {
 	const addWidget = useHmiStore((s) => s.addWidget);
-	const { draggedTool } = useHmiWidgetDnD();
+	const { draggedItem } = useHmiWidgetDnD();
 
 	const onDragOver = (e: ReactDragEvent<HTMLDivElement>) => {
-		if (isSimulation || !draggedTool) return;
+		if (isSimulation || !draggedItem) return;
 		e.preventDefault();
 		e.dataTransfer.dropEffect = "copy";
 	};
 
 	const onDrop = (e: ReactDragEvent<HTMLDivElement>) => {
-		if (isSimulation || !draggedTool) return;
+		if (isSimulation || !draggedItem) return;
 		e.preventDefault();
 		const rect = e.currentTarget.getBoundingClientRect();
 		const rawX = (e.clientX - rect.left) / zoom;
 		const rawY = (e.clientY - rect.top) / zoom;
 		const size =
-			draggedTool.sizeOverride ??
-			HMI_WIDGET_DEFINITIONS[draggedTool.type].defaultSize;
+			draggedItem.sizeOverride ??
+			HMI_WIDGET_DEFINITIONS[draggedItem.type].defaultSize;
 		const x = snapToGrid(
 			Math.max(
 				0,
@@ -53,11 +53,11 @@ export default function useHmiCanvasDrop(
 			),
 		);
 		addWidget(
-			draggedTool.type,
+			draggedItem.type,
 			x,
 			y,
-			draggedTool.sizeOverride,
-			draggedTool.dataOverride,
+			draggedItem.sizeOverride,
+			draggedItem.dataOverride,
 		);
 	};
 

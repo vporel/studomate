@@ -27,7 +27,7 @@ const HmiWidgetToolbarItem = ({
 	disabled,
 }: HmiWidgetToolbarItemProps) => {
 	const { type } = tool;
-	const { setDraggedTool } = useHmiWidgetDnD();
+	const { setDraggedItem } = useHmiWidgetDnD();
 	const t = useT("hmiEditor.widgetNames");
 	const ui = HMI_WIDGET_UI[type];
 	const label = t((tool.label ?? type) as never);
@@ -54,10 +54,10 @@ const HmiWidgetToolbarItem = ({
 				}}
 				draggable={!disabled}
 				onDragStart={(e) => {
-					setDraggedTool(tool);
+					setDraggedItem(tool);
 					e.dataTransfer.effectAllowed = "copy";
 				}}
-				onDragEnd={() => setDraggedTool(null)}
+				onDragEnd={() => setDraggedItem(null)}
 			>
 				<Box
 					sx={{

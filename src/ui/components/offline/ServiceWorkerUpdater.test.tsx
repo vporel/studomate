@@ -3,6 +3,7 @@
  */
 import { renderWithI18n } from "@tests/utils/i18n";
 import { toast } from "react-toastify";
+import { isStandaloneDisplay } from "@/ui/lib/platform";
 import reloadPage from "@/ui/lib/reload-page";
 import ServiceWorkerUpdater from "./ServiceWorkerUpdater";
 
@@ -29,6 +30,10 @@ jest.mock("@/ui/components/projects/ProjectContext", () => ({
 }));
 
 jest.mock("@/ui/lib/reload-page");
+jest.mock("@/ui/lib/platform", () => ({
+	...jest.requireActual("@/ui/lib/platform"),
+	isStandaloneDisplay: jest.fn(),
+}));
 
 /** The `onClick` the update toast was given. */
 function acceptUpdate() {
@@ -41,6 +46,16 @@ describe("ServiceWorkerUpdater", () => {
 		jest.clearAllMocks();
 		listeners.clear();
 		flushDraft.mockReturnValue(true);
+		(isStandaloneDisplay as jest.Mock).mockReturnValue(true);
+	});
+
+	it("does not listen for updates in a browser tab", () => {
+		(isStandaloneDisplay as jest.Mock).mockReturnValue(false);
+
+		renderWithI18n(<ServiceWorkerUpdater />);
+
+		expect(serwist.addEventListener).not.toHaveBeenCalled();
+		expect(toast.info).not.toHaveBeenCalled();
 	});
 
 	it("offers the update when a new service worker is waiting, without activating it", () => {

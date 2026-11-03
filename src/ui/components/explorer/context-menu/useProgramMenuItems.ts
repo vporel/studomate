@@ -8,10 +8,12 @@ import { useT } from "@/ui/i18n/useT";
 import executionMenuItems from "./execution-menu-items";
 import { explorerContextMenuEventsOut } from "./ExplorerContextMenu";
 
-export default function useGrafcetMenuItems(): (
-	grafcetId: string,
-) => ContextMenuItemType[][] {
-	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
+export default function useProgramMenuItems(
+	programType: "grafcet" | "ladder",
+): (programId: string) => ContextMenuItemType[][] {
+	const manager = useProjectStore((state) =>
+		programType === "grafcet" ? state.grafcetsManager : state.laddersManager,
+	);
 	const pagesManager = useProjectStore((state) => state.pagesManager);
 	const project = useProjectStore((state) => state.project);
 	const designing = useProjectStore(
@@ -22,18 +24,18 @@ export default function useGrafcetMenuItems(): (
 	const tc = useT("explorer.confirmDelete");
 
 	return useCallback(
-		(grafcetId: string) => {
+		(programId: string) => {
 			return [
 				[
 					{
 						label: t("open"),
 						onClick: () => {
-							const grafcet = grafcetsManager.getProgramOrThrow(grafcetId);
-							if (grafcet) {
+							const program = manager.getProgramOrThrow(programId);
+							if (program) {
 								pagesManager.openPage({
-									id: grafcetId,
-									type: "grafcet",
-									title: grafcet.name,
+									id: programId,
+									type: programType,
+									title: program.name,
 								});
 							}
 						},
@@ -44,29 +46,33 @@ export default function useGrafcetMenuItems(): (
 						label: t("rename"),
 						disabled: !designing,
 						onClick: () =>
-							explorerContextMenuEventsOut.emit("grafcet-rename", {
-								grafcetId,
-							}),
+							programType === "grafcet"
+								? explorerContextMenuEventsOut.emit("grafcet-rename", {
+										grafcetId: programId,
+									})
+								: explorerContextMenuEventsOut.emit("ladder-rename", {
+										ladderId: programId,
+									}),
 						shortcut: "F2",
 					},
 					{
 						label: t("delete"),
 						disabled: !designing,
 						onClick: () => {
-							if (confirm(tc("grafcet"))) {
-								grafcetsManager.deleteProgramById(grafcetId);
+							if (confirm(tc(programType))) {
+								manager.deleteProgramById(programId);
 							}
 						},
 					},
 				],
 				...executionMenuItems(
-					project?.getGrafcet(grafcetId),
-					grafcetsManager,
+					project?.getProgram(programId),
+					manager,
 					designing,
 					t,
 				),
 			];
 		},
-		[grafcetsManager, pagesManager, project, designing, t, tc],
+		[manager, pagesManager, project, designing, programType, t, tc],
 	);
 }

@@ -36,13 +36,13 @@ import { LADDER_PROGRAM_DRAG_MIME_TYPE } from "@/ui/utils/ladder/ladder-program-
 import { LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE } from "@/ui/utils/ladder/ladder-system-block-drag";
 
 function createToolElement(
-	draggedElement: DraggedLadderElement,
+	draggedItem: DraggedLadderElement,
 	row: number,
 	col: number,
 ): LadderElement {
-	return draggedElement.kind === "contact"
-		? createContactElement("", draggedElement.type, row, col)
-		: createCoilElement("", draggedElement.type, row, col);
+	return draggedItem.kind === "contact"
+		? createContactElement("", draggedItem.type, row, col)
+		: createCoilElement("", draggedItem.type, row, col);
 }
 
 /** Vrai si le rectangle de cellules `col..col+width-1` × `row..row+height-1` chevauche
@@ -89,7 +89,7 @@ export default function useLadderDropHandlers(
 	handleDragOver: (e: React.DragEvent) => void,
 	handleDrop: (e: React.DragEvent) => void,
 ] {
-	const { draggedElement } = useLadderToolbarDnD();
+	const { draggedItem } = useLadderToolbarDnD();
 	const { screenToFlowPosition } = useReactFlow();
 	const commandsStackManager = useLadderStore(
 		(state) => state.commandsStackManager,
@@ -100,7 +100,7 @@ export default function useLadderDropHandlers(
 
 	const handleDragOver = useCallback(
 		(e: React.DragEvent) => {
-			// Toujours appeler preventDefault : draggedElement peut encore être null au premier
+			// Toujours appeler preventDefault : draggedItem peut encore être null au premier
 			// dragover (timing React). e.dataTransfer.getData n'est pas lisible au dragover (accès
 			// restreint par sécurité) : seul `.types` l'est, d'où ce test plutôt qu'une lecture.
 			e.preventDefault();
@@ -111,11 +111,11 @@ export default function useLadderDropHandlers(
 				LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE,
 			);
 			e.dataTransfer.dropEffect =
-				draggedElement || draggingProgramRef || draggingSystemBlock
+				draggedItem || draggingProgramRef || draggingSystemBlock
 					? "copy"
 					: "none";
 		},
-		[draggedElement],
+		[draggedItem],
 	);
 
 	const handleDrop = useCallback(
@@ -125,7 +125,7 @@ export default function useLadderDropHandlers(
 			const systemBlockType = e.dataTransfer.getData(
 				LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE,
 			);
-			if (!programId && !systemBlockType && !draggedElement) return;
+			if (!programId && !systemBlockType && !draggedItem) return;
 
 			// screenToFlowPosition attend des coordonnées viewport (clientX/clientY), pas
 			// document (pageX/pageY) — sensibles au défilement de la page, qui décale tout calcul
@@ -200,39 +200,39 @@ export default function useLadderDropHandlers(
 				return;
 			}
 
-			if (!draggedElement) return;
+			if (!draggedItem) return;
 
 			const occupant = elementAtCell(section, dropRow, dropCol);
 
 			// Cellule déjà occupée : refuse le dépôt, sauf si l'élément qui s'y trouve est du même
 			// genre que celui déposé — auquel cas on change juste son type (ex. contact NO -> NF),
 			// la variable et les connexions restant inchangées. Le switch (plutôt qu'un simple
-			// `occupant.type !== draggedElement.kind`) est exhaustif sur
+			// `occupant.type !== draggedItem.kind`) est exhaustif sur
 			// `DraggedLadderElement` : un nouveau genre d'outil déposable ne compile plus tant que
 			// son comportement de remplacement n'a pas été décidé ici.
 			if (occupant) {
-				switch (draggedElement.kind) {
+				switch (draggedItem.kind) {
 					case "contact":
 					case "coil": {
-						if (occupant.type !== draggedElement.kind) return;
-						if (occupant.data.type === draggedElement.type) return;
+						if (occupant.type !== draggedItem.kind) return;
+						if (occupant.data.type === draggedItem.type) return;
 						commandsStackManager.executeOperation([
 							new ElementUpdateCommand({
 								elementId: occupant.id,
-								changes: { data: { type: draggedElement.type } },
+								changes: { data: { type: draggedItem.type } },
 								previousChanges: { data: { type: occupant.data.type } },
 							}),
 						]);
 						return;
 					}
 					default: {
-						const _exhaustive: never = draggedElement;
+						const _exhaustive: never = draggedItem;
 						return _exhaustive;
 					}
 				}
 			}
 
-			dispatchInsertion(createToolElement(draggedElement, dropRow, dropCol));
+			dispatchInsertion(createToolElement(draggedItem, dropRow, dropCol));
 
 			function dispatchInsertion(newElement: LadderElement) {
 				const { elementsToAdd, connectionsToAdd, connectionsToRemove } =
@@ -271,7 +271,7 @@ export default function useLadderDropHandlers(
 			}
 		},
 		[
-			draggedElement,
+			draggedItem,
 			screenToFlowPosition,
 			leafPositions,
 			section,

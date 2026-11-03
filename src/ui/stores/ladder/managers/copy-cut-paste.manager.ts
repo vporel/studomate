@@ -267,15 +267,7 @@ export default class LadderCopyCutPasteManager extends AbstractCopyCutPasteManag
 		// Un bloc timer/compteur collé ne peut pas garder le nom de son original : ce nom identifie
 		// l'instance dans tout le ladder (voir `LadderAnalyser.checkBlockNameConflicts`). La copie
 		// est suffixée (`Tempo` -> `Tempo_2`), en accumulant pour un collage multi-blocs.
-		const takenBlockNames = new Set(
-			state.ladder.getAllElements().flatMap((el) => {
-				const params =
-					el.type === "block"
-						? (getTimerBlockParams(el) ?? getCounterBlockParams(el))
-						: null;
-				return params?.name ? [params.name] : [];
-			}),
-		);
+		const takenBlockNames = state.ladder.getBlockNames();
 
 		// Création des nouveaux éléments
 		const idMap = new Map<string, string>();
@@ -396,15 +388,7 @@ export default class LadderCopyCutPasteManager extends AbstractCopyCutPasteManag
 		const state = this.getStoreState();
 		const ladder = state.ladder;
 
-		const takenBlockNames = new Set(
-			ladder.getAllElements().flatMap((el) => {
-				const params =
-					el.type === "block"
-						? (getTimerBlockParams(el) ?? getCounterBlockParams(el))
-						: null;
-				return params?.name ? [params.name] : [];
-			}),
-		);
+		const takenBlockNames = ladder.getBlockNames();
 
 		const commands: AbstractLadderCommand<any>[] = [];
 		const newSectionIds: string[] = [];

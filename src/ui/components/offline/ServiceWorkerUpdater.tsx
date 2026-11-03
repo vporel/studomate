@@ -2,6 +2,7 @@
 
 import { useProjectContext } from "@/ui/components/projects/ProjectContext";
 import { useT } from "@/ui/i18n/useT";
+import { isStandaloneDisplay } from "@/ui/lib/platform";
 import reloadPage from "@/ui/lib/reload-page";
 import { useSerwist } from "@serwist/turbopack/react";
 import { useEffect } from "react";
@@ -10,9 +11,9 @@ import { toast } from "react-toastify";
 const TOAST_ID = "sw-update";
 
 /**
- * Offers to switch to a newly installed service worker. Only the tab where the user accepted
- * reloads, after its draft has been written: other open tabs keep their editing session. The
- * update waits while pending changes could not be put in a draft.
+ * Offers to switch to a newly installed service worker, in the installed app only. Only the tab
+ * where the user accepted reloads, after its draft has been written: other open tabs keep their
+ * editing session. The update waits while pending changes could not be put in a draft.
  */
 export default function ServiceWorkerUpdater() {
 	const t = useT("toasts");
@@ -20,7 +21,7 @@ export default function ServiceWorkerUpdater() {
 	const projectStore = useProjectContext();
 
 	useEffect(() => {
-		if (!serwist) return;
+		if (!serwist || !isStandaloneDisplay()) return;
 		let accepted = false;
 
 		const onWaiting = () => {

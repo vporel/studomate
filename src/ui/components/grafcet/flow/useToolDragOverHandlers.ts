@@ -14,7 +14,7 @@ export default function useToolDragOverHandlers(): [
 	handleToolDragOver: (e: React.DragEvent) => void,
 	handleToolDrop: (e: React.DragEvent) => void,
 ] {
-	const { draggedElement } = useGrafcetToolbarDnD();
+	const { draggedItem } = useGrafcetToolbarDnD();
 	const { screenToFlowPosition } = useReactFlow();
 	const workflowManager = useGrafcetStore((state) => state.workflowManager);
 
@@ -26,8 +26,8 @@ export default function useToolDragOverHandlers(): [
 	const handleToolDrop = useCallback(
 		(e: React.DragEvent) => {
 			e.preventDefault();
-			if (!draggedElement) return;
-			const { type } = draggedElement;
+			if (!draggedItem) return;
+			const { type } = draggedItem;
 			const elementClass = GRAFCET_ELEMENTS_CONFIG[type].elementClass;
 			const position = screenToFlowPosition({ x: e.clientX, y: e.clientY });
 			position.x = position.x - elementClass.DEFAULT_DIMENSIONS.width / 2;
@@ -37,14 +37,14 @@ export default function useToolDragOverHandlers(): [
 				type,
 				position,
 				data: elementClass.generateDefaultData(
-					type === "step" ? draggedElement.extraData : undefined,
+					type === "step" ? draggedItem.extraData : undefined,
 				),
 				width: elementClass.DEFAULT_DIMENSIONS.width,
 				height: elementClass.DEFAULT_DIMENSIONS.height,
 			} as GrafcetNodeType;
 			workflowManager.addNodes([newNode]);
 		},
-		[draggedElement, screenToFlowPosition, workflowManager],
+		[draggedItem, screenToFlowPosition, workflowManager],
 	);
 
 	return [handleToolDragOver, handleToolDrop];

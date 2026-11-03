@@ -3,6 +3,7 @@ import { ProjectDocumentType } from "../project.store.types";
 import AbstractDocumentsManager from "./abstract-documents.manager";
 
 class FakeDocument {
+	name = "";
 	constructor(
 		public id: string,
 		public content: string,
@@ -50,6 +51,12 @@ class FakeDocumentsManager extends AbstractDocumentsManager<
 
 	dropStack(id: string) {
 		this.deleteCommandsStack(id);
+	}
+	deleteById(id: string, fn: (project: any) => void) {
+		this.deleteDocumentById(id, fn);
+	}
+	renameById(id: string, name: string) {
+		this.renameDocumentById(id, name);
 	}
 }
 
@@ -266,6 +273,116 @@ describe("AbstractDocumentsManager", () => {
 			});
 			expect(() => manager.syncMountedStoresFromProject()).not.toThrow();
 			expect(mounted.adopt).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("deleteDocumentById", () => {
+		function setup(initial: Partial<Record<string, any>> = {}) {
+			const closePage = jest.fn();
+			const project = {
+				docs: {},
+				copy: jest.fn(() => ({ ...copy })),
+			};
+			const copy = { docs: {}, copied: true };
+			const made = makeManager({
+				project,
+				pagesManager: { closePage },
+				hasUnsavedChanges: false,
+				...initial,
+			});
+			return { ...made, project, copy, closePage };
+		}
+
+		it("gives the callback the copy, drops the stack, closes the page and replaces the project", () => {
+			const { manager, getState, project, closePage } = setup();
+			const stack = manager.getCommandsStack("a");
+			const fn = jest.fn();
+
+			manager.deleteById("a", fn);
+
+			expect(fn).toHaveBeenCalledTimes(1);
+			expect(fn.mock.calls[0][0]).not.toBe(project);
+			expect(fn.mock.calls[0][0].copied).toBe(true);
+			expect(getState().project).toBe(fn.mock.calls[0][0]);
+			expect(manager.getCommandsStack("a")).not.toBe(stack);
+			expect(closePage).toHaveBeenCalledWith("a");
+			expect(getState().hasUnsavedChanges).toBe(true);
+		});
+
+		it("does nothing without a project", () => {
+			const { manager, getState, closePage } = setup({ project: null });
+			const fn = jest.fn();
+			manager.deleteById("a", fn);
+			expect(fn).not.toHaveBeenCalled();
+			expect(closePage).not.toHaveBeenCalled();
+			expect(getState().hasUnsavedChanges).toBe(false);
+		});
+	});
+
+	describe("renameDocumentById", () => {
+		function setup(initial: Partial<Record<string, any>> = {}) {
+			const original = new FakeDocument("a", "x");
+			original.name = "old";
+			const project = {
+				docs: { a: original } as Record<string, FakeDocument>,
+				copy() {
+					const docs: Record<string, FakeDocument> = {};
+					Object.entries(this.docs).forEach(([k, d]) => {
+						const c = d.copy();
+						c.name = d.name;
+						docs[k] = c;
+					});
+					return { docs, copy: this.copy };
+				},
+			};
+			const made = makeManager({
+				project,
+				pagesData: { a: { title: "old" } },
+				hasUnsavedChanges: false,
+				...initial,
+			});
+			return { ...made, project, original };
+		}
+
+		it("renames the copy only, updates the tab title and syncs mounted stores", () => {
+			const { manager, getState, original } = setup();
+			const pagesData = getState().pagesData;
+			const sync = jest.spyOn(manager, "syncMountedStoresFromProject");
+
+			manager.renameById("a", "new");
+
+			expect(original.name).toBe("old");
+			expect(getState().project.docs.a.name).toBe("new");
+			expect(getState().pagesData.a.title).toBe("new");
+			expect(pagesData.a.title).toBe("old");
+			expect(getState().hasUnsavedChanges).toBe(true);
+			expect(sync).toHaveBeenCalledTimes(1);
+		});
+
+		it("leaves pagesData untouched when the tab does not exist", () => {
+			const { manager, getState } = setup({ pagesData: {} });
+			const pagesData = getState().pagesData;
+			manager.renameById("a", "new");
+			expect(getState().pagesData).toBe(pagesData);
+			expect(getState().project.docs.a.name).toBe("new");
+		});
+
+		it("returns silently when the document is absent", () => {
+			const { manager, getState, project } = setup();
+			const sync = jest.spyOn(manager, "syncMountedStoresFromProject");
+			manager.renameById("zzz", "new");
+			expect(getState().project).toBe(project);
+			expect(getState().hasUnsavedChanges).toBe(false);
+			expect(sync).not.toHaveBeenCalled();
+		});
+
+		it("returns silently without a project", () => {
+			const { manager, getState } = setup({ project: null });
+			const sync = jest.spyOn(manager, "syncMountedStoresFromProject");
+			manager.renameById("a", "new");
+			expect(getState().hasUnsavedChanges).toBe(false);
+			expect(getState().pagesData.a.title).toBe("old");
+			expect(sync).not.toHaveBeenCalled();
 		});
 	});
 });

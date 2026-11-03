@@ -2,8 +2,9 @@
 
 import FlexBox from "@/ui/lib/boxes/FlexBox";
 import useOnlineStatus from "@/ui/lib/hooks/useOnlineStatus";
-import { Typography } from "@mui/material";
+import { ButtonBase, Typography } from "@mui/material";
 import { useT } from "@/ui/i18n/useT";
+import { PROJECT_PROPERTIES_PAGE_DATA } from "@/ui/stores/project/pages-data";
 import { useProjectStore } from "../projects/ProjectContext";
 import RightActions from "./RightActions";
 
@@ -11,6 +12,7 @@ const StatusBar = () => {
 	const t = useT("chrome.statusBar");
 	const online = useOnlineStatus();
 	const projectAuthor = useProjectStore((state) => state.project?.author);
+	const pagesManager = useProjectStore((state) => state.pagesManager);
 	return (
 		<FlexBox
 			centerVertical
@@ -26,9 +28,13 @@ const StatusBar = () => {
 			}}
 		>
 			<FlexBox centerVertical gap={2}>
-				<Typography sx={{ fontSize: "0.85rem", color: "rgb(100, 100, 100)" }}>
-					{t("author", { name: projectAuthor || t("unknownAuthor") })}
-				</Typography>
+				<ButtonBase
+					onClick={() => pagesManager.openPage(PROJECT_PROPERTIES_PAGE_DATA)}
+				>
+					<Typography sx={{ fontSize: "0.85rem", color: "rgb(100, 100, 100)" }}>
+						{t("author", { name: projectAuthor || t("unknownAuthor") })}
+					</Typography>
+				</ButtonBase>
 				{!online && (
 					<Typography
 						role="status"

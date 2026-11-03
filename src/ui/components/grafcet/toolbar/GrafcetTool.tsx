@@ -17,7 +17,7 @@ const GrafcetTool = ({
 	disabled?: boolean;
 	children: React.ReactElement;
 }) => {
-	const { setDraggedElement } = useGrafcetToolbarDnD();
+	const { setDraggedItem } = useGrafcetToolbarDnD();
 	const canEdit = useCanEdit();
 	disabled = disabled || !canEdit;
 
@@ -41,7 +41,7 @@ const GrafcetTool = ({
 			}}
 			draggable={!disabled}
 			onDragStart={(e) => {
-				setDraggedElement(element);
+				setDraggedItem(element);
 				e.dataTransfer.effectAllowed = "move";
 			}}
 		>
