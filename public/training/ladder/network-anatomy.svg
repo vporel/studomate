@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 300" font-family="sans-serif">
+	<defs>
+		<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+			<path d="M 0 0 L 10 5 L 0 10 z" fill="#607d8b" />
+		</marker>
+	</defs>
+	<text x="70" y="14" font-size="11" text-anchor="middle" fill="#607d8b">rail gauche</text>
+	<text x="500" y="14" font-size="11" text-anchor="middle" fill="#607d8b">rail droit</text>
+	<line x1="70" y1="24" x2="70" y2="264" stroke="#263238" stroke-width="3" />
+	<line x1="500" y1="24" x2="500" y2="264" stroke="#263238" stroke-width="3" />
+	<line x1="88" y1="44" x2="482" y2="44" stroke="#607d8b" stroke-width="1.5" marker-end="url(#arrow)" />
+	<text x="285" y="38" font-size="11" text-anchor="middle" fill="#607d8b">sens du courant</text>
+
+	<!-- Network 1: series -->
+	<text x="8" y="100" font-size="11" text-anchor="start" fill="#607d8b">réseau 1</text>
+	<line x1="70" y1="96" x2="144" y2="96" stroke="#2e7d32" stroke-width="2" />
+	<line x1="144" y1="86" x2="144" y2="106" stroke="#2e7d32" stroke-width="2.5" />
+	<line x1="156" y1="86" x2="156" y2="106" stroke="#2e7d32" stroke-width="2.5" />
+	<line x1="156" y1="96" x2="244" y2="96" stroke="#2e7d32" stroke-width="2" />
+	<line x1="244" y1="86" x2="244" y2="106" stroke="#2e7d32" stroke-width="2.5" />
+	<line x1="256" y1="86" x2="256" y2="106" stroke="#2e7d32" stroke-width="2.5" />
+	<line x1="256" y1="96" x2="392" y2="96" stroke="#2e7d32" stroke-width="2" />
+	<path d="M 392 86 Q 385 96 392 106" fill="none" stroke="#2e7d32" stroke-width="2.5" />
+	<path d="M 408 86 Q 415 96 408 106" fill="none" stroke="#2e7d32" stroke-width="2.5" />
+	<line x1="415" y1="96" x2="500" y2="96" stroke="#2e7d32" stroke-width="2" />
+	<text x="150" y="76" font-size="11" text-anchor="middle" fill="#2e7d32" font-weight="bold">porte_fermee = 1</text>
+	<text x="250" y="76" font-size="11" text-anchor="middle" fill="#2e7d32" font-weight="bold">marche = 1</text>
+	<text x="400" y="76" font-size="11" text-anchor="middle" fill="#2e7d32" font-weight="bold">pompe = 1</text>
+	<text x="200" y="126" font-size="11" text-anchor="middle" fill="#607d8b">contacts : les conditions</text>
+	<text x="400" y="126" font-size="11" text-anchor="middle" fill="#607d8b">bobine : l'action</text>
+	<text x="200" y="142" font-size="11" text-anchor="middle" fill="#263238" font-weight="bold">en série = ET</text>
+
+	<!-- Network 2: parallel -->
+	<text x="8" y="216" font-size="11" text-anchor="start" fill="#607d8b">réseau 2</text>
+	<line x1="70" y1="210" x2="130" y2="210" stroke="#263238" stroke-width="2" />
+	<line x1="130" y1="190" x2="130" y2="230" stroke="#263238" stroke-width="2" />
+	<circle cx="130" cy="210" r="2.5" fill="#263238" />
+	<line x1="130" y1="190" x2="184" y2="190" stroke="#263238" stroke-width="2" />
+	<line x1="184" y1="180" x2="184" y2="200" stroke="#263238" stroke-width="2.5" />
+	<line x1="196" y1="180" x2="196" y2="200" stroke="#263238" stroke-width="2.5" />
+	<line x1="196" y1="190" x2="250" y2="190" stroke="#263238" stroke-width="2" />
+	<line x1="130" y1="230" x2="184" y2="230" stroke="#2e7d32" stroke-width="2" />
+	<line x1="184" y1="220" x2="184" y2="240" stroke="#2e7d32" stroke-width="2.5" />
+	<line x1="196" y1="220" x2="196" y2="240" stroke="#2e7d32" stroke-width="2.5" />
+	<line x1="196" y1="230" x2="250" y2="230" stroke="#2e7d32" stroke-width="2" />
+	<line x1="130" y1="210" x2="130" y2="230" stroke="#2e7d32" stroke-width="2" />
+	<line x1="250" y1="190" x2="250" y2="230" stroke="#263238" stroke-width="2" />
+	<line x1="250" y1="210" x2="250" y2="230" stroke="#2e7d32" stroke-width="2" />
+	<circle cx="250" cy="210" r="2.5" fill="#2e7d32" />
+	<line x1="250" y1="210" x2="392" y2="210" stroke="#2e7d32" stroke-width="2" />
+	<path d="M 392 200 Q 385 210 392 220" fill="none" stroke="#2e7d32" stroke-width="2.5" />
+	<path d="M 408 200 Q 415 210 408 220" fill="none" stroke="#2e7d32" stroke-width="2.5" />
+	<line x1="415" y1="210" x2="500" y2="210" stroke="#2e7d32" stroke-width="2" />
+	<line x1="70" y1="210" x2="130" y2="210" stroke="#2e7d32" stroke-width="2" />
+	<text x="190" y="174" font-size="11" text-anchor="middle" fill="#263238" font-weight="bold">bp1 = 0</text>
+	<text x="190" y="254" font-size="11" text-anchor="middle" fill="#2e7d32" font-weight="bold">bp2 = 1</text>
+	<text x="400" y="190" font-size="11" text-anchor="middle" fill="#2e7d32" font-weight="bold">lampe = 1</text>
+	<text x="300" y="244" font-size="11" text-anchor="start" fill="#263238" font-weight="bold">en parallèle = OU</text>
+	<text x="8" y="290" font-size="11" text-anchor="start" fill="#455a64">vert : chemin passant, la bobine est alimentée</text>
+</svg>

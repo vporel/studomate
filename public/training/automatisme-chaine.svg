@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 300" font-family="sans-serif">
+	<defs>
+		<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+			<path d="M 0 0 L 10 5 L 0 10 z" fill="#263238" />
+		</marker>
+	</defs>
+
+	<!-- Capteur -->
+	<rect x="20" y="50" width="200" height="200" rx="10" fill="#e3f2fd" stroke="#263238" stroke-width="2" />
+	<text x="120" y="78" font-size="16" font-weight="bold" text-anchor="middle" fill="#263238">Capteur</text>
+	<text x="120" y="96" font-size="12" text-anchor="middle" fill="#263238">détecteur de voiture</text>
+	<rect x="88" y="152" width="64" height="22" rx="5" fill="#fff" stroke="#263238" stroke-width="2" />
+	<rect x="65" y="172" width="110" height="28" rx="6" fill="#fff" stroke="#263238" stroke-width="2" />
+	<circle cx="88" cy="203" r="9" fill="#263238" />
+	<circle cx="152" cy="203" r="9" fill="#263238" />
+	<line x1="35" y1="213" x2="205" y2="213" stroke="#263238" stroke-width="2" />
+	<rect x="60" y="217" width="120" height="8" fill="none" stroke="#263238" stroke-width="1.5" stroke-dasharray="4 3" />
+
+	<!-- Automate -->
+	<rect x="300" y="50" width="200" height="200" rx="10" fill="#c8e6c9" stroke="#263238" stroke-width="2" />
+	<text x="400" y="78" font-size="16" font-weight="bold" text-anchor="middle" fill="#263238">Automate</text>
+	<text x="400" y="96" font-size="12" text-anchor="middle" fill="#263238">la logique</text>
+	<rect x="330" y="120" width="140" height="90" rx="6" fill="#fff" stroke="#263238" stroke-width="2" />
+	<circle cx="345" cy="133" r="3.5" fill="#2e7d32" />
+	<circle cx="358" cy="133" r="3.5" fill="#263238" />
+	<text x="400" y="162" font-size="14" text-anchor="middle" fill="#263238">SI voiture</text>
+	<text x="400" y="186" font-size="14" text-anchor="middle" fill="#263238">ALORS lever</text>
+
+	<!-- Actionneur -->
+	<rect x="580" y="50" width="200" height="200" rx="10" fill="#ffe0b2" stroke="#263238" stroke-width="2" />
+	<text x="680" y="78" font-size="16" font-weight="bold" text-anchor="middle" fill="#263238">Actionneur</text>
+	<text x="680" y="96" font-size="12" text-anchor="middle" fill="#263238">moteur de la barrière</text>
+	<rect x="600" y="165" width="60" height="47" rx="4" fill="#fff" stroke="#263238" stroke-width="2" />
+	<circle cx="630" cy="188" r="12" fill="none" stroke="#263238" stroke-width="2" />
+	<text x="630" y="193" font-size="14" text-anchor="middle" fill="#263238">M</text>
+	<line x1="660" y1="188" x2="700" y2="188" stroke="#263238" stroke-width="2" />
+	<rect x="700" y="160" width="16" height="52" fill="#fff" stroke="#263238" stroke-width="2" />
+	<line x1="708" y1="164" x2="765" y2="114" stroke="#d84315" stroke-width="7" stroke-linecap="round" />
+	<circle cx="708" cy="164" r="4" fill="#263238" />
+	<line x1="595" y1="212" x2="765" y2="212" stroke="#263238" stroke-width="2" />
+
+	<!-- Flèches -->
+	<line x1="220" y1="165" x2="298" y2="165" stroke="#263238" stroke-width="2.5" marker-end="url(#arrow)" />
+	<text x="260" y="136" font-size="11" text-anchor="middle" fill="#263238">informations</text>
+	<text x="260" y="150" font-size="11" text-anchor="middle" fill="#263238">(entrées)</text>
+	<line x1="500" y1="165" x2="578" y2="165" stroke="#263238" stroke-width="2.5" marker-end="url(#arrow)" />
+	<text x="540" y="136" font-size="11" text-anchor="middle" fill="#263238">ordres</text>
+	<text x="540" y="150" font-size="11" text-anchor="middle" fill="#263238">(sorties)</text>
+</svg>

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 190" font-family="sans-serif">
+	<rect x="270" y="28" width="80" height="150" fill="#eceff1" />
+	<line x1="270" y1="28" x2="270" y2="178" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="350" y1="28" x2="350" y2="178" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="230" y="20" font-size="11" text-anchor="middle" fill="#607d8b">rest</text>
+	<text x="310" y="20" font-size="11" text-anchor="middle" fill="#607d8b">pressed</text>
+	<text x="390" y="20" font-size="11" text-anchor="middle" fill="#607d8b">rest</text>
+	<text x="8" y="62" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">Wired normally open</text>
+	<text x="8" y="78" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">(NO)</text>
+	<path d="M 190 74 L 270 74 L 270 44 L 350 44 L 350 74 L 430 74" fill="none" stroke="#263238" stroke-width="2.2" stroke-linejoin="round" />
+	<text x="230" y="92" font-size="12" text-anchor="middle" fill="#607d8b">0</text>
+	<text x="310" y="62" font-size="12" text-anchor="middle" fill="#607d8b">1</text>
+	<text x="390" y="92" font-size="12" text-anchor="middle" fill="#607d8b">0</text>
+	<text x="8" y="142" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">Wired normally closed</text>
+	<text x="8" y="158" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">(NC)</text>
+	<path d="M 190 124 L 270 124 L 270 154 L 350 154 L 350 124 L 430 124" fill="none" stroke="#263238" stroke-width="2.2" stroke-linejoin="round" />
+	<text x="230" y="142" font-size="12" text-anchor="middle" fill="#607d8b">1</text>
+	<text x="310" y="172" font-size="12" text-anchor="middle" fill="#607d8b">0</text>
+	<text x="390" y="142" font-size="12" text-anchor="middle" fill="#607d8b">1</text>
+</svg>

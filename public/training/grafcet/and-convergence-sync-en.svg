@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 255" font-family="sans-serif">
+	<line x1="50" y1="50" x2="50" y2="70" stroke="#263238" stroke-width="1.8" />
+	<rect x="35" y="20" width="30" height="30" fill="#1976d2" stroke="#263238" stroke-width="1.8" />
+	<text x="50" y="40" font-size="12" font-weight="bold" text-anchor="middle" fill="#fff">1</text>
+	<line x1="170" y1="50" x2="170" y2="70" stroke="#263238" stroke-width="1.8" />
+	<rect x="155" y="20" width="30" height="30" fill="#1976d2" stroke="#263238" stroke-width="1.8" />
+	<text x="170" y="40" font-size="12" font-weight="bold" text-anchor="middle" fill="#fff">2</text>
+	<line x1="40" y1="70" x2="180" y2="70" stroke="#263238" stroke-width="1.8" />
+	<line x1="40" y1="76" x2="180" y2="76" stroke="#263238" stroke-width="1.8" />
+	<line x1="110" y1="76" x2="110" y2="130" stroke="#263238" stroke-width="1.8" />
+	<line x1="100" y1="100" x2="120" y2="100" stroke="#263238" stroke-width="3" />
+	<text x="124" y="104" font-size="11" text-anchor="start" fill="#263238">sensor1 AND sensor2</text>
+	<rect x="95" y="130" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<text x="110" y="150" font-size="12" font-weight="bold" text-anchor="middle" fill="#263238">3</text>
+	<text x="110" y="196" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">AND convergence</text>
+	<line x1="400" y1="14" x2="400" y2="178" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="400" y="192" font-size="11" text-anchor="middle" fill="#607d8b">0</text>
+	<line x1="430" y1="14" x2="430" y2="178" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="430" y="192" font-size="11" text-anchor="middle" fill="#607d8b">1</text>
+	<line x1="460" y1="14" x2="460" y2="178" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="460" y="192" font-size="11" text-anchor="middle" fill="#607d8b">2</text>
+	<line x1="490" y1="14" x2="490" y2="178" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="490" y="192" font-size="11" text-anchor="middle" fill="#607d8b">3</text>
+	<line x1="520" y1="14" x2="520" y2="178" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="520" y="192" font-size="11" text-anchor="middle" fill="#607d8b">4</text>
+	<line x1="550" y1="14" x2="550" y2="178" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="550" y="192" font-size="11" text-anchor="middle" fill="#607d8b">5</text>
+	<line x1="580" y1="14" x2="580" y2="178" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="580" y="192" font-size="11" text-anchor="middle" fill="#607d8b">6</text>
+	<text x="594" y="192" font-size="11" text-anchor="start" fill="#607d8b">s</text>
+	<text x="270" y="42" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">X1 : branch 1</text>
+	<path d="M 400 58 L 400 58 L 400 28 L 550 28 L 550 58 L 580 58" fill="none" stroke="#2e7d32" stroke-width="2.4" stroke-linejoin="round" />
+	<text x="270" y="94" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">X2 : branch 2</text>
+	<path d="M 400 110 L 400 110 L 400 80 L 550 80 L 550 110 L 580 110" fill="none" stroke="#2e7d32" stroke-width="2.4" stroke-linejoin="round" />
+	<text x="270" y="146" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">X3</text>
+	<path d="M 400 162 L 550 162 L 550 132 L 580 132 L 580 162 L 580 162" fill="none" stroke="#2e7d32" stroke-width="2.4" stroke-linejoin="round" />
+	<line x1="460" y1="14" x2="460" y2="200" stroke="#ef6c00" stroke-width="1.5" />
+	<line x1="550" y1="14" x2="550" y2="200" stroke="#d84315" stroke-width="1.5" />
+	<text x="460" y="214" font-size="11" text-anchor="middle" fill="#ef6c00" font-weight="bold">branch 1 ready</text>
+	<text x="550" y="214" font-size="11" text-anchor="middle" fill="#d84315" font-weight="bold">branch 2 ready</text>
+	<text x="550" y="228" font-size="11" text-anchor="middle" fill="#d84315" font-weight="bold">the sequence continues</text>
+</svg>

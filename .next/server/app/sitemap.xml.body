@@ -1,0 +1,1016 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<url>
+<loc>https://studomate.com/app</loc>
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/" />
+<changefreq>weekly</changefreq>
+<priority>1</priority>
+</url>
+<url>
+<loc>https://studomate.com/en</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/" />
+<changefreq>weekly</changefreq>
+<priority>1</priority>
+</url>
+<url>
+<loc>https://studomate.com/a-propos</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/a-propos" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/about" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/a-propos" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/about</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/a-propos" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/about" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/a-propos" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/contact</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/contact" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/contact" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/contact" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/contact</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/contact" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/contact" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/contact" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/mentions-legales</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/mentions-legales" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/legal" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/mentions-legales" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/legal</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/mentions-legales" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/legal" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/mentions-legales" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/conditions-d-utilisation</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/conditions-d-utilisation" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/terms" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/conditions-d-utilisation" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/terms</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/conditions-d-utilisation" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/terms" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/conditions-d-utilisation" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/politique-de-confidentialite</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/politique-de-confidentialite" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/privacy" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/politique-de-confidentialite" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/privacy</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/politique-de-confidentialite" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/privacy" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/politique-de-confidentialite" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/manuel-utilisateur</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/user-manual</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/glossaire</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/glossaire" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/glossary" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/glossaire" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/glossary</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/glossaire" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/glossary" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/glossaire" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/manuel-utilisateur/demarrage</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/demarrage" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/getting-started" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/demarrage" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/user-manual/getting-started</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/demarrage" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/getting-started" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/demarrage" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/manuel-utilisateur/projets</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/projets" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/projects" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/projets" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/user-manual/projects</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/projets" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/projects" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/projets" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/manuel-utilisateur/comptes</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/comptes" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/accounts" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/comptes" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/user-manual/accounts</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/comptes" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/accounts" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/comptes" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/manuel-utilisateur/explorateur</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/explorateur" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/explorer" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/explorateur" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/user-manual/explorer</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/explorateur" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/explorer" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/explorateur" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/manuel-utilisateur/variables</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/variables" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/variables" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/variables" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/user-manual/variables</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/variables" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/variables" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/variables" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/manuel-utilisateur/grafcet</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/grafcet" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/grafcet" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/grafcet" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/user-manual/grafcet</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/grafcet" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/grafcet" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/grafcet" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/manuel-utilisateur/ladder</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/ladder" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/ladder" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/ladder" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/user-manual/ladder</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/ladder" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/ladder" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/ladder" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/manuel-utilisateur/barre-d-outils</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/barre-d-outils" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/toolbar" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/barre-d-outils" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/user-manual/toolbar</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/barre-d-outils" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/toolbar" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/barre-d-outils" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/manuel-utilisateur/interfaces-hmi</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/interfaces-hmi" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/hmi" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/interfaces-hmi" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/user-manual/hmi</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/interfaces-hmi" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/hmi" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/interfaces-hmi" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/manuel-utilisateur/references-croisees</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/references-croisees" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/cross-references" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/references-croisees" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/user-manual/cross-references</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/references-croisees" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/cross-references" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/references-croisees" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/manuel-utilisateur/simulation</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/simulation" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/simulation" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/simulation" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/user-manual/simulation</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/simulation" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/simulation" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/simulation" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/manuel-utilisateur/analyse</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/analyse" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/analysis" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/analyse" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/user-manual/analysis</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/analyse" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/analysis" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/analyse" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/manuel-utilisateur/materiel</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/materiel" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/hardware" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/materiel" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/user-manual/hardware</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/materiel" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/hardware" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/materiel" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/manuel-utilisateur/scene-3d</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/scene-3d" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/scene-3d" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/scene-3d" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/user-manual/scene-3d</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/scene-3d" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/scene-3d" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/scene-3d" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/manuel-utilisateur/limites</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/limites" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/limits" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/limites" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/user-manual/limits</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/limites" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/limits" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/limites" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/manuel-utilisateur/depannage</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/depannage" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/troubleshooting" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/depannage" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/user-manual/troubleshooting</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/depannage" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/troubleshooting" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/depannage" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/manuel-utilisateur/raccourcis-clavier</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/raccourcis-clavier" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/shortcuts" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/raccourcis-clavier" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/user-manual/shortcuts</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/manuel-utilisateur/raccourcis-clavier" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/user-manual/shortcuts" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/manuel-utilisateur/raccourcis-clavier" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a0</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a0" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a0" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a0" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a0</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a0" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a0" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a0" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a0/logique-de-base</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a0/logique-de-base" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a0/logic-basics" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a0/logique-de-base" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a0/logic-basics</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a0/logique-de-base" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a0/logic-basics" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a0/logique-de-base" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a0/cycle-de-scrutation</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a0/cycle-de-scrutation" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a0/scan-cycle" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a0/cycle-de-scrutation" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a0/scan-cycle</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a0/cycle-de-scrutation" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a0/scan-cycle" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a0/cycle-de-scrutation" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a0/conclusion</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a0/conclusion" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a0/conclusion" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a0/conclusion" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a0/conclusion</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a0/conclusion" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a0/conclusion" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a0/conclusion" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a1</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a1" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a1" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a1" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a1</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a1" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a1" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a1" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a1/theorie</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a1/theorie" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a1/theory" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a1/theorie" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a1/theory</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a1/theorie" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a1/theory" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a1/theorie" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a1/theorie-actions</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a1/theorie-actions" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a1/theory-actions" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a1/theorie-actions" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a1/theory-actions</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a1/theorie-actions" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a1/theory-actions" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a1/theorie-actions" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a1/theorie-temporisation</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a1/theorie-temporisation" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a1/theory-timer" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a1/theorie-temporisation" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a1/theory-timer</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a1/theorie-temporisation" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a1/theory-timer" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a1/theorie-temporisation" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a1/theorie-divergence-en-ou</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a1/theorie-divergence-en-ou" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a1/theory-or-divergence" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a1/theorie-divergence-en-ou" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a1/theory-or-divergence</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a1/theorie-divergence-en-ou" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a1/theory-or-divergence" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a1/theorie-divergence-en-ou" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a1/theorie-divergence-en-et</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a1/theorie-divergence-en-et" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a1/theory-and-divergence" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a1/theorie-divergence-en-et" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a1/theory-and-divergence</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a1/theorie-divergence-en-et" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a1/theory-and-divergence" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a1/theorie-divergence-en-et" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a1/lecture-des-erreurs</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a1/lecture-des-erreurs" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a1/reading-errors" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a1/lecture-des-erreurs" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a1/reading-errors</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a1/lecture-des-erreurs" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a1/reading-errors" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a1/lecture-des-erreurs" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a2</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a2" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a2" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a2" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a2</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a2" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a2" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a2" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a2/theorie-contacts-bobines</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a2/theorie-contacts-bobines" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a2/theory-contacts-coils" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a2/theorie-contacts-bobines" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a2/theory-contacts-coils</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a2/theorie-contacts-bobines" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a2/theory-contacts-coils" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a2/theorie-contacts-bobines" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a2/theorie-auto-maintien</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a2/theorie-auto-maintien" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a2/theory-self-holding" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a2/theorie-auto-maintien" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a2/theory-self-holding</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a2/theorie-auto-maintien" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a2/theory-self-holding" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a2/theorie-auto-maintien" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a2/theorie-set-reset</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a2/theorie-set-reset" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a2/theory-set-reset" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a2/theorie-set-reset" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a2/theory-set-reset</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a2/theorie-set-reset" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a2/theory-set-reset" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a2/theorie-set-reset" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a2/theorie-fronts</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a2/theorie-fronts" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a2/theory-edges" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a2/theorie-fronts" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a2/theory-edges</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a2/theorie-fronts" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a2/theory-edges" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a2/theorie-fronts" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a2/conclusion</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a2/conclusion" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a2/conclusion" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a2/conclusion" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a2/conclusion</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a2/conclusion" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a2/conclusion" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a2/conclusion" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a3</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a3" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a3" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a3" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a3</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a3" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a3" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a3" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a3/theorie-compteurs</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a3/theorie-compteurs" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a3/theory-counters" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a3/theorie-compteurs" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a3/theory-counters</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a3/theorie-compteurs" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a3/theory-counters" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a3/theorie-compteurs" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a3/theorie-grandeurs-numeriques</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a3/theorie-grandeurs-numeriques" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a3/theory-numeric" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a3/theorie-grandeurs-numeriques" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a3/theory-numeric</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a3/theorie-grandeurs-numeriques" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a3/theory-numeric" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a3/theorie-grandeurs-numeriques" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a3/theorie-types</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a3/theorie-types" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a3/theory-types" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a3/theorie-types" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a3/theory-types</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a3/theorie-types" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a3/theory-types" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a3/theorie-types" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a3/theorie-structure</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a3/theorie-structure" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a3/theory-structure" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a3/theorie-structure" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a3/theory-structure</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a3/theorie-structure" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a3/theory-structure" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a3/theorie-structure" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a3/conclusion</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a3/conclusion" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a3/conclusion" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a3/conclusion" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a3/conclusion</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a3/conclusion" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a3/conclusion" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a3/conclusion" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a4</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a4" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a4" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a4" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a4</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a4" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a4" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a4" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a4/theorie-methode-ladder</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a4/theorie-methode-ladder" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a4/theory-method-ladder" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a4/theorie-methode-ladder" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a4/theory-method-ladder</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a4/theorie-methode-ladder" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a4/theory-method-ladder" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a4/theorie-methode-ladder" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a4/theorie-deux-programmes</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a4/theorie-deux-programmes" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a4/theory-two-programs" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a4/theorie-deux-programmes" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a4/theory-two-programs</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a4/theorie-deux-programmes" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a4/theory-two-programs" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a4/theorie-deux-programmes" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a4/theorie-actions-ladder</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a4/theorie-actions-ladder" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a4/theory-actions-ladder" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a4/theorie-actions-ladder" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a4/theory-actions-ladder</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a4/theorie-actions-ladder" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a4/theory-actions-ladder" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a4/theorie-actions-ladder" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a4/theorie-actions-sur-front-ladder</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a4/theorie-actions-sur-front-ladder" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a4/theory-edge-actions-ladder" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a4/theorie-actions-sur-front-ladder" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a4/theory-edge-actions-ladder</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a4/theorie-actions-sur-front-ladder" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a4/theory-edge-actions-ladder" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a4/theorie-actions-sur-front-ladder" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a4/theorie-temporisation-receptivite</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a4/theorie-temporisation-receptivite" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a4/theory-receptivity-timer" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a4/theorie-temporisation-receptivite" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a4/theory-receptivity-timer</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a4/theorie-temporisation-receptivite" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a4/theory-receptivity-timer" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a4/theorie-temporisation-receptivite" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a4/theorie-surveillance-mouvement</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a4/theorie-surveillance-mouvement" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a4/theory-movement-supervision" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a4/theorie-surveillance-mouvement" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a4/theory-movement-supervision</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a4/theorie-surveillance-mouvement" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a4/theory-movement-supervision" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a4/theorie-surveillance-mouvement" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a4/conclusion</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a4/conclusion" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a4/conclusion" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a4/conclusion" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a4/conclusion</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a4/conclusion" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a4/conclusion" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a4/conclusion" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a5</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a5" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a5" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a5" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a5</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a5" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a5" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a5" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a5/theorie-divergence-en-et-ladder</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a5/theorie-divergence-en-et-ladder" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a5/theory-and-divergence-ladder" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a5/theorie-divergence-en-et-ladder" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a5/theory-and-divergence-ladder</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a5/theorie-divergence-en-et-ladder" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a5/theory-and-divergence-ladder" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a5/theorie-divergence-en-et-ladder" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a5/theorie-grafcet-reinitialisation</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a5/theorie-grafcet-reinitialisation" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a5/theory-grafcet-reset" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a5/theorie-grafcet-reinitialisation" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a5/theory-grafcet-reset</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a5/theorie-grafcet-reinitialisation" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a5/theory-grafcet-reset" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a5/theorie-grafcet-reinitialisation" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a5/theorie-limites-reseau-par-transition</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a5/theorie-limites-reseau-par-transition" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a5/theory-going-further" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a5/theorie-limites-reseau-par-transition" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a5/theory-going-further</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a5/theorie-limites-reseau-par-transition" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a5/theory-going-further" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a5/theorie-limites-reseau-par-transition" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a5/theorie-methode-trois-blocs</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a5/theorie-methode-trois-blocs" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a5/theory-three-blocks" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a5/theorie-methode-trois-blocs" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a5/theory-three-blocks</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a5/theorie-methode-trois-blocs" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a5/theory-three-blocks" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a5/theorie-methode-trois-blocs" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/formations/a5/conclusion</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a5/conclusion" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a5/conclusion" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a5/conclusion" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+<url>
+<loc>https://studomate.com/en/training/a5/conclusion</loc>
+<xhtml:link rel="alternate" hreflang="fr" href="https://studomate.com/formations/a5/conclusion" />
+<xhtml:link rel="alternate" hreflang="en" href="https://studomate.com/en/training/a5/conclusion" />
+<xhtml:link rel="alternate" hreflang="x-default" href="https://studomate.com/formations/a5/conclusion" />
+<changefreq>monthly</changefreq>
+<priority>0.7</priority>
+</url>
+</urlset>

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 270" font-family="sans-serif">
+	<defs>
+		<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+			<path d="M 0 0 L 10 5 L 0 10 z" fill="#263238" />
+		</marker>
+	</defs>
+
+	<rect x="235" y="30" width="30" height="30" fill="#1976d2" stroke="#263238" stroke-width="1.8" />
+	<rect x="240" y="35" width="20" height="20" fill="none" stroke="#263238" stroke-width="1.8" />
+	<text x="250" y="50" font-size="12" font-weight="bold" text-anchor="middle" fill="#fff">0</text>
+	<line x1="250" y1="60" x2="250" y2="130" stroke="#263238" stroke-width="1.8" />
+	<line x1="240" y1="100" x2="260" y2="100" stroke="#263238" stroke-width="3" />
+	<rect x="235" y="130" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<text x="250" y="150" font-size="12" font-weight="bold" text-anchor="middle" fill="#263238">1</text>
+	<line x1="250" y1="160" x2="250" y2="235" stroke="#263238" stroke-width="1.8" />
+	<line x1="240" y1="190" x2="260" y2="190" stroke="#263238" stroke-width="3" />
+	<rect x="279" y="133" width="115" height="24" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<line x1="265" y1="145" x2="279" y2="145" stroke="#263238" stroke-width="1.8" />
+	<text x="336" y="149" font-size="12" text-anchor="middle" fill="#263238">lever_barriere</text>
+	<path d="M 250 235 H 170 V 12 H 250 V 30" fill="none" stroke="#263238" stroke-width="1.8" marker-end="url(#arrow)" />
+	<text x="272" y="104" font-size="12" fill="#263238">voiture_detectee</text>
+	<text x="272" y="194" font-size="12" fill="#263238">voiture_passee</text>
+	<text x="272" y="117" font-size="11" text-anchor="start" fill="#607d8b">(réceptivité)</text>
+	<text x="272" y="207" font-size="11" text-anchor="start" fill="#607d8b">(réceptivité)</text>
+	<text x="322" y="172" font-size="11" text-anchor="middle" fill="#607d8b">action</text>
+	<text x="160" y="49" font-size="11" text-anchor="end" fill="#607d8b">étape initiale</text>
+	<text x="160" y="104" font-size="11" text-anchor="end" fill="#607d8b">transition</text>
+	<text x="160" y="149" font-size="11" text-anchor="end" fill="#607d8b">étape</text>
+	<text x="160" y="194" font-size="11" text-anchor="end" fill="#607d8b">transition</text>
+	<text x="210" y="254" font-size="11" text-anchor="middle" fill="#607d8b">liaison orientée</text>
+</svg>

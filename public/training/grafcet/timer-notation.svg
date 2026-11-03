@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 170" font-family="sans-serif">
+	<text x="200" y="62" font-family="monospace" font-size="34" font-weight="bold" text-anchor="middle" fill="#263238">t1/X10/5s</text>
+	<path d="M 108 78 V 86 H 149 V 78" fill="none" stroke="#263238" stroke-width="1.8" />
+	<path d="M 128.5 86 L 128.5 98 L 80 108" fill="none" stroke="#607d8b" stroke-width="1.2" />
+	<text x="80" y="126" font-size="12" text-anchor="middle" fill="#263238">nom du</text>
+	<text x="80" y="142" font-size="12" text-anchor="middle" fill="#263238">temporisateur</text>
+	<path d="M 169 78 V 86 H 230 V 78" fill="none" stroke="#263238" stroke-width="1.8" />
+	<path d="M 199.5 86 L 199.5 98 L 200 108" fill="none" stroke="#607d8b" stroke-width="1.2" />
+	<text x="200" y="126" font-size="12" text-anchor="middle" fill="#263238">compte tant que</text>
+	<text x="200" y="142" font-size="12" text-anchor="middle" fill="#263238">l'étape 10 est active</text>
+	<path d="M 251 78 V 86 H 292 V 78" fill="none" stroke="#263238" stroke-width="1.8" />
+	<path d="M 271.5 86 L 271.5 98 L 320 108" fill="none" stroke="#607d8b" stroke-width="1.2" />
+	<text x="320" y="126" font-size="12" text-anchor="middle" fill="#263238">durée</text>
+	<text x="320" y="142" font-size="12" text-anchor="middle" fill="#263238">(ms, s, m, h, d)</text>
+</svg>

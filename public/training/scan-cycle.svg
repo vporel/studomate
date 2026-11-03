@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 400" font-family="sans-serif">
+	<defs>
+		<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+			<path d="M 0 0 L 10 5 L 0 10 z" fill="#263238" />
+		</marker>
+	</defs>
+
+	<text x="350" y="28" font-size="12" font-style="italic" text-anchor="middle" fill="#455a64">Feu : le minuteur est-il écoulé ?</text>
+	<rect x="240" y="40" width="220" height="62" rx="10" fill="#bbdefb" stroke="#263238" stroke-width="2" />
+	<text x="350" y="66" font-size="15" font-weight="bold" text-anchor="middle" fill="#263238">1 Lire les entrées</text>
+	<text x="350" y="86" font-size="12" text-anchor="middle" fill="#263238">capteurs → image des entrées</text>
+	<rect x="460" y="270" width="220" height="62" rx="10" fill="#c8e6c9" stroke="#263238" stroke-width="2" />
+	<text x="570" y="296" font-size="15" font-weight="bold" text-anchor="middle" fill="#263238">2 Exécuter le programme</text>
+	<text x="570" y="316" font-size="12" text-anchor="middle" fill="#263238">décide les sorties</text>
+	<text x="570" y="355" font-size="12" font-style="italic" text-anchor="middle" fill="#455a64">Feu : passer à l'orange</text>
+	<rect x="20" y="270" width="220" height="62" rx="10" fill="#ffcc80" stroke="#263238" stroke-width="2" />
+	<text x="130" y="296" font-size="15" font-weight="bold" text-anchor="middle" fill="#263238">3 Écrire les sorties</text>
+	<text x="130" y="316" font-size="12" text-anchor="middle" fill="#263238">image des sorties → actionneurs</text>
+	<text x="130" y="355" font-size="12" font-style="italic" text-anchor="middle" fill="#455a64">Feu : allumer le voyant orange</text>
+	<path d="M 430 102 Q 560 125 570 268" fill="none" stroke="#263238" stroke-width="2.5" marker-end="url(#arrow)" />
+	<path d="M 460 320 Q 350 385 242 320" fill="none" stroke="#263238" stroke-width="2.5" marker-end="url(#arrow)" />
+	<path d="M 130 268 Q 140 125 270 102" fill="none" stroke="#263238" stroke-width="2.5" marker-end="url(#arrow)" />
+	<text x="350" y="215" font-size="14" font-weight="bold" text-anchor="middle" fill="#263238">Le cycle recommence</text>
+	<text x="350" y="235" font-size="14" text-anchor="middle" fill="#263238">aussitôt, très vite</text>
+</svg>

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 344" font-family="sans-serif">
+	<!-- Tank -->
+	<rect x="40" y="40" width="70" height="160" fill="none" stroke="#263238" stroke-width="2" />
+	<rect x="41" y="112" width="68" height="87" fill="#bbdefb" stroke="none" stroke-width="1.5" />
+	<text x="75" y="222" font-size="12" font-weight="bold" text-anchor="middle" fill="#263238">tank</text>
+	<text x="75" y="238" font-size="11" text-anchor="middle" fill="#455a64">level 0 to 100 %</text>
+
+	<!-- Thresholds -->
+	<line x1="40" y1="48" x2="610" y2="48" stroke="#d84315" stroke-width="1.2" stroke-dasharray="4 3" />
+	<text x="116" y="44" font-size="11" text-anchor="start" fill="#d84315">alarm 95 %</text>
+	<line x1="40" y1="72" x2="610" y2="72" stroke="#cfd8dc" stroke-width="1.2" stroke-dasharray="4 3" />
+	<text x="116" y="68" font-size="11" text-anchor="start" fill="#455a64">pump stops 80 %</text>
+	<line x1="40" y1="168" x2="610" y2="168" stroke="#cfd8dc" stroke-width="1.2" stroke-dasharray="4 3" />
+	<text x="116" y="164" font-size="11" text-anchor="start" fill="#455a64">pump starts 20 %</text>
+
+	<!-- Level over time -->
+	<text x="270" y="34" font-size="12" font-weight="bold" text-anchor="start" fill="#263238">level</text>
+	<path d="M 270 112 L 305 168 L 380 72 L 440 168 L 510 72 L 570 43.19999999999999" fill="none" stroke="#263238" stroke-width="2.2" stroke-linejoin="round" />
+
+	<!-- Pump and alarm -->
+	<text x="8" y="262" font-size="12" font-weight="bold" text-anchor="start" fill="#263238">pump</text>
+	<path d="M 270 270 L 305 270 L 305 252 L 380 252 L 380 270 L 440 270 L 440 252 L 510 252 L 510 270 L 570 270" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" />
+	<text x="8" y="306" font-size="12" font-weight="bold" text-anchor="start" fill="#263238">alarm</text>
+	<path d="M 270 314 L 560 314 L 560 296 L 570 296 L 570 314 L 570 314" fill="none" stroke="#d84315" stroke-width="2.2" stroke-linejoin="round" />
+	<line x1="270" y1="244" x2="270" y2="316" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="570" y="338" font-size="11" text-anchor="end" fill="#607d8b">time</text>
+	<text x="280" y="232" font-size="11" text-anchor="start" fill="#455a64">Between 20 % and 80 %, the pump keeps its previous state.</text>
+</svg>

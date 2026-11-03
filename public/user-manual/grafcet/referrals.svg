@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 200" font-family="Helvetica, Arial, sans-serif" fill="none" stroke="#263238">
+	<rect x="40" y="10" width="44" height="44" rx="5" fill="#ffffff" stroke-width="1.5" />
+	<text x="62" y="32" font-size="16" text-anchor="middle" dominant-baseline="central" fill="#263238" stroke="none">5</text>
+	<line x1="62" y1="54" x2="62" y2="120" stroke-width="2" />
+	<line x1="49.5" y1="82" x2="74.5" y2="82" stroke-width="2" />
+	<line x1="62" y1="120" x2="62" y2="150" stroke-width="1.5" />
+	<polyline points="57,146 62,154 67,146" stroke-width="1.5" />
+	<text x="62" y="176" font-size="14" text-anchor="middle" dominant-baseline="central" fill="#1565c0" stroke="none" font-weight="bold">0</text>
+	<text x="192" y="20" font-size="14" text-anchor="middle" dominant-baseline="central" fill="#1565c0" stroke="none" font-weight="bold">5</text>
+	<polyline points="187,36 192,44 197,36" stroke-width="1.5" />
+	<line x1="192" y1="40" x2="192" y2="76" stroke-width="1.5" />
+	<rect x="170" y="76" width="44" height="44" rx="5" fill="#ffffff" stroke-width="1.5" />
+	<rect x="173" y="79" width="38" height="38" rx="3" stroke-width="1.5" />
+	<text x="192" y="98" font-size="16" text-anchor="middle" dominant-baseline="central" fill="#263238" stroke="none">0</text>
+	<line x1="192" y1="120" x2="192" y2="150" stroke-width="2" />
+	<line x1="179.5" y1="140" x2="204.5" y2="140" stroke-width="2" />
+</svg>

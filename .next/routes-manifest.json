@@ -1,0 +1,320 @@
+{
+  "version": 3,
+  "pages404": true,
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.studomate.com"
+        }
+      ],
+      "destination": "https://studomate.com/:path*",
+      "statusCode": 308,
+      "regex": "^(?!/_next)(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$"
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "header",
+          "key": "x-forwarded-proto",
+          "value": "http"
+        }
+      ],
+      "destination": "https://studomate.com/:path*",
+      "statusCode": 308,
+      "regex": "^(?!/_next)(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/app",
+      "has": [
+        {
+          "type": "query",
+          "key": "template"
+        }
+      ],
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
+        }
+      ],
+      "regex": "^/app(?:/)?$"
+    }
+  ],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [],
+    "fallback": []
+  },
+  "dynamicRoutes": [
+    {
+      "page": "/api/og/[locale]/[key]",
+      "regex": "^/api/og/([^/]+?)/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPlocale": "nxtPlocale",
+        "nxtPkey": "nxtPkey"
+      },
+      "namedRegex": "^/api/og/(?<nxtPlocale>[^/]+?)/(?<nxtPkey>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/serwist/[path]",
+      "regex": "^/serwist/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPpath": "nxtPpath"
+      },
+      "namedRegex": "^/serwist/(?<nxtPpath>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/[locale]",
+      "regex": "^/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPlocale": "nxtPlocale"
+      },
+      "namedRegex": "^/(?<nxtPlocale>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/[locale]/about",
+      "regex": "^/([^/]+?)/about(?:/)?$",
+      "routeKeys": {
+        "nxtPlocale": "nxtPlocale"
+      },
+      "namedRegex": "^/(?<nxtPlocale>[^/]+?)/about(?:/)?$"
+    },
+    {
+      "page": "/[locale]/contact",
+      "regex": "^/([^/]+?)/contact(?:/)?$",
+      "routeKeys": {
+        "nxtPlocale": "nxtPlocale"
+      },
+      "namedRegex": "^/(?<nxtPlocale>[^/]+?)/contact(?:/)?$"
+    },
+    {
+      "page": "/[locale]/legal",
+      "regex": "^/([^/]+?)/legal(?:/)?$",
+      "routeKeys": {
+        "nxtPlocale": "nxtPlocale"
+      },
+      "namedRegex": "^/(?<nxtPlocale>[^/]+?)/legal(?:/)?$"
+    },
+    {
+      "page": "/[locale]/privacy",
+      "regex": "^/([^/]+?)/privacy(?:/)?$",
+      "routeKeys": {
+        "nxtPlocale": "nxtPlocale"
+      },
+      "namedRegex": "^/(?<nxtPlocale>[^/]+?)/privacy(?:/)?$"
+    },
+    {
+      "page": "/[locale]/terms",
+      "regex": "^/([^/]+?)/terms(?:/)?$",
+      "routeKeys": {
+        "nxtPlocale": "nxtPlocale"
+      },
+      "namedRegex": "^/(?<nxtPlocale>[^/]+?)/terms(?:/)?$"
+    },
+    {
+      "page": "/[locale]/training",
+      "regex": "^/([^/]+?)/training(?:/)?$",
+      "routeKeys": {
+        "nxtPlocale": "nxtPlocale"
+      },
+      "namedRegex": "^/(?<nxtPlocale>[^/]+?)/training(?:/)?$"
+    },
+    {
+      "page": "/[locale]/training/a0",
+      "regex": "^/([^/]+?)/training/a0(?:/)?$",
+      "routeKeys": {
+        "nxtPlocale": "nxtPlocale"
+      },
+      "namedRegex": "^/(?<nxtPlocale>[^/]+?)/training/a0(?:/)?$"
+    },
+    {
+      "page": "/[locale]/training/a0/[step]",
+      "regex": "^/([^/]+?)/training/a0/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPlocale": "nxtPlocale",
+        "nxtPstep": "nxtPstep"
+      },
+      "namedRegex": "^/(?<nxtPlocale>[^/]+?)/training/a0/(?<nxtPstep>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/[locale]/training/a1",
+      "regex": "^/([^/]+?)/training/a1(?:/)?$",
+      "routeKeys": {
+        "nxtPlocale": "nxtPlocale"
+      },
+      "namedRegex": "^/(?<nxtPlocale>[^/]+?)/training/a1(?:/)?$"
+    },
+    {
+      "page": "/[locale]/training/a1/[step]",
+      "regex": "^/([^/]+?)/training/a1/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPlocale": "nxtPlocale",
+        "nxtPstep": "nxtPstep"
+      },
+      "namedRegex": "^/(?<nxtPlocale>[^/]+?)/training/a1/(?<nxtPstep>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/[locale]/training/a2",
+      "regex": "^/([^/]+?)/training/a2(?:/)?$",
+      "routeKeys": {
+        "nxtPlocale": "nxtPlocale"
+      },
+      "namedRegex": "^/(?<nxtPlocale>[^/]+?)/training/a2(?:/)?$"
+    },
+    {
+      "page": "/[locale]/training/a2/[step]",
+      "regex": "^/([^/]+?)/training/a2/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPlocale": "nxtPlocale",
+        "nxtPstep": "nxtPstep"
+      },
+      "namedRegex": "^/(?<nxtPlocale>[^/]+?)/training/a2/(?<nxtPstep>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/[locale]/training/a3",
+      "regex": "^/([^/]+?)/training/a3(?:/)?$",
+      "routeKeys": {
+        "nxtPlocale": "nxtPlocale"
+      },
+      "namedRegex": "^/(?<nxtPlocale>[^/]+?)/training/a3(?:/)?$"
+    },
+    {
+      "page": "/[locale]/training/a3/[step]",
+      "regex": "^/([^/]+?)/training/a3/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPlocale": "nxtPlocale",
+        "nxtPstep": "nxtPstep"
+      },
+      "namedRegex": "^/(?<nxtPlocale>[^/]+?)/training/a3/(?<nxtPstep>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/[locale]/training/a4",
+      "regex": "^/([^/]+?)/training/a4(?:/)?$",
+      "routeKeys": {
+        "nxtPlocale": "nxtPlocale"
+      },
+      "namedRegex": "^/(?<nxtPlocale>[^/]+?)/training/a4(?:/)?$"
+    },
+    {
+      "page": "/[locale]/training/a4/[step]",
+      "regex": "^/([^/]+?)/training/a4/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPlocale": "nxtPlocale",
+        "nxtPstep": "nxtPstep"
+      },
+      "namedRegex": "^/(?<nxtPlocale>[^/]+?)/training/a4/(?<nxtPstep>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/[locale]/training/a5",
+      "regex": "^/([^/]+?)/training/a5(?:/)?$",
+      "routeKeys": {
+        "nxtPlocale": "nxtPlocale"
+      },
+      "namedRegex": "^/(?<nxtPlocale>[^/]+?)/training/a5(?:/)?$"
+    },
+    {
+      "page": "/[locale]/training/a5/[step]",
+      "regex": "^/([^/]+?)/training/a5/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPlocale": "nxtPlocale",
+        "nxtPstep": "nxtPstep"
+      },
+      "namedRegex": "^/(?<nxtPlocale>[^/]+?)/training/a5/(?<nxtPstep>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/[locale]/training/glossary",
+      "regex": "^/([^/]+?)/training/glossary(?:/)?$",
+      "routeKeys": {
+        "nxtPlocale": "nxtPlocale"
+      },
+      "namedRegex": "^/(?<nxtPlocale>[^/]+?)/training/glossary(?:/)?$"
+    },
+    {
+      "page": "/[locale]/user-manual",
+      "regex": "^/([^/]+?)/user\\-manual(?:/)?$",
+      "routeKeys": {
+        "nxtPlocale": "nxtPlocale"
+      },
+      "namedRegex": "^/(?<nxtPlocale>[^/]+?)/user\\-manual(?:/)?$"
+    },
+    {
+      "page": "/[locale]/user-manual/[section]",
+      "regex": "^/([^/]+?)/user\\-manual/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPlocale": "nxtPlocale",
+        "nxtPsection": "nxtPsection"
+      },
+      "namedRegex": "^/(?<nxtPlocale>[^/]+?)/user\\-manual/(?<nxtPsection>[^/]+?)(?:/)?$"
+    }
+  ],
+  "staticRoutes": [
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/app",
+      "regex": "^/app(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/app(?:/)?$"
+    },
+    {
+      "page": "/app/3d-scene",
+      "regex": "^/app/3d\\-scene(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/app/3d\\-scene(?:/)?$"
+    },
+    {
+      "page": "/manifest.webmanifest",
+      "regex": "^/manifest\\.webmanifest(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/manifest\\.webmanifest(?:/)?$"
+    },
+    {
+      "page": "/robots.txt",
+      "regex": "^/robots\\.txt(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/robots\\.txt(?:/)?$"
+    },
+    {
+      "page": "/sitemap.xml",
+      "regex": "^/sitemap\\.xml(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/sitemap\\.xml(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSuffix": ".prefetch.rsc",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments"
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}

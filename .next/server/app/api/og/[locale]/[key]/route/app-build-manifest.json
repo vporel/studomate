@@ -1,0 +1,12 @@
+{
+  "pages": {
+    "/api/og/[locale]/[key]/route": [
+      "static/chunks/5cbb5df9f3f54f13.js",
+      "static/chunks/defea25b66838b89.js",
+      "static/chunks/c16efd9677d8c131.js",
+      "static/chunks/d7dabadf1e8a079a.js",
+      "static/chunks/f00cbcabf3e5b8cc.js",
+      "static/chunks/turbopack-a87030e4a95e2b84.js"
+    ]
+  }
+}

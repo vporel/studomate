@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 590 318" font-family="sans-serif">
+	<line x1="130" y1="30" x2="130" y2="292" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="154" y1="30" x2="154" y2="292" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="178" y1="30" x2="178" y2="292" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="202" y1="30" x2="202" y2="292" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="226" y1="30" x2="226" y2="292" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="250" y1="30" x2="250" y2="292" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="274" y1="30" x2="274" y2="292" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="298" y1="30" x2="298" y2="292" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="322" y1="30" x2="322" y2="292" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="346" y1="30" x2="346" y2="292" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="370" y1="30" x2="370" y2="292" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="394" y1="30" x2="394" y2="292" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="418" y1="30" x2="418" y2="292" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="442" y1="30" x2="442" y2="292" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="466" y1="30" x2="466" y2="292" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="490" y1="30" x2="490" y2="292" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="514" y1="30" x2="514" y2="292" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="538" y1="30" x2="538" y2="292" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="562" y1="30" x2="562" y2="292" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+
+	<text x="8" y="18" font-size="12" font-weight="bold" text-anchor="start" fill="#263238">PV = 3</text>
+	<text x="8" y="58" font-size="12" font-weight="bold" text-anchor="start" fill="#263238">CU</text>
+	<path d="M 130 66 L 154 66 L 154 44 L 178 44 L 178 66 L 202 66 L 202 44 L 226 44 L 226 66 L 250 66 L 250 44 L 274 44 L 274 66 L 442 66 L 442 44 L 466 44 L 466 66 L 562 66" fill="none" stroke="#263238" stroke-width="2.2" stroke-linejoin="round" />
+	<text x="8" y="118" font-size="12" font-weight="bold" text-anchor="start" fill="#263238">CD</text>
+	<path d="M 130 126 L 322 126 L 322 104 L 346 104 L 346 126 L 370 126 L 370 104 L 394 104 L 394 126 L 442 126 L 442 104 L 466 104 L 466 126 L 490 126 L 490 104 L 514 104 L 514 126 L 562 126" fill="none" stroke="#263238" stroke-width="2.2" stroke-linejoin="round" />
+	<text x="454" y="82" font-size="11" text-anchor="middle" fill="#d84315">CU and CD together: CV does not move</text>
+	<text x="8" y="178" font-size="12" font-weight="bold" text-anchor="start" fill="#263238">CV</text>
+	<path d="M 130 186 L 154 186 L 154 178 L 202 178 L 202 170 L 250 170 L 250 162 L 322 162 L 322 170 L 370 170 L 370 178 L 490 178 L 490 186 L 562 186" fill="none" stroke="#d84315" stroke-width="2.2" stroke-linejoin="round" />
+	<text x="142" y="181" font-size="11" font-weight="bold" text-anchor="middle" fill="#263238">0</text>
+	<text x="178" y="173" font-size="11" font-weight="bold" text-anchor="middle" fill="#263238">1</text>
+	<text x="226" y="165" font-size="11" font-weight="bold" text-anchor="middle" fill="#263238">2</text>
+	<text x="286" y="157" font-size="11" font-weight="bold" text-anchor="middle" fill="#263238">3</text>
+	<text x="346" y="165" font-size="11" font-weight="bold" text-anchor="middle" fill="#263238">2</text>
+	<text x="430" y="173" font-size="11" font-weight="bold" text-anchor="middle" fill="#263238">1</text>
+	<text x="526" y="181" font-size="11" font-weight="bold" text-anchor="middle" fill="#263238">0</text>
+	<text x="8" y="228" font-size="12" font-weight="bold" text-anchor="start" fill="#263238">QU</text>
+	<path d="M 130 236 L 250 236 L 250 214 L 322 214 L 322 236 L 562 236" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" />
+	<text x="330" y="230" font-size="11" text-anchor="start" fill="#455a64">CV ≥ PV</text>
+	<text x="8" y="272" font-size="12" font-weight="bold" text-anchor="start" fill="#263238">QD</text>
+	<path d="M 130 280 L 130 280 L 130 258 L 154 258 L 154 280 L 490 280 L 490 258 L 562 258 L 562 280 L 562 280" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" />
+	<text x="162" y="274" font-size="11" text-anchor="start" fill="#455a64">CV ≤ 0</text>
+	<text x="8" y="308" font-size="11" text-anchor="start" fill="#607d8b">One dashed line = one time unit. CU adds 1, CD subtracts 1.</text>
+</svg>

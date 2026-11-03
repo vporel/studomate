@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 284" font-family="sans-serif">
+	<line x1="170" y1="24" x2="170" y2="250" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="206" y1="24" x2="206" y2="250" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="242" y1="24" x2="242" y2="250" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="278" y1="24" x2="278" y2="250" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="314" y1="24" x2="314" y2="250" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="350" y1="24" x2="350" y2="250" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="386" y1="24" x2="386" y2="250" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="422" y1="24" x2="422" y2="250" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<line x1="458" y1="24" x2="458" y2="250" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="8" y="16" font-size="11" text-anchor="start" fill="#607d8b">entrées</text>
+	<text x="8" y="50" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">Marche</text>
+	<path d="M 170 62 L 206 62 L 206 38 L 242 38 L 242 62 L 314 62 L 314 38 L 350 38 L 350 62 L 458 62" fill="none" stroke="#263238" stroke-width="2.2" stroke-linejoin="round" />
+	<text x="8" y="100" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">Arrêt</text>
+	<path d="M 170 112 L 314 112 L 314 88 L 350 88 L 350 112 L 386 112 L 386 88 L 422 88 L 422 112 L 458 112" fill="none" stroke="#263238" stroke-width="2.2" stroke-linejoin="round" />
+	<line x1="8" y1="138" x2="472" y2="138" stroke="#90a4ae" stroke-width="1.5" />
+	<text x="8" y="152" font-size="11" text-anchor="start" fill="#607d8b">sorties</text>
+	<text x="8" y="182" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">pompe</text>
+	<text x="8" y="198" font-size="11" text-anchor="start" fill="#607d8b">R sous S</text>
+	<path d="M 170 194 L 206 194 L 206 170 L 314 170 L 314 194 L 458 194" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" />
+	<text x="8" y="232" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">pompe</text>
+	<text x="8" y="248" font-size="11" text-anchor="start" fill="#607d8b">R au-dessus de S</text>
+	<path d="M 170 244 L 206 244 L 206 220 L 386 220 L 386 244 L 458 244" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" />
+	<rect x="314" y="24" width="36" height="226" fill="none" stroke="#d84315" stroke-width="1.5" stroke-dasharray="4 3" />
+	<text x="332" y="16" font-size="11" text-anchor="middle" fill="#d84315" font-weight="bold">S et R vrais ensemble</text>
+	<text x="188" y="264" font-size="11" text-anchor="middle" fill="#607d8b">1</text>
+	<text x="224" y="264" font-size="11" text-anchor="middle" fill="#607d8b">2</text>
+	<text x="260" y="264" font-size="11" text-anchor="middle" fill="#607d8b">3</text>
+	<text x="296" y="264" font-size="11" text-anchor="middle" fill="#607d8b">4</text>
+	<text x="332" y="264" font-size="11" text-anchor="middle" fill="#607d8b">5</text>
+	<text x="368" y="264" font-size="11" text-anchor="middle" fill="#607d8b">6</text>
+	<text x="404" y="264" font-size="11" text-anchor="middle" fill="#607d8b">7</text>
+	<text x="440" y="264" font-size="11" text-anchor="middle" fill="#607d8b">8</text>
+	<text x="170" y="278" font-size="11" text-anchor="start" fill="#607d8b">un trait pointillé = un cycle de scrutation</text>
+</svg>

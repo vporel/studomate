@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 372" font-family="sans-serif">
+	<!-- Phase 1 -->
+	<rect x="5" y="5" width="290" height="175" rx="6" fill="#fff" stroke="#cfd8dc" stroke-width="1.5" />
+	<text x="15" y="25" font-size="13" text-anchor="start" fill="#263238" font-weight="bold">1. Repos</text>
+	<line x1="15" y1="45" x2="15" y2="143" stroke="#263238" stroke-width="3" />
+	<line x1="285" y1="45" x2="285" y2="143" stroke="#263238" stroke-width="3" />
+	<line x1="15" y1="93" x2="41" y2="93" stroke="#263238" stroke-width="2" />
+	<line x1="41" y1="73" x2="41" y2="113" stroke="#263238" stroke-width="2" />
+	<circle cx="41" cy="93" r="2.5" fill="#263238" />
+	<line x1="41" y1="73" x2="79" y2="73" stroke="#263238" stroke-width="2" />
+	<line x1="79" y1="63" x2="79" y2="83" stroke="#263238" stroke-width="2.5" />
+	<line x1="91" y1="63" x2="91" y2="83" stroke="#263238" stroke-width="2.5" />
+	<line x1="91" y1="73" x2="123" y2="73" stroke="#263238" stroke-width="2" />
+	<line x1="41" y1="113" x2="79" y2="113" stroke="#263238" stroke-width="2" />
+	<line x1="79" y1="103" x2="79" y2="123" stroke="#263238" stroke-width="2.5" />
+	<line x1="91" y1="103" x2="91" y2="123" stroke="#263238" stroke-width="2.5" />
+	<line x1="91" y1="113" x2="123" y2="113" stroke="#263238" stroke-width="2" />
+	<line x1="123" y1="73" x2="123" y2="113" stroke="#263238" stroke-width="2" />
+	<circle cx="123" cy="93" r="2.5" fill="#263238" />
+	<line x1="123" y1="93" x2="159" y2="93" stroke="#263238" stroke-width="2" />
+	<line x1="159" y1="83" x2="159" y2="103" stroke="#263238" stroke-width="2.5" />
+	<line x1="171" y1="83" x2="171" y2="103" stroke="#263238" stroke-width="2.5" />
+	<line x1="157" y1="104" x2="173" y2="82" stroke="#263238" stroke-width="2" />
+	<line x1="171" y1="93" x2="229" y2="93" stroke="#263238" stroke-width="2" />
+	<path d="M 229 83 Q 222 93 229 103" fill="none" stroke="#263238" stroke-width="2.5" />
+	<path d="M 245 83 Q 252 93 245 103" fill="none" stroke="#263238" stroke-width="2.5" />
+	<line x1="252" y1="93" x2="285" y2="93" stroke="#263238" stroke-width="2" />
+	<text x="85" y="59" font-size="11" text-anchor="middle" fill="#263238">marche = 0</text>
+	<text x="85" y="139" font-size="11" text-anchor="middle" fill="#263238">pompe = 0</text>
+	<text x="165" y="73" font-size="11" text-anchor="middle" fill="#263238">arret = 0</text>
+	<text x="237" y="73" font-size="11" text-anchor="middle" fill="#263238">pompe = 0</text>
+	<text x="150" y="171" font-size="11" text-anchor="middle" fill="#455a64">rien ne passe, pompe = 0</text>
+	<!-- Phase 2 -->
+	<rect x="305" y="5" width="290" height="175" rx="6" fill="#fff" stroke="#cfd8dc" stroke-width="1.5" />
+	<text x="315" y="25" font-size="13" text-anchor="start" fill="#263238" font-weight="bold">2. Appui sur marche</text>
+	<line x1="315" y1="45" x2="315" y2="143" stroke="#263238" stroke-width="3" />
+	<line x1="585" y1="45" x2="585" y2="143" stroke="#263238" stroke-width="3" />
+	<line x1="315" y1="93" x2="341" y2="93" stroke="#2e7d32" stroke-width="2" />
+	<line x1="341" y1="73" x2="341" y2="113" stroke="#263238" stroke-width="2" />
+	<line x1="341" y1="73" x2="341" y2="93" stroke="#2e7d32" stroke-width="2" />
+	<circle cx="341" cy="93" r="2.5" fill="#2e7d32" />
+	<line x1="341" y1="73" x2="379" y2="73" stroke="#2e7d32" stroke-width="2" />
+	<line x1="379" y1="63" x2="379" y2="83" stroke="#2e7d32" stroke-width="2.5" />
+	<line x1="391" y1="63" x2="391" y2="83" stroke="#2e7d32" stroke-width="2.5" />
+	<line x1="391" y1="73" x2="423" y2="73" stroke="#2e7d32" stroke-width="2" />
+	<line x1="341" y1="113" x2="379" y2="113" stroke="#263238" stroke-width="2" />
+	<line x1="379" y1="103" x2="379" y2="123" stroke="#263238" stroke-width="2.5" />
+	<line x1="391" y1="103" x2="391" y2="123" stroke="#263238" stroke-width="2.5" />
+	<line x1="391" y1="113" x2="423" y2="113" stroke="#263238" stroke-width="2" />
+	<line x1="423" y1="73" x2="423" y2="113" stroke="#263238" stroke-width="2" />
+	<line x1="423" y1="73" x2="423" y2="93" stroke="#2e7d32" stroke-width="2" />
+	<circle cx="423" cy="93" r="2.5" fill="#2e7d32" />
+	<line x1="423" y1="93" x2="459" y2="93" stroke="#2e7d32" stroke-width="2" />
+	<line x1="459" y1="83" x2="459" y2="103" stroke="#2e7d32" stroke-width="2.5" />
+	<line x1="471" y1="83" x2="471" y2="103" stroke="#2e7d32" stroke-width="2.5" />
+	<line x1="457" y1="104" x2="473" y2="82" stroke="#2e7d32" stroke-width="2" />
+	<line x1="471" y1="93" x2="529" y2="93" stroke="#2e7d32" stroke-width="2" />
+	<path d="M 529 83 Q 522 93 529 103" fill="none" stroke="#2e7d32" stroke-width="2.5" />
+	<path d="M 545 83 Q 552 93 545 103" fill="none" stroke="#2e7d32" stroke-width="2.5" />
+	<line x1="552" y1="93" x2="585" y2="93" stroke="#2e7d32" stroke-width="2" />
+	<text x="385" y="59" font-size="11" text-anchor="middle" fill="#2e7d32" font-weight="bold">marche = 1</text>
+	<text x="385" y="139" font-size="11" text-anchor="middle" fill="#263238">pompe = 0</text>
+	<text x="465" y="73" font-size="11" text-anchor="middle" fill="#263238">arret = 0</text>
+	<text x="537" y="73" font-size="11" text-anchor="middle" fill="#2e7d32" font-weight="bold">pompe = 1</text>
+	<text x="450" y="171" font-size="11" text-anchor="middle" fill="#455a64">le chemin passe : pompe = 1</text>
+	<!-- Phase 3 -->
+	<rect x="5" y="190" width="290" height="175" rx="6" fill="#fff" stroke="#cfd8dc" stroke-width="1.5" />
+	<text x="15" y="210" font-size="13" text-anchor="start" fill="#263238" font-weight="bold">3. Marche relâché</text>
+	<line x1="15" y1="230" x2="15" y2="328" stroke="#263238" stroke-width="3" />
+	<line x1="285" y1="230" x2="285" y2="328" stroke="#263238" stroke-width="3" />
+	<line x1="15" y1="278" x2="41" y2="278" stroke="#2e7d32" stroke-width="2" />
+	<line x1="41" y1="258" x2="41" y2="298" stroke="#263238" stroke-width="2" />
+	<line x1="41" y1="278" x2="41" y2="298" stroke="#2e7d32" stroke-width="2" />
+	<circle cx="41" cy="278" r="2.5" fill="#2e7d32" />
+	<line x1="41" y1="258" x2="79" y2="258" stroke="#263238" stroke-width="2" />
+	<line x1="79" y1="248" x2="79" y2="268" stroke="#263238" stroke-width="2.5" />
+	<line x1="91" y1="248" x2="91" y2="268" stroke="#263238" stroke-width="2.5" />
+	<line x1="91" y1="258" x2="123" y2="258" stroke="#263238" stroke-width="2" />
+	<line x1="41" y1="298" x2="79" y2="298" stroke="#2e7d32" stroke-width="2" />
+	<line x1="79" y1="288" x2="79" y2="308" stroke="#2e7d32" stroke-width="2.5" />
+	<line x1="91" y1="288" x2="91" y2="308" stroke="#2e7d32" stroke-width="2.5" />
+	<line x1="91" y1="298" x2="123" y2="298" stroke="#2e7d32" stroke-width="2" />
+	<line x1="123" y1="258" x2="123" y2="298" stroke="#263238" stroke-width="2" />
+	<line x1="123" y1="278" x2="123" y2="298" stroke="#2e7d32" stroke-width="2" />
+	<circle cx="123" cy="278" r="2.5" fill="#2e7d32" />
+	<line x1="123" y1="278" x2="159" y2="278" stroke="#2e7d32" stroke-width="2" />
+	<line x1="159" y1="268" x2="159" y2="288" stroke="#2e7d32" stroke-width="2.5" />
+	<line x1="171" y1="268" x2="171" y2="288" stroke="#2e7d32" stroke-width="2.5" />
+	<line x1="157" y1="289" x2="173" y2="267" stroke="#2e7d32" stroke-width="2" />
+	<line x1="171" y1="278" x2="229" y2="278" stroke="#2e7d32" stroke-width="2" />
+	<path d="M 229 268 Q 222 278 229 288" fill="none" stroke="#2e7d32" stroke-width="2.5" />
+	<path d="M 245 268 Q 252 278 245 288" fill="none" stroke="#2e7d32" stroke-width="2.5" />
+	<line x1="252" y1="278" x2="285" y2="278" stroke="#2e7d32" stroke-width="2" />
+	<text x="85" y="244" font-size="11" text-anchor="middle" fill="#263238">marche = 0</text>
+	<text x="85" y="324" font-size="11" text-anchor="middle" fill="#d84315" font-weight="bold">pompe = 1</text>
+	<text x="165" y="258" font-size="11" text-anchor="middle" fill="#263238">arret = 0</text>
+	<text x="237" y="258" font-size="11" text-anchor="middle" fill="#2e7d32" font-weight="bold">pompe = 1</text>
+	<text x="150" y="356" font-size="11" text-anchor="middle" fill="#d84315" font-weight="bold">le contact de pompe prend le relais</text>
+	<!-- Phase 4 -->
+	<rect x="305" y="190" width="290" height="175" rx="6" fill="#fff" stroke="#cfd8dc" stroke-width="1.5" />
+	<text x="315" y="210" font-size="13" text-anchor="start" fill="#263238" font-weight="bold">4. Appui sur arret</text>
+	<line x1="315" y1="230" x2="315" y2="328" stroke="#263238" stroke-width="3" />
+	<line x1="585" y1="230" x2="585" y2="328" stroke="#263238" stroke-width="3" />
+	<line x1="315" y1="278" x2="341" y2="278" stroke="#2e7d32" stroke-width="2" />
+	<line x1="341" y1="258" x2="341" y2="298" stroke="#263238" stroke-width="2" />
+	<line x1="341" y1="278" x2="341" y2="298" stroke="#2e7d32" stroke-width="2" />
+	<circle cx="341" cy="278" r="2.5" fill="#2e7d32" />
+	<line x1="341" y1="258" x2="379" y2="258" stroke="#263238" stroke-width="2" />
+	<line x1="379" y1="248" x2="379" y2="268" stroke="#263238" stroke-width="2.5" />
+	<line x1="391" y1="248" x2="391" y2="268" stroke="#263238" stroke-width="2.5" />
+	<line x1="391" y1="258" x2="423" y2="258" stroke="#263238" stroke-width="2" />
+	<line x1="341" y1="298" x2="379" y2="298" stroke="#2e7d32" stroke-width="2" />
+	<line x1="379" y1="288" x2="379" y2="308" stroke="#2e7d32" stroke-width="2.5" />
+	<line x1="391" y1="288" x2="391" y2="308" stroke="#2e7d32" stroke-width="2.5" />
+	<line x1="391" y1="298" x2="423" y2="298" stroke="#2e7d32" stroke-width="2" />
+	<line x1="423" y1="258" x2="423" y2="298" stroke="#263238" stroke-width="2" />
+	<line x1="423" y1="278" x2="423" y2="298" stroke="#2e7d32" stroke-width="2" />
+	<circle cx="423" cy="278" r="2.5" fill="#2e7d32" />
+	<line x1="423" y1="278" x2="459" y2="278" stroke="#2e7d32" stroke-width="2" />
+	<line x1="459" y1="268" x2="459" y2="288" stroke="#d84315" stroke-width="2.5" />
+	<line x1="471" y1="268" x2="471" y2="288" stroke="#d84315" stroke-width="2.5" />
+	<line x1="457" y1="289" x2="473" y2="267" stroke="#d84315" stroke-width="2" />
+	<line x1="471" y1="278" x2="529" y2="278" stroke="#263238" stroke-width="2" />
+	<path d="M 529 268 Q 522 278 529 288" fill="none" stroke="#263238" stroke-width="2.5" />
+	<path d="M 545 268 Q 552 278 545 288" fill="none" stroke="#263238" stroke-width="2.5" />
+	<line x1="552" y1="278" x2="585" y2="278" stroke="#263238" stroke-width="2" />
+	<text x="385" y="244" font-size="11" text-anchor="middle" fill="#263238">marche = 0</text>
+	<text x="385" y="324" font-size="11" text-anchor="middle" fill="#2e7d32" font-weight="bold">pompe = 1</text>
+	<text x="465" y="258" font-size="11" text-anchor="middle" fill="#d84315" font-weight="bold">arret = 1</text>
+	<text x="537" y="258" font-size="11" text-anchor="middle" fill="#263238">pompe = 0</text>
+	<text x="450" y="356" font-size="11" text-anchor="middle" fill="#d84315" font-weight="bold">arret coupe le chemin : pompe = 0</text>
+</svg>

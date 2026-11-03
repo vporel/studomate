@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150" font-family="Helvetica, Arial, sans-serif" fill="none" stroke="#263238">
+	<rect x="40" y="10" width="44" height="44" rx="5" fill="#ffffff" stroke-width="1.5" />
+	<rect x="43" y="13" width="38" height="38" rx="3" stroke-width="1.5" />
+	<text x="62" y="32" font-size="16" text-anchor="middle" dominant-baseline="central" fill="#263238" stroke="none">0</text>
+	<line x1="62" y1="54" x2="62" y2="96" stroke-width="2" />
+	<line x1="49.5" y1="75" x2="74.5" y2="75" stroke-width="2" />
+	<rect x="40" y="96" width="44" height="44" rx="5" fill="#ffffff" stroke-width="1.5" />
+	<text x="62" y="118" font-size="16" text-anchor="middle" dominant-baseline="central" fill="#263238" stroke="none">1</text>
+	<line x1="84" y1="118" x2="120" y2="118" stroke-width="1.5" />
+	<rect x="120" y="104" width="64" height="28" rx="5" fill="#ffffff" stroke-width="2" />
+	<text x="152" y="118" font-size="13" text-anchor="middle" dominant-baseline="central" fill="#263238" stroke="none">Y1</text>
+</svg>
