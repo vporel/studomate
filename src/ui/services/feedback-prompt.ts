@@ -11,6 +11,7 @@ import {
 	getFeedbackPromptState,
 	updateFeedbackPromptState,
 } from "@/persistence/feedback-prompt.storage";
+import trackEvent from "@/ui/services/analytics";
 import { feedbackStore } from "@/ui/stores/feedback/feedback.store";
 import { getShareTokenFromUrl } from "@/ui/stores/project/url/project-url";
 
@@ -48,7 +49,9 @@ export default function notifyFeedbackMilestone(
 
 /** "Plus tard": the box closes and comes back once, after more visits. */
 export function postponeFeedbackPrompt(): void {
+	const reminder = getFeedbackPromptState().dismissCount >= 1;
 	updateFeedbackPromptState(postpone);
+	trackEvent("feedback-postponed", { reminder });
 	feedbackStore.getState().close();
 }
 
