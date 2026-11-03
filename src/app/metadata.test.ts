@@ -141,3 +141,35 @@ describe("titres", () => {
 		expect(metadata.twitter?.title).toBe("Home — Studomate");
 	});
 });
+
+describe("SITE_URL", () => {
+	const original = process.env.NEXT_PUBLIC_SITE_URL;
+	afterEach(() => {
+		if (original === undefined) delete process.env.NEXT_PUBLIC_SITE_URL;
+		else process.env.NEXT_PUBLIC_SITE_URL = original;
+	});
+
+	async function loadSiteUrl(value: string | undefined): Promise<string> {
+		if (value === undefined) delete process.env.NEXT_PUBLIC_SITE_URL;
+		else process.env.NEXT_PUBLIC_SITE_URL = value;
+		let siteUrl = "";
+		await jest.isolateModulesAsync(async () => {
+			siteUrl = (await import("./metadata")).SITE_URL;
+		});
+		return siteUrl;
+	}
+
+	it("utilise NEXT_PUBLIC_SITE_URL quand elle est définie", async () => {
+		expect(await loadSiteUrl("https://staging.example.com")).toBe(
+			"https://staging.example.com",
+		);
+	});
+
+	it("retombe sur l'URL de production quand elle n'est pas définie", async () => {
+		expect(await loadSiteUrl(undefined)).toBe("https://studomate.com");
+	});
+
+	it("retombe sur l'URL de production quand elle est vide (variable de CI absente)", async () => {
+		expect(await loadSiteUrl("")).toBe("https://studomate.com");
+	});
+});

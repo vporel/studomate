@@ -10,6 +10,12 @@ import notifyFeedbackMilestone, {
 	recordFeedbackVisit,
 } from "./feedback-prompt";
 
+const mockTrackEvent = jest.fn();
+jest.mock("@/ui/services/analytics", () => ({
+	__esModule: true,
+	default: (...args: unknown[]) => mockTrackEvent(...args),
+}));
+
 const mockGetShareToken = jest.fn();
 jest.mock("@/ui/stores/project/url/project-url", () => ({
 	getShareTokenFromUrl: () => mockGetShareToken(),
@@ -22,6 +28,7 @@ describe("feedback-prompt service", () => {
 		jest.useFakeTimers();
 		({ restore: restoreLocalStorage } = installMemoryLocalStorage());
 		mockGetShareToken.mockReturnValue(null);
+		mockTrackEvent.mockClear();
 		feedbackStore.getState().close();
 	});
 
@@ -155,6 +162,26 @@ describe("feedback-prompt service", () => {
 			waitForPrompt();
 
 			expect(feedbackStore.getState().source).toBe("prompt");
+		});
+
+		it("tracks the first postponement as not being a reminder", () => {
+			postponeFeedbackPrompt();
+
+			expect(mockTrackEvent).toHaveBeenCalledTimes(1);
+			expect(mockTrackEvent).toHaveBeenCalledWith("feedback-postponed", {
+				reminder: false,
+			});
+		});
+
+		it("tracks the postponement of the reminder as a reminder", () => {
+			postponeFeedbackPrompt();
+			mockTrackEvent.mockClear();
+
+			postponeFeedbackPrompt();
+
+			expect(mockTrackEvent).toHaveBeenCalledWith("feedback-postponed", {
+				reminder: true,
+			});
 		});
 	});
 

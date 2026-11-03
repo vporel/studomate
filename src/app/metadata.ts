@@ -1,14 +1,16 @@
 import { APP_NAME, APP_URL } from "@/app-info";
-import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
 import { DEFAULT_LOCALE, toLocale, type Locale } from "@/i18n/config";
 import { getPathname } from "@/i18n/navigation";
-import { routing } from "@/i18n/routing";
 import type { PublicPathname } from "@/i18n/routing";
+import { routing } from "@/i18n/routing";
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { OG_IMAGE_SIZE, ogImageKey, ogImageUrl } from "./og-image";
 
-/** Origin of the site: `NEXT_PUBLIC_SITE_URL` when set (preview, staging), production otherwise. */
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? APP_URL;
+/**
+ * Origin of the site: `NEXT_PUBLIC_SITE_URL` when set (preview, staging), production otherwise.
+ */
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || APP_URL;
 
 const OG_LOCALES: Record<Locale, string> = {
 	fr: "fr_FR",
@@ -30,7 +32,9 @@ export function absolute(locale: Locale, href: LocalizedHref): string {
 }
 
 /** `hreflang` of a page: one URL per locale plus `x-default`, the default-locale version. */
-export function alternateLanguages(href: LocalizedHref): Record<string, string> {
+export function alternateLanguages(
+	href: LocalizedHref,
+): Record<string, string> {
 	return {
 		...Object.fromEntries(routing.locales.map((l) => [l, absolute(l, href)])),
 		"x-default": absolute(DEFAULT_LOCALE, href),
