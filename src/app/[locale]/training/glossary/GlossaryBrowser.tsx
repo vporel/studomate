@@ -23,6 +23,7 @@ export type GlossaryLabels = {
 	noResults: string;
 	aliasesLabel: string;
 	relatedLabel: string;
+	lessonLabel: string;
 	resultsOne: string;
 	/** Contains `{count}`, replaced by the number of displayed entries. */
 	resultsOther: string;
@@ -101,6 +102,12 @@ function EntryCard({
 							<MuiLink href={`#${related.id}`}>{related.term}</MuiLink>
 						</span>
 					))}
+				</Typography>
+			)}
+			{entry.lesson && (
+				<Typography variant="body2" color="text.secondary" mt={1}>
+					{labels.lessonLabel} :{" "}
+					<MuiLink href={entry.lesson.href}>{entry.lesson.title}</MuiLink>
 				</Typography>
 			)}
 		</Paper>

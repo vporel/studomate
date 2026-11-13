@@ -1,5 +1,6 @@
 {
 	"landingTitle": "Formations",
+	"landingHeading": "Formation GRAFCET et Ladder",
 	"landingIntro": "Apprenez l'automatisme pas à pas : une théorie courte suivie d'un exercice auto-corrigé à chaque étape, directement simulable dans Studomate.",
 	"howItWorksTitle": "Comment ça marche ?",
 	"howItWorksTheoryTitle": "Théorie courte",
@@ -35,6 +36,8 @@
 	"glossaryLinkLabel": "glossaire",
 	"backToTraining": "Retour aux formations",
 	"backHome": "Retour à l'accueil",
+	"manualLinkGrafcet": "Manuel de l'éditeur GRAFCET",
+	"manualLinkLadder": "Manuel de l'éditeur Ladder",
 	"introToggle": "Présentation et prérequis",
 	"previousStep": "Précédent",
 	"nextStep": "Suivant",
@@ -89,7 +92,7 @@
 	"a1Intro": "Une théorie courte à chaque étape, avec un exercice pratique dès qu'une notion s'y prête. Ouvrez chaque exercice dans l'application, résolvez-le, puis comparez avec le corrigé quand il y en a un.",
 	"grafcetDefinitionTitle": "Qu'est-ce qu'un GRAFCET ?",
 	"grafcetDefinitionBody": [
-		"Le GRAFCET (norme internationale IEC 60848) est un langage graphique qui décrit ce que doit faire un automatisme, étape par étape : quoi faire, dans quel ordre, sous quelles conditions. Il ne dit pas avec quel matériel le réaliser : un automate programmable (vu au module A0) ou des relais (des interrupteurs électromécaniques) peuvent l'exécuter. Ses deux briques sont l'étape et la transition, d'où son nom : GRAphe Fonctionnel de Commande Étape/Transition.",
+		"Le GRAFCET (norme internationale IEC 60848) est un langage graphique qui décrit ce que doit faire un automatisme, étape par étape : quoi faire, dans quel ordre, sous quelles conditions. Il ne dit pas avec quel matériel le réaliser : un automate programmable (vu au module A0) ou des relais (des interrupteurs électromécaniques) peuvent l'exécuter. Ses deux briques sont l'étape et la transition, d'où son nom : GRAphe Fonctionnel de Commande Étape/Transition. Le langage SFC (Sequential Function Chart) de la norme IEC 61131-3, qui sert à programmer les automates, en est dérivé : dans les pays anglophones, c'est souvent sous ce nom qu'on l'enseigne.",
 		"<div style=\"text-align:center\"><figure><img src=\"/training/grafcet/exemple-barriere.svg\" width=\"340\" alt=\"GRAFCET de la barrière : l'étape initiale 0, la transition voiture_detectee, l'étape 1 avec l'action lever_barriere, la transition voiture_passee, puis le retour à l'étape 0\" /></figure></div>",
 		"À la fin de ce module, vous saurez :\n\n- lire un GRAFCET ;\n- en écrire un, avec des temporisations ;\n- brancher des séquences en OU et en ET.\n\nTrois étapes de théorie, entrecoupées de courtes observations en simulation, précèdent le premier exercice.",
 		"Studomate vous permet d'écrire un GRAFCET, de le simuler (comme au module A0) et de l'analyser : le bouton Analyser signale les erreurs de construction."

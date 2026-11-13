@@ -1,6 +1,7 @@
 import { toLocale } from "@/i18n/config";
 import PageTitle from "@/ui/components/public-pages/PageTitle";
 import { createGenerateMetadata } from "@/app/metadata";
+import PublicLink from "@/ui/components/public-pages/PublicLink";
 import PublicLinkButton from "@/ui/components/public-pages/PublicLinkButton";
 import TintedPaper from "@/ui/components/public-pages/TintedPaper";
 import IconCard from "@/ui/components/public-pages/IconCard";
@@ -258,6 +259,9 @@ export default async function About({ params }: Props) {
 
 			<SectionTitle>{t("audienceTitle")}</SectionTitle>
 			{cards("audienceItems", AUDIENCE_ICONS)}
+			<Typography mt={2}>
+				<PublicLink href="/teachers">{t("teachersLink")}</PublicLink>
+			</Typography>
 
 			<Paper
 				variant="outlined"

@@ -1,5 +1,6 @@
 {
 	"landingTitle": "Training",
+	"landingHeading": "GRAFCET and ladder logic training",
 	"landingIntro": "Learn automation control step by step: a short theory section followed by a self-corrected exercise at each stage, directly simulable in Studomate.",
 	"howItWorksTitle": "How it works",
 	"howItWorksTheoryTitle": "Short theory",
@@ -35,6 +36,8 @@
 	"glossaryLinkLabel": "glossary",
 	"backToTraining": "Back to Training",
 	"backHome": "Back home",
+	"manualLinkGrafcet": "GRAFCET editor manual",
+	"manualLinkLadder": "Ladder editor manual",
 	"introToggle": "Overview and prerequisites",
 	"previousStep": "Previous",
 	"nextStep": "Next",
@@ -89,7 +92,7 @@
 	"a1Intro": "A short theory section at each step, with a hands-on exercise whenever a concept calls for one. Open each exercise in the app, solve it, then compare against the solution where there is one.",
 	"grafcetDefinitionTitle": "What is a GRAFCET?",
 	"grafcetDefinitionBody": [
-		"GRAFCET (the French acronym for \"step/transition function chart\", an international standard: IEC 60848) is a graphical language that describes what an automated system must do, step by step: what to do, in what order, under what conditions. It doesn't say what equipment to build it with: a PLC (seen in module A0) or relays (electromechanical switches) can run it. Its two building blocks are the step and the transition.",
+		"GRAFCET (the French acronym for \"step/transition function chart\", an international standard: IEC 60848) is a graphical language that describes what an automated system must do, step by step: what to do, in what order, under what conditions. It doesn't say what equipment to build it with: a PLC (seen in module A0) or relays (electromechanical switches) can run it. Its two building blocks are the step and the transition. The SFC language (Sequential Function Chart) of the IEC 61131-3 standard, used to program PLCs, is derived from it: in English-speaking countries, GRAFCET is often taught under that name.",
 		"<div style=\"text-align:center\"><figure><img src=\"/training/grafcet/exemple-barriere-en.svg\" width=\"340\" alt=\"GRAFCET of the barrier: initial step 0, the car_detected transition, step 1 with the lift_barrier action, the car_passed transition, then back to step 0\" /></figure></div>",
 		"By the end of this module, you will be able to:\n\n- read a GRAFCET;\n- write one, with timers;\n- branch sequences with OR and AND.\n\nThree theory steps, interspersed with short simulation observations, come before the first exercise.",
 		"Studomate lets you write a GRAFCET, simulate it (as in module A0) and analyse it: the Analyse button flags construction errors."

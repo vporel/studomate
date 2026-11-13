@@ -1,9 +1,8 @@
 "use client";
 
 import { Link } from "@/i18n/navigation";
-import type { PublicPathname } from "@/i18n/routing";
 import MuiLink from "@mui/material/Link";
-import type { ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 
 /**
  * Lien interne coloré vers une page publique, utilisable depuis un Server Component (qui ne peut
@@ -14,7 +13,7 @@ export default function PublicLink({
 	href,
 	children,
 }: {
-	href: PublicPathname;
+	href: ComponentProps<typeof Link>["href"];
 	children: ReactNode;
 }) {
 	return (

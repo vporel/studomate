@@ -3,11 +3,13 @@
 import { APP_NAME, APP_REPO_URL } from "@/app-info";
 import routes from "@/app/routes";
 import { Link } from "@/i18n/navigation";
+import type { PublicPathname } from "@/i18n/routing";
 import { TRAINING_MODULE_IDS } from "@/training/module-ids";
 import { PROJECT_TEMPLATES, type TemplateId } from "@/templates/index";
 import { useLocale } from "next-intl";
 import { useT } from "@/ui/i18n/useT";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import BoltIcon from "@mui/icons-material/Bolt";
 import CastForEducationIcon from "@mui/icons-material/CastForEducation";
 import CloudQueueIcon from "@mui/icons-material/CloudQueue";
@@ -162,11 +164,15 @@ const whyIcons: ComponentType<SvgIconProps>[] = [
 	CloudQueueIcon,
 ];
 
-const audiences = [
+const audiences: {
+	key: "audienceStudents" | "audienceTeachers" | "audienceProfessionals";
+	Icon: ComponentType;
+	href?: PublicPathname;
+}[] = [
 	{ key: "audienceStudents", Icon: SchoolIcon },
-	{ key: "audienceTeachers", Icon: CastForEducationIcon },
+	{ key: "audienceTeachers", Icon: CastForEducationIcon, href: "/teachers" },
 	{ key: "audienceProfessionals", Icon: WorkIcon },
-] as const;
+];
 
 const trustKeys = [
 	"durabilityNoLockIn",
@@ -320,7 +326,6 @@ const LandingPage = () => {
 	const t = useT("public.landing");
 	const tTemplates = useT("templates");
 	const locale = useLocale();
-	const tMeta = useT("public.metadata");
 
 	return (
 		<Box>
@@ -468,12 +473,25 @@ const LandingPage = () => {
 					{t("whyIntro")}
 				</Typography>
 				<FlexBox gap={1.5} wrap justifyContent="center" mb={5}>
-					{audiences.map(({ key, Icon }) => (
+					{audiences.map(({ key, Icon, href }) => (
 						<Chip
 							key={key}
 							icon={<Icon />}
-							label={t(key)}
-							variant="outlined"
+							label={
+								href ? (
+									<>
+										{t(key)}
+										<ArrowForwardIcon
+											fontSize="small"
+											sx={{ verticalAlign: "-4px", ml: 0.75 }}
+										/>
+									</>
+								) : (
+									t(key)
+								)
+							}
+							{...(href && { component: Link, href, clickable: true })}
+							variant={href ? "filled" : "outlined"}
 							color="primary"
 							sx={{
 								height: "auto",
@@ -583,7 +601,7 @@ const LandingPage = () => {
 								}}
 							>
 								<Chip
-									label={t(`training${id}Topic`)}
+									label={`${id} · ${t(`training${id}Topic`)}`}
 									size="small"
 									color="primary"
 									variant="outlined"
@@ -603,7 +621,7 @@ const LandingPage = () => {
 											},
 										}}
 									>
-										{tMeta(`training${id}Title`)}
+										{t(`training${id}LinkLabel`)}
 									</MuiLink>
 								</CardTitle>
 								<Typography variant="body2" color="text.secondary">

@@ -147,30 +147,34 @@ describe("LandingPage", () => {
 	it("renvoie vers chaque module de formation et vers la liste des formations", () => {
 		renderWithI18n(<LandingPage />);
 
+		const landing = messages.landing as Record<string, string>;
 		for (const id of ["a0", "a1", "a2", "a3", "a4", "a5"]) {
 			expect(
 				screen.getByRole("link", {
-					name: new RegExp(`^Module ${id.toUpperCase()} :`),
+					name: landing[`training${id.toUpperCase()}LinkLabel`],
 				}),
 			).toHaveAttribute("href", `/formations/${id}`);
 		}
+		expect(
+			screen.getByRole("link", { name: "Les bases du GRAFCET" }),
+		).toHaveAttribute("href", "/formations/a1");
 		expect(
 			screen.getByRole("link", { name: /voir toutes les formations/i }),
 		).toHaveAttribute("href", "/formations");
 	});
 
-	it("présente chaque module de formation en carte : notation abordée, titre et résumé", () => {
+	it("présente chaque module de formation en carte : code et notation abordée, sujet et résumé", () => {
 		renderWithI18n(<LandingPage />);
 		const landing = messages.landing as Record<string, string>;
 
 		for (const id of ["A0", "A1", "A2", "A3", "A4", "A5"]) {
 			const title = screen.getByRole("heading", {
-				name: new RegExp(`^Module ${id} :`),
+				name: landing[`training${id}LinkLabel`],
 				level: 3,
 			});
 			const card = title.closest("li")!;
 			expect(
-				within(card).getByText(landing[`training${id}Topic`]),
+				within(card).getByText(`${id} · ${landing[`training${id}Topic`]}`),
 			).toBeInTheDocument();
 			expect(
 				within(card).getByText(landing[`training${id}Summary`]),
@@ -252,6 +256,38 @@ describe("LandingPage", () => {
 		expect(
 			screen.queryByRole("heading", { name: /pour qui/i }),
 		).not.toBeInTheDocument();
+	});
+
+	it("fait de la pastille enseignants, et d'elle seule, un lien vers la page enseignants", () => {
+		renderWithI18n(<LandingPage />);
+
+		expect(
+			screen.getByRole("link", { name: messages.landing.audienceTeachers }),
+		).toHaveAttribute("href", "/enseignants");
+		for (const key of ["audienceStudents", "audienceProfessionals"] as const) {
+			expect(
+				screen.queryByRole("link", { name: messages.landing[key] }),
+			).not.toBeInTheDocument();
+		}
+	});
+
+	it("distingue la pastille cliquable des autres : fond plein et flèche", () => {
+		renderWithI18n(<LandingPage />);
+		const link = screen.getByRole("link", {
+			name: messages.landing.audienceTeachers,
+		});
+		const student = screen
+			.getByText(messages.landing.audienceStudents)
+			.closest(".MuiChip-root")!;
+
+		expect(link).toHaveClass("MuiChip-filled");
+		expect(
+			link.querySelector('[data-testid="ArrowForwardIcon"]'),
+		).not.toBeNull();
+		expect(student).toHaveClass("MuiChip-outlined");
+		expect(
+			student.querySelector('[data-testid="ArrowForwardIcon"]'),
+		).toBeNull();
 	});
 
 	it("montre la démo puis la vitrine du produit juste après le hero et termine sur l'appel à ouvrir l'application", () => {

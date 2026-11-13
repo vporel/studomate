@@ -7,6 +7,7 @@ import ModuleIntro from "./ModuleIntro";
 import ModuleIntroProvider from "./ModuleIntroContext";
 import ModuleStepper, { StepData } from "./ModuleStepper";
 import TrainingPageFooter from "./TrainingPageFooter";
+import { TRAINING_MODULES } from "./training-modules";
 
 type TrainingModulePageProps = {
 	title: string;
@@ -81,7 +82,9 @@ export default function TrainingModulePage({
 
 			{children}
 
-			<TrainingPageFooter />
+			<TrainingPageFooter
+				manualSections={TRAINING_MODULES[moduleId].manualSections}
+			/>
 		</Container>
 	);
 }

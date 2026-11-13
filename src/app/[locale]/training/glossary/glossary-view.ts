@@ -1,6 +1,9 @@
 import type { Locale } from "@/i18n/config";
 import { getMessages } from "@/i18n/messages";
+import type { TrainingModuleId } from "@/training/module-ids";
 import { marked } from "marked";
+import { buildModuleSteps } from "../training-modules";
+import trainingStepPath from "../training-paths";
 import GLOSSARY_ENTRIES, {
 	GLOSSARY_SECTIONS,
 	type GlossarySection,
@@ -20,6 +23,7 @@ export type GlossaryEntryView = {
 	searchText: string;
 	figure?: { src: string; alt: string; width: number };
 	related: { id: string; term: string }[];
+	lesson?: { href: string; title: string };
 };
 
 export type GlossarySectionView = {
@@ -39,6 +43,21 @@ export function glossaryFigureSrc(
 
 const renderInline = (markdown: string): string =>
 	markdown ? (marked.parse(markdown, { async: false }) as string) : "";
+
+function buildLesson(
+	locale: Locale,
+	moduleId: TrainingModuleId,
+	stepId: string,
+): GlossaryEntryView["lesson"] {
+	const steps = buildModuleSteps(moduleId, locale);
+	const index = steps.findIndex((step) => step.id === stepId);
+	if (index === -1)
+		throw new Error(`Unknown training step ${moduleId}/${stepId}`);
+	return {
+		href: trainingStepPath(locale, moduleId, stepId, index),
+		title: steps[index].title,
+	};
+}
 
 /** Entries of the glossary in the given locale, sorted by term, with Markdown rendered. */
 export function buildGlossaryEntries(locale: Locale): GlossaryEntryView[] {
@@ -72,6 +91,8 @@ export function buildGlossaryEntries(locale: Locale): GlossaryEntryView[] {
 				width: def.figure.width,
 			},
 			related: def.related.map((id) => ({ id, term: messageOf(id).term })),
+			lesson:
+				def.lesson && buildLesson(locale, def.lesson.module, def.lesson.step),
 		};
 	}).sort((a, b) => a.term.localeCompare(b.term, locale));
 }

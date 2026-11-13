@@ -16,6 +16,8 @@
 		"manual": "User manual",
 		"about": "About",
 		"training": "Training",
+		"glossary": "Glossary",
+		"teachers": "For teachers",
 		"legalTitle": "Legal",
 		"legalMentions": "Legal notice",
 		"terms": "Terms of use",
@@ -82,16 +84,22 @@
 		"step3Text": "Check the structure, then run the logic and watch the system react.",
 		"trainingTitle": "Learn industrial automation with Studomate",
 		"trainingIntro": "Guided modules to master GRAFCET, then Ladder, with exercises you can simulate in the app.",
+		"trainingA0LinkLabel": "Automation basics",
 		"trainingA0Topic": "Basics",
 		"trainingA0Summary": "Automation, variables, basic logic and the scan cycle.",
+		"trainingA1LinkLabel": "GRAFCET basics",
 		"trainingA1Topic": "GRAFCET",
 		"trainingA1Summary": "Steps, transitions, actions, OR and AND branches.",
+		"trainingA2LinkLabel": "Ladder logic and memory",
 		"trainingA2Topic": "Ladder",
 		"trainingA2Summary": "Contacts, coils, latching, set/reset coils and edges.",
+		"trainingA3LinkLabel": "Ladder timers, counters and calculation",
 		"trainingA3Topic": "Ladder",
 		"trainingA3Summary": "Timers, counters, calculations and subroutines.",
+		"trainingA4LinkLabel": "From GRAFCET to ladder logic (part 1)",
 		"trainingA4Topic": "GRAFCET → Ladder",
 		"trainingA4Summary": "Implement a GRAFCET in Ladder: one network per transition, two programs, actions, time and faults.",
+		"trainingA5LinkLabel": "From GRAFCET to ladder logic (part 2)",
 		"trainingA5Topic": "GRAFCET → Ladder (continued)",
 		"trainingA5Summary": "OR and AND divergences, stopping a sequence, limits of one network per transition and the three-block method.",
 		"trainingCta": "Browse all training",
@@ -200,11 +208,85 @@
 				"text": "Retraining or brushing up."
 			}
 		],
+		"teachersLink": "Studomate for teachers: preparing and handing out lab exercises",
 		"ctaTitle": "Ready to try it?",
 		"ctaBody": "No install, no account: open the app and create your first project.",
 		"contactTitle": "Contact & contributing",
 		"contactBody": "Ideas, feedback or want to contribute?",
 		"contactLink": "Get in touch"
+	},
+	"teachers": {
+		"title": "Teaching GRAFCET and ladder logic with Studomate",
+		"intro": "Studomate is a free GRAFCET, ladder logic and HMI simulator that runs in the browser. It is used to prepare, hand out and mark automation lab exercises, in vocational and technical programmes (BTS CRSA, BTS ATI, BTS Électrotechnique, bac pro MELEC, STI2D, BUT GEII) and in engineering schools.",
+		"sections": [
+			{
+				"title": "Preparing a lab exercise",
+				"items": [
+					"Start from a ready-made project: traffic light, crossroads, car park barrier, elevator, drilling or carton sorting. Each comes in an exercise version and a solution version.",
+					"Write the exercise statement in Markdown in the project properties: it travels with the project and opens in a tab.",
+					"Keep the solution in a separate project that you do not share."
+				]
+			},
+			{
+				"title": "Handing the project out to students",
+				"items": [
+					"From your account, share a link: each student who opens it gets their own copy, without creating an account. The link can be revoked at any time.",
+					"Or send a project file, which students open in Studomate."
+				]
+			},
+			{
+				"title": "Nothing for students to install",
+				"items": [
+					"Studomate runs in the browser: nothing to install on the lab computers or at students' homes.",
+					"Without an account, projects stay in the student's browser. An account, with or without an email address, saves them to the cloud.",
+					"No tracking cookies, and free software under the AGPL v3 licence."
+				]
+			},
+			{
+				"title": "Collecting and marking the work",
+				"items": [
+					"Each student sends you back a project file, or a share link to their copy.",
+					"The analyser reports the project's errors (invalid expression, unknown variable...) before simulation.",
+					"The project PDF export gives a cover page with the exercise statement, then the grafcets, the ladders and the variable tables: a basis for the lab report."
+				]
+			},
+			{
+				"title": "Going further",
+				"items": [
+					"Connect the program to a 3D carton-sorting scene, driven by its outputs.",
+					"Load the program onto a real Arduino Uno R3 board, or use its inputs and outputs during simulation (Chrome or Edge)."
+				]
+			}
+		],
+		"trainingTitle": "A ready-to-use course",
+		"trainingBody": "The training follows a six-module progression, from basic logic to implementing a GRAFCET in ladder logic. Each module alternates theory and solved exercises to simulate, and the glossary defines every term.",
+		"glossaryLink": "Automation glossary",
+		"faqTitle": "Frequently asked questions",
+		"faq": [
+			{
+				"question": "Does Studomate replace TIA Portal, Automgen or CODESYS?",
+				"answer": "No, and that is not its purpose. Studomate is for learning and practice: it simulates GRAFCET, ladder logic and HMI pages in the browser. It does not program an industrial PLC (Siemens, Schneider…), though it can drive an Arduino board. In class it complements the software of the workshop's PLC: students design and test their logic in Studomate, in the lab or at home, then carry it over to the real hardware. The notations follow the standards: IEC 60848 for GRAFCET, IEC 61131-3 blocks (TON, TOF, CTU…) for ladder logic."
+			},
+			{
+				"question": "Can students practise at home without PLC software?",
+				"answer": "Yes. Studomate is free and runs in the browser with no installation, on Windows, macOS or Linux. A student can redo a lab exercise or follow the course on their own computer, with no licence and no hardware."
+			},
+			{
+				"question": "Does anything need to be installed on the lab computers?",
+				"answer": "No. A recent browser is enough. Only using an Arduino board requires Chrome or Edge."
+			},
+			{
+				"question": "Do students need to create an account?",
+				"answer": "No. Without an account, they open the shared project and work in their browser. An account, with or without an email address, lets them find their projects on another device and share their own by link."
+			},
+			{
+				"question": "Is Studomate free to use in class?",
+				"answer": "Yes, in class as at home. The code is free software under the AGPL v3 licence."
+			}
+		],
+		"ctaTitle": "Ready to prepare your first lab exercise?",
+		"ctaBody": "Open the app and start from a ready-made project, or browse the training first.",
+		"ctaTraining": "See the training"
 	},
 	"contact": {
 		"title": "Get in touch!",
@@ -290,10 +372,12 @@
 		"back": "Back to home"
 	},
 	"metadata": {
-		"homeTitle": "Studomate: Online GRAFCET and Ladder Simulator",
-		"homeDescription": "Design and simulate GRAFCET, Ladder and animated HMIs in the same browser: no install, no account.",
+		"homeTitle": "Free online PLC simulator: GRAFCET and ladder",
+		"homeDescription": "Free online PLC simulator: design and simulate GRAFCET (SFC), ladder logic and animated HMIs in your browser, with no install and no account.",
 		"aboutTitle": "About",
 		"aboutDescription": "Studomate: a free teaching tool to learn, design and simulate GRAFCET, Ladder and HMIs in the browser.",
+		"teachersTitle": "GRAFCET and ladder logic simulator for teachers",
+		"teachersDescription": "Prepare and hand out automation lab exercises: ready-made projects, sharing by link, nothing for students to install, solved exercises, PDF export. Free.",
 		"contactTitle": "Contact",
 		"contactDescription": "Contact the Studomate team: ideas, feedback, contributions.",
 		"legalTitle": "Legal notice",
@@ -304,14 +388,14 @@
 		"privacyDescription": "How Studomate handles users' personal and technical data.",
 		"manualTitle": "User manual",
 		"manualDescription": "Studomate user manual: getting started, GRAFCET, Ladder, HMI, simulation.",
-		"trainingTitle": "Free GRAFCET and Ladder training",
-		"trainingDescription": "Automation control training path with Studomate: theory, self-corrected exercises, summary assignments.",
+		"trainingTitle": "Free GRAFCET and ladder logic course",
+		"trainingDescription": "Free GRAFCET (SFC) and ladder logic course with self-corrected exercises to simulate online, from basic PLC logic to implementing a GRAFCET in ladder.",
 		"glossaryTitle": "Automation glossary: GRAFCET and Ladder",
 		"glossaryDescription": "Automation glossary: step, transition, contact, coil, TON, counter, edge... every GRAFCET and Ladder term defined simply, with diagrams.",
 		"trainingA0Title": "Module A0: Before you start",
 		"trainingA0Description": "Module A0: what an automated system is, variables and basic logic, the scan cycle. The prerequisites before GRAFCET.",
 		"trainingA1Title": "Module A1: GRAFCET basics",
-		"trainingA1Description": "Module A1: steps, transitions, receptivities, actions, OR and AND divergences. Theory and self-corrected exercises.",
+		"trainingA1Description": "Module A1: steps, transitions, transition conditions, actions, OR and AND divergences. Theory and self-corrected exercises.",
 		"trainingA2Title": "Module A2: Ladder, logic and memory",
 		"trainingA2Description": "Module A2: from the relay diagram to Ladder, contacts and coils, self-holding, S/R coils, edges and network execution order.",
 		"trainingA3Title": "Module A3: Ladder, time and calculation",
@@ -390,7 +474,6 @@
 				"description": "All Studomate keyboard shortcuts for Windows, Linux and macOS: editing, simulation, navigation and export."
 			}
 		},
-		"trainingStepFallbackTitle": "{step} (module {module}, Studomate Training)",
 		"trainingSteps": {
 			"a0": {
 				"logic-basics": {
@@ -408,24 +491,60 @@
 			},
 			"a1": {
 				"theory": {
-					"title": "GRAFCET steps, transitions and receptivities: training",
-					"description": "Active or inactive step, transition, receptivity and action: the basic elements of a GRAFCET, with examples in Studomate."
+					"title": "GRAFCET steps, transitions and conditions: training",
+					"description": "Active or inactive step, transition, transition condition (receptivity) and action: the basic elements of a GRAFCET, with examples in Studomate."
+				},
+				"observe-linear": {
+					"title": "Watch a GRAFCET in simulation: steps and transitions",
+					"description": "Watch a linear-sequence GRAFCET evolve in simulation: active steps, Xn step variables and transitions firing, one scan cycle at a time."
 				},
 				"theory-actions": {
 					"title": "GRAFCET action types and execution modes: training",
 					"description": "Actions on boolean or numeric variables and the execution modes of a GRAFCET's actions."
 				},
+				"observe-actions": {
+					"title": "Rising-edge action in a GRAFCET: simulation",
+					"description": "Watch the rising-edge action of a car park GRAFCET in simulation: the difference between a continuous action and an action run only once."
+				},
+				"exercise-linear": {
+					"title": "GRAFCET exercise with solution: linear sequence",
+					"description": "Write the GRAFCET of a simple cycle with no divergence and no timer, then check it in simulation: a self-corrected exercise you do online."
+				},
 				"theory-timer": {
-					"title": "Timing a GRAFCET receptivity: training",
-					"description": "Make a receptivity depend on the time spent in a step, following the IEC 60848 standard: notation and examples."
+					"title": "Timed transition conditions in GRAFCET: training",
+					"description": "Make a transition condition (receptivity) depend on the time spent in a step, following the IEC 60848 standard: notation and examples."
+				},
+				"observe-timer": {
+					"title": "Timed transition condition in a GRAFCET: simulation",
+					"description": "Watch a two-step GRAFCET driven by timed transition conditions in simulation: there is no button, time alone moves the cycle forward."
+				},
+				"synthesis-traffic-light": {
+					"title": "Traffic light GRAFCET: exercise with solution",
+					"description": "Write the GRAFCET of a traffic light (green, amber, red) with steps, actions and timers, then simulate it: a corrected assignment you do online."
 				},
 				"theory-or-divergence": {
 					"title": "GRAFCET OR divergence and convergence: training",
 					"description": "Choose between several sequences: OR divergence and convergence in a GRAFCET, with examples."
 				},
+				"exercise-or-divergence": {
+					"title": "GRAFCET OR divergence: exercise with solution",
+					"description": "Write the GRAFCET of a choice between two sequences depending on the button pressed, with an OR divergence and convergence: a self-corrected exercise."
+				},
 				"theory-and-divergence": {
 					"title": "GRAFCET AND divergence and convergence: training",
 					"description": "Start several branches in parallel and resynchronise them: AND divergence and convergence in a GRAFCET, with examples."
+				},
+				"exercise-and-divergence": {
+					"title": "GRAFCET AND divergence: exercise with solution",
+					"description": "Write the GRAFCET of a cycle start that launches two actions in parallel, then synchronises them: an AND divergence in a self-corrected exercise."
+				},
+				"synthesis-parking": {
+					"title": "Car park barrier GRAFCET: exercise with solution",
+					"description": "Write the GRAFCET of a 4-space car park with entry and exit barriers, a space counter and a \"full\" indicator: a corrected summary assignment."
+				},
+				"synthesis-crossroads": {
+					"title": "Traffic light crossroads GRAFCET: exercise with solution",
+					"description": "Write the GRAFCET of a crossroads with two axes of traffic lights (North-South and East-West) and timers: a corrected summary assignment."
 				},
 				"reading-errors": {
 					"title": "Reading GRAFCET analysis errors: training",
@@ -437,17 +556,49 @@
 					"title": "Contacts, coils and internal memories in Ladder: training",
 					"description": "Ladder symbols: NO and NC contacts, normally open or normally closed button wiring, coils and internal memories."
 				},
+				"exercise-reading": {
+					"title": "Reading a ladder logic program: exercise with solution",
+					"description": "Predict what a four-network ladder logic program does (contacts in series and in parallel), then check it in simulation: a corrected exercise."
+				},
+				"exercise-logic": {
+					"title": "Two-way light switch in ladder logic: exercise",
+					"description": "Program a two-way lighting circuit controlled by two switches in ladder logic, then test it in simulation: a self-corrected exercise with solution."
+				},
 				"theory-self-holding": {
-					"title": "Self-holding in Ladder: training",
-					"description": "Remember a short push of a push button: the self-holding circuit in Ladder, with a pump example."
+					"title": "Latching (seal-in) circuit in ladder logic: training",
+					"description": "Remember a short press of a push button: the latching circuit, also called seal-in or self-holding, in ladder logic, with a pump example."
+				},
+				"exercise-self-holding": {
+					"title": "Pump start/stop latching in ladder logic: exercise",
+					"description": "Start a pump with a start button and stop it with a stop button: your first latching (seal-in) circuit in ladder logic, in a self-corrected exercise."
+				},
+				"exercise-interlock": {
+					"title": "Forward/reverse motor in ladder logic: exercise",
+					"description": "Drive a motor forward and in reverse without both contactors ever being on together: mutual interlocking in ladder logic, in a corrected exercise."
 				},
 				"theory-set-reset": {
-					"title": "Set and Reset coils in Ladder: training",
+					"title": "Set and Reset coils in ladder logic: training",
 					"description": "S (set) and R (reset) coils: remember a state without self-holding and understand the execution order of networks."
 				},
+				"exercise-memory": {
+					"title": "Latched fault and reset in ladder logic: exercise",
+					"description": "Add overheating protection to a pump, with a latched fault and an acknowledgement, using Set and Reset coils in ladder logic: a corrected exercise."
+				},
 				"theory-edges": {
-					"title": "Rising and falling edges in Ladder: training",
+					"title": "Rising and falling edges in ladder logic: training",
 					"description": "P and N edge contacts: trigger an action only once per push, with rising and falling edges."
+				},
+				"exercise-edges-reading": {
+					"title": "P and N edge contacts in ladder logic: exercise",
+					"description": "Compare, scan by scan, a NO contact, a rising-edge P contact and a falling-edge N contact reading the same input in a ladder logic program."
+				},
+				"exercise-toggle": {
+					"title": "Impulse relay (toggle) in ladder logic: exercise",
+					"description": "Program an impulse relay in ladder logic: one press turns the lamp on, the next one turns it off. Rising edges and network execution order."
+				},
+				"synthesis-gate": {
+					"title": "Automatic gate in ladder logic: exercise with solution",
+					"description": "Program a motorised sliding gate in ladder logic: latching, stop priority, interlocking, S/R coils and limit switches. A corrected assignment."
 				},
 				"conclusion": {
 					"title": "Module A2 conclusion: Ladder logic",
@@ -455,21 +606,49 @@
 				}
 			},
 			"a3": {
+				"exercise-timers-reading": {
+					"title": "TON, TOF and TP timers in ladder logic: exercise",
+					"description": "Watch the TON, TOF and TP timers of a ladder logic program react to the same sequence of presses in simulation, to understand how each one behaves."
+				},
+				"exercise-timers": {
+					"title": "Star-delta starter in ladder logic: exercise",
+					"description": "Program the star-delta start of a three-phase motor in ladder logic, with a TON timer and interlocked contactors: an exercise with its solution."
+				},
 				"theory-counters": {
-					"title": "CTU, CTD and CTUD counters in Ladder: training",
+					"title": "CTU, CTD and CTUD counters in ladder logic: training",
 					"description": "Count parts or cycles with CTU, CTD and CTUD counters: how the blocks work, with examples in Studomate."
 				},
+				"exercise-counters": {
+					"title": "CTU, CTD and CTUD counters in ladder logic: exercise",
+					"description": "Three counting setups in ladder logic with the CTU, CTD and CTUD counters: count up, count down and reset, in a self-corrected exercise."
+				},
 				"theory-numeric": {
-					"title": "Processing numeric values in Ladder: training",
+					"title": "Processing numeric values in ladder logic: training",
 					"description": "Assignment, calculations and comparisons: process a level, a counter or a setpoint in a Ladder program."
+				},
+				"exercise-tank": {
+					"title": "Tank filling in ladder logic: exercise with solution",
+					"description": "Control the filling of a tank in ladder logic from an analog level sensor, with numeric comparisons: a self-corrected exercise with its solution."
 				},
 				"theory-types": {
 					"title": "INT, DINT, REAL types and conversions in Ladder: training",
 					"description": "The INT, DINT, REAL, WORD and DWORD numeric types, and conversions between types in a Ladder program."
 				},
+				"exercise-scaling": {
+					"title": "Analog sensor scaling in ladder logic: exercise",
+					"description": "Convert the raw value of an analog sensor into a percentage in a ladder logic program: integer (INT) calculation and scaling, a corrected exercise."
+				},
 				"theory-structure": {
 					"title": "Structuring a Ladder program into subprograms: training",
 					"description": "Split a Ladder program into subprograms: the Main program calls one subprogram per machine function, so each part stays readable."
+				},
+				"exercise-subprograms": {
+					"title": "Calling a ladder logic subprogram: exercise",
+					"description": "A conveyor whose Main does not call the counting subprogram yet: add the call and check it in simulation, in a self-corrected exercise."
+				},
+				"synthesis-packing": {
+					"title": "Batch case packing in ladder logic: exercise",
+					"description": "Count parts on a conveyor and pack them in batches of 5 into cases, with a ladder logic program structured in subprograms: a corrected assignment."
 				},
 				"conclusion": {
 					"title": "Module A3 conclusion: Studomate and the standard",
@@ -477,6 +656,10 @@
 				}
 			},
 			"a4": {
+				"exercise-grafcet-naive": {
+					"title": "GRAFCET in ladder logic: flaws of the naive method",
+					"description": "Diagnose in simulation a common but flawed way of implementing a GRAFCET in ladder logic, the next-step method, and understand its flaws."
+				},
 				"theory-method-ladder": {
 					"title": "From GRAFCET to Ladder: one network per transition",
 					"description": "Implement a GRAFCET in Ladder: one network per transition (upstream reset, downstream set), order of the networks and activation of the initial step."
@@ -485,21 +668,29 @@
 					"title": "Two Ladder programs for a GRAFCET: training",
 					"description": "Arrange a GRAFCET implemented in Ladder into two programs, Automatic_cycle and Outputs, called by the Main: a complete example and a checklist."
 				},
+				"exercise-grafcet-linear": {
+					"title": "Linear GRAFCET sequence in ladder logic: exercise",
+					"description": "Implement the GRAFCET of a linear sequence in ladder logic, with one network per transition and the Automatic_cycle and Outputs programs."
+				},
 				"theory-actions-ladder": {
-					"title": "Continuous and stored actions in Ladder: training",
+					"title": "Continuous and stored actions in ladder logic: training",
 					"description": "Implement a GRAFCET's continuous, stored and conditional actions in Ladder: one network per output, in the Outputs program."
 				},
 				"theory-edge-actions-ladder": {
-					"title": "Edge and numeric actions in Ladder: training",
+					"title": "Edge and numeric actions in ladder logic: training",
 					"description": "Implement a GRAFCET's edge actions in Ladder with P and N contacts, and numeric assignments, on a car-counting example."
 				},
 				"theory-receptivity-timer": {
-					"title": "A delay in a receptivity in Ladder: training",
-					"description": "Place the TON of a receptivity delay in the transition's network, and delay or limit an output with a step and a timed transition."
+					"title": "Timed transition condition in ladder logic: training",
+					"description": "Place the TON of a timed transition condition in the transition's network, and delay or limit an output with a step and a timed transition."
 				},
 				"theory-movement-supervision": {
-					"title": "Supervising a movement in Ladder: training",
+					"title": "Supervising a movement in ladder logic: training",
 					"description": "Supervise a movement with a TON and a fallback transition, latch the fault in the Faults program and acknowledge it without clearing it if the cause persists."
+				},
+				"synthesis-drilling": {
+					"title": "Drilling station, from GRAFCET to ladder: exercise",
+					"description": "Write the control part of a drilling station in ladder logic from its GRAFCET, against a simulated operative part: a corrected summary assignment."
 				},
 				"conclusion": {
 					"title": "Module A4 conclusion: GRAFCET in Ladder, part 1",
@@ -507,20 +698,36 @@
 				}
 			},
 			"a5": {
+				"exercise-grafcet-or-divergence": {
+					"title": "GRAFCET OR divergence in ladder logic: exercise",
+					"description": "Implement a GRAFCET with an OR divergence and convergence in ladder logic: a choice between two sequences depending on the button pressed."
+				},
 				"theory-and-divergence-ladder": {
-					"title": "AND divergence and convergence in Ladder: training",
+					"title": "AND divergence and convergence in ladder logic: training",
 					"description": "Implement a GRAFCET's AND divergence and convergence in Ladder: a single network for the divergence and a single one for the convergence."
 				},
+				"exercise-grafcet-and-divergence": {
+					"title": "GRAFCET AND divergence in ladder logic: exercise",
+					"description": "Implement a GRAFCET with an AND divergence and convergence in ladder logic: two actions launched in parallel, then synchronised again."
+				},
 				"theory-grafcet-reset": {
-					"title": "Stopping a GRAFCET sequence in Ladder: training",
+					"title": "Stopping a GRAFCET sequence in ladder logic: training",
 					"description": "The two ways of stopping a sequence in Ladder: immediate stop by reinitialisation and end-of-cycle stop, and where to place the reset network."
+				},
+				"exercise-grafcet-reset": {
+					"title": "Traffic light with stops in ladder logic: exercise",
+					"description": "Implement a traffic light GRAFCET in ladder logic, then add an immediate stop and an end-of-cycle stop to it: a self-corrected exercise."
+				},
+				"synthesis-parking": {
+					"title": "Car park, from GRAFCET to ladder logic: exercise",
+					"description": "Implement in ladder logic the GRAFCET of a 4-space car park with a barrier, a space counter and a \"full\" indicator: a corrected summary assignment."
 				},
 				"theory-going-further": {
 					"title": "Limits of one network per transition: training",
 					"description": "When one network per transition reaches its limit (one press read by several transitions), on a single-button remote gate example."
 				},
 				"theory-three-blocks": {
-					"title": "The three-block method in Ladder: training",
+					"title": "The three-block method in ladder logic: training",
 					"description": "The three-block method to implement a GRAFCET in Ladder: crossing conditions, all the resets then all the sets, then the outputs."
 				},
 				"conclusion": {

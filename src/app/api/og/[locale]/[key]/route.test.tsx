@@ -42,7 +42,7 @@ describe("og image route", () => {
 		});
 
 		expect(JSON.stringify(mockImageResponse.mock.calls[0][0])).toContain(
-			"Free GRAFCET and Ladder training",
+			"Free GRAFCET and ladder logic course",
 		);
 	});
 

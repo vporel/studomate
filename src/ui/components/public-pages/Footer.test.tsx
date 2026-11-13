@@ -16,6 +16,22 @@ describe("Footer", () => {
 		).toHaveAttribute("href", "/politique-de-confidentialite");
 	});
 
+	it("expose le glossaire parmi les ressources", () => {
+		renderWithI18n(<Footer />);
+		expect(screen.getByRole("link", { name: "Glossaire" })).toHaveAttribute(
+			"href",
+			"/formations/glossaire",
+		);
+	});
+
+	it("expose la page enseignants parmi les ressources", () => {
+		renderWithI18n(<Footer />);
+		expect(screen.getByRole("link", { name: "Enseignants" })).toHaveAttribute(
+			"href",
+			"/enseignants",
+		);
+	});
+
 	it("expose un lien vers le site de l'auteur", () => {
 		renderWithI18n(<Footer />);
 		expect(

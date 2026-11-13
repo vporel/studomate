@@ -72,4 +72,21 @@ describe("Training hub page", () => {
 			expect(hasNoSkippedLevel(levels)).toBe(true);
 		},
 	);
+
+	it.each([
+		["fr", "Formation GRAFCET et Ladder"],
+		["en", "GRAFCET and ladder logic training"],
+	] as const)(
+		"names the subject in its h1 (%s)",
+		async (locale, heading) => {
+			const ui = await Training({ params: Promise.resolve({ locale }) });
+			const { container } = render(
+				<NextIntlClientProvider locale={locale} messages={getMessages(locale)}>
+					{ui}
+				</NextIntlClientProvider>,
+			);
+
+			expect(container.querySelector("h1")?.textContent).toBe(heading);
+		},
+	);
 });

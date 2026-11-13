@@ -17,7 +17,6 @@ export const generateMetadata = createGenerateMetadata(
 	"/",
 	"homeTitle",
 	"homeDescription",
-	{ absoluteTitle: true },
 );
 
 export default async function Home({ params }: Props) {
@@ -45,9 +44,7 @@ export default async function Home({ params }: Props) {
 				dangerouslySetInnerHTML={{ __html: buildWebsiteJsonLd(locale) }}
 			/>
 			<PreferredLocaleRedirect />
-			<ClientMessagesProvider
-				namespaces={["public.landing", "public.metadata", "templates"]}
-			>
+			<ClientMessagesProvider namespaces={["public.landing", "templates"]}>
 				<LandingPage />
 			</ClientMessagesProvider>
 		</>

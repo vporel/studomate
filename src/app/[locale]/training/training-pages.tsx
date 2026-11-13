@@ -134,29 +134,18 @@ export default function createTrainingModulePages(
 			const step = steps.find((s) => s.id === stepId);
 			if (!step) return {};
 
-			const isTheory = step.kind === "theory";
 			const key =
 				`trainingSteps.${moduleId}.${stepId}` as "trainingSteps.a1.theory";
-			const metadata = pageMetadata(
+			return pageMetadata(
 				locale,
 				(l) => ({
 					pathname: moduleStepPathname(moduleId),
 					params: { step: trainingStepSlug(l, moduleId, step.id) },
 				}),
-				isTheory
-					? tMeta(`${key}.title`)
-					: tMeta("trainingStepFallbackTitle", {
-							step: step.title,
-							module: suffix,
-						}),
-				isTheory
-					? tMeta(`${key}.description`)
-					: tMeta(`training${suffix}Description` as "trainingA1Description"),
+				tMeta(`${key}.title`),
+				tMeta(`${key}.description`),
 				{ absoluteTitle: true },
 			);
-			return isTheory
-				? metadata
-				: { ...metadata, robots: { index: false, follow: true } };
 		},
 
 		async StepPage({ params }: StepParams) {

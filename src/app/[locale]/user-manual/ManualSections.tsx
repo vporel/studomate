@@ -12,6 +12,7 @@ import IntroSection from "./sections/IntroSection";
 import HmiSection from "./sections/HmiSection";
 import LadderSection from "./sections/LadderSection";
 import LimitsSection from "./sections/LimitsSection";
+import ManualTrainingLink from "./ManualTrainingLink";
 import ProjectsSection from "./sections/ProjectsSection";
 import Scene3dSection from "./sections/Scene3dSection";
 import ShortcutsSection from "./sections/ShortcutsSection";
@@ -52,6 +53,7 @@ export default function ManualSections({ selected }: { selected: string }) {
 			{selected === "limits" && <LimitsSection />}
 			{selected === "troubleshooting" && <TroubleshootingSection />}
 			{selected === "shortcuts" && <ShortcutsSection />}
+			<ManualTrainingLink selected={selected} />
 		</Box>
 	);
 }

@@ -42,7 +42,10 @@ describe("training module pages", () => {
 			const params = a1.generateStepStaticParams();
 
 			expect(params).toHaveLength((stepIds.length - 1) * 2);
-			expect(params).toContainEqual({ locale: "en", step: stepIds[1] });
+			expect(params).toContainEqual({
+				locale: "en",
+				step: trainingStepSlug("en", "a1", stepIds[1]),
+			});
 			expect(params).toContainEqual({
 				locale: "fr",
 				step: trainingStepSlug("fr", "a1", stepIds[1]),
@@ -77,24 +80,26 @@ describe("training module pages", () => {
 			});
 		});
 
-		it.each(["exercise-linear", "synthesis-parking"])(
-			"met en noindex l'étape %s, avec un titre dérivé et la description du module",
-			async (step) => {
+		it.each([
+			["exercise-linear", "GRAFCET exercise with solution: linear sequence"],
+			["synthesis-parking", "Car park barrier GRAFCET: exercise with solution"],
+			["observe-timer", "Timed transition condition in a GRAFCET: simulation"],
+		])(
+			"indexe l'étape %s avec son titre et sa description propres",
+			async (step, title) => {
 				const metadata = await a1.generateStepMetadata({
 					params: Promise.resolve({ locale: "en", step }),
 				});
+				const moduleDescription = (
+					getMessages("en") as {
+						public: { metadata: { trainingA1Description: string } };
+					}
+				).public.metadata.trainingA1Description;
 
-				expect(metadata.robots).toEqual({ index: false, follow: true });
-				expect((metadata.title as { absolute: string }).absolute).toMatch(
-					/\(module A1, Studomate Training\)$/,
-				);
-				expect(metadata.description).toBe(
-					(
-						getMessages("en") as {
-							public: { metadata: { trainingA1Description: string } };
-						}
-					).public.metadata.trainingA1Description,
-				);
+				expect(metadata.robots).toBeUndefined();
+				expect(metadata.title).toEqual({ absolute: title });
+				expect(metadata.description).toBeTruthy();
+				expect(metadata.description).not.toBe(moduleDescription);
 			},
 		);
 

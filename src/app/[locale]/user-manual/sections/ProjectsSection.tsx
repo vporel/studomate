@@ -1,5 +1,6 @@
 "use client";
 
+import PublicLink from "@/ui/components/public-pages/PublicLink";
 import { useT } from "@/ui/i18n/useT";
 import { ManualH2, ManualH3, ManualH4 } from "../manual-heading";
 import { Divider, Typography } from "@mui/material";
@@ -53,6 +54,9 @@ export default function ProjectsSection() {
 			</Typography>
 			<Typography mb={1}>{t("teacherIntro")}</Typography>
 			<ManualList items={t.raw("teacherItems") as string[]} />
+			<Typography mt={1}>
+				<PublicLink href="/teachers">{t("teacherPageLink")}</PublicLink>
+			</Typography>
 			<Divider sx={{ my: 2 }} />
 
 			<Typography variant="h4" component={ManualH3} mb={2}>

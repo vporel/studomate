@@ -15,6 +15,6 @@ describe("ogTitle", () => {
 	});
 
 	it("uses the hub title for the training family", () => {
-		expect(ogTitle("fr", "training")).toBe("Formation GRAFCET et Ladder gratuite");
+		expect(ogTitle("fr", "training")).toBe("Cours et exercices GRAFCET et Ladder gratuits");
 	});
 });

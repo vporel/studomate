@@ -13,6 +13,7 @@ const labels = {
 	noResults: "Aucun résultat",
 	aliasesLabel: "Aussi appelé",
 	relatedLabel: "Voir aussi",
+	lessonLabel: "Apprendre",
 	resultsOne: "1 terme",
 	resultsOther: "{count} termes",
 };
@@ -55,7 +56,12 @@ const entries = [
 			width: 380,
 		},
 	}),
-	entry("transition", "grafcet", "Transition"),
+	entry("transition", "grafcet", "Transition", {
+		lesson: {
+			href: "/formations/a1/etapes-transitions-receptivites",
+			title: "Étapes, transitions, réceptivités, actions",
+		},
+	}),
 	entry("contact", "ladder", "Contact"),
 ].map(withSearchText);
 
@@ -95,6 +101,16 @@ describe("GlossaryBrowser", () => {
 		expect(
 			screen.getByRole("link", { name: "Contact" }).getAttribute("href"),
 		).toBe("#contact");
+	});
+
+	it("lie la leçon qui enseigne le terme, et rien pour un terme sans leçon", () => {
+		renderBrowser();
+		const lesson = screen.getByRole("link", {
+			name: "Étapes, transitions, réceptivités, actions",
+		});
+		expect(lesson.getAttribute("href")).toBe("/formations/a1/etapes-transitions-receptivites");
+		expect(lesson.closest("article")?.id).toBe("transition");
+		expect(screen.getAllByText(/Apprendre/)).toHaveLength(1);
 	});
 
 	it("filtre sans tenir compte des accents ni de la casse", () => {

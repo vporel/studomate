@@ -12,10 +12,14 @@ import buildA5Steps from "./a5/steps";
 import type { TrainingModuleId } from "@/training/module-ids";
 import type { TrainingTranslator } from "./training-translator";
 
+export type TrainingManualSection = "grafcet" | "ladder";
+
 type TrainingModule = {
 	buildSteps: (t: TrainingTranslator) => StepData[];
 	/** Clé du sous-titre affiché sous le titre de la page du module, quand il en a un. */
 	subtitleKey?: "a4Subtitle" | "a5Subtitle";
+	/** Manual sections of the editors the module works with, linked under its pages. */
+	manualSections: TrainingManualSection[];
 	/** Module suivant du parcours et clé du libellé de son lien dans `training`. */
 	next?: {
 		href: PublicPathname;
@@ -31,26 +35,35 @@ type TrainingModule = {
 export const TRAINING_MODULES: Record<TrainingModuleId, TrainingModule> = {
 	a0: {
 		buildSteps: buildA0Steps,
+		manualSections: [],
 		next: { href: "/training/a1", labelKey: "nextModuleA1Cta" },
 	},
 	a1: {
 		buildSteps: buildA1Steps,
+		manualSections: ["grafcet"],
 		next: { href: "/training/a2", labelKey: "nextModuleA2Cta" },
 	},
 	a2: {
 		buildSteps: buildA2Steps,
+		manualSections: ["ladder"],
 		next: { href: "/training/a3", labelKey: "nextModuleA3Cta" },
 	},
 	a3: {
 		buildSteps: buildA3Steps,
+		manualSections: ["ladder"],
 		next: { href: "/training/a4", labelKey: "nextModuleA4Cta" },
 	},
 	a4: {
 		buildSteps: buildA4Steps,
+		manualSections: ["grafcet", "ladder"],
 		subtitleKey: "a4Subtitle",
 		next: { href: "/training/a5", labelKey: "nextModuleA5Cta" },
 	},
-	a5: { buildSteps: buildA5Steps, subtitleKey: "a5Subtitle" },
+	a5: {
+		buildSteps: buildA5Steps,
+		manualSections: ["grafcet", "ladder"],
+		subtitleKey: "a5Subtitle",
+	},
 };
 
 /** Tout module de formation est servi à `/training/<module>` ; ses étapes (hors la première,
