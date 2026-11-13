@@ -9,6 +9,7 @@ import { GrafcetToolbarDnDProvider } from "./GrafcetToolbarDnDContext";
 import StepReferralTargetTool from "./StepReferralTargetTool";
 
 jest.mock("@/ui/components/projects/ProjectContext");
+jest.mock("@/ui/components/grafcet/context/GrafcetContext");
 
 describe("StepReferralTargetTool", () => {
 	it("porte la classe de l'element 'step-referral-target' et respecte disabled", () => {

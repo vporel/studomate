@@ -1,12 +1,14 @@
 import JunctionAndEndBuilder from "@/schemas/grafcet/builders/junction-and-end.builder";
 import JunctionOrEndBuilder from "@/schemas/grafcet/builders/junction-or-end.builder";
 import StepReferralSourceBuilder from "@/schemas/grafcet/builders/step-referral-source.builder";
+import ActionBuilder from "@/schemas/grafcet/builders/action.builder";
 import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
 import { ElementType } from "@/schemas/grafcet/element.schema";
 import Connection from "@/schemas/grafcet/connection.schema";
+import { actionLink } from "@tests/utils/grafcet-factory";
 import ConnectionsValidator, {
 	ConnectionsValidationIndex,
 } from "./connections.validator";
@@ -189,5 +191,64 @@ describe("ConnectionsValidator.validateNewConnection : renvoi d'étape", () => {
 		expect(validate("ref-1", "target:predecessor", "jor-end", branch)).toBe(
 			false,
 		);
+	});
+});
+
+describe("ConnectionsValidator.validateNewConnection : actions chaînées", () => {
+	// s → a1 → a2, a3 seule
+	function chainGrafcet() {
+		const action = (id: string) =>
+			new ActionBuilder().id(id).position(0, 0).build();
+		return new GrafcetBuilder()
+			.id("g")
+			.name("Chain")
+			.addSteps(new StepBuilder().id("s").number(1).position(0, 0).build())
+			.addAction(action("a1"))
+			.addAction(action("a2"))
+			.addAction(action("a3"))
+			.addConnections(
+				actionLink("step", "s", "a1"),
+				actionLink("action", "a1", "a2"),
+			)
+			.build();
+	}
+	const validate = (
+		sourceId: string,
+		targetId: string,
+		sourceHandle = "source:next",
+	) =>
+		ConnectionsValidator.validateNewConnection(
+			{ sourceId, targetId, sourceHandle, targetHandle: "target:predecessor" },
+			chainGrafcet(),
+		);
+
+	it("accepts an action chained after an action", () => {
+		expect(validate("a2", "a3")).toBe(true);
+	});
+
+	it("still accepts a step linked directly to an action", () => {
+		expect(validate("s", "a3", "source:action")).toBe(true);
+	});
+
+	it("refuses an action chained to itself", () => {
+		expect(validate("a3", "a3")).toBe(false);
+	});
+
+	it("refuses a link that would close a loop of actions", () => {
+		expect(validate("a2", "a1")).toBe(false);
+	});
+
+	it("refuses an action chained toward a step", () => {
+		expect(
+			ConnectionsValidator.validateNewConnection(
+				{
+					sourceId: "a2",
+					targetId: "s",
+					sourceHandle: "source:next",
+					targetHandle: "target:predecessor",
+				},
+				chainGrafcet(),
+			),
+		).toBe(false);
 	});
 });

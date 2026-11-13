@@ -212,10 +212,10 @@ describe("Numeric Actions Integration Tests", () => {
 					new ConnectionBuilder().id("g-num-c1").source("transition", trans0.id, "source:successor").target("step", step1.id, "target:predecessor").build(),
 					new ConnectionBuilder().id("g-num-c2").source("step", step1.id, "source:successor").target("transition", trans1.id, "target:predecessor").build(),
 					new ConnectionBuilder().id("g-num-c3").source("transition", trans1.id, "source:successor").target("step", step0.id, "target:predecessor").build(),
-					new ConnectionBuilder().id("g-num-c4").source("step", step1.id, "source:action").target("action", realAction.id, "target:step").build(),
-					new ConnectionBuilder().id("g-num-c5").source("step", step1.id, "source:action").target("action", intAction.id, "target:step").build(),
-					new ConnectionBuilder().id("g-num-c6").source("step", step1.id, "source:action").target("action", intIntoRealAction.id, "target:step").build(),
-					new ConnectionBuilder().id("g-num-c7").source("step", step1.id, "source:action").target("action", conversionAction.id, "target:step").build(),
+					new ConnectionBuilder().id("g-num-c4").source("step", step1.id, "source:action").target("action", realAction.id, "target:predecessor").build(),
+					new ConnectionBuilder().id("g-num-c5").source("step", step1.id, "source:action").target("action", intAction.id, "target:predecessor").build(),
+					new ConnectionBuilder().id("g-num-c6").source("step", step1.id, "source:action").target("action", intIntoRealAction.id, "target:predecessor").build(),
+					new ConnectionBuilder().id("g-num-c7").source("step", step1.id, "source:action").target("action", conversionAction.id, "target:predecessor").build(),
 				)
 				.build();
 			const project = ProjectFactory.create([r, n, r2, n2], [grafcet], "REAL vs INT");
@@ -278,8 +278,8 @@ describe("Numeric Actions Integration Tests", () => {
 					new ConnectionBuilder().id("g-str-c1").source("transition", trans0.id, "source:successor").target("step", step1.id, "target:predecessor").build(),
 					new ConnectionBuilder().id("g-str-c2").source("step", step1.id, "source:successor").target("transition", trans1.id, "target:predecessor").build(),
 					new ConnectionBuilder().id("g-str-c3").source("transition", trans1.id, "source:successor").target("step", step0.id, "target:predecessor").build(),
-					new ConnectionBuilder().id("g-str-c4").source("step", step0.id, "source:action").target("action", action0.id, "target:step").build(),
-					new ConnectionBuilder().id("g-str-c5").source("step", step1.id, "source:action").target("action", action1.id, "target:step").build(),
+					new ConnectionBuilder().id("g-str-c4").source("step", step0.id, "source:action").target("action", action0.id, "target:predecessor").build(),
+					new ConnectionBuilder().id("g-str-c5").source("step", step1.id, "source:action").target("action", action1.id, "target:predecessor").build(),
 				)
 				.build();
 

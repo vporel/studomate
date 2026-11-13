@@ -174,4 +174,22 @@ export default class TransitionHelper {
 	static hasSuccessor(transitionId: string, grafcet: Grafcet): boolean {
 		return TransitionHelper.getSuccessors(transitionId, grafcet).length > 0;
 	}
+
+	/**
+	 * Returns the step referrals (sources) the transition leads to directly.
+	 */
+	static getSuccessorReferrals(
+		transitionId: string,
+		grafcet: Grafcet,
+	): StepReferralSource[] {
+		return TransitionHelper.getSuccessors(transitionId, grafcet)
+			.filter((connection) => connection.target.type === "step-referral-source")
+			.map((connection) =>
+				grafcet.getElementByIdAndType<StepReferralSource>(
+					connection.target.id,
+					"step-referral-source",
+				),
+			)
+			.filter((referral): referral is StepReferralSource => !!referral);
+	}
 }

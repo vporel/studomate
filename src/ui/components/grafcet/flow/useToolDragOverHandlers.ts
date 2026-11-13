@@ -42,7 +42,7 @@ export default function useToolDragOverHandlers(): [
 				width: elementClass.DEFAULT_DIMENSIONS.width,
 				height: elementClass.DEFAULT_DIMENSIONS.height,
 			} as GrafcetNodeType;
-			workflowManager.addNodes([newNode]);
+			workflowManager.addDroppedNode(newNode);
 		},
 		[draggedItem, screenToFlowPosition, workflowManager],
 	);

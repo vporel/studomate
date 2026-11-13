@@ -9,6 +9,7 @@ import { GrafcetToolbarDnDProvider } from "./GrafcetToolbarDnDContext";
 import JunctionTool from "./JunctionTool";
 
 jest.mock("@/ui/components/projects/ProjectContext");
+jest.mock("@/ui/components/grafcet/context/GrafcetContext");
 
 type Type = Parameters<typeof JunctionTool>[0]["type"];
 

@@ -10,7 +10,7 @@ import { JUNCTION_HANDLE_PIVOT } from "@/schemas/grafcet/junction.schema";
 import {
 	ActionExecutionMode,
 	ActionType,
-	ACTION_HANDLE_TARGET_STEP,
+	ACTION_HANDLE_TARGET_PREDECESSOR,
 } from "@/schemas/grafcet/action.schema";
 import {
 	STEP_HANDLE_SOURCE_SUCCESSOR,
@@ -330,42 +330,42 @@ export function createParkingSolution(locale: Locale = "fr"): Project {
 				e1,
 				STEP_HANDLE_SOURCE_ACTION,
 				aBarriere1,
-				ACTION_HANDLE_TARGET_STEP,
+				ACTION_HANDLE_TARGET_PREDECESSOR,
 			),
 			ConnectionBuilder.betweenElements(
 				createRandomId(),
 				e1,
 				STEP_HANDLE_SOURCE_ACTION,
 				aInc,
-				ACTION_HANDLE_TARGET_STEP,
+				ACTION_HANDLE_TARGET_PREDECESSOR,
 			),
 			ConnectionBuilder.betweenElements(
 				createRandomId(),
 				e3,
 				STEP_HANDLE_SOURCE_ACTION,
 				aBarriere3,
-				ACTION_HANDLE_TARGET_STEP,
+				ACTION_HANDLE_TARGET_PREDECESSOR,
 			),
 			ConnectionBuilder.betweenElements(
 				createRandomId(),
 				e3,
 				STEP_HANDLE_SOURCE_ACTION,
 				aDec,
-				ACTION_HANDLE_TARGET_STEP,
+				ACTION_HANDLE_TARGET_PREDECESSOR,
 			),
 			ConnectionBuilder.betweenElements(
 				createRandomId(),
 				e2,
 				STEP_HANDLE_SOURCE_ACTION,
 				aBarriere2,
-				ACTION_HANDLE_TARGET_STEP,
+				ACTION_HANDLE_TARGET_PREDECESSOR,
 			),
 			ConnectionBuilder.betweenElements(
 				createRandomId(),
 				e4,
 				STEP_HANDLE_SOURCE_ACTION,
 				aBarriere4,
-				ACTION_HANDLE_TARGET_STEP,
+				ACTION_HANDLE_TARGET_PREDECESSOR,
 			),
 		)
 		.build();
@@ -427,7 +427,7 @@ export function createParkingSolution(locale: Locale = "fr"): Project {
 				ef1,
 				STEP_HANDLE_SOURCE_ACTION,
 				aComplet,
-				ACTION_HANDLE_TARGET_STEP,
+				ACTION_HANDLE_TARGET_PREDECESSOR,
 			),
 		)
 		.build();

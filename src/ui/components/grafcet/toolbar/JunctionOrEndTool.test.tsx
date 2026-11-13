@@ -9,6 +9,7 @@ import { GrafcetToolbarDnDProvider } from "./GrafcetToolbarDnDContext";
 import JunctionOrEndTool from "./JunctionOrEndTool";
 
 jest.mock("@/ui/components/projects/ProjectContext");
+jest.mock("@/ui/components/grafcet/context/GrafcetContext");
 
 describe("JunctionOrEndTool", () => {
 	it("porte la classe de l'element 'junction-or-end' et respecte disabled", () => {

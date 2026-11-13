@@ -4,13 +4,13 @@
 	"next": "Suivant",
 	"done": "Compris",
 	"slides": {
-		"offline": {
-			"title": "Studomate fonctionne hors connexion",
-			"body": "Une fois l'application chargée, vous pouvez continuer à concevoir et simuler vos projets sans réseau. Un message vous prévient lorsqu'une mise à jour est disponible."
+		"grafcetEditor": {
+			"title": "L'éditeur GRAFCET devient plus intelligent",
+			"body": "Déposez ou déplacez une étape, une transition, une action ou un renvoi à côté d'un élément compatible : la liaison se crée toute seule et l'élément se recale. En déplaçant une étape ou une transition, ses actions et ses renvois alignés l'accompagnent."
 		},
-		"scene3d": {
-			"title": "Scènes 3D pour vos simulations",
-			"body": "Associez une scène 3D à votre projet et regardez la partie opérative réagir à votre programme, en plus des pages HMI."
+		"actionChains": {
+			"title": "Chaînez les actions d'une étape",
+			"body": "Une action a maintenant un point de connexion à droite : reliez-la à l'action suivante pour former une chaîne étape → action → action. Une nouvelle action se chaîne toute seule derrière la précédente, et une action déplacée emmène la suite de sa chaîne. Si vous supprimez l'étape, la chaîne reste soudée : reliez sa première action à une autre étape pour tout rattacher."
 		}
 	}
 }

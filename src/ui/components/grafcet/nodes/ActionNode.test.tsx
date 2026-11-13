@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 import { Dialect } from "@/expression-language/dialect.enum";
-import { fireEvent } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import ActionBuilder from "@/schemas/grafcet/builders/action.builder";
 import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
@@ -21,7 +21,24 @@ jest.mock("../context/GrafcetContext");
 jest.mock("@/ui/components/projects/ProjectContext");
 jest.mock("@/ui/lib/react-flow/HandleWithConnectionsLimit", () => ({
 	__esModule: true,
-	default: () => null,
+	default: ({
+		id,
+		type,
+		position,
+		limit,
+	}: {
+		id: string;
+		type: string;
+		position: string;
+		limit: number;
+	}) => (
+		<span
+			data-testid={`handle-${id}`}
+			data-type={type}
+			data-position={position}
+			data-limit={limit}
+		/>
+	),
 }));
 
 function setup({
@@ -50,7 +67,7 @@ function setup({
 	const connection = new ConnectionBuilder()
 		.id("c1")
 		.source("step", "step-1", "source:action")
-		.target("action", "action-1", "target:step")
+		.target("action", "action-1", "target:predecessor")
 		.build();
 	const grafcet = new GrafcetBuilder()
 		.id("g1")
@@ -101,6 +118,22 @@ function expressionTextarea(): HTMLTextAreaElement {
 }
 
 describe("ActionNode", () => {
+	it("reçoit son prédécesseur à gauche et chaîne une action suivante à droite, une seule chacun", () => {
+		setup();
+		const predecessor = screen.getByTestId("handle-target:predecessor");
+		expect(predecessor.dataset).toMatchObject({
+			type: "target",
+			position: "left",
+			limit: "1",
+		});
+		const next = screen.getByTestId("handle-source:next");
+		expect(next.dataset).toMatchObject({
+			type: "source",
+			position: "right",
+			limit: "1",
+		});
+	});
+
 	it("affiche l'expression de l'action", () => {
 		setup({ expression: "compteur := compteur + 1" });
 		expect(expressionTextarea().value).toBe("compteur := compteur + 1");

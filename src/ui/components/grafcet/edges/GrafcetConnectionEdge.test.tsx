@@ -18,10 +18,14 @@ function setup({
 	points,
 	selected = false,
 	mode = ProjectMode.DESIGN,
+	sourceHandleId,
+	target = [100, 100],
 }: {
 	points?: [number, number][];
 	selected?: boolean;
 	mode?: ProjectMode;
+	sourceHandleId?: string;
+	target?: [number, number];
 }) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({ mode }),
@@ -34,8 +38,9 @@ function setup({
 		id: "e1",
 		sourceX: 0,
 		sourceY: 0,
-		targetX: 100,
-		targetY: 100,
+		targetX: target[0],
+		targetY: target[1],
+		sourceHandleId,
 		data: points ? { points } : undefined,
 		selected,
 	} as unknown as GrafcetConnectionEdgeType & Record<string, any>;
@@ -50,6 +55,28 @@ function setup({
 }
 
 describe("GrafcetConnectionEdge", () => {
+	it("trace une liaison d'action horizontalement, sans boucle, même quand la cible est plus haute", () => {
+		const { container } = setup({
+			sourceHandleId: "source:action",
+			target: [80, -60],
+		});
+
+		expect(
+			container.querySelector(".react-flow__edge-path")!.getAttribute("d"),
+		).toBe("M 0,0 L 40,0 L 40,-60 L 80,-60");
+	});
+
+	it("trace une liaison issue d'une autre poignée avec la boucle de retour quand la cible est plus haute", () => {
+		const { container } = setup({
+			sourceHandleId: "source:successor",
+			target: [80, -60],
+		});
+
+		expect(
+			container.querySelector(".react-flow__edge-path")!.getAttribute("d"),
+		).toContain("L -40,");
+	});
+
 	it("trace le tracé (path) reliant la source à la cible", () => {
 		const { container } = setup({ points: [] });
 		expect(

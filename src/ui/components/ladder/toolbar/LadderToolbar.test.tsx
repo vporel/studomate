@@ -28,7 +28,6 @@ function setup({
 	zoom = 1,
 	zoomIn = jest.fn(),
 	zoomOut = jest.fn(),
-	floatingSystemBlocksPalette = false,
 	compact = false,
 	systemBlocksPaletteOpen = false,
 	onToggleSystemBlocksPalette = jest.fn(),
@@ -40,7 +39,6 @@ function setup({
 			mode,
 			editingEnabled,
 			laddersManager,
-			capabilities: { ladder: { floatingSystemBlocksPalette } },
 		}),
 	);
 	(useLadderStore as unknown as jest.Mock).mockImplementation(
@@ -112,16 +110,8 @@ describe("LadderToolbar", () => {
 	describe("blocs systèmes", () => {
 		const INLINE_SYMBOLS = ["COMPARE", "ASSIGN", "CALC", "CONV"];
 
-		it("n'offre pas la boîte flottante là où l'explorateur liste les blocs, même quand la barre est étroite", () => {
-			setup({ floatingSystemBlocksPalette: false, compact: true });
-
-			for (const symbol of INLINE_SYMBOLS)
-				expect(screen.getByText(symbol)).toBeInTheDocument();
-			expect(screen.queryByText("Blocs systèmes")).not.toBeInTheDocument();
-		});
-
 		it("offre le bouton et garde les quatre outils quand la place suffit", () => {
-			setup({ floatingSystemBlocksPalette: true, compact: false });
+			setup({ compact: false });
 
 			expect(screen.getByText("Blocs systèmes")).toBeInTheDocument();
 			for (const symbol of INLINE_SYMBOLS)
@@ -129,7 +119,7 @@ describe("LadderToolbar", () => {
 		});
 
 		it("remplace les quatre outils par le bouton quand la barre est trop étroite", () => {
-			setup({ floatingSystemBlocksPalette: true, compact: true });
+			setup({ compact: true });
 
 			for (const symbol of INLINE_SYMBOLS)
 				expect(screen.queryByText(symbol)).not.toBeInTheDocument();
@@ -138,7 +128,6 @@ describe("LadderToolbar", () => {
 
 		it("ouvre et ferme la boîte au clic, et reflète son état", () => {
 			const { onToggleSystemBlocksPalette, unmount } = setup({
-				floatingSystemBlocksPalette: true,
 				compact: true,
 				systemBlocksPaletteOpen: false,
 			});
@@ -150,7 +139,6 @@ describe("LadderToolbar", () => {
 			unmount();
 
 			setup({
-				floatingSystemBlocksPalette: true,
 				compact: true,
 				systemBlocksPaletteOpen: true,
 			});
@@ -163,14 +151,14 @@ describe("LadderToolbar", () => {
 			["en lecture seule", { editingEnabled: false }],
 			["hors du mode conception", { mode: ProjectMode.SIMULATION }],
 		])("grise le bouton %s, comme les autres outils", (_, state) => {
-			setup({ floatingSystemBlocksPalette: true, ...state });
+			setup({ ...state });
 			expect(
 				screen.getByText("Blocs systèmes").closest("button"),
 			).toBeDisabled();
 		});
 
 		it("laisse le bouton actif en conception", () => {
-			setup({ floatingSystemBlocksPalette: true });
+			setup();
 			expect(
 				screen.getByText("Blocs systèmes").closest("button"),
 			).toBeEnabled();

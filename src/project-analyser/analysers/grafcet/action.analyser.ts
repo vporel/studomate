@@ -107,6 +107,23 @@ export default class ActionAnalyser extends GrafcetElementAnalyser<Action> {
 	}
 
 	/**
+	 * A chain of actions detached from any step is reported once, on its first action that is
+	 * analysed in context (text actions are not), or on each of its actions when it loops.
+	 */
+	private static isFirstAnalysedOfChain(
+		action: Action,
+		grafcet: Grafcet,
+	): boolean {
+		if (ActionHelper.isInLoop(action.id, grafcet)) return true;
+		let previous = ActionHelper.getPrevious(action.id, grafcet);
+		while (previous?.type === "action") {
+			if ((previous as Action).data.type !== ActionType.TEXT) return false;
+			previous = ActionHelper.getPrevious(previous.id, grafcet);
+		}
+		return true;
+	}
+
+	/**
 	 * Rules that require knowledge of the full grafcet.
 	 */
 	analyseInContext(
@@ -127,13 +144,16 @@ export default class ActionAnalyser extends GrafcetElementAnalyser<Action> {
 		// règle de niveau grafcet GRAFCET_CONNECTION_INVALID_TYPE ; on l'avale ici pour ne
 		// pas rompre le contrat "l'analyse ne lève jamais".
 		let step = null;
+		let reportsDetachedChain = false;
 		try {
 			step = ActionHelper.getStep(action.id, grafcet);
+			reportsDetachedChain =
+				!step && ActionAnalyser.isFirstAnalysedOfChain(action, grafcet);
 		} catch {
 			return issues;
 		}
 
-		if (!step) {
+		if (reportsDetachedChain) {
 			issues.push(
 				new ProjectAnalyserIssue(
 					"error",

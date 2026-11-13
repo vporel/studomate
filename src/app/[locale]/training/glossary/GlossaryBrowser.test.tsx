@@ -11,9 +11,9 @@ const labels = {
 	filterLabel: "Filtrer",
 	filterAll: "Tout",
 	noResults: "Aucun résultat",
-	aliasesLabel: "Aussi appelé",
-	relatedLabel: "Voir aussi",
-	lessonLabel: "Apprendre",
+	aliasesLabel: "Also called:",
+	relatedLabel: "See also:",
+	lessonLabel: "Learn it:",
 	resultsOne: "1 terme",
 	resultsOther: "{count} termes",
 };
@@ -110,7 +110,18 @@ describe("GlossaryBrowser", () => {
 		});
 		expect(lesson.getAttribute("href")).toBe("/formations/a1/etapes-transitions-receptivites");
 		expect(lesson.closest("article")?.id).toBe("transition");
-		expect(screen.getAllByText(/Apprendre/)).toHaveLength(1);
+		expect(screen.getAllByText(/Learn it/)).toHaveLength(1);
+	});
+
+	it("préfixe alias, termes liés et leçon de leur libellé, sans séparateur ajouté", () => {
+		renderBrowser();
+		expect(screen.getByText(/Also called:/).textContent).toBe(
+			"Also called: carré numéroté",
+		);
+		expect(screen.getByText(/See also:/).textContent).toBe("See also: Contact");
+		expect(screen.getByText(/Learn it:/).textContent).toBe(
+			"Learn it: Étapes, transitions, réceptivités, actions",
+		);
 	});
 
 	it("filtre sans tenir compte des accents ni de la casse", () => {

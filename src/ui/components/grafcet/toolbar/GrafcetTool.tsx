@@ -3,6 +3,8 @@
 import useCanEdit from "@/ui/components/projects/useCanEdit";
 import { Box } from "@mui/material";
 import React from "react";
+import { useGrafcetStore } from "../context/GrafcetContext";
+import setGrafcetDragPreview from "./grafcet-drag-preview";
 import {
 	DraggedGrafcetElement,
 	useGrafcetToolbarDnD,
@@ -19,6 +21,7 @@ const GrafcetTool = ({
 }) => {
 	const { setDraggedItem } = useGrafcetToolbarDnD();
 	const canEdit = useCanEdit();
+	const zoom = useGrafcetStore((state) => state.zoom) ?? 1;
 	disabled = disabled || !canEdit;
 
 	return (
@@ -43,6 +46,7 @@ const GrafcetTool = ({
 			onDragStart={(e) => {
 				setDraggedItem(element);
 				e.dataTransfer.effectAllowed = "move";
+				setGrafcetDragPreview(e.dataTransfer, element, zoom);
 			}}
 		>
 			{children}

@@ -458,7 +458,7 @@ describe("SimulationManager", () => {
 				new ConnectionBuilder()
 					.id("a-empty-conn")
 					.source("step", "g1-step-0", "source:action")
-					.target("action", "a-empty", "target:step")
+					.target("action", "a-empty", "target:predecessor")
 					.build(),
 			);
 			return ProjectFactory.createWithGrafcets([grafcet]);
@@ -738,7 +738,7 @@ describe("SimulationManager", () => {
 				new ConnectionBuilder()
 					.id("a-empty-conn")
 					.source("step", "g1-step-0", "source:action")
-					.target("action", "a-empty", "target:step")
+					.target("action", "a-empty", "target:predecessor")
 					.build(),
 			);
 			return ProjectFactory.createWithGrafcets([grafcet]);

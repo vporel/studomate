@@ -65,3 +65,27 @@ describe("sceneToSvg", () => {
 		expect(svg).toContain('dominant-baseline="central"');
 	});
 });
+
+describe("sceneToSvg options", () => {
+	const scene = {
+		ops: [{ op: "line" as const, x1: 0, y1: 0, x2: 10, y2: 0 }],
+		width: 20,
+		height: 10,
+	};
+
+	it("paints a white background by default", () => {
+		expect(sceneToSvg(scene)).toContain(
+			'<rect x="0" y="0" width="20" height="10" fill="#ffffff"/>',
+		);
+	});
+
+	it("paints no background when asked not to", () => {
+		expect(sceneToSvg(scene, { background: false })).not.toContain("<rect");
+	});
+
+	it("scales the displayed size without changing the coordinates", () => {
+		const svg = sceneToSvg(scene, { scale: 2 });
+
+		expect(svg).toContain('viewBox="0 0 20 10" width="40" height="20"');
+	});
+});

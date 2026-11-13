@@ -6,7 +6,7 @@ import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import Action, {
 	ActionExecutionMode,
 	ActionType,
-	ACTION_HANDLE_TARGET_STEP,
+	ACTION_HANDLE_TARGET_PREDECESSOR,
 } from "@/schemas/grafcet/action.schema";
 import {
 	STEP_HANDLE_SOURCE_SUCCESSOR,
@@ -439,7 +439,7 @@ export function createCrossroadsSolution(locale: Locale = "fr"): Project {
 				spec.stepEl,
 				STEP_HANDLE_SOURCE_ACTION,
 				actions[i],
-				ACTION_HANDLE_TARGET_STEP,
+				ACTION_HANDLE_TARGET_PREDECESSOR,
 			),
 		);
 	}

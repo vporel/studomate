@@ -79,13 +79,9 @@ const LadderToolbar = ({
 	const t = useT("ladderEditor.toolbar");
 	const tsb = useT("ladderEditor.systemBlocks");
 	const [extraCoilsVisible, setExtraCoilsVisible] = useState(false);
-	const floatingPalette = useProjectStore(
-		(state) => state.capabilities.ladder.floatingSystemBlocksPalette,
-	);
 	const toolbarRef = useRef<HTMLElement>(null);
 	//Too narrow for the system block tools: they move into the floating box of system blocks.
-	const narrow = useCollapseOnOverflow(toolbarRef);
-	const compact = floatingPalette && narrow;
+	const compact = useCollapseOnOverflow(toolbarRef);
 
 	const addSection = () => {
 		commandsStackManager.executeOperation([
@@ -213,18 +209,16 @@ const LadderToolbar = ({
 							</SystemBlockToolLabel>
 						</LadderSystemBlockTool>
 					))}
-				{floatingPalette && (
-					<Button
-						size="small"
-						startIcon={<WidgetsOutlinedIcon />}
-						aria-pressed={systemBlocksPaletteOpen}
-						onClick={onToggleSystemBlocksPalette}
-						disabled={!canEdit}
-						sx={{ whiteSpace: "nowrap" }}
-					>
-						{t("systemBlocksButton")}
-					</Button>
-				)}
+				<Button
+					size="small"
+					startIcon={<WidgetsOutlinedIcon />}
+					aria-pressed={systemBlocksPaletteOpen}
+					onClick={onToggleSystemBlocksPalette}
+					disabled={!canEdit}
+					sx={{ whiteSpace: "nowrap" }}
+				>
+					{t("systemBlocksButton")}
+				</Button>
 				<Divider orientation="vertical" style={{ margin: "5px" }} />
 				<Button
 					size="small"

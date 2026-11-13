@@ -4,7 +4,7 @@ import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import { JunctionData } from "@/schemas/grafcet/junction.schema";
 import {
 	GRAFCET_PAGE_DIMENSIONS,
-	getConnectionLinePoints,
+	getHandleConnectionLinePoints,
 } from "@/ui/utils/grafcet/grafcet-utils";
 import { DrawOp, Scene } from "@/ui/lib/drawing/draw-op";
 import grafcetHandlePosition from "./grafcet-handle-position";
@@ -32,7 +32,13 @@ function connectionVertices(
 	if (connection.data?.points?.length) {
 		return [s, ...connection.data.points, t];
 	}
-	return getConnectionLinePoints(s[0], s[1], t[0], t[1]);
+	return getHandleConnectionLinePoints(
+		connection.source.handle,
+		s[0],
+		s[1],
+		t[0],
+		t[1],
+	);
 }
 
 function stepOps(
@@ -281,7 +287,8 @@ function junctionOps(
 	return ops;
 }
 
-function elementOps(element: Element<unknown>): DrawOp[] {
+/** Drawing of a single element, at its position in the grafcet. */
+export function elementOps(element: Element<unknown>): DrawOp[] {
 	switch (element.type) {
 		case "step":
 			return stepOps(element as never);

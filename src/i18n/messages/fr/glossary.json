@@ -8,9 +8,9 @@
 	"resultsOne": "1 terme",
 	"resultsOther": "{count} termes",
 	"noResults": "Aucun terme ne correspond à votre recherche.",
-	"aliasesLabel": "Aussi appelé",
-	"relatedLabel": "Voir aussi",
-	"lessonLabel": "Apprendre",
+	"aliasesLabel": "Aussi appelé :",
+	"relatedLabel": "Voir aussi :",
+	"lessonLabel": "Apprendre :",
 	"sections": {
 		"general": {
 			"title": "Notions générales"

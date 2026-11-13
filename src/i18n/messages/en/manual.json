@@ -406,7 +406,7 @@
 			"Edges in a condition: there is no edge syntax (no \"↑a\"). To react to a change of value, have a memory variable written by a rising or falling edge coil in a ladder (true for a single cycle), or by an edge action on a step, then use that variable in the condition."
 		],
 		"actionsTitle": "Actions",
-		"actionsIntro": "Actions are blocks attached to steps that describe what the system does while a step is active. A step can have several actions.",
+		"actionsIntro": "Actions are blocks attached to steps that describe what the system does while a step is active. A step can have several actions: they are chained to one another (step → action → action…), each action having a connection point on its right toward the next one. A step can also be linked directly to up to 4 actions. An action dropped to the right of another one is chained to it and snaps against it; if that spot is taken, it goes to the end of the chain. Deleting the step keeps the chain together: just link its first action to another step.",
 		"actionsTypesTitle": "Action types",
 		"actionsTypes": [
 			"Text: free text description, with no execution or syntax check. Drawn with a thin border.",
@@ -467,7 +467,8 @@
 			"Transition → Step",
 			"Divergence junction → Branch → Step or Transition",
 			"Step or Transition → Branch → Convergence junction",
-			"Step → Action"
+			"Step → Action",
+			"Action → Action (chained actions of a step)"
 		],
 		"connectionsWaypointsTitle": "Waypoints",
 		"connectionsWaypointsBody": "Click a link to add a waypoint; drag it to change the route. This lets you route around other elements or improve the diagram's readability."

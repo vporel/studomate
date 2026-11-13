@@ -1,8 +1,12 @@
 import { Dialect } from "@/expression-language/dialect.enum";
 import CommandsStack from "@/schemas/commands/commands-stack.schema";
+import ActionBuilder from "@/schemas/grafcet/builders/action.builder";
+import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import JunctionAndStartBuilder from "@/schemas/grafcet/builders/junction-and-start.builder";
 import StepBuilder from "@/schemas/grafcet/builders/step.builder";
+import StepReferralSourceBuilder from "@/schemas/grafcet/builders/step-referral-source.builder";
+import StepReferralTargetBuilder from "@/schemas/grafcet/builders/step-referral-target.builder";
 import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
 import Connection from "@/schemas/grafcet/connection.schema";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
@@ -11,11 +15,16 @@ import {
 	GrafcetNodeType,
 } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import { createGrafcetStore } from "../grafcet.store";
+import { actionLink } from "@tests/utils/grafcet-factory";
 
 // On fixe une largeur de page connue pour les assertions d'insertion de branche.
 jest.mock("@/ui/utils/grafcet/grafcet-utils", () => ({
 	...jest.requireActual("@/ui/utils/grafcet/grafcet-utils"),
 	GRAFCET_PAGE_DIMENSIONS: { width: 1000, height: 1400 },
+	GRAFCET_PAGE_EXTENT: [
+		[0, 0],
+		[998, 1398],
+	],
 }));
 
 function node(
@@ -351,7 +360,7 @@ describe("GrafcetWorkflowManager.addActionToStep", () => {
 		const connection = grafcet.getConnection("step-1", actions[0].id);
 		expect(connection).toBeDefined();
 		expect(connection!.source.handle).toBe("source:action");
-		expect(connection!.target.handle).toBe("target:step");
+		expect(connection!.target.handle).toBe("target:predecessor");
 	});
 
 	it("avec des actions existantes : colle la nouvelle à droite de la plus à droite (sans gap)", () => {
@@ -368,6 +377,27 @@ describe("GrafcetWorkflowManager.addActionToStep", () => {
 			.sort((a, b) => a - b);
 		// 80, puis 80 + largeur par défaut (100)
 		expect(xs).toEqual([80, 180]);
+	});
+
+	it("avec des actions existantes : chaîne la nouvelle après la dernière action de la chaîne", () => {
+		const store = buildStore();
+		const workflowManager = store.getState().workflowManager;
+
+		workflowManager.addActionToStep("step-1");
+		workflowManager.addActionToStep("step-1");
+		workflowManager.addActionToStep("step-1");
+
+		const grafcet = store.getState().grafcet;
+		const [first, second, third] = [
+			...grafcet.getElementsByType("action"),
+		].sort((a, b) => a.position.x - b.position.x);
+		expect(grafcet.getConnection("step-1", first.id)).toBeDefined();
+		const firstToSecond = grafcet.getConnection(first.id, second.id);
+		expect(firstToSecond?.source.handle).toBe("source:next");
+		expect(firstToSecond?.target.handle).toBe("target:predecessor");
+		expect(grafcet.getConnection(second.id, third.id)).toBeDefined();
+		expect(grafcet.getConnection("step-1", second.id)).toBeUndefined();
+		expect(grafcet.getConnection("step-1", third.id)).toBeUndefined();
 	});
 
 	it("est annulable (nœud et connexion retirés)", () => {
@@ -648,3 +678,973 @@ function createStoreAndCollectPrevNode() {
 	const { workflowManager, nodes } = grafcetStore.getState();
 	return { workflowManager, nodes, getStoreState: grafcetStore.getState };
 }
+
+describe("GrafcetWorkflowManager.addDroppedNode", () => {
+	function droppedTransition(x: number, y: number): GrafcetNodeType {
+		return {
+			id: "dropped",
+			type: "transition",
+			position: { x, y },
+			width: 40,
+			height: 30,
+			data: { expression: "" },
+		} as any;
+	}
+
+	it("adds the element and links it to the adjacent step", () => {
+		const store = buildStore(); // step-1 en (0, 0), 40x40
+
+		store.getState().workflowManager.addDroppedNode(droppedTransition(0, 50));
+
+		const grafcet = store.getState().grafcet;
+		expect(grafcet.getElementById("dropped")).toBeDefined();
+		const connection = grafcet.getConnection("step-1", "dropped");
+		expect(connection!.source.handle).toBe("source:successor");
+		expect(connection!.target.handle).toBe("target:predecessor");
+	});
+
+	it("corrects the position of an element dropped over its neighbour", () => {
+		const store = buildStore(); // step-1 en (0, 0), 40x40
+
+		store.getState().workflowManager.addDroppedNode(droppedTransition(0, 35));
+
+		const grafcet = store.getState().grafcet;
+		expect(grafcet.getElementById("dropped")!.position).toEqual({
+			x: 0,
+			y: 40,
+		});
+		expect(grafcet.getConnection("step-1", "dropped")).toBeDefined();
+	});
+
+	it("aligns the center of the element on its neighbour", () => {
+		const store = buildStore(); // step-1 en (0, 0), 40x40
+
+		store.getState().workflowManager.addDroppedNode(droppedTransition(7, 50));
+
+		expect(
+			store.getState().grafcet.getElementById("dropped")!.position,
+		).toEqual({
+			x: 0,
+			y: 50,
+		});
+	});
+
+	it("adds the element alone when nothing is adjacent", () => {
+		const store = buildStore();
+
+		store.getState().workflowManager.addDroppedNode(droppedTransition(0, 200));
+
+		expect(store.getState().grafcet.getElementById("dropped")).toBeDefined();
+		expect(store.getState().grafcet.connections).toHaveLength(0);
+	});
+
+	it("undoes the element and its link in a single operation", () => {
+		const store = buildStore();
+		store.getState().workflowManager.addDroppedNode(droppedTransition(0, 50));
+
+		store.getState().commandsStackManager.undoOperation();
+
+		expect(store.getState().grafcet.getElementById("dropped")).toBeUndefined();
+		expect(store.getState().grafcet.connections).toHaveLength(0);
+	});
+
+	it("adds nothing when the node is refused (second initial step)", () => {
+		const grafcet = new GrafcetBuilder()
+			.addStep(
+				new StepBuilder().id("init").number(1).initial().position(0, 0).build(),
+			)
+			.build();
+		const store = createGrafcetStore(
+			grafcet,
+			new CommandsStack<Grafcet>(100),
+			() => Dialect.FR,
+		);
+		const secondInitial = {
+			id: "dropped",
+			type: "step",
+			position: { x: 0, y: 100 },
+			width: 40,
+			height: 40,
+			data: { number: "", initial: true },
+		} as any;
+
+		store.getState().workflowManager.addDroppedNode(secondInitial);
+
+		expect(store.getState().grafcet.getElementById("dropped")).toBeUndefined();
+	});
+});
+
+describe("GrafcetWorkflowManager.handleNodesChange: auto-connection at the end of a move", () => {
+	function buildStoreWithFreeTransition() {
+		const grafcet = new GrafcetBuilder()
+			.addStep(
+				new StepBuilder().id("s").number(1).initial().position(0, 0).build(),
+			)
+			.addTransition(new TransitionBuilder().id("t").position(300, 300).build())
+			.addTransition(
+				new TransitionBuilder().id("t2").position(500, 300).build(),
+			)
+			.build();
+		return createGrafcetStore(
+			grafcet,
+			new CommandsStack<Grafcet>(100),
+			() => Dialect.FR,
+		);
+	}
+
+	const move = (id: string, x: number, y: number, dragging: boolean) =>
+		({
+			type: "position",
+			id,
+			position: { x, y },
+			dragging,
+		}) as any;
+
+	it("links the moved node when it comes to rest next to a compatible one", () => {
+		const store = buildStoreWithFreeTransition();
+
+		store
+			.getState()
+			.workflowManager.handleNodesChange([move("t", 0, 50, false)]);
+
+		const connection = store.getState().grafcet.getConnection("s", "t");
+		expect(connection!.source.handle).toBe("source:successor");
+		expect(connection!.target.handle).toBe("target:predecessor");
+	});
+
+	it("corrects the final position of a node released over its neighbour", () => {
+		const store = buildStoreWithFreeTransition();
+
+		store
+			.getState()
+			.workflowManager.handleNodesChange([move("t", 0, 35, false)]);
+
+		const grafcet = store.getState().grafcet;
+		expect(grafcet.getElementById("t")!.position).toEqual({ x: 0, y: 40 });
+		expect(grafcet.getConnection("s", "t")).toBeDefined();
+		expect(store.getState().nodes.find((n) => n.id === "t")!.position).toEqual({
+			x: 0,
+			y: 40,
+		});
+	});
+
+	it("leaves the position untouched when nothing gets linked", () => {
+		const store = buildStoreWithFreeTransition();
+
+		store
+			.getState()
+			.workflowManager.handleNodesChange([move("t", 0, 35.5 + 100, false)]);
+
+		expect(store.getState().grafcet.getElementById("t")!.position).toEqual({
+			x: 0,
+			y: 135.5,
+		});
+	});
+
+	it("links nothing while the node is still being dragged", () => {
+		const store = buildStoreWithFreeTransition();
+
+		store
+			.getState()
+			.workflowManager.handleNodesChange([move("t", 0, 50, true)]);
+
+		expect(store.getState().grafcet.connections).toHaveLength(0);
+	});
+
+	it("undoes the move and the link in a single operation", () => {
+		const store = buildStoreWithFreeTransition();
+		store
+			.getState()
+			.workflowManager.handleNodesChange([move("t", 0, 50, false)]);
+
+		store.getState().commandsStackManager.undoOperation();
+
+		expect(store.getState().grafcet.connections).toHaveLength(0);
+		expect(store.getState().grafcet.getElementById("t")!.position).toEqual({
+			x: 300,
+			y: 300,
+		});
+	});
+
+	it("links nothing when the node ends up where it started", () => {
+		const grafcet = new GrafcetBuilder()
+			.addStep(
+				new StepBuilder().id("s").number(1).initial().position(0, 0).build(),
+			)
+			.addTransition(new TransitionBuilder().id("t").position(0, 50).build())
+			.build();
+		const store = createGrafcetStore(
+			grafcet,
+			new CommandsStack<Grafcet>(100),
+			() => Dialect.FR,
+		);
+
+		store
+			.getState()
+			.workflowManager.handleNodesChange([move("t", 0, 50, false)]);
+
+		expect(store.getState().grafcet.connections).toHaveLength(0);
+	});
+
+	it("links nothing when several nodes are moved together", () => {
+		const store = buildStoreWithFreeTransition();
+
+		store
+			.getState()
+			.workflowManager.handleNodesChange([
+				move("t", 0, 50, false),
+				move("t2", 500, 310, false),
+			]);
+
+		expect(store.getState().grafcet.connections).toHaveLength(0);
+	});
+});
+
+describe("GrafcetWorkflowManager.handleNodesChange: actions follow their step", () => {
+	// step "s" en (100, 100), actions "a1" en (180, 100) et "a2" en (180, 160) ; "free" n'est liée à rien
+	function buildStoreWithActions() {
+		const grafcet = new GrafcetBuilder()
+			.addStep(
+				new StepBuilder()
+					.id("s")
+					.number(1)
+					.initial()
+					.position(100, 100)
+					.build(),
+			)
+			.addStep(
+				new StepBuilder().id("other").number(2).position(400, 100).build(),
+			)
+			.addAction(new ActionBuilder().id("a1").position(180, 100).build())
+			.addAction(new ActionBuilder().id("a2").position(180, 160).build())
+			.addAction(new ActionBuilder().id("free").position(600, 300).build())
+			.addConnection(
+				new ConnectionBuilder()
+					.id("c1")
+					.source("step", "s", "source:action")
+					.target("action", "a1", "target:predecessor")
+					.build(),
+			)
+			.addConnection(
+				new ConnectionBuilder()
+					.id("c2")
+					.source("step", "s", "source:action")
+					.target("action", "a2", "target:predecessor")
+					.build(),
+			)
+			.build();
+		return createGrafcetStore(
+			grafcet,
+			new CommandsStack<Grafcet>(100),
+			() => Dialect.FR,
+		);
+	}
+
+	const move = (id: string, x: number, y: number, dragging: boolean) =>
+		({ type: "position", id, position: { x, y }, dragging }) as any;
+	const nodePosition = (
+		store: ReturnType<typeof buildStoreWithActions>,
+		id: string,
+	) => store.getState().nodes.find((n) => n.id === id)!.position;
+	const elementPosition = (
+		store: ReturnType<typeof buildStoreWithActions>,
+		id: string,
+	) => store.getState().grafcet.getElementById(id)!.position;
+
+	it("moves the actions of a step along while it is dragged", () => {
+		const store = buildStoreWithActions();
+
+		store
+			.getState()
+			.workflowManager.handleNodesChange([move("s", 100, 130, true)]);
+
+		expect(nodePosition(store, "a1")).toEqual({ x: 180, y: 130 });
+		expect(nodePosition(store, "a2")).toEqual({ x: 180, y: 190 });
+		expect(elementPosition(store, "a1")).toEqual({ x: 180, y: 100 });
+	});
+
+	it("follows the displacement of each successive drag event", () => {
+		const store = buildStoreWithActions();
+		const { workflowManager } = store.getState();
+
+		workflowManager.handleNodesChange([move("s", 100, 110, true)]);
+		workflowManager.handleNodesChange([move("s", 100, 140, true)]);
+
+		expect(nodePosition(store, "a1")).toEqual({ x: 180, y: 140 });
+	});
+
+	it("saves the actions with the step when it is released", () => {
+		const store = buildStoreWithActions();
+		const { workflowManager } = store.getState();
+
+		workflowManager.handleNodesChange([move("s", 100, 130, true)]);
+		workflowManager.handleNodesChange([move("s", 100, 130, false)]);
+
+		expect(elementPosition(store, "s")).toEqual({ x: 100, y: 130 });
+		expect(elementPosition(store, "a1")).toEqual({ x: 180, y: 130 });
+		expect(elementPosition(store, "a2")).toEqual({ x: 180, y: 190 });
+	});
+
+	it("undoes the move of the step and of its actions in a single operation", () => {
+		const store = buildStoreWithActions();
+		const { workflowManager } = store.getState();
+		workflowManager.handleNodesChange([move("s", 100, 130, true)]);
+		workflowManager.handleNodesChange([move("s", 100, 130, false)]);
+
+		store.getState().commandsStackManager.undoOperation();
+
+		expect(elementPosition(store, "s")).toEqual({ x: 100, y: 100 });
+		expect(elementPosition(store, "a1")).toEqual({ x: 180, y: 100 });
+		expect(elementPosition(store, "a2")).toEqual({ x: 180, y: 160 });
+	});
+
+	it("does not move the actions horizontally", () => {
+		const store = buildStoreWithActions();
+		const { workflowManager } = store.getState();
+
+		workflowManager.handleNodesChange([move("s", 60, 100, true)]);
+		workflowManager.handleNodesChange([move("s", 60, 100, false)]);
+
+		expect(elementPosition(store, "s")).toEqual({ x: 60, y: 100 });
+		expect(elementPosition(store, "a1")).toEqual({ x: 180, y: 100 });
+		expect(elementPosition(store, "a2")).toEqual({ x: 180, y: 160 });
+	});
+
+	it("only moves vertically when the step moves in both directions", () => {
+		const store = buildStoreWithActions();
+		const { workflowManager } = store.getState();
+
+		workflowManager.handleNodesChange([move("s", 60, 130, true)]);
+		workflowManager.handleNodesChange([move("s", 60, 130, false)]);
+
+		expect(elementPosition(store, "a1")).toEqual({ x: 180, y: 130 });
+	});
+
+	it("puts the actions back when the step is released where it started", () => {
+		const store = buildStoreWithActions();
+		const { workflowManager } = store.getState();
+
+		workflowManager.handleNodesChange([move("s", 100, 130, true)]);
+		workflowManager.handleNodesChange([move("s", 100, 100, false)]);
+
+		expect(nodePosition(store, "a1")).toEqual({ x: 180, y: 100 });
+		expect(nodePosition(store, "a2")).toEqual({ x: 180, y: 160 });
+	});
+
+	it("leaves the actions of other steps and the unlinked actions alone", () => {
+		const store = buildStoreWithActions();
+		const { workflowManager } = store.getState();
+
+		workflowManager.handleNodesChange([move("s", 100, 130, true)]);
+		workflowManager.handleNodesChange([move("s", 100, 130, false)]);
+
+		expect(elementPosition(store, "free")).toEqual({ x: 600, y: 300 });
+		expect(elementPosition(store, "other")).toEqual({ x: 400, y: 100 });
+	});
+
+	it("does not move an action again when it is moved in the same change", () => {
+		const store = buildStoreWithActions();
+		const { workflowManager } = store.getState();
+
+		workflowManager.handleNodesChange([
+			move("s", 100, 130, false),
+			move("a1", 180, 130, false),
+		]);
+
+		expect(elementPosition(store, "a1")).toEqual({ x: 180, y: 130 });
+		expect(elementPosition(store, "a2")).toEqual({ x: 180, y: 190 });
+	});
+
+	it("does not move the actions when the action directly to the right is not on the row of the step", () => {
+		const grafcet = new GrafcetBuilder()
+			.addStep(
+				new StepBuilder()
+					.id("s")
+					.number(1)
+					.initial()
+					.position(100, 100)
+					.build(),
+			)
+			.addAction(new ActionBuilder().id("a").position(180, 200).build())
+			.addConnection(
+				new ConnectionBuilder()
+					.id("c")
+					.source("step", "s", "source:action")
+					.target("action", "a", "target:predecessor")
+					.build(),
+			)
+			.build();
+		const store = createGrafcetStore(
+			grafcet,
+			new CommandsStack<Grafcet>(100),
+			() => Dialect.FR,
+		);
+
+		store
+			.getState()
+			.workflowManager.handleNodesChange([move("s", 100, 130, false)]);
+
+		expect(elementPosition(store, "a")).toEqual({ x: 180, y: 200 });
+	});
+
+	describe("an action that is not on the row of its step at the start", () => {
+		// step "s" en (100, 100), action "a" en (180, 300)
+		function buildStoreWithDistantAction() {
+			const grafcet = new GrafcetBuilder()
+				.addStep(
+					new StepBuilder()
+						.id("s")
+						.number(1)
+						.initial()
+						.position(100, 100)
+						.build(),
+				)
+				.addAction(new ActionBuilder().id("a").position(180, 300).build())
+				.addConnection(
+					new ConnectionBuilder()
+						.id("c")
+						.source("step", "s", "source:action")
+						.target("action", "a", "target:predecessor")
+						.build(),
+				)
+				.build();
+			return createGrafcetStore(
+				grafcet,
+				new CommandsStack<Grafcet>(100),
+				() => Dialect.FR,
+			);
+		}
+
+		it("does not follow before the step reaches its row", () => {
+			const store = buildStoreWithDistantAction();
+			const { workflowManager } = store.getState();
+
+			workflowManager.handleNodesChange([move("s", 100, 150, true)]);
+			workflowManager.handleNodesChange([move("s", 100, 200, true)]);
+
+			expect(nodePosition(store, "a")).toEqual({ x: 180, y: 300 });
+		});
+
+		it("starts to follow once the step is on its row", () => {
+			const store = buildStoreWithDistantAction();
+			const { workflowManager } = store.getState();
+
+			workflowManager.handleNodesChange([move("s", 100, 200, true)]);
+			workflowManager.handleNodesChange([move("s", 100, 300, true)]);
+			// the step is now aligned: the next displacement carries the action
+			workflowManager.handleNodesChange([move("s", 100, 320, true)]);
+
+			expect(nodePosition(store, "a")).toEqual({ x: 180, y: 320 });
+		});
+
+		it("does not follow when the step only comes within a grid cell of its row", () => {
+			const store = buildStoreWithDistantAction();
+			const { workflowManager } = store.getState();
+
+			workflowManager.handleNodesChange([move("s", 100, 290, true)]);
+			workflowManager.handleNodesChange([move("s", 100, 310, true)]);
+
+			expect(nodePosition(store, "a")).toEqual({ x: 180, y: 300 });
+		});
+
+		it("saves the action where it was carried when the step is released", () => {
+			const store = buildStoreWithDistantAction();
+			const { workflowManager } = store.getState();
+
+			workflowManager.handleNodesChange([move("s", 100, 300, true)]);
+			workflowManager.handleNodesChange([move("s", 100, 340, true)]);
+			workflowManager.handleNodesChange([move("s", 100, 340, false)]);
+
+			expect(elementPosition(store, "s")).toEqual({ x: 100, y: 340 });
+			expect(elementPosition(store, "a")).toEqual({ x: 180, y: 340 });
+		});
+
+		it("undoes the step and the action carried along in a single operation", () => {
+			const store = buildStoreWithDistantAction();
+			const { workflowManager } = store.getState();
+			workflowManager.handleNodesChange([move("s", 100, 300, true)]);
+			workflowManager.handleNodesChange([move("s", 100, 340, true)]);
+			workflowManager.handleNodesChange([move("s", 100, 340, false)]);
+
+			store.getState().commandsStackManager.undoOperation();
+
+			expect(elementPosition(store, "s")).toEqual({ x: 100, y: 100 });
+			expect(elementPosition(store, "a")).toEqual({ x: 180, y: 300 });
+		});
+
+		it("leaves the action where it is when the step is released before reaching its row", () => {
+			const store = buildStoreWithDistantAction();
+			const { workflowManager } = store.getState();
+
+			workflowManager.handleNodesChange([move("s", 100, 200, true)]);
+			workflowManager.handleNodesChange([move("s", 100, 200, false)]);
+
+			expect(elementPosition(store, "a")).toEqual({ x: 180, y: 300 });
+		});
+
+		it("stops following when it is no longer on the row, and keeps the position it reached", () => {
+			const store = buildStoreWithDistantAction();
+			const { workflowManager } = store.getState();
+
+			workflowManager.handleNodesChange([move("s", 100, 300, true)]);
+			workflowManager.handleNodesChange([move("s", 100, 340, true)]);
+			// page height 1400 (mocked): the action stops at y = 1358 while the step goes on
+			workflowManager.handleNodesChange([move("s", 100, 1390, true)]);
+			workflowManager.handleNodesChange([move("s", 100, 1395, true)]);
+			workflowManager.handleNodesChange([move("s", 100, 1395, false)]);
+
+			expect(elementPosition(store, "a")).toEqual({ x: 180, y: 1358 });
+		});
+	});
+
+	it("moving an action alone does not move its step or the other actions", () => {
+		const store = buildStoreWithActions();
+		const { workflowManager } = store.getState();
+
+		workflowManager.handleNodesChange([move("a1", 180, 130, true)]);
+		workflowManager.handleNodesChange([move("a1", 180, 130, false)]);
+
+		expect(elementPosition(store, "s")).toEqual({ x: 100, y: 100 });
+		expect(elementPosition(store, "a2")).toEqual({ x: 180, y: 160 });
+	});
+
+	it("keeps the actions inside the page", () => {
+		const store = buildStoreWithActions();
+		const { workflowManager } = store.getState();
+
+		// page height 1400 (mocked), action height 40, extent bottom = 1398
+		workflowManager.handleNodesChange([move("s", 100, 1300, true)]);
+		workflowManager.handleNodesChange([move("s", 100, 1300, false)]);
+
+		expect(elementPosition(store, "a1")).toEqual({ x: 180, y: 1300 });
+		expect(elementPosition(store, "a2").y).toBe(1358);
+	});
+
+	it("moves the actions with the step corrected by the automatic link", () => {
+		const grafcet = new GrafcetBuilder()
+			.addStep(
+				new StepBuilder()
+					.id("s")
+					.number(1)
+					.initial()
+					.position(100, 300)
+					.build(),
+			)
+			.addAction(new ActionBuilder().id("a").position(180, 300).build())
+			.addTransition(new TransitionBuilder().id("t").position(100, 100).build())
+			.addConnection(
+				new ConnectionBuilder()
+					.id("c")
+					.source("step", "s", "source:action")
+					.target("action", "a", "target:predecessor")
+					.build(),
+			)
+			.build();
+		const store = createGrafcetStore(
+			grafcet,
+			new CommandsStack<Grafcet>(100),
+			() => Dialect.FR,
+		);
+
+		// transition bottom = 130: the step released at y=125 is brought back to y=130
+		store
+			.getState()
+			.workflowManager.handleNodesChange([move("s", 100, 125, false)]);
+
+		expect(elementPosition(store, "s")).toEqual({ x: 100, y: 130 });
+		expect(elementPosition(store, "a")).toEqual({ x: 180, y: 130 });
+		expect(store.getState().grafcet.getConnection("t", "s")).toBeDefined();
+	});
+});
+
+describe("GrafcetWorkflowManager.handleNodesChange: step referrals follow their transition or step", () => {
+	// t (100, 100) -> rs (100, 140) ; rt (300, 60) -> s (300, 100) ; "free" is linked to nothing
+	function buildStoreWithReferrals() {
+		const grafcet = new GrafcetBuilder()
+			.addTransition(new TransitionBuilder().id("t").position(100, 100).build())
+			.addStepReferralSource(
+				new StepReferralSourceBuilder().id("rs").position(100, 140).build(),
+			)
+			.addStep(
+				new StepBuilder()
+					.id("s")
+					.number(1)
+					.initial()
+					.position(300, 100)
+					.build(),
+			)
+			.addStepReferralTarget(
+				new StepReferralTargetBuilder().id("rt").position(300, 40).build(),
+			)
+			.addStepReferralSource(
+				new StepReferralSourceBuilder().id("free").position(500, 500).build(),
+			)
+			.addConnection(
+				new ConnectionBuilder()
+					.id("c1")
+					.source("transition", "t", "source:successor")
+					.target("step-referral-source", "rs", "target:predecessor")
+					.build(),
+			)
+			.addConnection(
+				new ConnectionBuilder()
+					.id("c2")
+					.source("step-referral-target", "rt", "source:successor")
+					.target("step", "s", "target:predecessor")
+					.build(),
+			)
+			.build();
+		return createGrafcetStore(
+			grafcet,
+			new CommandsStack<Grafcet>(100),
+			() => Dialect.FR,
+		);
+	}
+	type Store = ReturnType<typeof buildStoreWithReferrals>;
+
+	const move = (id: string, x: number, y: number, dragging: boolean) =>
+		({ type: "position", id, position: { x, y }, dragging }) as any;
+	const nodePosition = (store: Store, id: string) =>
+		store.getState().nodes.find((n) => n.id === id)!.position;
+	const elementPosition = (store: Store, id: string) =>
+		store.getState().grafcet.getElementById(id)!.position;
+
+	it("moves the referral of a transition along horizontally only while it is dragged", () => {
+		const store = buildStoreWithReferrals();
+
+		store
+			.getState()
+			.workflowManager.handleNodesChange([move("t", 130, 160, true)]);
+
+		expect(nodePosition(store, "rs")).toEqual({ x: 130, y: 140 });
+		expect(elementPosition(store, "rs")).toEqual({ x: 100, y: 140 });
+	});
+
+	it("saves the referral of a transition with it when it is released", () => {
+		const store = buildStoreWithReferrals();
+		const { workflowManager } = store.getState();
+
+		workflowManager.handleNodesChange([move("t", 130, 160, true)]);
+		workflowManager.handleNodesChange([move("t", 130, 160, false)]);
+
+		expect(elementPosition(store, "t")).toEqual({ x: 130, y: 160 });
+		expect(elementPosition(store, "rs")).toEqual({ x: 130, y: 140 });
+	});
+
+	it("moves the referral that leads to a step along horizontally only", () => {
+		const store = buildStoreWithReferrals();
+		const { workflowManager } = store.getState();
+
+		workflowManager.handleNodesChange([move("s", 280, 150, true)]);
+		workflowManager.handleNodesChange([move("s", 280, 150, false)]);
+
+		expect(elementPosition(store, "rt")).toEqual({ x: 280, y: 40 });
+	});
+
+	it("does not move the referral when its transition only moves vertically", () => {
+		const store = buildStoreWithReferrals();
+		const { workflowManager } = store.getState();
+
+		workflowManager.handleNodesChange([move("t", 100, 160, true)]);
+		workflowManager.handleNodesChange([move("t", 100, 160, false)]);
+
+		expect(elementPosition(store, "rs")).toEqual({ x: 100, y: 140 });
+	});
+
+	it("undoes the move of the transition and of its referral in a single operation", () => {
+		const store = buildStoreWithReferrals();
+		const { workflowManager } = store.getState();
+		workflowManager.handleNodesChange([move("t", 130, 160, false)]);
+
+		store.getState().commandsStackManager.undoOperation();
+
+		expect(elementPosition(store, "t")).toEqual({ x: 100, y: 100 });
+		expect(elementPosition(store, "rs")).toEqual({ x: 100, y: 140 });
+	});
+
+	it("puts the referral back when the transition is released where it started", () => {
+		const store = buildStoreWithReferrals();
+		const { workflowManager } = store.getState();
+
+		workflowManager.handleNodesChange([move("t", 130, 160, true)]);
+		workflowManager.handleNodesChange([move("t", 100, 100, false)]);
+
+		expect(nodePosition(store, "rs")).toEqual({ x: 100, y: 140 });
+	});
+
+	it("moving a referral alone moves nothing else", () => {
+		const store = buildStoreWithReferrals();
+		const { workflowManager } = store.getState();
+
+		workflowManager.handleNodesChange([move("rs", 150, 200, true)]);
+		workflowManager.handleNodesChange([move("rs", 150, 200, false)]);
+
+		expect(elementPosition(store, "t")).toEqual({ x: 100, y: 100 });
+		expect(elementPosition(store, "rs")).toEqual({ x: 150, y: 200 });
+	});
+
+	it("leaves the unlinked referrals alone", () => {
+		const store = buildStoreWithReferrals();
+		const { workflowManager } = store.getState();
+
+		workflowManager.handleNodesChange([move("t", 130, 160, false)]);
+		workflowManager.handleNodesChange([move("s", 280, 150, false)]);
+
+		expect(elementPosition(store, "free")).toEqual({ x: 500, y: 500 });
+	});
+
+	it("does not move a referral again when it is moved in the same change", () => {
+		const store = buildStoreWithReferrals();
+
+		store
+			.getState()
+			.workflowManager.handleNodesChange([
+				move("t", 130, 160, false),
+				move("rs", 130, 200, false),
+			]);
+
+		expect(elementPosition(store, "rs")).toEqual({ x: 130, y: 200 });
+	});
+
+	it("keeps the referral inside the page", () => {
+		const store = buildStoreWithReferrals();
+		const { workflowManager } = store.getState();
+
+		// page 1000 x 1400 (mocked), referral 40 x 40: its right limit is x = 958
+		workflowManager.handleNodesChange([move("t", 1100, 100, false)]);
+
+		expect(elementPosition(store, "rs").x).toBe(958);
+	});
+
+	it("moves the actions and the referral of a step together", () => {
+		const grafcet = new GrafcetBuilder()
+			.addStep(
+				new StepBuilder()
+					.id("s")
+					.number(1)
+					.initial()
+					.position(300, 100)
+					.build(),
+			)
+			.addStepReferralTarget(
+				new StepReferralTargetBuilder().id("rt").position(300, 40).build(),
+			)
+			.addAction(new ActionBuilder().id("a").position(380, 100).build())
+			.addConnection(
+				new ConnectionBuilder()
+					.id("c1")
+					.source("step-referral-target", "rt", "source:successor")
+					.target("step", "s", "target:predecessor")
+					.build(),
+			)
+			.addConnection(
+				new ConnectionBuilder()
+					.id("c2")
+					.source("step", "s", "source:action")
+					.target("action", "a", "target:predecessor")
+					.build(),
+			)
+			.build();
+		const store = createGrafcetStore(
+			grafcet,
+			new CommandsStack<Grafcet>(100),
+			() => Dialect.FR,
+		);
+
+		store
+			.getState()
+			.workflowManager.handleNodesChange([move("s", 320, 150, false)]);
+
+		expect(elementPosition(store, "rt")).toEqual({ x: 320, y: 40 });
+		expect(elementPosition(store, "a")).toEqual({ x: 380, y: 150 });
+	});
+});
+
+describe("GrafcetWorkflowManager.handleNodesChange: a step referral that is not in the column at the start", () => {
+	// transition "t" en (100, 100), renvoi "rs" en (300, 140) ; étape "s" en (100, 300), renvoi "rt" en (300, 240)
+	function buildStoreWithDistantReferrals() {
+		const grafcet = new GrafcetBuilder()
+			.addTransition(new TransitionBuilder().id("t").position(100, 100).build())
+			.addStepReferralSource(
+				new StepReferralSourceBuilder().id("rs").position(300, 140).build(),
+			)
+			.addStep(
+				new StepBuilder()
+					.id("s")
+					.number(1)
+					.initial()
+					.position(100, 300)
+					.build(),
+			)
+			.addStepReferralTarget(
+				new StepReferralTargetBuilder().id("rt").position(300, 240).build(),
+			)
+			.addConnection(
+				new ConnectionBuilder()
+					.id("c1")
+					.source("transition", "t", "source:successor")
+					.target("step-referral-source", "rs", "target:predecessor")
+					.build(),
+			)
+			.addConnection(
+				new ConnectionBuilder()
+					.id("c2")
+					.source("step-referral-target", "rt", "source:successor")
+					.target("step", "s", "target:predecessor")
+					.build(),
+			)
+			.build();
+		return createGrafcetStore(
+			grafcet,
+			new CommandsStack<Grafcet>(100),
+			() => Dialect.FR,
+		);
+	}
+	type Store = ReturnType<typeof buildStoreWithDistantReferrals>;
+
+	const move = (id: string, x: number, y: number, dragging: boolean) =>
+		({ type: "position", id, position: { x, y }, dragging }) as any;
+	const nodePosition = (store: Store, id: string) =>
+		store.getState().nodes.find((n) => n.id === id)!.position;
+	const elementPosition = (store: Store, id: string) =>
+		store.getState().grafcet.getElementById(id)!.position;
+
+	it.each([
+		["transition", "t", "rs", 140],
+		["step", "s", "rt", 240],
+	])(
+		"does not follow the %s before it reaches its column",
+		(_, movedId, referralId, referralY) => {
+			const store = buildStoreWithDistantReferrals();
+			const { workflowManager } = store.getState();
+
+			workflowManager.handleNodesChange([move(movedId, 150, 100, true)]);
+			workflowManager.handleNodesChange([move(movedId, 250, 100, true)]);
+
+			expect(nodePosition(store, referralId)).toEqual({
+				x: 300,
+				y: referralY,
+			});
+		},
+	);
+
+	it("starts to follow a transition once it is in the column", () => {
+		const store = buildStoreWithDistantReferrals();
+		const { workflowManager } = store.getState();
+
+		workflowManager.handleNodesChange([move("t", 200, 100, true)]);
+		workflowManager.handleNodesChange([move("t", 300, 100, true)]);
+		workflowManager.handleNodesChange([move("t", 340, 100, true)]);
+
+		expect(nodePosition(store, "rs")).toEqual({ x: 340, y: 140 });
+	});
+
+	it("starts to follow a step once it is in the column", () => {
+		const store = buildStoreWithDistantReferrals();
+		const { workflowManager } = store.getState();
+
+		workflowManager.handleNodesChange([move("s", 200, 300, true)]);
+		workflowManager.handleNodesChange([move("s", 300, 300, true)]);
+		workflowManager.handleNodesChange([move("s", 340, 300, true)]);
+
+		expect(nodePosition(store, "rt")).toEqual({ x: 340, y: 240 });
+	});
+
+	it("saves the referral where it was carried when the transition is released", () => {
+		const store = buildStoreWithDistantReferrals();
+		const { workflowManager } = store.getState();
+
+		workflowManager.handleNodesChange([move("t", 300, 100, true)]);
+		workflowManager.handleNodesChange([move("t", 360, 100, true)]);
+		workflowManager.handleNodesChange([move("t", 360, 100, false)]);
+
+		expect(elementPosition(store, "t")).toEqual({ x: 360, y: 100 });
+		expect(elementPosition(store, "rs")).toEqual({ x: 360, y: 140 });
+	});
+
+	it("undoes the transition and the referral carried along in a single operation", () => {
+		const store = buildStoreWithDistantReferrals();
+		const { workflowManager } = store.getState();
+		workflowManager.handleNodesChange([move("t", 300, 100, true)]);
+		workflowManager.handleNodesChange([move("t", 360, 100, true)]);
+		workflowManager.handleNodesChange([move("t", 360, 100, false)]);
+
+		store.getState().commandsStackManager.undoOperation();
+
+		expect(elementPosition(store, "t")).toEqual({ x: 100, y: 100 });
+		expect(elementPosition(store, "rs")).toEqual({ x: 300, y: 140 });
+	});
+
+	it("leaves the referral where it is when the step is released before reaching its column", () => {
+		const store = buildStoreWithDistantReferrals();
+		const { workflowManager } = store.getState();
+
+		workflowManager.handleNodesChange([move("s", 200, 300, true)]);
+		workflowManager.handleNodesChange([move("s", 200, 300, false)]);
+
+		expect(elementPosition(store, "rt")).toEqual({ x: 300, y: 240 });
+	});
+
+	it("does not follow when the transition only comes within a grid cell of the column", () => {
+		const store = buildStoreWithDistantReferrals();
+		const { workflowManager } = store.getState();
+
+		workflowManager.handleNodesChange([move("t", 290, 100, true)]);
+		workflowManager.handleNodesChange([move("t", 310, 100, true)]);
+
+		expect(nodePosition(store, "rs")).toEqual({ x: 300, y: 140 });
+	});
+});
+
+describe("GrafcetWorkflowManager.handleNodesChange: chained actions follow a moved action", () => {
+	// s → a1 → a2 on the row of s; b linked directly to s, below
+	function buildStoreWithChain() {
+		const grafcet = new GrafcetBuilder()
+			.addStep(
+				new StepBuilder()
+					.id("s")
+					.number(1)
+					.initial()
+					.position(100, 100)
+					.build(),
+			)
+			.addAction(new ActionBuilder().id("a1").position(180, 100).build())
+			.addAction(new ActionBuilder().id("a2").position(280, 100).build())
+			.addAction(new ActionBuilder().id("b").position(180, 160).build())
+			.addConnections(
+				actionLink("step", "s", "a1"),
+				actionLink("action", "a1", "a2"),
+				actionLink("step", "s", "b"),
+			)
+			.build();
+		return createGrafcetStore(
+			grafcet,
+			new CommandsStack<Grafcet>(100),
+			() => Dialect.FR,
+		);
+	}
+
+	const move = (id: string, x: number, y: number, dragging: boolean) =>
+		({ type: "position", id, position: { x, y }, dragging }) as any;
+	const elementPosition = (
+		store: ReturnType<typeof buildStoreWithChain>,
+		id: string,
+	) => store.getState().grafcet.getElementById(id)!.position;
+
+	it("moves the actions chained after the moved one, not the other actions of the step, in a single operation", () => {
+		const store = buildStoreWithChain();
+		const { workflowManager } = store.getState();
+
+		workflowManager.handleNodesChange([move("a1", 180, 130, true)]);
+		workflowManager.handleNodesChange([move("a1", 180, 130, false)]);
+
+		expect(elementPosition(store, "a1")).toEqual({ x: 180, y: 130 });
+		expect(elementPosition(store, "a2")).toEqual({ x: 280, y: 130 });
+		expect(elementPosition(store, "b")).toEqual({ x: 180, y: 160 });
+
+		store.getState().commandsStackManager.undoOperation();
+
+		expect(elementPosition(store, "a1")).toEqual({ x: 180, y: 100 });
+		expect(elementPosition(store, "a2")).toEqual({ x: 280, y: 100 });
+	});
+});

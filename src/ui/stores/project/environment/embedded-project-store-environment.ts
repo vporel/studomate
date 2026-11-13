@@ -68,7 +68,6 @@ export default function createEmbeddedProjectStoreEnvironment({
 		capabilities: {
 			pdfExport: false,
 			crossReference: false,
-			ladder: { floatingSystemBlocksPalette: true },
 		},
 		analytics: { trackEvent: () => {} },
 		simulationNotifier: createEmbeddedSimulationNotifier(locale),

@@ -9,6 +9,7 @@ import { GrafcetToolbarDnDProvider } from "./GrafcetToolbarDnDContext";
 import TransitionTool from "./TransitionTool";
 
 jest.mock("@/ui/components/projects/ProjectContext");
+jest.mock("@/ui/components/grafcet/context/GrafcetContext");
 
 describe("TransitionTool", () => {
 	it("porte la classe de l'élément 'transition' et respecte `disabled`", () => {

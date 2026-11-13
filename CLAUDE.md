@@ -456,6 +456,12 @@ exists, an npm package's license or peer dependencies...). Run the check (`npm v
 reading the code) and report the result. Questions are reserved for real choices (scope,
 product decisions, naming).
 
+**Never ask a question whose answer can be found in the code.** This includes the existence or
+absence of a feature or interaction ("is there a click-to-place mode on the toolbar?"), how an
+existing mechanism behaves, and what a component does. Before writing "I don't know whether X"
+or "I only found Y" in an analysis, search the code until the answer is settled, then state it
+as a fact. An analysis that lists open questions about the existing code is unfinished.
+
 ## Tests and bugs discovered while testing
 
 Any new or modified logic (function, branch, business rule, component behavior) must come with

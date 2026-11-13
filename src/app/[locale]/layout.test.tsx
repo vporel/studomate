@@ -54,6 +54,17 @@ describe("LocaleLayout", () => {
 		);
 	});
 
+	it("transmet aux composants client les messages des fenêtres du header et des nouveautés", async () => {
+		const element = await LocaleLayout({
+			children: null,
+			params: Promise.resolve({ locale: "fr" }),
+		});
+
+		expect(element.props.children.props.namespaces).toEqual(
+			expect.arrayContaining(["common.modal", "auth", "profile", "whatsNew"]),
+		);
+	});
+
 	it("répond 404 pour une locale inconnue", async () => {
 		await expect(
 			LocaleLayout({

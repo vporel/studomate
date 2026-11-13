@@ -406,7 +406,7 @@
 			"Front dans une réceptivité : il n'existe pas de syntaxe de front (pas de « ↑a »). Pour réagir à un changement de valeur, faites écrire une variable mémoire par une bobine de front montant ou descendant d'un ladder (vraie pendant un seul cycle), ou par une action de front sur une étape, puis utilisez cette variable dans la réceptivité."
 		],
 		"actionsTitle": "Actions",
-		"actionsIntro": "Les actions sont des blocs liés aux étapes qui décrivent ce que fait le système lorsqu'une étape est active. Une étape peut avoir plusieurs actions.",
+		"actionsIntro": "Les actions sont des blocs liés aux étapes qui décrivent ce que fait le système lorsqu'une étape est active. Une étape peut avoir plusieurs actions : elles se chaînent les unes aux autres (étape → action → action…), chaque action ayant un point de connexion à droite vers la suivante. Une étape peut aussi être reliée directement à 4 actions au plus. Une action déposée à droite d'une autre s'y chaîne et s'y colle ; si la place est prise, elle va au bout de la chaîne. Supprimer l'étape laisse la chaîne soudée : il suffit de relier sa première action à une autre étape.",
 		"actionsTypesTitle": "Types d'actions",
 		"actionsTypes": [
 			"Texte : description textuelle libre, sans exécution ni vérification syntaxique. Représentée par une bordure fine.",
@@ -467,7 +467,8 @@
 			"Transition → Étape",
 			"Jonction divergence → Branche → Étape ou Transition",
 			"Étape ou Transition → Branche → Jonction convergence",
-			"Étape → Action"
+			"Étape → Action",
+			"Action → Action (actions chaînées d'une même étape)"
 		],
 		"connectionsWaypointsTitle": "Points de passage",
 		"connectionsWaypointsBody": "Cliquez sur une liaison pour ajouter un point de passage ; faites-le glisser pour modifier le tracé. Cela permet de contourner d'autres éléments ou d'améliorer la lisibilité du diagramme."

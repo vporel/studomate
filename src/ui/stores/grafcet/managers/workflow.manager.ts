@@ -6,11 +6,16 @@ import ConnectionsAddCommand from "@/schemas/grafcet/commands/connections-add.co
 import ElementsAddCommand from "@/schemas/grafcet/commands/elements-add.command";
 import ElementsUpdateCommand from "@/schemas/grafcet/commands/elements-update.command";
 import computeBranchInsertion from "@/ui/utils/grafcet/junction-branch-insertion";
+import computeAutoConnections, {
+	AutoConnection,
+} from "@/ui/utils/grafcet/grafcet-auto-connect";
+import getFollowers from "@/ui/utils/grafcet/grafcet-followers";
+import { GRAFCET_ELEMENT_CLASSES } from "@/ui/utils/grafcet/grafcet-element-classes";
+import Connection from "@/schemas/grafcet/connection.schema";
 import Action, {
-	ACTION_HANDLE_TARGET_STEP,
+	ACTION_HANDLE_TARGET_PREDECESSOR,
 } from "@/schemas/grafcet/action.schema";
 import Step, {
-	STEP_HANDLE_SOURCE_ACTION,
 	STEP_HANDLE_SOURCE_SUCCESSOR,
 	STEP_HANDLE_TARGET_PREDECESSOR,
 } from "@/schemas/grafcet/step.schema";
@@ -21,7 +26,9 @@ import Transition, {
 import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import StepHelper from "@/schemas/grafcet/helpers/step.helper";
 import TransitionHelper from "@/schemas/grafcet/helpers/transition.helper";
-import { JUNCTION_TYPES } from "@/schemas/grafcet/element.schema";
+import GrafcetElement, {
+	JUNCTION_TYPES,
+} from "@/schemas/grafcet/element.schema";
 import { Dimensions, XYPosition } from "@/schemas/grafcet/shared-types";
 import Junction, { JunctionData } from "@/schemas/grafcet/junction.schema";
 import { normalizeJunctionGeometry } from "@/schemas/grafcet/junction-geometry";
@@ -32,6 +39,7 @@ import type {
 } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import {
 	GRAFCET_PAGE_DIMENSIONS,
+	GRAFCET_PAGE_EXTENT,
 	grafcetConnectionFromXYFlowConnectionOrEdge,
 } from "@/ui/utils/grafcet/grafcet-utils";
 import {
@@ -39,6 +47,7 @@ import {
 	applyNodeChanges,
 	EdgeChange,
 	NodeChange,
+	NodePositionChange,
 	Connection as XYFlowConnection,
 } from "@xyflow/react";
 import ConnectionsCommandsFactory from "../factories/connections-commands.factory";
@@ -69,11 +78,14 @@ export default class GrafcetWorkflowManager {
 		//The remove operation is handled by onNodesAndEdgesRemove.
 		//Les changements de dimensions d'une jonction sont ignorés : sa largeur est portée par
 		//le domaine (pilotée par les branches extrêmes), jamais mesurée par React Flow.
-		const changesToAccept = changes.filter(
+		const acceptedChanges = changes.filter(
 			(change) =>
 				change.type !== "remove" &&
 				!(change.type === "dimensions" && isJunction(change.id)),
 		);
+		const { changes: placedChanges, connections: autoConnections } =
+			this.placeFinishedMove(acceptedChanges, grafcet);
+		const changesToAccept = this.withFollowers(placedChanges, grafcet);
 		const newNodes = applyNodeChanges(changesToAccept, [
 			...this.getStoreState().nodes,
 		]);
@@ -91,7 +103,122 @@ export default class GrafcetWorkflowManager {
 			changesToAccept,
 			grafcet,
 		);
-		this.getStoreState().commandsStackManager.executeOperation(commands);
+		this.getStoreState().commandsStackManager.executeOperation(
+			autoConnections.length > 0
+				? [...commands, new ConnectionsAddCommand(autoConnections)]
+				: commands,
+		);
+	}
+
+	/**
+	 * When a single node comes to rest next to a compatible one, returns the changes with its final
+	 * position corrected and the links to create. A multiple selection moves as a block, so none of
+	 * its nodes is linked.
+	 */
+	private placeFinishedMove(
+		changes: NodeChange<GrafcetNodeType>[],
+		grafcet: Grafcet,
+	): { changes: NodeChange<GrafcetNodeType>[]; connections: Connection[] } {
+		const unchanged = { changes, connections: [] };
+		const finalPositions = changes.filter(
+			(c): c is NodePositionChange =>
+				c.type === "position" && !c.dragging && !!c.position,
+		);
+		if (finalPositions.length !== 1) return unchanged;
+		const moved = finalPositions[0];
+		const element = grafcet.getElementById(moved.id);
+		if (
+			!element ||
+			(element.position.x === moved.position!.x &&
+				element.position.y === moved.position!.y)
+		)
+			return unchanged;
+		const placement = computeAutoConnections(
+			{
+				id: moved.id,
+				type: element.type,
+				position: moved.position!,
+				size: element.size,
+			},
+			grafcet,
+		);
+		if (placement.connections.length === 0) return unchanged;
+		return {
+			changes: changes.map((c) =>
+				c === moved ? { ...moved, position: placement.position } : c,
+			),
+			connections: this.buildConnections(placement.connections),
+		};
+	}
+
+	/**
+	 * Adds to the changes the moves of the elements tied to a moved one. While it is dragged, the
+	 * ones that follow it (see `getFollowers`) move by its displacement on their axis; alignment is
+	 * evaluated on the live positions, so an element starts following as soon as it is aligned.
+	 * When it is released, every tied element is saved at its live position (plus the last
+	 * displacement for the ones that follow), so that the whole move is a single operation. An
+	 * element that moves by itself in the same change (it is selected too) is left alone.
+	 */
+	private withFollowers(
+		changes: NodeChange<GrafcetNodeType>[],
+		grafcet: Grafcet,
+	): NodeChange<GrafcetNodeType>[] {
+		const currentNodes = this.getStoreState().nodes;
+		const nodePosition = (id: string) =>
+			currentNodes.find((n) => n.id === id)?.position;
+		const livePosition = (element: GrafcetElement<any>) =>
+			nodePosition(element.id) ?? element.position;
+		const movedIds = new Set(
+			changes.filter((c) => c.type === "position").map((c) => c.id),
+		);
+		const followerChanges: NodePositionChange[] = [];
+		for (const change of changes) {
+			if (change.type !== "position" || !change.position) continue;
+			const moved = grafcet.getElementById(change.id);
+			if (!moved) continue;
+			const followers = getFollowers(moved, grafcet, livePosition);
+			if (followers.length === 0) continue;
+			const from = livePosition(moved);
+			const dx = change.position.x - from.x;
+			const dy = change.position.y - from.y;
+			if (dx === 0 && dy === 0 && change.dragging) continue;
+			for (const { element, axis, follows } of followers) {
+				if (movedIds.has(element.id)) continue;
+				if (!follows && change.dragging) continue;
+				const base = livePosition(element);
+				const [, [extentRight, extentBottom]] = GRAFCET_PAGE_EXTENT;
+				const maxX = extentRight - element.size.width;
+				const maxY = extentBottom - element.size.height;
+				followerChanges.push({
+					type: "position",
+					id: element.id,
+					dragging: change.dragging,
+					position: {
+						x:
+							follows && axis === "x"
+								? Math.min(Math.max(base.x + dx, 0), maxX)
+								: base.x,
+						y:
+							follows && axis === "y"
+								? Math.min(Math.max(base.y + dy, 0), maxY)
+								: base.y,
+					},
+				});
+			}
+		}
+		return followerChanges.length > 0
+			? [...changes, ...followerChanges]
+			: changes;
+	}
+
+	private buildConnections(autoConnections: AutoConnection[]): Connection[] {
+		return autoConnections.map((c) =>
+			new ConnectionBuilder()
+				.id(createRandomId())
+				.source(c.source.type, c.source.id, c.source.handle)
+				.target(c.target.type, c.target.id, c.target.handle)
+				.build(),
+		);
 	}
 
 	addNodes(newNodes: GrafcetNodeType[]): void {
@@ -99,34 +226,56 @@ export default class GrafcetWorkflowManager {
 	}
 
 	/**
-	 * Ajoute une action à une étape et crée la connexion étape → action.
-	 * Sans action déjà liée : la nouvelle action est placée à droite de l'étape (x + 80).
-	 * Sinon : collée à droite de l'action la plus à droite de l'étape.
+	 * Adds an element dropped from the toolbar, together with the links to its adjacent elements,
+	 * as a single undoable operation.
+	 */
+	addDroppedNode(node: GrafcetNodeType): void {
+		const state = this.getStoreState();
+		const defaultSize = GRAFCET_ELEMENT_CLASSES[node.type].DEFAULT_DIMENSIONS;
+		const placement = computeAutoConnections(
+			{
+				id: node.id,
+				type: node.type,
+				position: node.position,
+				size: {
+					width: node.width ?? defaultSize.width,
+					height: node.height ?? defaultSize.height,
+				},
+			},
+			state.grafcet,
+		);
+		const { commands, nodesToAdd } = ElementsCommandsFactory.onNodesAdd(
+			[{ ...node, position: placement.position }],
+			state.grafcet,
+			state.nodes,
+		);
+		if (nodesToAdd.length === 0) return;
+		const connections = this.buildConnections(placement.connections);
+		state.commandsStackManager.executeOperation(
+			connections.length > 0
+				? [...commands, new ConnectionsAddCommand(connections)]
+				: commands,
+		);
+	}
+
+	/**
+	 * Adds an action to a step. Without any action yet, it is linked to the step and placed to its
+	 * right (x + 80); otherwise it is chained after the last action of the chain of the rightmost
+	 * action, flush against that rightmost action.
 	 */
 	addActionToStep(stepId: string): void {
 		const grafcet = this.getStoreState().grafcet;
 		const step = grafcet.getElementById(stepId);
 		if (!step || step.type !== "step") return;
 
-		const existingActions = StepHelper.getActions(stepId, grafcet);
-		const position =
-			existingActions.length === 0
-				? { x: step.position.x + 80, y: step.position.y }
-				: (() => {
-						const rightmost = existingActions.reduce((a, b) =>
-							b.position.x + b.size.width > a.position.x + a.size.width ? b : a,
-						);
-						return {
-							x: rightmost.position.x + rightmost.size.width,
-							y: rightmost.position.y,
-						};
-					})();
+		const position = StepHelper.getNextActionPosition(stepId, grafcet);
+		const source = StepHelper.getNextActionLinkSource(stepId, grafcet);
 
 		const actionId = createRandomId();
 		const connection = new ConnectionBuilder()
 			.id(createRandomId())
-			.source("step", stepId, STEP_HANDLE_SOURCE_ACTION)
-			.target("action", actionId, ACTION_HANDLE_TARGET_STEP)
+			.source(source.type, source.id, source.handle)
+			.target("action", actionId, ACTION_HANDLE_TARGET_PREDECESSOR)
 			.build();
 
 		this.getStoreState().commandsStackManager.executeOperation([

@@ -68,6 +68,13 @@ function numberInput(): HTMLInputElement {
 }
 
 describe("StepReferralTargetNode", () => {
+	it("a la taille de son élément du domaine, pour que la liaison automatique voie le même encombrement", () => {
+		setup();
+		const node = document.querySelector(".grafcet-step-referral-target-node")!;
+
+		expect(node).toHaveStyle({ width: "40px", height: "40px" });
+	});
+
 	it("affiche le numéro de l'étape source", () => {
 		setup({ sourceStepNumber: 5 });
 		expect(numberInput().value).toBe("5");

@@ -22,14 +22,6 @@ export type ProjectCapabilities = {
 	crossReference: boolean;
 	/** A board can be linked. */
 	hardware: boolean;
-	/** What the Ladder editor offers. */
-	ladder: {
-		/**
-		 * A button of the toolbar opens a floating box listing the system blocks, to drag onto
-		 * the ladder, and the toolbar moves the system block tools into it when it lacks room.
-		 */
-		floatingSystemBlocksPalette: boolean;
-	};
 };
 
 export type ProjectStoreAnalytics = {

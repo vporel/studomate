@@ -48,7 +48,6 @@ export default function createAppProjectStoreEnvironment(
 		capabilities: {
 			pdfExport: true,
 			crossReference: true,
-			ladder: { floatingSystemBlocksPalette: false },
 		},
 		analytics: { trackEvent },
 		feedback: { notify: notifyFeedbackMilestone },

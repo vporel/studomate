@@ -1,6 +1,7 @@
 "use client";
 import Step, {
 	STEP_HANDLE_SOURCE_ACTION,
+	STEP_HANDLE_SOURCE_ACTION_LIMIT,
 	STEP_HANDLE_SOURCE_SUCCESSOR,
 	STEP_HANDLE_TARGET_PREDECESSOR,
 	StepData,
@@ -108,7 +109,7 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 				color={borderColor}
 			/>
 			<GrafcetHandle
-				limit={4}
+				limit={STEP_HANDLE_SOURCE_ACTION_LIMIT}
 				id={STEP_HANDLE_SOURCE_ACTION}
 				type="source"
 				position={Position.Right}

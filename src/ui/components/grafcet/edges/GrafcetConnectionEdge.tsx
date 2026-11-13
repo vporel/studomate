@@ -1,7 +1,7 @@
 import useCanEdit from "@/ui/components/projects/useCanEdit";
 import { EDGE_INTERACTION_WIDTH } from "@/ui/constants";
 import { getStraightPathFromPoints } from "@/ui/lib/svg";
-import { getConnectionLinePoints } from "@/ui/utils/grafcet/grafcet-utils";
+import { getHandleConnectionLinePoints } from "@/ui/utils/grafcet/grafcet-utils";
 import { Box, SxProps, Theme, useTheme } from "@mui/material";
 import { Edge, type EdgeProps } from "@xyflow/react";
 import { useEffect, useMemo, useState } from "react";
@@ -25,6 +25,7 @@ const GrafcetConnectionEdge = ({
 	sourceY,
 	targetX,
 	targetY,
+	sourceHandleId,
 	data,
 	interactionWidth = EDGE_INTERACTION_WIDTH,
 	selected,
@@ -42,8 +43,14 @@ const GrafcetConnectionEdge = ({
 						number,
 						number,
 					][])
-				: getConnectionLinePoints(sourceX, sourceY, targetX, targetY),
-		[points, sourceX, sourceY, targetX, targetY],
+				: getHandleConnectionLinePoints(
+						sourceHandleId,
+						sourceX,
+						sourceY,
+						targetX,
+						targetY,
+					),
+		[points, sourceHandleId, sourceX, sourceY, targetX, targetY],
 	);
 	const pathString = useMemo(
 		() => getStraightPathFromPoints(vertices),

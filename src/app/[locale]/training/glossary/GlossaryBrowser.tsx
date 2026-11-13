@@ -66,7 +66,7 @@ function EntryCard({
 			</Stack>
 			{entry.aliases.length > 0 && (
 				<Typography variant="body2" color="text.secondary" mt={0.5}>
-					{labels.aliasesLabel} : {entry.aliases.join(", ")}
+					{labels.aliasesLabel} {entry.aliases.join(", ")}
 				</Typography>
 			)}
 			<Box
@@ -95,7 +95,7 @@ function EntryCard({
 			)}
 			{entry.related.length > 0 && (
 				<Typography variant="body2" color="text.secondary" mt={1.5}>
-					{labels.relatedLabel} :{" "}
+					{labels.relatedLabel}{" "}
 					{entry.related.map((related, index) => (
 						<span key={related.id}>
 							{index > 0 && ", "}
@@ -106,7 +106,7 @@ function EntryCard({
 			)}
 			{entry.lesson && (
 				<Typography variant="body2" color="text.secondary" mt={1}>
-					{labels.lessonLabel} :{" "}
+					{labels.lessonLabel}{" "}
 					<MuiLink href={entry.lesson.href}>{entry.lesson.title}</MuiLink>
 				</Typography>
 			)}

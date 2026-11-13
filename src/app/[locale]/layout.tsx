@@ -44,6 +44,7 @@ export default async function LocaleLayout({
 					"public.header",
 					"public.footer",
 					"common.languageSwitch",
+					"common.modal",
 					"auth",
 					"profile",
 					"whatsNew",

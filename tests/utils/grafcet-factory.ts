@@ -1,7 +1,11 @@
 import {
+	ACTION_HANDLE_SOURCE_NEXT,
+	ACTION_HANDLE_TARGET_PREDECESSOR,
 	ActionExecutionMode,
 	ActionType,
 } from "@/schemas/grafcet/action.schema";
+import Connection from "@/schemas/grafcet/connection.schema";
+import { STEP_HANDLE_SOURCE_ACTION } from "@/schemas/grafcet/step.schema";
 import ActionBuilder from "@/schemas/grafcet/builders/action.builder";
 import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
@@ -12,6 +16,28 @@ import JunctionOrStartBuilder from "@/schemas/grafcet/builders/junction-or-start
 import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
+
+/**
+ * Link that activates the action `actionId`: from a step through its action handle, or from the
+ * action chained before it through its next handle. Its id is `<sourceId>-><actionId>`.
+ */
+export function actionLink(
+	sourceType: "step" | "action",
+	sourceId: string,
+	actionId: string,
+): Connection {
+	return new ConnectionBuilder()
+		.id(`${sourceId}->${actionId}`)
+		.source(
+			sourceType,
+			sourceId,
+			sourceType === "step"
+				? STEP_HANDLE_SOURCE_ACTION
+				: ACTION_HANDLE_SOURCE_NEXT,
+		)
+		.target("action", actionId, ACTION_HANDLE_TARGET_PREDECESSOR)
+		.build();
+}
 
 /**
  * Factory for creating test grafcets with common patterns
@@ -154,7 +180,7 @@ export class GrafcetFactory {
 				new ConnectionBuilder()
 					.id(`${grafcetId}-conn-4`)
 					.source("step", `${grafcetId}-step-0`, "source:action")
-					.target("action", `${grafcetId}-action-0`, "target:step")
+					.target("action", `${grafcetId}-action-0`, "target:predecessor")
 					.build(),
 			);
 		}
@@ -172,7 +198,7 @@ export class GrafcetFactory {
 				new ConnectionBuilder()
 					.id(`${grafcetId}-conn-5`)
 					.source("step", `${grafcetId}-step-1`, "source:action")
-					.target("action", `${grafcetId}-action-1`, "target:step")
+					.target("action", `${grafcetId}-action-1`, "target:predecessor")
 					.build(),
 			);
 		}
@@ -372,7 +398,7 @@ export class GrafcetFactory {
 				new ConnectionBuilder()
 					.id(`${grafcetId}-ca1`)
 					.source("step", step1.id, "source:action")
-					.target("action", action1.id, "target:step")
+					.target("action", action1.id, "target:predecessor")
 					.build(),
 			);
 		}
@@ -389,7 +415,7 @@ export class GrafcetFactory {
 				new ConnectionBuilder()
 					.id(`${grafcetId}-ca2`)
 					.source("step", step2.id, "source:action")
-					.target("action", action2.id, "target:step")
+					.target("action", action2.id, "target:predecessor")
 					.build(),
 			);
 		}
@@ -476,7 +502,7 @@ export class GrafcetFactory {
 			new ConnectionBuilder()
 				.id(`${grafcetId}-ca0`)
 				.source("step", step1.id, "source:action")
-				.target("action", action.id, "target:step")
+				.target("action", action.id, "target:predecessor")
 				.build(),
 		];
 
@@ -635,7 +661,7 @@ export class GrafcetFactory {
 				new ConnectionBuilder()
 					.id(`${grafcetId}-ca1`)
 					.source("step", step1.id, "source:action")
-					.target("action", action1.id, "target:step")
+					.target("action", action1.id, "target:predecessor")
 					.build(),
 			);
 		}
@@ -652,7 +678,7 @@ export class GrafcetFactory {
 				new ConnectionBuilder()
 					.id(`${grafcetId}-ca2`)
 					.source("step", step2.id, "source:action")
-					.target("action", action2.id, "target:step")
+					.target("action", action2.id, "target:predecessor")
 					.build(),
 			);
 		}
@@ -776,7 +802,7 @@ export class GrafcetFactory {
 				new ConnectionBuilder()
 					.id(`${grafcetId}-ca${i}`)
 					.source("step", branchSteps[i].id, "source:action")
-					.target("action", action.id, "target:step")
+					.target("action", action.id, "target:predecessor")
 					.build(),
 			);
 		});
@@ -902,7 +928,7 @@ export class GrafcetFactory {
 				new ConnectionBuilder()
 					.id(`${grafcetId}-ca${i}`)
 					.source("step", branchSteps[i].id, "source:action")
-					.target("action", action.id, "target:step")
+					.target("action", action.id, "target:predecessor")
 					.build(),
 			);
 		});

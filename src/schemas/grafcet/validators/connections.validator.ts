@@ -6,6 +6,7 @@ import {
 import { HANDLES_TO_TYPES_MAP } from "../builders/connection.builder";
 import Connection from "../connection.schema";
 import Grafcet from "../grafcet.schema";
+import ActionHelper from "../helpers/action.helper";
 import { JUNCTION_AND_END_HANDLE_BRANCH_TYPES } from "../junction-and-end.schema";
 import { JUNCTION_AND_START_HANDLE_BRANCH_TYPES } from "../junction-and-start.schema";
 import { JUNCTION_OR_END_HANDLE_BRANCH_TYPES } from "../junction-or-end.schema";
@@ -69,6 +70,17 @@ export default class ConnectionsValidator {
 				return allowedTypesForBranchHandle.includes(sourceType);
 			}
 		}
+
+		//A chain of actions never loops back on itself
+		if (
+			sourceType === "action" &&
+			targetType === "action" &&
+			(connection.sourceId === connection.targetId ||
+				ActionHelper.getChainFrom(connection.targetId, grafcet).some(
+					(action) => action.id === connection.sourceId,
+				))
+		)
+			return false;
 
 		//Other cases
 		let handlesMapsCheck = true;
