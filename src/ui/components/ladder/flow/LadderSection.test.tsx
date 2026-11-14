@@ -13,7 +13,7 @@ import {
 import { createContactElement } from "@/schemas/ladder/element.schema";
 import Section from "@/schemas/ladder/section.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { useLadderContext, useLadderStore } from "../context/LadderContext";
 import { ThemeProvider as AppThemeProvider } from "@/ui/theme/ThemeContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";

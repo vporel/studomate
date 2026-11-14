@@ -8,7 +8,7 @@ import ProjectFieldSetCommand from "@/schemas/project/commands/project-field-set
 import VariablesUpdateCommand from "@/schemas/project/commands/variables-update.command";
 import Variable from "@/schemas/variable/variable.schema";
 import { ProjectStoreState } from "../project.store";
-import { ProjectMode } from "../ProjectMode.enum";
+import { ProjectMode } from "../project-mode.enum";
 import ProjectCommandsStackManager from "./commands-stack.manager";
 
 function renameCommand(from: string, to: string) {
@@ -61,7 +61,7 @@ function makeStore(
 			syncMountedStoresFromProject: jest.fn(),
 			clearCommandsStacksOf: jest.fn(),
 		},
-		scene3dLinkManager: { onSceneChanged: jest.fn() },
+		scene3dDisplayManager: { onSceneChanged: jest.fn() },
 	} as unknown as ProjectStoreState;
 
 	const set = (partial: any) => {
@@ -245,7 +245,7 @@ describe("ProjectCommandsStackManager (project)", () => {
 	describe("scene 3D notification", () => {
 		it("notifies when a command changes the scene, on execute, undo and redo", () => {
 			const { get, manager } = makeStore();
-			const notify = get().scene3dLinkManager.onSceneChanged as jest.Mock;
+			const notify = get().scene3dDisplayManager.onSceneChanged as jest.Mock;
 
 			manager.executeOperation([sceneCommand()]);
 			expect(notify).toHaveBeenCalledTimes(1);
@@ -259,7 +259,7 @@ describe("ProjectCommandsStackManager (project)", () => {
 
 		it("does not notify when the scene is untouched, on execute, undo and redo", () => {
 			const { get, manager } = makeStore();
-			const notify = get().scene3dLinkManager.onSceneChanged as jest.Mock;
+			const notify = get().scene3dDisplayManager.onSceneChanged as jest.Mock;
 
 			manager.executeOperation([renameCommand("moteur", "pompe")]);
 			manager.undoOperation();
@@ -270,7 +270,7 @@ describe("ProjectCommandsStackManager (project)", () => {
 
 		it("notifies when the project is renamed, on execute, undo and redo", () => {
 			const { get, manager } = makeStore();
-			const notify = get().scene3dLinkManager.onSceneChanged as jest.Mock;
+			const notify = get().scene3dDisplayManager.onSceneChanged as jest.Mock;
 
 			manager.executeOperation([
 				new ProjectFieldSetCommand({
@@ -291,7 +291,7 @@ describe("ProjectCommandsStackManager (project)", () => {
 
 		it("does not notify for a field touching neither the name nor the scene", () => {
 			const { get, manager } = makeStore();
-			const notify = get().scene3dLinkManager.onSceneChanged as jest.Mock;
+			const notify = get().scene3dDisplayManager.onSceneChanged as jest.Mock;
 
 			manager.executeOperation([
 				new ProjectFieldSetCommand({

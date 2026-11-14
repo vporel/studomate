@@ -1,4 +1,4 @@
-import { ProjectMode } from "./ProjectMode.enum";
+import { ProjectMode } from "./project-mode.enum";
 import type { PageType, ProjectStoreState } from "./project.store.types";
 
 /** Without the pages, no page is locked. */

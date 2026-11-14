@@ -213,6 +213,11 @@ Always check `package.json` before quoting a version: this table goes stale at t
   thing.
 - **Platform detection**: prefer `navigator.userAgentData.platform` with a fallback to
   `navigator.userAgent`, never `navigator.platform` (deprecated) — see `src/ui/lib/platform.ts`.
+- **`localStorage` keys**: every key is read and written by a `*.storage.ts` module of
+  `src/persistence/` (built on `safe-local-storage.ts`), never directly from a component, a store
+  or a store environment. Keys are named `studomate_xxx`. Since `src/persistence/` never
+  depends on `src/ui/`, a value typed by a UI enum is stored as a string and checked against the
+  enum by the caller.
 - **Modals**: their visibility lives in the relevant zustand store (`openModalVisible`,
   `exportModalVisible`, ...) when its state is shared between components or when it must be
   openable from several places (keyboard shortcuts, menus, ...). A modal that opens and closes

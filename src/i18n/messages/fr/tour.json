@@ -33,5 +33,55 @@
 			"title": "Résultats d'analyse",
 			"description": "Les erreurs et avertissements détectés dans le projet. Cliquez pour afficher le détail ; la couleur indique la gravité."
 		}
+	},
+	"editors": {
+		"grafcet": {
+			"steps": {
+				"toolbar": {
+					"title": "Barre d'outils",
+					"description": "Glissez une étape, une action, une transition ou une jonction sur le canevas. Le premier outil crée l'étape initiale."
+				},
+				"canvas": {
+					"title": "Canevas",
+					"description": "Déposez vos éléments ici. Double-cliquez sur une étape, une transition ou une action pour modifier son texte ; le clic droit ouvre un menu d'actions."
+				}
+			}
+		},
+		"ladder": {
+			"steps": {
+				"toolbar": {
+					"title": "Contacts et bobines",
+					"description": "Glissez un contact ou une bobine sur le canevas. La flèche à droite des bobines en affiche d'autres (inversée, fronts)."
+				},
+				"systemBlocks": {
+					"title": "Bibliothèque",
+					"description": "Temporisations, compteurs, comparaisons, affectations et calculs : ouvrez la palette pour les poser sur un réseau."
+				},
+				"addSection": {
+					"title": "Réseaux",
+					"description": "Un programme Ladder est une suite de réseaux. Ce bouton en ajoute un."
+				},
+				"canvas": {
+					"title": "Canevas",
+					"description": "Déposez un élément pour l'insérer dans un réseau. Double-cliquez sur un contact ou une bobine pour choisir sa variable."
+				}
+			}
+		},
+		"hmi": {
+			"steps": {
+				"toolbar": {
+					"title": "Palette de widgets",
+					"description": "Glissez un widget ou une forme sur la page pour construire l'interface opérateur."
+				},
+				"canvas": {
+					"title": "Page HMI",
+					"description": "Déposez et déplacez vos widgets ici. Cliquez sur l'un d'eux pour le sélectionner."
+				},
+				"properties": {
+					"title": "Propriétés",
+					"description": "Liez le widget sélectionné à une variable et réglez son apparence, ses animations et ses événements."
+				}
+			}
+		}
 	}
 }

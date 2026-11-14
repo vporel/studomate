@@ -3,7 +3,7 @@
  */
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import type { HardwareTarget } from "@/schemas/hardware/hardware-target.schema";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { fireEvent, screen, within } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { selectorImplementation } from "@tests/utils/store-mocks";

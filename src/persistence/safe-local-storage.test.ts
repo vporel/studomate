@@ -3,6 +3,7 @@
  */
 import {
 	readJson,
+	readKnownString,
 	readString,
 	writeJson,
 	writeString,
@@ -31,6 +32,32 @@ describe("safe-local-storage", () => {
 			});
 
 			expect(readString("k")).toBeNull();
+		});
+	});
+
+	describe("readKnownString", () => {
+		it("renvoie la valeur stockée quand elle fait partie des valeurs connues", () => {
+			localStorage.setItem("k", "b");
+
+			expect(readKnownString("k", ["a", "b"])).toBe("b");
+		});
+
+		it("renvoie null pour une valeur inconnue", () => {
+			localStorage.setItem("k", "c");
+
+			expect(readKnownString("k", ["a", "b"])).toBeNull();
+		});
+
+		it("renvoie null pour une clé absente", () => {
+			expect(readKnownString("absent", ["a", "b"])).toBeNull();
+		});
+
+		it("renvoie null quand le stockage lève", () => {
+			jest.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+				throw new Error("blocked");
+			});
+
+			expect(readKnownString("k", ["a", "b"])).toBeNull();
 		});
 	});
 

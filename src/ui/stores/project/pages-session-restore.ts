@@ -17,6 +17,8 @@ import {
 	PROJECT_STARTUP_PAGE_ID,
 	SCENE3D_CONFIGURATION_PAGE_DATA,
 	SCENE3D_CONFIGURATION_PAGE_ID,
+	SCENE3D_VIEW_PAGE_DATA,
+	SCENE3D_VIEW_PAGE_ID,
 	getVariablesPageData,
 } from "@/ui/stores/project/pages-data";
 
@@ -42,6 +44,8 @@ function resolvePageData(pageId: string, project: Project): PageData | null {
 		return HARDWARE_CONFIGURATION_PAGE_DATA;
 	if (pageId === SCENE3D_CONFIGURATION_PAGE_ID)
 		return SCENE3D_CONFIGURATION_PAGE_DATA;
+	if (pageId === SCENE3D_VIEW_PAGE_ID)
+		return project.scene3d ? SCENE3D_VIEW_PAGE_DATA : null;
 	if (isVariablesPageId(pageId)) return getVariablesPageData(pageId);
 	const program = project.getProgram(pageId);
 	if (program)

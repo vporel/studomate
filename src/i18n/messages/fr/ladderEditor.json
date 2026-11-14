@@ -1,6 +1,6 @@
 {
 	"toolbar": {
-		"systemBlocksButton": "Blocs systèmes",
+		"systemBlocksButton": "Bibliothèque",
 		"zoomIn": "Zoom avant",
 		"zoomOut": "Zoom arrière",
 		"contactNO": "Contact normalement ouvert (NO)",
@@ -18,7 +18,7 @@
 		"addSection": "Réseau"
 	},
 	"systemBlocksPalette": {
-		"title": "Blocs systèmes",
+		"title": "Bibliothèque",
 		"close": "Fermer"
 	},
 	"systemBlocks": {

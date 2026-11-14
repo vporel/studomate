@@ -31,9 +31,9 @@ function setup(activeScopeType: string) {
 describe("Explorer", () => {
 	afterEach(() => jest.clearAllMocks());
 
-	it("affiche la palette « Blocs systèmes » sur un ladder", () => {
+	it("affiche la palette « Bibliothèque » sur un ladder", () => {
 		setup("ladder");
-		expect(screen.getByText("Blocs systèmes")).toBeInTheDocument();
+		expect(screen.getByText("Bibliothèque")).toBeInTheDocument();
 	});
 
 	it("affiche la section « Configuration »", () => {
@@ -41,8 +41,8 @@ describe("Explorer", () => {
 		expect(screen.getByText("Configuration")).toBeInTheDocument();
 	});
 
-	it("masque la palette « Blocs systèmes » hors ladder", () => {
+	it("masque la palette « Bibliothèque » hors ladder", () => {
 		setup("grafcet");
-		expect(screen.queryByText("Blocs systèmes")).not.toBeInTheDocument();
+		expect(screen.queryByText("Bibliothèque")).not.toBeInTheDocument();
 	});
 });

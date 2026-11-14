@@ -77,7 +77,7 @@ function collidesWith(section: Section, element: LadderElement): boolean {
  * - un programme glissé depuis le menu de l'explorateur (bloc "appel de programme"), porté par
  *   `DataTransfer` natif (`LADDER_PROGRAM_DRAG_MIME_TYPE`) — explorateur et éditeur ladder ne
  *   partagent aucun contexte React ;
- * - un bloc système glissé depuis la section "Blocs systèmes" de l'explorateur (jamais un outil
+ * - un bloc système glissé depuis la section "Bibliothèque" de l'explorateur (jamais un outil
  *   de toolbar), porté par `DataTransfer` de la même façon (`LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE`)
  *   — mais dont le dépose n'insère rien directement : il ouvre `pendingSystemBlockCreation`, qui
  *   ne dispatche qu'à la validation de sa fenêtre de configuration.

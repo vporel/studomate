@@ -1,4 +1,4 @@
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import type { ProjectStoreState } from "@/ui/stores/project/project.store.types";
 import type { StoreApi } from "zustand";
 

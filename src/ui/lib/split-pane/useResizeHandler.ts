@@ -36,6 +36,7 @@ export default function useResizeHandler(
 
 			const containerSize = isHorizontal ? rect.width : rect.height;
 			const startSizes = [...sizes];
+			let resized: number[] | null = null;
 
 			const onMouseMove = (e: globalThis.MouseEvent) => {
 				const delta = isHorizontal ? e.clientX - startX : e.clientY - startY;
@@ -69,6 +70,7 @@ export default function useResizeHandler(
 				newSizes[index] = startSizes[index] + deltaPercent;
 				newSizes[index + 1] = startSizes[index + 1] - deltaPercent;
 
+				resized = newSizes;
 				setSizes(newSizes);
 			};
 
@@ -76,6 +78,14 @@ export default function useResizeHandler(
 				document.removeEventListener("mousemove", onMouseMove);
 				document.removeEventListener("mouseup", onMouseUp);
 				activeDragCleanupRef.current = null;
+				if (!resized) return;
+				for (const paneIndex of [index, index + 1]) {
+					const percent = resized[paneIndex];
+					children[paneIndex].props.onSizeChange?.({
+						px: (percent / 100) * containerSize,
+						percent,
+					});
+				}
 			};
 
 			document.addEventListener("mousemove", onMouseMove);

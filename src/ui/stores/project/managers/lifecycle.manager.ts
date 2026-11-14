@@ -83,7 +83,7 @@ export default class ProjectLifecycleManager {
 		get().laddersManager.clearCommandsStacks();
 		get().hmiManager.clearCommandsStacks();
 		void get().hardwareLinkManager.unlink();
-		get().scene3dLinkManager.close();
+		get().scene3dDisplayManager.close();
 		//Le presse-papiers aussi : ses éléments référencent des variables par id, sans validité
 		//dans un autre projet.
 		get().clipboard.getState().clear();
@@ -186,7 +186,7 @@ export default class ProjectLifecycleManager {
 		get().laddersManager.clearCommandsStacks();
 		get().hmiManager.clearCommandsStacks();
 		void get().hardwareLinkManager.unlink();
-		get().scene3dLinkManager.close();
+		get().scene3dDisplayManager.close();
 		set(() => ({
 			project: null,
 			hasUnsavedChanges: false,

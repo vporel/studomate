@@ -7,7 +7,7 @@ import {
 } from "@/3d-scenes/scene.registry";
 import { getCandidateVariables } from "@/3d-scenes/scene3d-wiring";
 import { useT } from "@/ui/i18n/useT";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import {
 	Box,
 	Button,
@@ -44,7 +44,7 @@ const Scene3dConfigurationPage = () => {
 		designing,
 		setScene3d,
 		createMissingVariables,
-		scene3dLinkManager,
+		scene3dDisplayManager,
 	} = useProjectStore(
 		useShallow((state) => ({
 			scene: state.project?.scene3d ?? null,
@@ -52,7 +52,7 @@ const Scene3dConfigurationPage = () => {
 			designing: state.mode === ProjectMode.DESIGN,
 			setScene3d: state.setScene3d,
 			createMissingVariables: state.createMissingScene3dVariables,
-			scene3dLinkManager: state.scene3dLinkManager,
+			scene3dDisplayManager: state.scene3dDisplayManager,
 		})),
 	);
 	const descriptor = scene
@@ -86,7 +86,7 @@ const Scene3dConfigurationPage = () => {
 						<Button
 							variant="contained"
 							startIcon={<ViewInArIcon />}
-							onClick={() => scene3dLinkManager.open()}
+							onClick={() => scene3dDisplayManager.open()}
 						>
 							{t("openScene")}
 						</Button>

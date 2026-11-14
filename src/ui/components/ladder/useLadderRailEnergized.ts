@@ -1,6 +1,6 @@
 import { useLadderStore } from "@/ui/components/ladder/context/LadderContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 
 /** The power rail and its stubs carry current permanently while the ladder is simulated. */
 export default function useLadderRailEnergized(): boolean {

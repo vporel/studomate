@@ -268,6 +268,7 @@ export function GrafcetFlowContent({
 		<Box
 			className={`grafcet-page flow-page${canEdit ? "" : " flow-page--readonly"}`}
 			id={`grafcet-${grafcetId}`}
+			data-tour="canvas"
 			ref={setContainerElement}
 			sx={fitContent ? FIT_OUTER_CONTAINER_SX : OUTER_CONTAINER_SX}
 		>

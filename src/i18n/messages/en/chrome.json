@@ -34,6 +34,7 @@
 	"footerActions": {
 		"watchTables": "Watch tables",
 		"hmiSimulation": "HMI simulation",
+		"scene3d": "3D scene",
 		"analysisResults": "Analysis results",
 		"ok": "(OK)",
 		"errors": "(Errors)",

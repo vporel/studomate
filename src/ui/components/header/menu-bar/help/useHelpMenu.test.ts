@@ -7,10 +7,10 @@ import { feedbackStore } from "@/ui/stores/feedback/feedback.store";
 import { whatsNewStore } from "@/ui/stores/whats-new/whats-new.store";
 import useHelpMenu from "./useHelpMenu";
 
-const startProductTour = jest.fn();
-jest.mock("@/ui/components/product-tour/useStartProductTour", () => ({
+const startAppTour = jest.fn();
+jest.mock("@/ui/components/product-tour/app-tour/useStartAppTour", () => ({
 	__esModule: true,
-	default: () => startProductTour,
+	default: () => startAppTour,
 }));
 
 describe("useHelpMenu", () => {
@@ -80,7 +80,7 @@ describe("useHelpMenu", () => {
 
 		result.current.items[0][3].onClick?.();
 
-		expect(startProductTour).toHaveBeenCalledTimes(1);
+		expect(startAppTour).toHaveBeenCalledTimes(1);
 	});
 
 	it("opens the user manual in a new tab when clicked", () => {

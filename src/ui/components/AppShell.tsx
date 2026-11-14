@@ -4,24 +4,35 @@ import Explorer from "@/ui/components/explorer/Explorer";
 import StatusBar from "@/ui/components/footer/StatusBar";
 import AppMenuBar from "@/ui/components/header/menu-bar/AppMenuBar";
 import TitleBar from "@/ui/components/header/title-bar/TitleBar";
-import ProductTour from "@/ui/components/product-tour/ProductTour";
+import AppTour from "@/ui/components/product-tour/app-tour/AppTour";
 import PagesView from "@/ui/components/pages/PagesView";
-import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import WatchTables from "@/ui/components/watch-tables/WatchTables";
+import SidePanel, {
+	useSidePanelContent,
+} from "@/ui/components/side-panel/SidePanel";
+import {
+	getSidePanelWidth,
+	setSidePanelWidth,
+} from "@/persistence/preferences.storage";
 import { useAppContext } from "@/ui/components/AppContext";
 import Pane from "@/ui/lib/split-pane/Pane";
 import SplitPane from "@/ui/lib/split-pane/SplitPane";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { Box } from "@mui/material";
-import { useShallow } from "zustand/shallow";
+import dynamic from "next/dynamic";
+import { useState } from "react";
+
+//Three.js and WebGL are loaded when the scene is first shown.
+const Scene3dFloatingBox = dynamic(
+	() => import("@/ui/components/3d-scene/Scene3dFloatingBox"),
+	{ ssr: false },
+);
+
+const DEFAULT_SIDE_PANEL_WIDTH = 350;
 
 const AppShell = () => {
 	const { viewAppearance } = useAppContext();
-	const { watchTablesVisible, mode } = useProjectStore(
-		useShallow((state) => ({
-			watchTablesVisible: state.ui.watchTablesVisible,
-			mode: state.mode,
-		})),
+	const sidePanel = useSidePanelContent();
+	const [sidePanelWidth, setSidePanelWidthState] = useState(
+		() => getSidePanelWidth() ?? DEFAULT_SIDE_PANEL_WIDTH,
 	);
 
 	return (
@@ -66,19 +77,28 @@ const AppShell = () => {
 					<Explorer />
 				</Pane>
 				<Pane style={{ overflow: "hidden" }}>
-					<PagesView />
+					<Box sx={{ position: "relative", height: "100%" }}>
+						<PagesView />
+						<Scene3dFloatingBox />
+					</Box>
 				</Pane>
 				<Pane
-					initialSize={350}
+					initialSize={sidePanelWidth}
 					minSize={300}
-					maxSize={600}
-					visible={watchTablesVisible && mode === ProjectMode.SIMULATION}
+					//The 3D scene needs more room than the watch tables alone.
+					maxSize={sidePanel.scene3d ? "50%" : 600}
+					visible={sidePanel.scene3d || sidePanel.watchTables}
+					style={{ overflow: "hidden" }}
+					onSizeChange={({ px }) => {
+						setSidePanelWidthState(px);
+						setSidePanelWidth(px);
+					}}
 				>
-					<WatchTables />
+					<SidePanel />
 				</Pane>
 			</SplitPane>
 			<StatusBar />
-			<ProductTour />
+			<AppTour />
 		</Box>
 	);
 };

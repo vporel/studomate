@@ -6,12 +6,12 @@ import { openFeedbackFromMenu } from "@/ui/services/feedback-prompt";
 import { whatsNewStore } from "@/ui/stores/whats-new/whats-new.store";
 import { openReportIssue } from "@/ui/services/report-issue";
 import { useMemo } from "react";
-import useStartProductTour from "@/ui/components/product-tour/useStartProductTour";
+import useStartAppTour from "@/ui/components/product-tour/app-tour/useStartAppTour";
 import { AppMenuType } from "../app-menu-bar";
 
 export default function useHelpMenu(onShortcutsOpen: () => void): AppMenuType {
 	const t = useT("menu.help");
-	const startProductTour = useStartProductTour();
+	const startAppTour = useStartAppTour();
 	return useMemo(
 		() => ({
 			id: "help",
@@ -37,7 +37,7 @@ export default function useHelpMenu(onShortcutsOpen: () => void): AppMenuType {
 					{
 						label: t("replayTour"),
 						onClick: () => {
-							void startProductTour();
+							void startAppTour();
 						},
 					},
 					{
@@ -57,6 +57,6 @@ export default function useHelpMenu(onShortcutsOpen: () => void): AppMenuType {
 				],
 			],
 		}),
-		[onShortcutsOpen, startProductTour, t],
+		[onShortcutsOpen, startAppTour, t],
 	);
 }

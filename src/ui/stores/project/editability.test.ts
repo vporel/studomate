@@ -4,7 +4,7 @@ import {
 	isPageReadOnly,
 	refuseEdit,
 } from "./editability";
-import { ProjectMode } from "./ProjectMode.enum";
+import { ProjectMode } from "./project-mode.enum";
 import type { PageData } from "./project.store.types";
 
 const page = (

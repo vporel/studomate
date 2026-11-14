@@ -1,5 +1,5 @@
 import { ProjectStoreState } from "./project.store";
-import { ProjectMode } from "./ProjectMode.enum";
+import { ProjectMode } from "./project-mode.enum";
 import {
 	canRedoActiveScope,
 	canUndoActiveScope,

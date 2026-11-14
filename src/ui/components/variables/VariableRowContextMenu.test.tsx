@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { fireEvent, screen } from "@testing-library/react";

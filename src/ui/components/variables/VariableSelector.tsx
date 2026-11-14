@@ -14,7 +14,7 @@ import Variable, {
 } from "@/schemas/variable/variable.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { formatVariableValue } from "@/ui/components/variables/format-variable-value";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import {
 	Autocomplete,
 	AutocompleteRenderInputParams,

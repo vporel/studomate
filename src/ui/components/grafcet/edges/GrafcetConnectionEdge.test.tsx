@@ -5,7 +5,7 @@ import { render } from "@testing-library/react";
 import { ReactFlowProvider } from "@xyflow/react";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useGrafcetStore } from "../context/GrafcetContext";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import GrafcetConnectionEdge, {
 	GrafcetConnectionEdgeType,

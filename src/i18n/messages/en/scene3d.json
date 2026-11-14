@@ -11,6 +11,17 @@
 	},
 	"missingSession": "Session not found. Open the scene from the editor.",
 	"unknownScene": "Scene unknown to this version of Studomate.",
+	"dock": "Back to the editor",
+	"view": {
+		"title": "3D scene",
+		"close": "Close the 3D scene"
+	},
+	"showAs": {
+		"side-panel": "Show in the side panel",
+		"floating-box": "Show in a floating box",
+		"page": "Show in a page",
+		"browser-tab": "Open in a browser tab"
+	},
 	"cartonSorting": {
 		"label": "Carton sorting",
 		"description": "Input conveyor, three pushing cylinders and two outputs: low cartons go to P2's level, high cartons to P3's level.",

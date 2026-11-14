@@ -1,11 +1,11 @@
-import { SchoolType } from "@/user-profile/SchoolType.enum";
-import { UserType } from "@/user-profile/UserType.enum";
+import { SchoolType } from "@/user-profile/school-type.enum";
+import { UserType } from "@/user-profile/user-type.enum";
+import { installMemoryLocalStorage } from "@tests/utils/local-storage-stub";
 import {
 	getStoredUserProfile,
 	setStoredUserProfile,
 	shouldAskUserProfile,
 } from "./user-profile.storage";
-import { installMemoryLocalStorage } from "@tests/utils/local-storage-stub";
 
 const mockGetShareToken = jest.fn();
 jest.mock("@/ui/stores/project/url/project-url", () => ({

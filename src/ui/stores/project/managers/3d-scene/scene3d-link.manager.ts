@@ -10,6 +10,8 @@ import type { Scene3dStateSnapshot } from "./scene3d-simulation.bridge";
 
 export const PING_INTERVAL_MS = 2000;
 const CONNECTION_TIMEOUT_MS = 3 * PING_INTERVAL_MS;
+/** A scene tab first loads the page and three.js, so its first answer may take a while. */
+export const TAB_FIRST_ANSWER_TIMEOUT_MS = 15_000;
 
 export interface Scene3dLinkHost {
 	getScene(): Scene3d | null;
@@ -45,8 +47,22 @@ export default class Scene3dLinkManager {
 	private pingTimer: ReturnType<typeof setInterval> | null = null;
 	private lastSentKey: string | null = null;
 	private lastPongAt: number | null = null;
+	private inline = false;
+	private reportedConnected = false;
+	private tabAwaitedSince: number | null = null;
 
-	constructor(private readonly host: Scene3dLinkHost) {}
+	constructor(
+		private readonly host: Scene3dLinkHost,
+		private readonly listeners: {
+			/** The scene tab asks to be shown in the editor's page. */
+			onDockRequested?: () => void;
+			/**
+			 * The scene tab started or stopped answering, or never answered after it was opened,
+			 * while the scene is not shown in the page.
+			 */
+			onTabConnectionChange?: (connected: boolean) => void;
+		} = {},
+	) {}
 
 	/**
 	 * Opens (or focuses) the scene tab of this editor tab and connects to it. False when the
@@ -56,6 +72,10 @@ export default class Scene3dLinkManager {
 		const sessionId = this.host.getSessionId();
 		this.connect(sessionId);
 		const opened = this.host.openWindow(sessionId);
+		if (opened) {
+			this.inline = false;
+			if (!this.isSceneConnected()) this.tabAwaitedSince = this.host.now();
+		}
 		this.channel?.send({ type: "ping" });
 		return opened;
 	}
@@ -71,7 +91,17 @@ export default class Scene3dLinkManager {
 		}
 		const sessionId = this.host.getSessionId();
 		this.connect(sessionId);
+		this.inline = true;
 		return connectScene.call(this.host, sessionId);
+	}
+
+	/**
+	 * Ends the link of a scene shown in the page. A scene tab opened since then keeps the link:
+	 * the page's view is torn down after the tab was requested.
+	 */
+	releaseInline(): void {
+		if (!this.inline) return;
+		this.disconnect();
 	}
 
 	/** True while the scene tab answers the pings. */
@@ -110,10 +140,10 @@ export default class Scene3dLinkManager {
 		this.unsubscribeState = this.host.subscribeState((snapshot) =>
 			this.sendState(snapshot),
 		);
-		this.pingTimer = setInterval(
-			() => this.channel?.send({ type: "ping" }),
-			PING_INTERVAL_MS,
-		);
+		this.pingTimer = setInterval(() => {
+			this.channel?.send({ type: "ping" });
+			this.reportConnection();
+		}, PING_INTERVAL_MS);
 	}
 
 	private disconnect(): void {
@@ -125,6 +155,26 @@ export default class Scene3dLinkManager {
 		this.channel = null;
 		this.lastSentKey = null;
 		this.lastPongAt = null;
+		this.inline = false;
+		this.reportedConnected = false;
+		this.tabAwaitedSince = null;
+	}
+
+	private reportConnection(): void {
+		if (this.inline) return;
+		const connected = this.isSceneConnected();
+		if (connected) this.tabAwaitedSince = null;
+		else if (
+			this.tabAwaitedSince !== null &&
+			this.host.now() - this.tabAwaitedSince > TAB_FIRST_ANSWER_TIMEOUT_MS
+		) {
+			this.tabAwaitedSince = null;
+			this.listeners.onTabConnectionChange?.(false);
+			return;
+		}
+		if (connected === this.reportedConnected) return;
+		this.reportedConnected = connected;
+		this.listeners.onTabConnectionChange?.(connected);
 	}
 
 	private handleMessage(message: SceneToEditorMessage): void {
@@ -132,15 +182,21 @@ export default class Scene3dLinkManager {
 			case "hello":
 				this.lastPongAt = this.host.now();
 				this.sendConfigAndState();
+				this.reportConnection();
 				break;
 			case "interaction":
 				this.host.sendInteraction(message.interaction);
 				break;
 			case "pong":
 				this.lastPongAt = this.host.now();
+				this.reportConnection();
 				break;
 			case "bye":
 				this.lastPongAt = null;
+				this.reportConnection();
+				break;
+			case "dock-request":
+				this.listeners.onDockRequested?.();
 				break;
 		}
 	}

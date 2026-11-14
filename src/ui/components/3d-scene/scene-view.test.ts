@@ -243,4 +243,12 @@ describe("SceneView", () => {
 		h.view.dispose();
 		expect(h.received).toEqual([{ type: "bye" }]);
 	});
+
+	it("asks the editor to show the scene in its page", () => {
+		const h = createHarness();
+		h.received.length = 0;
+		h.view.requestDock();
+		expect(h.received).toEqual([{ type: "dock-request" }]);
+		h.view.dispose();
+	});
 });

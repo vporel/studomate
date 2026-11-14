@@ -1,7 +1,7 @@
 import HmiPage from "@/schemas/hmi/hmi-page.schema";
 import Project from "@/schemas/project/project.schema";
 import { ProjectStoreState } from "../project.store";
-import { ProjectMode } from "../ProjectMode.enum";
+import { ProjectMode } from "../project-mode.enum";
 import HmiManager, { HMI_SIMULATION_PAGE_ID } from "./hmi.manager";
 
 const mockTrackEvent = jest.fn();

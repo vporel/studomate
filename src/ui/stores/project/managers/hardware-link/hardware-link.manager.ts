@@ -12,7 +12,7 @@ import type {
 	ProjectStoreSetFunction,
 } from "@/ui/stores/project/project.store";
 import trackEvent from "@/ui/services/analytics";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import BoardProgramController from "./board-program.controller";
 import FirmwareInstaller from "./firmware-installer";
 import type HardwareLinkContext from "./hardware-link.context";

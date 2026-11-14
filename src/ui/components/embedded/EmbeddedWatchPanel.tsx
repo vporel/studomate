@@ -1,6 +1,6 @@
 "use client";
 
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { Box } from "@mui/material";
 import { useProjectStore } from "../projects/ProjectContext";
 import WatchTables from "../watch-tables/WatchTables";

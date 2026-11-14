@@ -19,6 +19,13 @@ describe("scene messages", () => {
 		expect(received).toEqual(message);
 	});
 
+	it("carries the request of a scene tab to be docked in the editor", () => {
+		const received = parseSceneMessage(
+			structuredClone(toEnvelope({ type: "dock-request" as const })),
+		);
+		expect(received).toEqual({ type: "dock-request" });
+	});
+
 	it("stamps the protocol version", () => {
 		expect(toEnvelope({ type: "ping" }).protocolVersion).toBe(
 			SCENE_PROTOCOL_VERSION,

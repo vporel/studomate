@@ -7,7 +7,7 @@ import {
 } from "@/hardware/hardware-device.registry";
 import type { HardwareModelId } from "@/schemas/hardware/hardware-target.schema";
 import { useT } from "@/ui/i18n/useT";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import {
 	Alert,
 	Box,

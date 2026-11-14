@@ -18,13 +18,16 @@ test("ouvre une solution de template, monte l'éditeur et simule sans erreur", a
 	page.on("pageerror", (error) => pageErrors.push(error.message));
 
 	// Le premier chargement affiche la modale de choix de profil et le tour produit guidé
-	// (driver.js) : hors sujet pour ce parcours, on les marque comme déjà vus avant de naviguer.
+	// (driver.js, app et éditeurs) : hors sujet pour ce parcours, on les marque comme déjà vus avant de naviguer.
 	await page.addInitScript(() => {
 		localStorage.setItem(
 			"studomate_user_profile",
 			JSON.stringify({ userType: null, schoolType: null }),
 		);
 		localStorage.setItem("studomate_product_tour_seen", "true");
+		for (const kind of ["grafcet", "ladder", "hmi"]) {
+			localStorage.setItem(`studomate_editor_tour_${kind}_seen`, "true");
+		}
 	});
 
 	await page.goto("/app");

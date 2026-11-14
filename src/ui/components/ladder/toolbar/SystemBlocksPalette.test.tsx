@@ -5,7 +5,7 @@ import { fireEvent, screen } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { SYSTEM_BLOCK_CATALOG } from "@/ui/components/ladder/system-blocks/system-block-catalog";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE } from "@/ui/utils/ladder/ladder-system-block-drag";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import SystemBlocksPalette from "./SystemBlocksPalette";
@@ -60,9 +60,9 @@ describe("SystemBlocksPalette", () => {
 			expect(screen.getByText(label)).toBeInTheDocument();
 	});
 
-	it("se présente comme une boîte non modale intitulée « Blocs systèmes »", () => {
+	it("se présente comme une boîte non modale intitulée « Bibliothèque »", () => {
 		setup();
-		const box = screen.getByRole("dialog", { name: "Blocs systèmes" });
+		const box = screen.getByRole("dialog", { name: "Bibliothèque" });
 		expect(box).not.toHaveAttribute("aria-modal", "true");
 	});
 

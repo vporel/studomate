@@ -3,7 +3,7 @@
  */
 import { fireEvent, render, screen } from "@testing-library/react";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import { LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE } from "@/ui/utils/ladder/ladder-system-block-drag";
 import LadderSystemBlockTool from "./LadderSystemBlockTool";

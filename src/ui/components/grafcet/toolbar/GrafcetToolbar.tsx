@@ -42,7 +42,11 @@ const GrafcetToolbar = ({ style }: { style?: React.CSSProperties }) => {
 				...style,
 			}}
 		>
-			<FlexBox centerVertical sx={{ gap: "5px", height: "100%" }}>
+			<FlexBox
+				data-tour="toolbar"
+				centerVertical
+				sx={{ gap: "5px", height: "100%" }}
+			>
 				<StepTool initial={true} />
 				<StepTool />
 				<ActionTool />

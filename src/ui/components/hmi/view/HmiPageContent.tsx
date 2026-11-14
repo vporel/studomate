@@ -100,7 +100,11 @@ const HmiPageContent = ({
 				}}
 			>
 				{/* Gauche — palette de widgets à glisser-déposer sur le canvas, masquée en simulation */}
-				<FlexBox centerVertical sx={{ gap: "5px", height: "100%" }}>
+				<FlexBox
+					data-tour={showPalette ? "toolbar" : undefined}
+					centerVertical
+					sx={{ gap: "5px", height: "100%" }}
+				>
 					{showPalette && (
 						<>
 							{HMI_WIDGET_TOOLS.map((tool) => (

@@ -3,7 +3,7 @@
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useT } from "@/ui/i18n/useT";
 import { platformShortcut } from "@/ui/lib/platform";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { useMemo } from "react";
 import { useShallow } from "zustand/shallow";
 import { AppMenuType } from "../app-menu-bar";

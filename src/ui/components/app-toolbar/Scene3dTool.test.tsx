@@ -16,7 +16,7 @@ describe("Scene3dTool", () => {
 		(useProjectStore as jest.Mock).mockImplementation(
 			selectorImplementation({
 				project: { scene3d },
-				scene3dLinkManager: { open },
+				scene3dDisplayManager: { open },
 			}),
 		);
 		return renderWithI18n(<Scene3dTool />);
@@ -29,7 +29,7 @@ describe("Scene3dTool", () => {
 		expect(screen.queryByRole("button")).toBeNull();
 	});
 
-	it("opens the scene tab when clicked", () => {
+	it("opens the scene in the chosen mode when clicked", () => {
 		setup({ sceneId: "carton-sorting", sceneVersion: 1, bindings: {} });
 		fireEvent.click(screen.getByRole("button", { name: /scène 3d/i }));
 		expect(open).toHaveBeenCalledTimes(1);

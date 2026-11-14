@@ -20,7 +20,7 @@ import {
 } from "./hardware-link.state";
 import type { SerialTransport } from "@/hardware/arduino/remote-io/transport";
 import FakeUnoBoard from "@tests/utils/fake-uno-board";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import type HardwareLinkNotifier from "./hardware-link.notifier";
 
 const mockTrackEvent = jest.fn();

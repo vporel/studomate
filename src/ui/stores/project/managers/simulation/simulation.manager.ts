@@ -19,14 +19,14 @@ import {
 	SimulationVariableState,
 } from "@/ui/stores/project/project.store";
 import { getSceneDescriptor } from "@/3d-scenes/scene.registry";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
-import { SimulationMode } from "@/ui/stores/project/SimulationMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
+import { SimulationMode } from "@/ui/stores/project/simulation-mode.enum";
 import type { SimulationManagerEnvironment } from "@/ui/stores/project/environment/project-store-environment";
 import BoardMirror from "./board-mirror";
 import Scene3dSimulationBridge, {
 	type Scene3dStateSnapshot,
 } from "../3d-scene/scene3d-simulation.bridge";
-import type { SimulationKind } from "@/ui/stores/project/SimulationKind";
+import type { SimulationKind } from "@/ui/stores/project/simulation-kind";
 
 export default class SimulationManager {
 	private setStoreState: ProjectStoreSetFunction;
@@ -247,13 +247,11 @@ export default class SimulationManager {
 	 * tab of its 3D scene.
 	 */
 	private openSimulationView(): void {
-		const { project, hmiManager, scene3dLinkManager } = this.getStoreState();
+		const { project, hmiManager, scene3dDisplayManager } = this.getStoreState();
 		if (hmiManager.openHmiSimulationPageIfAny()) return;
 		const scene = project?.scene3d;
 		if (scene && getSceneDescriptor(scene.sceneId, scene.sceneVersion)) {
-			if (!scene3dLinkManager.open()) {
-				this.notifier.scene3dOpenBlocked(() => scene3dLinkManager.open());
-			}
+			scene3dDisplayManager.open();
 		}
 	}
 

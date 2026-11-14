@@ -11,6 +11,17 @@
 	},
 	"missingSession": "Session introuvable. Ouvrez la scène depuis l'éditeur.",
 	"unknownScene": "Scène inconnue de cette version de Studomate.",
+	"dock": "Revenir dans l'éditeur",
+	"view": {
+		"title": "Scène 3D",
+		"close": "Fermer la scène 3D"
+	},
+	"showAs": {
+		"side-panel": "Afficher dans le panneau latéral",
+		"floating-box": "Afficher dans un cadre flottant",
+		"page": "Afficher dans une page",
+		"browser-tab": "Ouvrir dans un onglet du navigateur"
+	},
 	"cartonSorting": {
 		"label": "Tri de caisses",
 		"description": "Tapis d'entrée, trois vérins de poussée et deux sorties : les caisses basses vont au niveau de P2, les caisses hautes au niveau de P3.",

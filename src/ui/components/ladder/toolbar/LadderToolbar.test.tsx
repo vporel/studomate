@@ -4,7 +4,7 @@
 import { fireEvent, screen } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { useLadderStore } from "../context/LadderContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import SectionAddCommand from "@/schemas/ladder/commands/section-add.command";
@@ -113,7 +113,7 @@ describe("LadderToolbar", () => {
 		it("offre le bouton et garde les quatre outils quand la place suffit", () => {
 			setup({ compact: false });
 
-			expect(screen.getByText("Blocs systèmes")).toBeInTheDocument();
+			expect(screen.getByText("Bibliothèque")).toBeInTheDocument();
 			for (const symbol of INLINE_SYMBOLS)
 				expect(screen.getByText(symbol)).toBeInTheDocument();
 		});
@@ -123,7 +123,7 @@ describe("LadderToolbar", () => {
 
 			for (const symbol of INLINE_SYMBOLS)
 				expect(screen.queryByText(symbol)).not.toBeInTheDocument();
-			expect(screen.getByText("Blocs systèmes")).toBeInTheDocument();
+			expect(screen.getByText("Bibliothèque")).toBeInTheDocument();
 		});
 
 		it("ouvre et ferme la boîte au clic, et reflète son état", () => {
@@ -131,7 +131,7 @@ describe("LadderToolbar", () => {
 				compact: true,
 				systemBlocksPaletteOpen: false,
 			});
-			const button = screen.getByText("Blocs systèmes").closest("button")!;
+			const button = screen.getByText("Bibliothèque").closest("button")!;
 			expect(button).toHaveAttribute("aria-pressed", "false");
 
 			fireEvent.click(button);
@@ -143,7 +143,7 @@ describe("LadderToolbar", () => {
 				systemBlocksPaletteOpen: true,
 			});
 			expect(
-				screen.getByText("Blocs systèmes").closest("button"),
+				screen.getByText("Bibliothèque").closest("button"),
 			).toHaveAttribute("aria-pressed", "true");
 		});
 
@@ -153,14 +153,14 @@ describe("LadderToolbar", () => {
 		])("grise le bouton %s, comme les autres outils", (_, state) => {
 			setup({ ...state });
 			expect(
-				screen.getByText("Blocs systèmes").closest("button"),
+				screen.getByText("Bibliothèque").closest("button"),
 			).toBeDisabled();
 		});
 
 		it("laisse le bouton actif en conception", () => {
 			setup();
 			expect(
-				screen.getByText("Blocs systèmes").closest("button"),
+				screen.getByText("Bibliothèque").closest("button"),
 			).toBeEnabled();
 		});
 

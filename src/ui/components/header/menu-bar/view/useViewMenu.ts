@@ -3,6 +3,7 @@
 import { useAppContext } from "@/ui/components/AppContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useT } from "@/ui/i18n/useT";
+import { selectScene3dShownMode } from "@/ui/stores/project/managers/3d-scene/scene3d-display.manager";
 import { useMemo } from "react";
 import { AppMenuType } from "../app-menu-bar";
 
@@ -21,9 +22,10 @@ export default function useViewMenu(): AppMenuType {
 		(state) => state.setAnalysisResultVisible,
 	);
 	const hasScene3d = useProjectStore((state) => !!state.project?.scene3d);
-	const scene3dLinkManager = useProjectStore(
-		(state) => state.scene3dLinkManager,
+	const scene3dDisplayManager = useProjectStore(
+		(state) => state.scene3dDisplayManager,
 	);
+	const scene3dShownMode = useProjectStore(selectScene3dShownMode);
 	const t = useT("menu.view");
 
 	return useMemo(
@@ -60,7 +62,16 @@ export default function useViewMenu(): AppMenuType {
 							[
 								{
 									label: t("scene3d"),
-									onClick: () => scene3dLinkManager.open(),
+									subItems: scene3dDisplayManager.availableModes.map(
+										(mode) => ({
+											label: t(`scene3dMode.${mode}`),
+											checked: scene3dShownMode === mode,
+											onClick: () =>
+												scene3dShownMode === mode
+													? scene3dDisplayManager.close()
+													: scene3dDisplayManager.show(mode),
+										}),
+									),
 								},
 							],
 						]
@@ -75,7 +86,8 @@ export default function useViewMenu(): AppMenuType {
 			analysisResultVisible,
 			setAnalysisResultVisible,
 			hasScene3d,
-			scene3dLinkManager,
+			scene3dDisplayManager,
+			scene3dShownMode,
 			t,
 		],
 	);

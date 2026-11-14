@@ -11,6 +11,10 @@
 		"actionChains": {
 			"title": "Chain the actions of a step",
 			"body": "An action now has a connection point on its right: link it to the next action to build a step → action → action chain. A new action chains itself after the previous one, and a moved action takes the rest of its chain along. If you delete the step, the chain stays together: link its first action to another step to reattach everything."
+		},
+		"scene3dDisplay": {
+			"title": "Show the 3D scene where you want",
+			"body": "Show the 3D scene in a panel on the right of the editors, to follow the grafcet and the operative part side by side, for example when projecting. You can also open it in a floating box that you move and resize like a window, in a page of the editor or in a browser tab. The View menu and the \"3D scene\" button of the status bar open the scene in the chosen mode."
 		}
 	}
 }

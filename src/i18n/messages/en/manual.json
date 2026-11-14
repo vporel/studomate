@@ -142,7 +142,7 @@
 		"preferencesItems": [
 			"Interface language: French or English. The language selector in the header of the public pages (home, manual) is separate and does not affect the application;",
 			"Default storage location: local or cloud, used for the first save of a new project;",
-			"Automatically open the simulation view: when simulation starts, switches to the \"HMI simulation\" tab if the project has an HMI page, otherwise to the 3D scene tab if the project has one."
+			"Automatically open the simulation view: when simulation starts, switches to the \"HMI simulation\" tab if the project has an HMI page, otherwise to the 3D scene if the project has one."
 		]
 	},
 	"projects": {
@@ -243,7 +243,7 @@
 		"blockInstancesItems": [
 			"Appears only when the project contains at least one timer or counter block. Lists all named instances, with a context menu to configure them or jump to the ladder that contains them."
 		],
-		"systemBlocksLabel": "System blocks:",
+		"systemBlocksLabel": "Library:",
 		"systemBlocksItems": [
 			"Palette of blocks available for the ladder editor: Timer, Counter, Comparison, Assignment, Calculation, Conversion. Drag a block from this section onto a ladder canvas to insert it. This section only appears while a ladder is open."
 		],
@@ -514,7 +514,7 @@
 		],
 		"coilsOutro": "As with contacts, the variable is chosen by double-clicking the coil. In simulation, a powered coil is highlighted. In the ladder toolbar, only the normal, Set and Reset coils are visible by default: the \"Show more coils\" button reveals the inverted coil and the two edge coils, and \"Hide extra coils\" hides them again.",
 		"blocksTitle": "Blocks",
-		"blocksIntro1": "Blocks are advanced functional elements that fit into a network like a contact or a coil. Two ways to place them: by dragging the block from the \"System blocks\" section of the explorer onto a ladder canvas, or (for Comparison, Assignment, Calculation and Conversion) from the dedicated tool in the ladder toolbar.",
+		"blocksIntro1": "Blocks are advanced functional elements that fit into a network like a contact or a coil. Two ways to place them: by dragging the block from the \"Library\" section of the explorer onto a ladder canvas, or (for Comparison, Assignment, Calculation and Conversion) from the dedicated tool in the ladder toolbar.",
 		"timerBlockFigureAlt": "Network with a contact S1 wired to the IN input of a timer block T1, TON variant. The PT pin holds the constant T#5s, the ET pin the variable T1_ET, and the Q output powers a coil H1.",
 		"blocksIntro2": "Timer and Counter open a configuration window when dropped (name and variant); reopen it later by double-clicking the block or via right-click → Configure on the instance in the explorer. Comparison, Assignment, Calculation and Conversion are inserted empty and configured directly on the canvas: operands entered on the pins (variable or constant), operator chosen from the menu that opens when you click the block. Assignment, Calculation and Conversion copy their EN input to their ENO output: several of these blocks can be chained on the same network.",
 		"timerTitle": "Timer",
@@ -733,7 +733,7 @@
 			"Variable values are updated in real time.",
 			"If the project is bound to a 3D scene, its sensors feed the bound inputs and the program outputs drive the scene (see the 3D scene section).",
 			"The grafcet and ladder editors are read-only.",
-			"When simulation starts, the \"HMI simulation\" tab opens automatically if the project contains HMI pages (see the HMI screens section); without an HMI page, the 3D scene tab opens instead if the project has a scene (see the 3D scene section). This automatic opening can be turned off in File → Preferences."
+			"When simulation starts, the \"HMI simulation\" tab opens automatically if the project contains HMI pages (see the HMI screens section); without an HMI page, the 3D scene opens instead if the project has a scene (see the 3D scene section). This automatic opening can be turned off in File → Preferences."
 		],
 		"watchTitle": "Watch and modify tables for variables",
 		"watchIntro": "The bottom panel shows the watch-and-modify tables for variables, with four tabs:",
@@ -877,14 +877,19 @@
 			"\"Create missing variables\" creates the variables of the unbound points with the name suggested by the scene (or reuses a compatible variable already carrying that name) and binds them, as a single undoable operation."
 		],
 		"openTitle": "Showing the scene",
-		"openBody": "Once a scene is chosen, the \"3D scene\" entry of the View menu opens the scene tab, before or during the simulation:",
+		"openBody": "Once a scene is chosen, the \"3D scene\" entry of the View menu, the \"3D scene\" button of the status bar (left of \"Cross-references\") and the one of the toolbar show the scene, before or during the simulation. It is shown in one of four modes, chosen in the \"3D scene\" submenu of the View menu (clicking the mode the scene is shown in closes it), the last one chosen being remembered by the browser:",
 		"openItems": [
+			"side panel (default mode): the scene is shown in a column on the right of the editors, which shrink to make room for it: nothing is hidden, and you follow the grafcet and the operative part at the same time, for example when projecting. Drag the left edge of the column to set its width. During the simulation, the watch tables are shown under the scene in the same column, and the divider between them sets their height. The browser remembers these settings;",
+			"floating box: the scene is shown in a box over the editor, which you move by its title bar and resize by its edges and corners, like a window. It stays visible when you change page;",
+			"page: the scene opens in a tab of the editor, like a program. A small bar at the bottom left of the page switches to the other modes;",
+			"browser tab: the scene opens in a separate tab, useful with a second screen. Its \"Back to the editor\" button brings it back in the editor;",
+			"the buttons in the title bar of the side panel and of the floating box change the mode in one click;",
 			"outside simulation, the scene shows its initial state: the controls the scene may offer are disabled and have no effect on the project;",
 			"during simulation, the scene sensors feed the bound inputs, and the controls the scene may offer act on the model;",
-			"when simulation starts, the scene tab opens automatically if the project has no HMI page (otherwise the HMI page is shown); if the browser blocks this, a clickable message offers to open it (the \"3D scene\" entry of the View menu does too);",
+			"when simulation starts, the scene opens automatically in the chosen mode if the project has no HMI page (otherwise the HMI page is shown); if the browser blocks opening a tab, a clickable message offers to open it (the \"3D scene\" entry of the View menu does too);",
 			"pause and step-by-step execution of the simulation apply to the scene too;",
-			"in the scene tab, the mouse moves the view: drag to orbit around the scene, wheel to zoom, right-click (or Shift-drag) to pan;",
-			"closing the project closes the scene tab."
+			"in the scene, the mouse moves the view: drag to orbit around the scene, wheel to zoom, right-click (or Shift-drag) to pan;",
+			"closing the project closes the scene."
 		],
 		"limitsTitle": "Limits",
 		"limitsItems": [

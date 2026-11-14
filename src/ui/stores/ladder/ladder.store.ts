@@ -53,7 +53,7 @@ export interface LadderStoreState {
 	highlightedEdgesIds: string[];
 
 	/**
-	 * Un bloc système (glissé depuis la section "Blocs systèmes" de l'explorateur, jamais un
+	 * Un bloc système (glissé depuis la section "Bibliothèque" de l'explorateur, jamais un
 	 * outil de la toolbar) se pose en deux temps : le dépose ouvre d'abord une fenêtre demandant
 	 * sa config (nom, variante...), qui n'insère l'élément qu'à la validation. `insert` referme
 	 * sur la section/position ciblées par le dépose et dispatche la commande d'insertion (+

@@ -11,6 +11,10 @@
 		"actionChains": {
 			"title": "Chaînez les actions d'une étape",
 			"body": "Une action a maintenant un point de connexion à droite : reliez-la à l'action suivante pour former une chaîne étape → action → action. Une nouvelle action se chaîne toute seule derrière la précédente, et une action déplacée emmène la suite de sa chaîne. Si vous supprimez l'étape, la chaîne reste soudée : reliez sa première action à une autre étape pour tout rattacher."
+		},
+		"scene3dDisplay": {
+			"title": "La scène 3D s'affiche où vous voulez",
+			"body": "Affichez la scène 3D dans un panneau à droite des éditeurs, pour suivre le grafcet et la partie opérative côte à côte, par exemple en projection. Vous pouvez aussi l'ouvrir dans un cadre flottant que vous déplacez et redimensionnez comme une fenêtre, dans une page de l'éditeur ou dans un onglet du navigateur. Le menu Affichage et le bouton « Scène 3D » de la barre d'état ouvrent la scène dans le mode choisi."
 		}
 	}
 }

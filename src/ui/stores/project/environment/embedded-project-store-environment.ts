@@ -1,8 +1,9 @@
+import { Scene3dDisplayMode } from "@/ui/stores/project/scene3d-display-mode.enum";
 import type { Locale } from "@/i18n/config";
 import { getMessages } from "@/i18n/messages";
 import { createTranslator } from "next-intl";
 import { toast } from "react-toastify";
-import { SimulationMode } from "../SimulationMode.enum";
+import { SimulationMode } from "../simulation-mode.enum";
 import lazyBrowserHeartbeat from "../managers/simulation/lazy-browser-heartbeat";
 import createInProcessScene3dLinkHost from "../managers/3d-scene/in-process-scene3d-link-host";
 import type HardwareLinkNotifier from "../managers/hardware-link/hardware-link.notifier";
@@ -74,12 +75,18 @@ export default function createEmbeddedProjectStoreEnvironment({
 		heartbeat: lazyBrowserHeartbeat,
 		hardwareNotifier: silentHardwareNotifier,
 		createScene3dHost: createInProcessScene3dLinkHost,
+		scene3dDisplay: {
+			availableModes: [Scene3dDisplayMode.PAGE],
+			defaultMode: Scene3dDisplayMode.PAGE,
+		},
 		preferences: {
 			getSimulationMode: () => simulationMode,
 			setSimulationMode: (mode) => {
 				simulationMode = mode;
 			},
 			getAutoOpenHmiSimulationOnStart: () => false,
+			getScene3dDisplayMode: () => null,
+			setScene3dDisplayMode: () => {},
 		},
 	};
 }

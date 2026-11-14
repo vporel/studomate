@@ -7,7 +7,7 @@ import { createTimerBlockElement } from "@/schemas/ladder/function-blocks/timer.
 import Project from "@/schemas/project/project.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import { i18nWrapper } from "@tests/utils/i18n";
 import { ProjectFactory } from "@tests/utils/project-factory";

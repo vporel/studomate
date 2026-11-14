@@ -53,7 +53,7 @@ const SystemBlockToolLabel = ({ children }: { children: React.ReactNode }) => (
  * pas être vide : il n'existe qu'à partir du moment où un premier élément y est déposé, d'où
  * l'absence de bouton dédié pour en créer un. Compare/assign/arithmetic sont des blocs système
  * (voir `LadderSystemBlockTool`) : une deuxième façon de les poser, en plus du glisser-déposer
- * depuis "Blocs systèmes" de l'explorateur — même comportement (insertion d'un bloc vide,
+ * depuis "Bibliothèque" de l'explorateur — même comportement (insertion d'un bloc vide,
  * configuré ensuite sur le canevas).
  */
 const LadderToolbar = ({
@@ -115,86 +115,92 @@ const LadderToolbar = ({
 				centerVertical
 				sx={{ gap: "5px", height: "100%", flexShrink: 0 }}
 			>
-				<LadderTool
-					element={{ kind: "contact", type: "NO" }}
-					label={t("contactNO")}
+				<FlexBox
+					data-tour="toolbar"
+					centerVertical
+					sx={{ gap: "5px", height: "100%" }}
 				>
-					<ContactSymbol type="NO" />
-				</LadderTool>
-				<LadderTool
-					element={{ kind: "contact", type: "NF" }}
-					label={t("contactNF")}
-				>
-					<ContactSymbol type="NF" />
-				</LadderTool>
-				<LadderTool
-					element={{ kind: "contact", type: "P" }}
-					label={t("contactP")}
-				>
-					<ContactSymbol type="P" />
-				</LadderTool>
-				<LadderTool
-					element={{ kind: "contact", type: "N" }}
-					label={t("contactN")}
-				>
-					<ContactSymbol type="N" />
-				</LadderTool>
-				<Divider orientation="vertical" style={{ margin: "5px" }} />
-				<LadderTool
-					element={{ kind: "coil", type: "normal" }}
-					label={t("coilNormal")}
-				>
-					<CoilSymbol type="normal" />
-				</LadderTool>
-				<LadderTool
-					element={{ kind: "coil", type: "set" }}
-					label={t("coilSet")}
-				>
-					<CoilSymbol type="set" />
-				</LadderTool>
-				<LadderTool
-					element={{ kind: "coil", type: "reset" }}
-					label={t("coilReset")}
-				>
-					<CoilSymbol type="reset" />
-				</LadderTool>
-				{extraCoilsVisible && (
-					<>
-						<LadderTool
-							element={{ kind: "coil", type: "inverted" }}
-							label={t("coilInverted")}
-						>
-							<CoilSymbol type="inverted" />
-						</LadderTool>
-						<LadderTool
-							element={{ kind: "coil", type: "rising" }}
-							label={t("coilRising")}
-						>
-							<CoilSymbol type="rising" />
-						</LadderTool>
-						<LadderTool
-							element={{ kind: "coil", type: "falling" }}
-							label={t("coilFalling")}
-						>
-							<CoilSymbol type="falling" />
-						</LadderTool>
-					</>
-				)}
-				<IconButton
-					size="small"
-					aria-label={t(
-						extraCoilsVisible ? "hideExtraCoils" : "showExtraCoils",
+					<LadderTool
+						element={{ kind: "contact", type: "NO" }}
+						label={t("contactNO")}
+					>
+						<ContactSymbol type="NO" />
+					</LadderTool>
+					<LadderTool
+						element={{ kind: "contact", type: "NF" }}
+						label={t("contactNF")}
+					>
+						<ContactSymbol type="NF" />
+					</LadderTool>
+					<LadderTool
+						element={{ kind: "contact", type: "P" }}
+						label={t("contactP")}
+					>
+						<ContactSymbol type="P" />
+					</LadderTool>
+					<LadderTool
+						element={{ kind: "contact", type: "N" }}
+						label={t("contactN")}
+					>
+						<ContactSymbol type="N" />
+					</LadderTool>
+					<Divider orientation="vertical" style={{ margin: "5px" }} />
+					<LadderTool
+						element={{ kind: "coil", type: "normal" }}
+						label={t("coilNormal")}
+					>
+						<CoilSymbol type="normal" />
+					</LadderTool>
+					<LadderTool
+						element={{ kind: "coil", type: "set" }}
+						label={t("coilSet")}
+					>
+						<CoilSymbol type="set" />
+					</LadderTool>
+					<LadderTool
+						element={{ kind: "coil", type: "reset" }}
+						label={t("coilReset")}
+					>
+						<CoilSymbol type="reset" />
+					</LadderTool>
+					{extraCoilsVisible && (
+						<>
+							<LadderTool
+								element={{ kind: "coil", type: "inverted" }}
+								label={t("coilInverted")}
+							>
+								<CoilSymbol type="inverted" />
+							</LadderTool>
+							<LadderTool
+								element={{ kind: "coil", type: "rising" }}
+								label={t("coilRising")}
+							>
+								<CoilSymbol type="rising" />
+							</LadderTool>
+							<LadderTool
+								element={{ kind: "coil", type: "falling" }}
+								label={t("coilFalling")}
+							>
+								<CoilSymbol type="falling" />
+							</LadderTool>
+						</>
 					)}
-					title={t(extraCoilsVisible ? "hideExtraCoils" : "showExtraCoils")}
-					onClick={() => setExtraCoilsVisible((visible) => !visible)}
-					sx={{ p: 0.25 }}
-				>
-					{extraCoilsVisible ? (
-						<ChevronLeftIcon fontSize="small" />
-					) : (
-						<ChevronRightIcon fontSize="small" />
-					)}
-				</IconButton>
+					<IconButton
+						size="small"
+						aria-label={t(
+							extraCoilsVisible ? "hideExtraCoils" : "showExtraCoils",
+						)}
+						title={t(extraCoilsVisible ? "hideExtraCoils" : "showExtraCoils")}
+						onClick={() => setExtraCoilsVisible((visible) => !visible)}
+						sx={{ p: 0.25 }}
+					>
+						{extraCoilsVisible ? (
+							<ChevronLeftIcon fontSize="small" />
+						) : (
+							<ChevronRightIcon fontSize="small" />
+						)}
+					</IconButton>
+				</FlexBox>
 				<Divider orientation="vertical" style={{ margin: "5px" }} />
 				{!compact &&
 					SYSTEM_BLOCK_CATALOG.filter((entry) => entry.toolbar).map((entry) => (
@@ -210,6 +216,7 @@ const LadderToolbar = ({
 						</LadderSystemBlockTool>
 					))}
 				<Button
+					data-tour="systemBlocks"
 					size="small"
 					startIcon={<WidgetsOutlinedIcon />}
 					aria-pressed={systemBlocksPaletteOpen}
@@ -221,6 +228,7 @@ const LadderToolbar = ({
 				</Button>
 				<Divider orientation="vertical" style={{ margin: "5px" }} />
 				<Button
+					data-tour="addSection"
 					size="small"
 					startIcon={<AddIcon />}
 					onClick={addSection}

@@ -9,6 +9,7 @@ import WHATS_NEW_SLIDE_IDS, {
 import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
 import CloseIcon from "@mui/icons-material/Close";
 import LinkIcon from "@mui/icons-material/Link";
+import ViewInArIcon from "@mui/icons-material/ViewInAr";
 import {
 	Box,
 	Button,
@@ -24,6 +25,7 @@ import { useState } from "react";
 const SLIDE_ICONS: Record<WhatsNewSlideId, typeof AutoFixHighIcon> = {
 	grafcetEditor: AutoFixHighIcon,
 	actionChains: LinkIcon,
+	scene3dDisplay: ViewInArIcon,
 };
 
 export default function WhatsNewModal({ onClose }: { onClose: () => void }) {

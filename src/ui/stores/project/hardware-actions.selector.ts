@@ -1,4 +1,4 @@
-import { ProjectMode } from "./ProjectMode.enum";
+import { ProjectMode } from "./project-mode.enum";
 import type { ProjectStoreState } from "./project.store.types";
 
 type HardwareActionsState = Pick<

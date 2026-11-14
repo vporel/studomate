@@ -24,10 +24,13 @@ import {
 	IDLE_HARDWARE_OBSERVATION,
 	IDLE_HARDWARE_UPLOAD,
 } from "./managers/hardware-link/hardware-link.state";
+import Scene3dDisplayManager, {
+	resolveScene3dDisplayMode,
+} from "./managers/3d-scene/scene3d-display.manager";
 import Scene3dLinkManager from "./managers/3d-scene/scene3d-link.manager";
 import SimulationManager from "./managers/simulation/simulation.manager";
 import VariablesManager from "./managers/variables.manager";
-import { ProjectMode } from "./ProjectMode.enum";
+import { ProjectMode } from "./project-mode.enum";
 import type { ProjectStoreEnvironment } from "./environment/project-store-environment";
 import UNAVAILABLE_REPOSITORY from "./environment/unavailable-repository";
 import unavailableRemoteIoDevice from "./environment/unavailable-remote-io-device";
@@ -130,6 +133,10 @@ export const createProjectStore = (env: ProjectStoreEnvironment) => {
 				shareRequiresCloudModalVisible: false,
 				analysisResultVisible: false,
 				crossReferenceResultVisible: false,
+				scene3dSidePanelVisible: false,
+				scene3dFloatingVisible: false,
+				scene3dBrowserTabOpen: false,
+				scene3dDisplayMode: resolveScene3dDisplayMode(env),
 				watchTablesVisible: false,
 				draftConflictModal: {
 					visible: false,
@@ -393,7 +400,12 @@ export const createProjectStore = (env: ProjectStoreEnvironment) => {
 				env.hardwareNotifier,
 				env.hardware?.createDevice ?? unavailableRemoteIoDevice,
 			),
-			scene3dLinkManager: new Scene3dLinkManager(env.createScene3dHost(get)),
+			scene3dLinkManager: new Scene3dLinkManager(env.createScene3dHost(get), {
+				onDockRequested: () => get().scene3dDisplayManager.dock(),
+				onTabConnectionChange: (connected) =>
+					get().scene3dDisplayManager.onBrowserTabConnectionChange(connected),
+			}),
+			scene3dDisplayManager: new Scene3dDisplayManager(set, get, env),
 			hardwareFirmware: IDLE_HARDWARE_FIRMWARE,
 			hardwareUpload: IDLE_HARDWARE_UPLOAD,
 			hardwareObservation: IDLE_HARDWARE_OBSERVATION,

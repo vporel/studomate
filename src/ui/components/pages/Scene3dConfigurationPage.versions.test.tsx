@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 import type { Scene3d } from "@/schemas/3d-scene/scene3d.schema";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { fireEvent, screen } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { selectorImplementation } from "@tests/utils/store-mocks";
@@ -38,7 +38,7 @@ function setup(scene: Scene3d | null, mode = ProjectMode.DESIGN) {
 			project: { scene3d: scene, variables: [] },
 			setScene3d,
 			createMissingScene3dVariables: jest.fn(),
-			scene3dLinkManager: { open: jest.fn() },
+			scene3dDisplayManager: { open: jest.fn() },
 		}),
 	);
 	renderWithI18n(<Scene3dConfigurationPage />);

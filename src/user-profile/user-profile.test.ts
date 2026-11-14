@@ -1,10 +1,12 @@
+import { SchoolType } from "./school-type.enum";
 import normalizeUserProfile from "./user-profile";
-import { SchoolType } from "./SchoolType.enum";
-import { UserType } from "./UserType.enum";
+import { UserType } from "./user-type.enum";
 
 describe("normalizeUserProfile", () => {
 	it("keeps a valid teacher profile", () => {
-		expect(normalizeUserProfile({ userType: "teacher", schoolType: null })).toEqual({
+		expect(
+			normalizeUserProfile({ userType: "teacher", schoolType: null }),
+		).toEqual({
 			userType: UserType.TEACHER,
 			schoolType: null,
 		});

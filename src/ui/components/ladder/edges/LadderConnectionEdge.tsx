@@ -19,7 +19,7 @@ import { usePageVisible } from "@/ui/components/pages/page-visibility-context";
 import { useShallow } from "zustand/react/shallow";
 import { computeEnergizedEdges } from "@/ui/utils/ladder/ladder-power-flow";
 import { useTheme } from "@mui/material";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 
 export type LadderConnectionEdgeData = { points: [number, number][] };
 export type LadderConnectionEdgeType = Edge<LadderConnectionEdgeData> & {

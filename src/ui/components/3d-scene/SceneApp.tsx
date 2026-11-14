@@ -1,12 +1,14 @@
 "use client";
 
 import { createBrowserSceneTransport } from "@/3d-scenes/link/scene-channel";
+import PictureInPictureAltIcon from "@mui/icons-material/PictureInPictureAlt";
 import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { SCENE_ORIGIN } from "@/ui/components/3d-scene/scene-origin";
 import ProjectTitle from "./ProjectTitle";
+import SceneWidthFit from "./SceneWidthFit";
 import SceneView, { type SceneViewPhase } from "./scene-view";
 import { getSceneViewDefinition, type SceneCamera } from "./scene-views";
 
@@ -40,6 +42,12 @@ export default function SceneApp({ session }: { session: string }) {
 	if (!view) return null;
 	return <SceneContent view={view} />;
 }
+
+const EDITOR_LINKED_PHASES: ReadonlySet<SceneViewPhase> = new Set([
+	"stopped",
+	"running",
+	"paused",
+]);
 
 const DEFAULT_CAMERA: SceneCamera = {
 	position: [4, 6, 7],
@@ -79,6 +87,7 @@ export function SceneContent({
 			: undefined;
 	const camera = definition?.camera ?? DEFAULT_CAMERA;
 	const interactive = phase === "running" || phase === "paused";
+	const canDock = !inline && EDITOR_LINKED_PHASES.has(phase);
 	const sample = useCallback(() => view.sampleState(), [view]);
 	const send = useCallback(
 		(interaction: unknown) => view.sendInteraction(interaction),
@@ -107,7 +116,8 @@ export function SceneContent({
 					/>
 				)}
 				<gridHelper args={[20, 20]} position={[4, -0.06, 1.5]} />
-				<OrbitControls target={camera.target} />
+				<OrbitControls makeDefault target={camera.target} />
+				<SceneWidthFit />
 			</Canvas>
 			{!inline && <ProjectTitle name={projectName} />}
 			{definition?.Controls && (
@@ -118,6 +128,31 @@ export function SceneContent({
 						send={send}
 					/>
 				</div>
+			)}
+			{canDock && (
+				<button
+					type="button"
+					onClick={() => view.requestDock()}
+					title={t("dock")}
+					style={{
+						position: "absolute",
+						bottom: 12,
+						left: 12,
+						display: "flex",
+						alignItems: "center",
+						gap: 6,
+						padding: "6px 12px",
+						border: "none",
+						borderRadius: 6,
+						background: "rgba(0,0,0,0.65)",
+						color: "white",
+						font: "14px system-ui, sans-serif",
+						cursor: "pointer",
+					}}
+				>
+					<PictureInPictureAltIcon fontSize="small" />
+					{t("dock")}
+				</button>
 			)}
 			<div
 				style={{

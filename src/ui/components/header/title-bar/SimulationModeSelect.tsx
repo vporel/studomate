@@ -1,6 +1,6 @@
 "use client";
 
-import { SimulationMode } from "@/ui/stores/project/SimulationMode.enum";
+import { SimulationMode } from "@/ui/stores/project/simulation-mode.enum";
 import { Box } from "@mui/material";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useT } from "@/ui/i18n/useT";
