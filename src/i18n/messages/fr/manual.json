@@ -121,7 +121,7 @@
 		"interfaceTitle": "Interface principale",
 		"interfaceIntro": "L'interface est divisée en plusieurs zones :",
 		"interfaceItems": [
-			"Barre de menus (haut) : Fichier, Édition, Interface, Projet, Cible (carte Arduino), Aide",
+			"Barre de menus (haut) : Fichier, Édition, Affichage, Projet, Cible (carte Arduino), Aide",
 			"Barre d'outils (haut) : accès rapide aux actions courantes et outils de création Grafcet ou Ladder",
 			"Explorateur (gauche) : arborescence des variables, grafcets, ladders et interfaces HMI du projet",
 			"Zone principale (centre) : onglets des pages ouvertes (grafcets, ladders, variables, propriétés). Cliquez sur un onglet pour l'activer, sur sa croix pour le fermer.",
@@ -223,7 +223,7 @@
 	},
 	"explorer": {
 		"title": "Explorateur",
-		"p1": "L'explorateur est un panneau latéral gauche affichant l'arborescence du projet. Il peut être affiché ou masqué via le menu Interface → Explorateur. Le menu Interface regroupe les bascules d'affichage de trois panneaux : Explorateur, Références croisées (voir la section dédiée) et Résultats de l'analyse (voir la section Analyse).",
+		"p1": "L'explorateur est un panneau latéral gauche affichant l'arborescence du projet. Il peut être affiché ou masqué via le menu Affichage → Explorateur. Le menu Affichage regroupe les bascules d'affichage de trois panneaux : Explorateur, Références croisées (voir la section dédiée) et Résultats de l'analyse (voir la section Analyse).",
 		"structureTitle": "Structure de l'explorateur",
 		"structureIntro": "L'explorateur est organisé en plusieurs sections :",
 		"variablesLabel": "Variables :",
@@ -603,7 +603,7 @@
 		"title": "Références croisées",
 		"p1": "Les références croisées indiquent, pour n'importe quelle variable du projet, tous les endroits où elle est lue et tous les endroits où elle est écrite (grafcets, ladders et interfaces HMI confondus).",
 		"openTitle": "Ouvrir le panneau",
-		"openBody": "Cliquez sur le bouton « Références croisées » dans la barre inférieure, ou utilisez le menu Interface → Références croisées. L'entrée de menu bascule l'affichage du panneau.",
+		"openBody": "Cliquez sur le bouton « Références croisées » dans la barre inférieure, ou utilisez le menu Affichage → Références croisées. L'entrée de menu bascule l'affichage du panneau.",
 		"panelTitle": "Contenu du panneau",
 		"panelIntro": "Le panneau liste les variables du projet avec un champ de filtre. Pour la variable sélectionnée, il affiche deux listes :",
 		"panelItems": [
@@ -880,11 +880,11 @@
 			"« Créer les variables manquantes » crée les variables des points non liés avec le nom suggéré par la scène (ou réutilise une variable compatible portant déjà ce nom) et les lie, en une seule opération annulable."
 		],
 		"openTitle": "Afficher la scène",
-		"openBody": "Dès qu'une scène est choisie, l'entrée « Scène 3D » du menu Interface ouvre l'onglet de la scène, avant ou pendant la simulation :",
+		"openBody": "Dès qu'une scène est choisie, l'entrée « Scène 3D » du menu Affichage ouvre l'onglet de la scène, avant ou pendant la simulation :",
 		"openItems": [
 			"hors simulation, la scène montre son état initial : les commandes éventuelles de la scène sont désactivées et sans effet sur le projet ;",
 			"en simulation, les capteurs de la scène alimentent les entrées liées, et les commandes éventuelles de la scène agissent sur le modèle ;",
-			"à l'entrée en simulation, l'onglet de la scène s'ouvre automatiquement si le projet n'a aucune page HMI (sinon la page HMI est affichée) ; si le navigateur bloque cette ouverture, un message cliquable propose de l'ouvrir (l'entrée « Scène 3D » du menu Interface le permet aussi) ;",
+			"à l'entrée en simulation, l'onglet de la scène s'ouvre automatiquement si le projet n'a aucune page HMI (sinon la page HMI est affichée) ; si le navigateur bloque cette ouverture, un message cliquable propose de l'ouvrir (l'entrée « Scène 3D » du menu Affichage le permet aussi) ;",
 			"la pause et l'exécution pas à pas de la simulation s'appliquent aussi à la scène ;",
 			"dans l'onglet de la scène, la souris oriente la vue : glisser pour tourner autour de la scène, molette pour zoomer, clic droit (ou glisser avec Maj) pour déplacer la vue ;",
 			"fermer le projet ferme l'onglet de la scène."
