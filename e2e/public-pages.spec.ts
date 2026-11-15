@@ -1,25 +1,25 @@
 import { expect, test } from "@playwright/test";
 
 const PAGES = [
-	{ locale: "fr", path: "/", suffix: /simulateur GRAFCET/ },
-	{ locale: "en", path: "/en", suffix: /Simulator/ },
+	{ locale: "fr", path: "/", suffix: /simulateur GRAFCET/i },
+	{ locale: "en", path: "/en", suffix: /PLC simulator/ },
 	{
 		locale: "fr",
 		path: "/manuel-utilisateur",
 		suffix: /Manuel utilisateur — Studomate/,
 	},
 	{ locale: "en", path: "/en/user-manual", suffix: /User manual — Studomate/ },
-	{ locale: "fr", path: "/formations", suffix: /formation .* — Studomate/i },
-	{ locale: "en", path: "/en/training", suffix: /training — Studomate/i },
+	{ locale: "fr", path: "/formations", suffix: /Cours et exercices GRAFCET et Ladder gratuits — Studomate/ },
+	{ locale: "en", path: "/en/training", suffix: /Free GRAFCET and ladder logic course — Studomate/ },
 	{
 		locale: "fr",
 		path: "/formations/a1/observer-sequence-lineaire",
-		suffix: /Studomate/,
+		suffix: /Observer un GRAFCET en simulation/,
 	},
 	{
 		locale: "en",
 		path: "/en/training/a1/observe-linear",
-		suffix: /Studomate/,
+		suffix: /Watch a GRAFCET in simulation/,
 	},
 ];
 

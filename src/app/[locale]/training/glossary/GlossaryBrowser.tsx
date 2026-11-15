@@ -23,6 +23,7 @@ export type GlossaryLabels = {
 	noResults: string;
 	aliasesLabel: string;
 	relatedLabel: string;
+	lessonLabel: string;
 	resultsOne: string;
 	/** Contains `{count}`, replaced by the number of displayed entries. */
 	resultsOther: string;
@@ -65,7 +66,7 @@ function EntryCard({
 			</Stack>
 			{entry.aliases.length > 0 && (
 				<Typography variant="body2" color="text.secondary" mt={0.5}>
-					{labels.aliasesLabel} : {entry.aliases.join(", ")}
+					{labels.aliasesLabel} {entry.aliases.join(", ")}
 				</Typography>
 			)}
 			<Box
@@ -94,13 +95,19 @@ function EntryCard({
 			)}
 			{entry.related.length > 0 && (
 				<Typography variant="body2" color="text.secondary" mt={1.5}>
-					{labels.relatedLabel} :{" "}
+					{labels.relatedLabel}{" "}
 					{entry.related.map((related, index) => (
 						<span key={related.id}>
 							{index > 0 && ", "}
 							<MuiLink href={`#${related.id}`}>{related.term}</MuiLink>
 						</span>
 					))}
+				</Typography>
+			)}
+			{entry.lesson && (
+				<Typography variant="body2" color="text.secondary" mt={1}>
+					{labels.lessonLabel}{" "}
+					<MuiLink href={entry.lesson.href}>{entry.lesson.title}</MuiLink>
 				</Typography>
 			)}
 		</Paper>

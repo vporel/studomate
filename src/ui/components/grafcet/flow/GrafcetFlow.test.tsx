@@ -4,7 +4,7 @@
 import { act, fireEvent, render } from "@testing-library/react";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { useGrafcetContext, useGrafcetStore } from "../context/GrafcetContext";
 import { fakeStoreApi, selectorImplementation } from "@tests/utils/store-mocks";
 import { GRAFCET_FLOW_MIN_ZOOM } from "@/ui/stores/grafcet/managers/view.manager";

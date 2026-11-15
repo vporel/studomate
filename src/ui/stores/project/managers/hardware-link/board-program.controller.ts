@@ -2,7 +2,7 @@ import type RemoteIoClient from "@/hardware/arduino/remote-io/remote-io.client";
 import { remoteIoFailureCode } from "@/hardware/arduino/remote-io/remote-io.client";
 import type { RemoteIoPlan } from "@/hardware/arduino/remote-io/remote-io-plan";
 import trackEvent from "@/ui/services/analytics";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import type HardwareLinkContext from "./hardware-link.context";
 import {
 	drivenInputIdsOf,

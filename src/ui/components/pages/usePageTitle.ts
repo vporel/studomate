@@ -28,6 +28,8 @@ export function usePageTitle() {
 				return t("hardwareConfiguration");
 			case "scene3d-configuration":
 				return t("scene3dConfiguration");
+			case "scene3d-view":
+				return t("scene3dView");
 			case "project-startup":
 				return t("projectStartup");
 			case "variables":

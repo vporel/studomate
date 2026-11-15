@@ -1,10 +1,18 @@
+import Action, { ACTION_HANDLE_SOURCE_NEXT } from "../action.schema";
+import { ConnectionSide } from "../connection.schema";
 import Grafcet from "../grafcet.schema";
+import ActionHelper from "./action.helper";
+import StepReferralTarget from "../step-referral-target.schema";
+import { XYPosition } from "../shared-types";
 import Step, {
 	StepData,
 	STEP_HANDLE_SOURCE_ACTION,
 	STEP_HANDLE_SOURCE_SUCCESSOR,
 	STEP_HANDLE_TARGET_PREDECESSOR,
 } from "../step.schema";
+
+/** Distance, in px, between the left of a step and its first action. */
+const STEP_FIRST_ACTION_OFFSET_X = 80;
 
 export default class StepHelper {
 	/**
@@ -80,26 +88,104 @@ export default class StepHelper {
 	}
 
 	/**
-	 * Returns the actions that are activated by the step
+	 * Returns the actions linked directly to the step, without the ones chained after them.
 	 */
-	static getActions(stepId: string, grafcet: Grafcet) {
+	static getDirectActions(stepId: string, grafcet: Grafcet): Action[] {
 		const connectionsFromStep = grafcet.getConnectionsByElementIdAndHandle(
 			stepId,
 			STEP_HANDLE_SOURCE_ACTION,
 		);
-		const actions = [];
+		const actions: Action[] = [];
 		for (const connection of connectionsFromStep) {
 			if (connection.target.type !== "action") {
 				throw new Error(
 					`Unexpected target type ${connection.target.type} on handle ${STEP_HANDLE_SOURCE_ACTION} of step ${stepId}`,
 				);
 			}
-			const action = grafcet.getElementByIdAndType(
+			const action = grafcet.getElementByIdAndType<Action>(
 				connection.target.id,
 				"action",
 			);
 			if (action) actions.push(action);
 		}
 		return actions;
+	}
+
+	/**
+	 * Returns the actions that are activated by the step: the ones linked directly to it, each
+	 * followed by the actions chained after it.
+	 */
+	static getActions(stepId: string, grafcet: Grafcet): Action[] {
+		return StepHelper.getDirectActions(stepId, grafcet).flatMap((action) => [
+			action,
+			...ActionHelper.getChainFrom(action.id, grafcet),
+		]);
+	}
+
+	private static getRightmostAction(
+		stepId: string,
+		grafcet: Grafcet,
+	): Action | undefined {
+		const actions = StepHelper.getActions(stepId, grafcet);
+		if (actions.length === 0) return undefined;
+		return actions.reduce((a, b) =>
+			b.position.x + b.size.width > a.position.x + a.size.width ? b : a,
+		);
+	}
+
+	/**
+	 * Where a new action of the step goes: to the right of the step when it has none, otherwise
+	 * flush against the right of its rightmost action, on the same line.
+	 */
+	static getNextActionPosition(stepId: string, grafcet: Grafcet): XYPosition {
+		const step = grafcet.getElementById(stepId)!;
+		const rightmost = StepHelper.getRightmostAction(stepId, grafcet);
+		if (!rightmost)
+			return {
+				x: step.position.x + STEP_FIRST_ACTION_OFFSET_X,
+				y: step.position.y,
+			};
+		return {
+			x: rightmost.position.x + rightmost.size.width,
+			y: rightmost.position.y,
+		};
+	}
+
+	/**
+	 * Source of the link of a new action of the step: the step itself when it has no action,
+	 * otherwise the last action of the chain of its rightmost action.
+	 */
+	static getNextActionLinkSource(
+		stepId: string,
+		grafcet: Grafcet,
+	): ConnectionSide {
+		const rightmost = StepHelper.getRightmostAction(stepId, grafcet);
+		if (!rightmost)
+			return { type: "step", id: stepId, handle: STEP_HANDLE_SOURCE_ACTION };
+		const last =
+			ActionHelper.getChainFrom(rightmost.id, grafcet).at(-1) ?? rightmost;
+		return { type: "action", id: last.id, handle: ACTION_HANDLE_SOURCE_NEXT };
+	}
+
+	/**
+	 * Returns the step referrals (targets) that lead directly to the step.
+	 */
+	static getPredecessorReferrals(
+		stepId: string,
+		grafcet: Grafcet,
+	): StepReferralTarget[] {
+		return grafcet
+			.getConnectionsByElementIdAndHandle(
+				stepId,
+				STEP_HANDLE_TARGET_PREDECESSOR,
+			)
+			.filter((connection) => connection.source.type === "step-referral-target")
+			.map((connection) =>
+				grafcet.getElementByIdAndType<StepReferralTarget>(
+					connection.source.id,
+					"step-referral-target",
+				),
+			)
+			.filter((referral): referral is StepReferralTarget => !!referral);
 	}
 }

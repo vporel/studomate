@@ -1,19 +1,28 @@
 import Element, { ElementType } from "./element.schema";
 import { Dimensions } from "./shared-types";
 
-export const ACTION_HANDLE_TARGET_STEP = "target:step";
+export const ACTION_HANDLE_TARGET_PREDECESSOR = "target:predecessor";
+export const ACTION_HANDLE_SOURCE_NEXT = "source:next";
 
-export type ActionHandle = typeof ACTION_HANDLE_TARGET_STEP;
+export type ActionHandle =
+	typeof ACTION_HANDLE_TARGET_PREDECESSOR | typeof ACTION_HANDLE_SOURCE_NEXT;
 
-export const ACTION_HANDLE_TARGET_STEP_TYPES = [
+/** An action is activated by a step, either directly or through the actions chained before it. */
+export const ACTION_HANDLE_TARGET_PREDECESSOR_TYPES = [
 	"step",
+	"action",
+] as const satisfies readonly ElementType[];
+
+export const ACTION_HANDLE_SOURCE_NEXT_TYPES = [
+	"action",
 ] as const satisfies readonly ElementType[];
 
 export const ACTION_HANDLES_TO_TYPES: Record<
 	ActionHandle,
 	readonly ElementType[]
 > = {
-	[ACTION_HANDLE_TARGET_STEP]: ACTION_HANDLE_TARGET_STEP_TYPES,
+	[ACTION_HANDLE_TARGET_PREDECESSOR]: ACTION_HANDLE_TARGET_PREDECESSOR_TYPES,
+	[ACTION_HANDLE_SOURCE_NEXT]: ACTION_HANDLE_SOURCE_NEXT_TYPES,
 };
 
 export enum ActionType {

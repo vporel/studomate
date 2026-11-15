@@ -10,6 +10,10 @@ import WhatsNewModal from "./WhatsNewModal";
 
 const messages = getMessages("fr");
 
+const slideCount: number = WHATS_NEW_SLIDE_IDS.length;
+const itWithSeveralSlides = slideCount > 1 ? it : it.skip;
+const itWithOneSlide = slideCount === 1 ? it : it.skip;
+
 function renderModal(onClose = jest.fn()) {
 	const view = render(
 		<NextIntlClientProvider locale="fr" messages={messages}>
@@ -41,13 +45,24 @@ describe("WhatsNewModal", () => {
 		expect(onClose).toHaveBeenCalledTimes(1);
 	});
 
+	itWithOneSlide(
+		"offers to close right away when there is a single slide",
+		() => {
+			const { getByText, queryByText, onClose } = renderModal();
+
+			expect(queryByText(messages.whatsNew.next)).toBeNull();
+			fireEvent.click(getByText(messages.whatsNew.done));
+			expect(onClose).toHaveBeenCalledTimes(1);
+		},
+	);
+
 	it("closes from the header close button", () => {
 		const { getByLabelText, onClose } = renderModal();
 		fireEvent.click(getByLabelText(messages.common.modal.close));
 		expect(onClose).toHaveBeenCalledTimes(1);
 	});
 
-	it("goes back to the previous slide", () => {
+	itWithSeveralSlides("goes back to the previous slide", () => {
 		const { getByText } = renderModal();
 		fireEvent.click(getByText(messages.whatsNew.next));
 		fireEvent.click(getByText(messages.whatsNew.previous));

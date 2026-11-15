@@ -213,6 +213,11 @@ Always check `package.json` before quoting a version: this table goes stale at t
   thing.
 - **Platform detection**: prefer `navigator.userAgentData.platform` with a fallback to
   `navigator.userAgent`, never `navigator.platform` (deprecated) — see `src/ui/lib/platform.ts`.
+- **`localStorage` keys**: every key is read and written by a `*.storage.ts` module of
+  `src/persistence/` (built on `safe-local-storage.ts`), never directly from a component, a store
+  or a store environment. Keys are named `studomate_xxx`. Since `src/persistence/` never
+  depends on `src/ui/`, a value typed by a UI enum is stored as a string and checked against the
+  enum by the caller.
 - **Modals**: their visibility lives in the relevant zustand store (`openModalVisible`,
   `exportModalVisible`, ...) when its state is shared between components or when it must be
   openable from several places (keyboard shortcuts, menus, ...). A modal that opens and closes
@@ -455,6 +460,12 @@ question asked upfront.
 exists, an npm package's license or peer dependencies...). Run the check (`npm view`, grep,
 reading the code) and report the result. Questions are reserved for real choices (scope,
 product decisions, naming).
+
+**Never ask a question whose answer can be found in the code.** This includes the existence or
+absence of a feature or interaction ("is there a click-to-place mode on the toolbar?"), how an
+existing mechanism behaves, and what a component does. Before writing "I don't know whether X"
+or "I only found Y" in an analysis, search the code until the answer is settled, then state it
+as a fact. An analysis that lists open questions about the existing code is unfinished.
 
 ## Tests and bugs discovered while testing
 

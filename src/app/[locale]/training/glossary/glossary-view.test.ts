@@ -26,6 +26,23 @@ describe("buildGlossaryEntries", () => {
 	const fr = buildGlossaryEntries("fr");
 	const find = (id: string) => fr.find((e) => e.id === id)!;
 
+	it("lie la leçon de l'entrée, servie par la page du module pour une première étape", () => {
+		expect(find("transition").lesson).toEqual({
+			href: "/formations/a1/etapes-transitions-receptivites",
+			title: "Étapes, transitions, réceptivités, actions",
+		});
+		expect(find("grafcet").lesson).toEqual({
+			href: "/formations/a1",
+			title: "Qu'est-ce qu'un GRAFCET ?",
+		});
+		const en = buildGlossaryEntries("en").find((e) => e.id === "ton")!;
+		expect(en.lesson?.href).toBe("/en/training/a3");
+	});
+
+	it("n'a pas de leçon pour une entrée qui n'en déclare pas", () => {
+		expect(find("hysteresis").lesson).toBeUndefined();
+	});
+
 	it("découpe les alias et ignore les vides", () => {
 		expect(find("plc").aliases).toEqual([
 			"API",

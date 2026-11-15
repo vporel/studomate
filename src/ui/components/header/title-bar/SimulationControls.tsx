@@ -1,7 +1,7 @@
 "use client";
 
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
-import { SimulationMode } from "@/ui/stores/project/SimulationMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
+import { SimulationMode } from "@/ui/stores/project/simulation-mode.enum";
 import { IconButton, Tooltip } from "@mui/material";
 import PauseRoundedIcon from "@mui/icons-material/PauseRounded";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";

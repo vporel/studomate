@@ -32,6 +32,7 @@ export default async function Glossary({ params }: Props) {
 		noResults: messages.noResults,
 		aliasesLabel: messages.aliasesLabel,
 		relatedLabel: messages.relatedLabel,
+		lessonLabel: messages.lessonLabel,
 		resultsOne: messages.resultsOne,
 		resultsOther: messages.resultsOther,
 	};

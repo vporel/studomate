@@ -3,12 +3,13 @@
  */
 import { render } from "@testing-library/react";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import { GrafcetToolbarDnDProvider } from "./GrafcetToolbarDnDContext";
 import ActionTool from "./ActionTool";
 
 jest.mock("@/ui/components/projects/ProjectContext");
+jest.mock("@/ui/components/grafcet/context/GrafcetContext");
 
 describe("ActionTool", () => {
 	it("porte la classe de l'element 'action' et respecte disabled", () => {

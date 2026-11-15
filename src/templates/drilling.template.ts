@@ -6,7 +6,7 @@ import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import {
 	ActionExecutionMode,
 	ActionType,
-	ACTION_HANDLE_TARGET_STEP,
+	ACTION_HANDLE_TARGET_PREDECESSOR,
 } from "@/schemas/grafcet/action.schema";
 import {
 	STEP_HANDLE_SOURCE_SUCCESSOR,
@@ -340,21 +340,21 @@ export function createDrillingSolution(locale: Locale = "fr"): Project {
 				e1,
 				STEP_HANDLE_SOURCE_ACTION,
 				aDescendre,
-				ACTION_HANDLE_TARGET_STEP,
+				ACTION_HANDLE_TARGET_PREDECESSOR,
 			),
 			ConnectionBuilder.betweenElements(
 				createRandomId(),
 				e2,
 				STEP_HANDLE_SOURCE_ACTION,
 				aBroche,
-				ACTION_HANDLE_TARGET_STEP,
+				ACTION_HANDLE_TARGET_PREDECESSOR,
 			),
 			ConnectionBuilder.betweenElements(
 				createRandomId(),
 				e3,
 				STEP_HANDLE_SOURCE_ACTION,
 				aMonter,
-				ACTION_HANDLE_TARGET_STEP,
+				ACTION_HANDLE_TARGET_PREDECESSOR,
 			),
 		)
 		.build();

@@ -1,6 +1,9 @@
 import { createTrafficLightSolution } from "@/templates/traffic-light.template";
 import { sceneToSvg } from "@/ui/lib/drawing/backends/svg-backend";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
+import ActionBuilder from "@/schemas/grafcet/builders/action.builder";
+import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
+import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import CommentBuilder from "@/schemas/grafcet/builders/comment.builder";
 import JunctionAndStartBuilder from "@/schemas/grafcet/builders/junction-and-start.builder";
 import JunctionAndEndBuilder from "@/schemas/grafcet/builders/junction-and-end.builder";
@@ -83,6 +86,58 @@ describe("grafcetToScene — feu tricolore", () => {
 
 	it("le backend SVG sérialise la scène (snapshot)", () => {
 		expect(sceneToSvg(grafcetToScene(firstGrafcet()))).toMatchSnapshot();
+	});
+});
+
+describe("grafcetToScene: liaisons d'action", () => {
+	it("trace une liaison étape → action horizontalement, sans boucle, quand l'action est plus haute que l'étape", () => {
+		const grafcet = new GrafcetBuilder()
+			.addStep(new StepBuilder().id("s").number(1).position(100, 200).build())
+			.addAction(new ActionBuilder().id("a").position(180, 100).build())
+			.addConnection(
+				new ConnectionBuilder()
+					.id("s->a")
+					.source("step", "s", "source:action")
+					.target("action", "a", "target:predecessor")
+					.build(),
+			)
+			.build();
+
+		const polyline = grafcetToScene(grafcet).ops.find(
+			(o) => o.op === "polyline",
+		) as { points: [number, number][] };
+
+		// source (140, 220), cible (180, 120): Z via x = 160
+		expect(polyline.points).toEqual([
+			[140, 220],
+			[160, 220],
+			[160, 120],
+			[180, 120],
+		]);
+	});
+
+	it("trace une liaison action → action chaînée en droite, du bord droit au bord gauche", () => {
+		const grafcet = new GrafcetBuilder()
+			.addAction(new ActionBuilder().id("a1").position(180, 100).build())
+			.addAction(new ActionBuilder().id("a2").position(300, 100).build())
+			.addConnection(
+				new ConnectionBuilder()
+					.id("a1->a2")
+					.source("action", "a1", "source:next")
+					.target("action", "a2", "target:predecessor")
+					.build(),
+			)
+			.build();
+
+		const polyline = grafcetToScene(grafcet).ops.find(
+			(o) => o.op === "polyline",
+		) as { points: [number, number][] };
+
+		// action 100 × 40: a1 right edge (280, 120), a2 left edge (300, 120)
+		expect(polyline.points).toEqual([
+			[280, 120],
+			[300, 120],
+		]);
 	});
 });
 

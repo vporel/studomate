@@ -8,8 +8,9 @@
 	"resultsOne": "1 terme",
 	"resultsOther": "{count} termes",
 	"noResults": "Aucun terme ne correspond à votre recherche.",
-	"aliasesLabel": "Aussi appelé",
-	"relatedLabel": "Voir aussi",
+	"aliasesLabel": "Aussi appelé :",
+	"relatedLabel": "Voir aussi :",
+	"lessonLabel": "Apprendre :",
 	"sections": {
 		"general": {
 			"title": "Notions générales"
@@ -163,6 +164,13 @@
 			"aliases": "diagramme temporel",
 			"definition": "Graphique qui montre l'évolution de plusieurs signaux au cours du temps, les uns sous les autres sur le même axe.",
 			"details": "",
+			"figureAlt": ""
+		},
+		"grafcet": {
+			"term": "GRAFCET",
+			"aliases": "Graphe Fonctionnel de Commande Étape/Transition; IEC 60848",
+			"definition": "Langage graphique normalisé (IEC 60848) qui décrit le comportement d'un automatisme sous forme d'étapes et de transitions : ce qu'il faut faire, dans quel ordre et sous quelles conditions.",
+			"details": "Il ne dépend pas du matériel : un GRAFCET peut être réalisé par un automate programmable, par exemple en le traduisant en Ladder, ou par des relais. Le langage SFC (Sequential Function Chart) de la norme IEC 61131-3 en est dérivé.",
 			"figureAlt": ""
 		},
 		"step": {

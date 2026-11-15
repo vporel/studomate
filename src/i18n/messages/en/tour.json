@@ -33,5 +33,55 @@
 			"title": "Analysis results",
 			"description": "The errors and warnings found in the project. Click to see the details; the colour shows the severity."
 		}
+	},
+	"editors": {
+		"grafcet": {
+			"steps": {
+				"toolbar": {
+					"title": "Toolbar",
+					"description": "Drag a step, an action, a transition or a junction onto the canvas. The first tool creates the initial step."
+				},
+				"canvas": {
+					"title": "Canvas",
+					"description": "Drop your elements here. Double-click a step, a transition or an action to edit its text; right-click opens an action menu."
+				}
+			}
+		},
+		"ladder": {
+			"steps": {
+				"toolbar": {
+					"title": "Contacts and coils",
+					"description": "Drag a contact or a coil onto the canvas. The arrow to the right of the coils shows more of them (inverted, edges)."
+				},
+				"systemBlocks": {
+					"title": "Library",
+					"description": "Timers, counters, comparisons, assignments and calculations: open the palette to place them on a network."
+				},
+				"addSection": {
+					"title": "Networks",
+					"description": "A Ladder program is a series of networks. This button adds one."
+				},
+				"canvas": {
+					"title": "Canvas",
+					"description": "Drop an element to insert it into a network. Double-click a contact or a coil to choose its variable."
+				}
+			}
+		},
+		"hmi": {
+			"steps": {
+				"toolbar": {
+					"title": "Widget palette",
+					"description": "Drag a widget or a shape onto the page to build the operator interface."
+				},
+				"canvas": {
+					"title": "HMI page",
+					"description": "Drop and move your widgets here. Click one to select it."
+				},
+				"properties": {
+					"title": "Properties",
+					"description": "Link the selected widget to a variable and set its appearance, animations and events."
+				}
+			}
+		}
 	}
 }

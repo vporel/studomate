@@ -1,9 +1,9 @@
-import { ProjectMode } from "./ProjectMode.enum";
+import { ProjectMode } from "./project-mode.enum";
 import {
 	selectHardwareActions,
 	type HardwareActions,
 } from "./hardware-actions.selector";
-import type { SimulationKind } from "./SimulationKind";
+import type { SimulationKind } from "./simulation-kind";
 
 type Overrides = {
 	hasTarget?: boolean;

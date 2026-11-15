@@ -8,7 +8,10 @@ import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import StepReferralSourceBuilder from "@/schemas/grafcet/builders/step-referral-source.builder";
 import StepReferralTargetBuilder from "@/schemas/grafcet/builders/step-referral-target.builder";
 import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
-import { ACTION_HANDLE_TARGET_STEP } from "@/schemas/grafcet/action.schema";
+import {
+	ACTION_HANDLE_SOURCE_NEXT,
+	ACTION_HANDLE_TARGET_PREDECESSOR,
+} from "@/schemas/grafcet/action.schema";
 import { JUNCTION_HANDLE_PIVOT } from "@/schemas/grafcet/junction.schema";
 import {
 	STEP_HANDLE_SOURCE_ACTION,
@@ -63,8 +66,20 @@ describe("grafcetHandlePosition", () => {
 			.dimensions(80, 30)
 			.build();
 
-		expect(grafcetHandlePosition(action, ACTION_HANDLE_TARGET_STEP)).toEqual([
-			10, 35,
+		expect(
+			grafcetHandlePosition(action, ACTION_HANDLE_TARGET_PREDECESSOR),
+		).toEqual([10, 35]);
+	});
+
+	it("action : milieu du bord droit pour la poignée suivante", () => {
+		const action = new ActionBuilder()
+			.id("a")
+			.position(10, 20)
+			.dimensions(80, 30)
+			.build();
+
+		expect(grafcetHandlePosition(action, ACTION_HANDLE_SOURCE_NEXT)).toEqual([
+			90, 35,
 		]);
 	});
 

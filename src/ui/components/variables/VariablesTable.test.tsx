@@ -6,7 +6,7 @@ import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { LocaleProvider } from "@/ui/i18n/LocaleProvider";
 import { useProjectStore } from "../projects/ProjectContext";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import Variable from "@/schemas/variable/variable.schema";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import { exportVariablesTablePdf } from "@/ui/pdf/variables-table-pdf";

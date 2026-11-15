@@ -72,7 +72,7 @@ export default class ProjectCommandsStackManager {
 			newProject.scene3d !== previous.scene3d ||
 			newProject.name !== previous.name
 		) {
-			this.getStoreState().scene3dLinkManager.onSceneChanged();
+			this.getStoreState().scene3dDisplayManager.onSceneChanged();
 		}
 	}
 

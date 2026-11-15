@@ -4,7 +4,7 @@
 import { fireEvent, screen } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { useGrafcetStore } from "../context/GrafcetContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import { GrafcetToolbarDnDProvider } from "./GrafcetToolbarDnDContext";

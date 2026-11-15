@@ -4,6 +4,7 @@ import { LOCALES } from "@/i18n/config";
 import { getMessages } from "@/i18n/messages";
 import GLOSSARY_ENTRIES, { GLOSSARY_SECTIONS } from "./glossary-entries";
 import { glossaryFigureSrc } from "./glossary-view";
+import { buildModuleSteps } from "../training-modules";
 
 describe("entrées du glossaire", () => {
 	it("a des identifiants uniques", () => {
@@ -25,6 +26,23 @@ describe("entrées du glossaire", () => {
 				expect(related).not.toBe(entry.id);
 			}
 		}
+	});
+
+	it("lie chaque leçon à une étape existante de son module", () => {
+		for (const entry of GLOSSARY_ENTRIES) {
+			if (!entry.lesson) continue;
+			const stepIds = buildModuleSteps(entry.lesson.module, "fr").map(
+				(s) => s.id,
+			);
+			expect(stepIds).toContain(entry.lesson.step);
+		}
+	});
+
+	it("définit le GRAFCET et le lie à sa leçon", () => {
+		expect(GLOSSARY_ENTRIES.find((e) => e.id === "grafcet")?.lesson).toEqual({
+			module: "a1",
+			step: "grafcet-definition",
+		});
 	});
 
 	describe.each(LOCALES)("messages (%s)", (locale) => {

@@ -71,12 +71,23 @@ function opToSvg(op: DrawOp): string {
 	}
 }
 
-/** Sérialise une scène en document `<svg>` autonome (fond blanc, viewBox calée sur la scène). */
-export function sceneToSvg(scene: Scene): string {
+/**
+ * Serializes a scene into a standalone `<svg>` document, its viewBox fitted to the scene. `scale`
+ * enlarges the displayed image without changing the coordinates; `background` paints a white
+ * background (the default).
+ */
+export function sceneToSvg(
+	scene: Scene,
+	{ scale = 1, background = true }: { scale?: number; background?: boolean } = {},
+): string {
 	const body = scene.ops.map(opToSvg).join("\n\t");
 	return [
-		`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${num(scene.width)} ${num(scene.height)}" width="${num(scene.width)}" height="${num(scene.height)}">`,
-		`\t<rect x="0" y="0" width="${num(scene.width)}" height="${num(scene.height)}" fill="#ffffff"/>`,
+		`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${num(scene.width)} ${num(scene.height)}" width="${num(scene.width * scale)}" height="${num(scene.height * scale)}">`,
+		...(background
+			? [
+					`\t<rect x="0" y="0" width="${num(scene.width)}" height="${num(scene.height)}" fill="#ffffff"/>`,
+				]
+			: []),
 		`\t${body}`,
 		`</svg>`,
 	].join("\n");

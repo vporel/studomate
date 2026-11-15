@@ -1,11 +1,11 @@
+import { SchoolType } from "@/user-profile/school-type.enum";
+import { UserType } from "@/user-profile/user-type.enum";
+import type { User } from "@supabase/supabase-js";
 import {
 	ANONYMOUS_EMAIL_DOMAIN,
 	getAnonymousPseudo,
 	isAnonymousUser,
 } from "./auth.store";
-import type { User } from "@supabase/supabase-js";
-import { SchoolType } from "@/user-profile/SchoolType.enum";
-import { UserType } from "@/user-profile/UserType.enum";
 
 import { supabaseMocks } from "@tests/utils/supabase-mock";
 

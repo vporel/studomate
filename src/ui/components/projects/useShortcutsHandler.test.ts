@@ -7,7 +7,7 @@ import {
 	useProjectStore,
 } from "@/ui/components/projects/ProjectContext";
 import { getLastMousePosition } from "@/ui/lib/mouse-position";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import {
 	createClipboardStore,
 	type ClipboardEntry,

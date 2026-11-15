@@ -32,6 +32,7 @@ describe("sitemap", () => {
 		expect(urls).toContain(`${APP_URL}/formations`);
 		expect(urls).toContain(`${APP_URL}/formations/a1`);
 		expect(urls).toContain(`${APP_URL}/formations/glossaire`);
+		expect(urls).toContain(`${APP_URL}/enseignants`);
 		// EN : préfixe /en + slugs traduits
 		expect(urls).toContain(`${APP_URL}/en`);
 		expect(urls).toContain(`${APP_URL}/en/about`);
@@ -39,6 +40,7 @@ describe("sitemap", () => {
 		expect(urls).toContain(`${APP_URL}/en/training`);
 		expect(urls).toContain(`${APP_URL}/en/training/a1`);
 		expect(urls).toContain(`${APP_URL}/en/training/glossary`);
+		expect(urls).toContain(`${APP_URL}/en/teachers`);
 	});
 
 	it("n'expose aucune date lastModified artificielle", () => {
@@ -102,7 +104,7 @@ describe("sitemap", () => {
 		});
 	});
 
-	it("expose le module A0 et les étapes de théorie des modules, avec leurs alternates", () => {
+	it("expose le module A0 et les étapes des modules, avec leurs alternates", () => {
 		const entries = sitemap();
 		const urls = entries.map((e) => e.url);
 		expect(urls).toContain(`${APP_URL}/formations/a0`);
@@ -119,10 +121,15 @@ describe("sitemap", () => {
 		});
 	});
 
-	it("n'expose ni les exercices et synthèses (noindex), ni la première étape (servie par la page du module)", () => {
+	it("expose les exercices et les synthèses, dans les deux langues", () => {
 		const urls = sitemap().map((e) => e.url);
-		expect(urls).not.toContain(`${APP_URL}/formations/a1/exercice-sequence-lineaire`);
-		expect(urls).not.toContain(`${APP_URL}/formations/a1/synthese-parking`);
+		expect(urls).toContain(`${APP_URL}/formations/a1/exercice-sequence-lineaire`);
+		expect(urls).toContain(`${APP_URL}/formations/a1/synthese-parking`);
+		expect(urls).toContain(`${APP_URL}/en/training/a3/exercise-timers`);
+	});
+
+	it("n'expose pas la première étape (servie par la page du module)", () => {
+		const urls = sitemap().map((e) => e.url);
 		expect(urls).not.toContain(`${APP_URL}/formations/a1/definition-grafcet`);
 		expect(urls).not.toContain(`${APP_URL}/formations/a0/automatisme`);
 	});

@@ -1,7 +1,8 @@
 "use client";
 import { getStepVariableId } from "@/project-analyser/analysers/grafcet/grafcet.analyser";
 import Action, {
-	ACTION_HANDLE_TARGET_STEP,
+	ACTION_HANDLE_SOURCE_NEXT,
+	ACTION_HANDLE_TARGET_PREDECESSOR,
 	ActionData,
 	ActionExecutionMode,
 	ActionType,
@@ -76,9 +77,16 @@ const ActionNode: FC<ActionNodeProps> = ({
 			/>
 			<GrafcetHandle
 				limit={1}
-				id={ACTION_HANDLE_TARGET_STEP}
+				id={ACTION_HANDLE_TARGET_PREDECESSOR}
 				type="target"
 				position={Position.Left}
+				color={borderColor}
+			/>
+			<GrafcetHandle
+				limit={1}
+				id={ACTION_HANDLE_SOURCE_NEXT}
+				type="source"
+				position={Position.Right}
 				color={borderColor}
 			/>
 			<GrafcetNode

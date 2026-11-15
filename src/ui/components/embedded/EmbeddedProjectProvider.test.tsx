@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 import Project from "@/schemas/project/project.schema";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { act, render } from "@testing-library/react";
 import { GrafcetFactory } from "@tests/utils/grafcet-factory";
 import { i18nWrapper } from "@tests/utils/i18n";

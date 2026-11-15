@@ -3,7 +3,7 @@ import { createRandomId } from "@/ids";
 import type { Locale } from "@/i18n/config";
 import createTemplateText from "@/templates/template-text";
 import {
-	ACTION_HANDLE_TARGET_STEP,
+	ACTION_HANDLE_TARGET_PREDECESSOR,
 	ActionExecutionMode,
 	ActionType,
 } from "@/schemas/grafcet/action.schema";
@@ -291,7 +291,7 @@ export function createCartonSortingSolution(locale: Locale = "fr"): Project {
 			s,
 			STEP_HANDLE_SOURCE_ACTION,
 			a,
-			ACTION_HANDLE_TARGET_STEP,
+			ACTION_HANDLE_TARGET_PREDECESSOR,
 		);
 	const stepToJunction = (
 		s: ReturnType<typeof step>,

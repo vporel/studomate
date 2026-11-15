@@ -10,6 +10,7 @@ import {
 } from "@/ui/stores/grafcet/managers/view.manager";
 import {
 	GRAFCET_PAGE_DIMENSIONS,
+	GRAFCET_PAGE_EXTENT,
 	getPageFitZoom,
 } from "@/ui/utils/grafcet/grafcet-utils";
 import useCtrlWheelZoom from "@/ui/lib/hooks/useCtrlWheelZoom";
@@ -251,13 +252,6 @@ export function GrafcetFlowContent({
 	const handleWheelCapture = useCallback((e: ReactWheelEvent) => {
 		if (!e.ctrlKey && !e.metaKey) e.stopPropagation();
 	}, []);
-	const extent = useMemo<[[number, number], [number, number]]>(
-		() => [
-			[0, 0],
-			[GRAFCET_PAGE_DIMENSIONS.width - 2, GRAFCET_PAGE_DIMENSIONS.height - 2],
-		],
-		[],
-	);
 	const flowContainerSx = useMemo<SxProps<Theme>>(
 		() =>
 			fitContent
@@ -274,6 +268,7 @@ export function GrafcetFlowContent({
 		<Box
 			className={`grafcet-page flow-page${canEdit ? "" : " flow-page--readonly"}`}
 			id={`grafcet-${grafcetId}`}
+			data-tour="canvas"
 			ref={setContainerElement}
 			sx={fitContent ? FIT_OUTER_CONTAINER_SX : OUTER_CONTAINER_SX}
 		>
@@ -302,8 +297,8 @@ export function GrafcetFlowContent({
 					selectionOnDrag={true}
 					panOnDrag={fitContent}
 					snapGrid={SNAP_GRID}
-					translateExtent={fitContent ? undefined : extent}
-					nodeExtent={extent}
+					translateExtent={fitContent ? undefined : GRAFCET_PAGE_EXTENT}
+					nodeExtent={GRAFCET_PAGE_EXTENT}
 					onDragOver={handleToolDragOver}
 					onDrop={handleToolDrop}
 					tabIndex={0} //This attribute is necessary so that the flow can be focused with the mouse click

@@ -5,12 +5,20 @@ import v1ToV2 from "./v1-to-v2";
 import v2ToV3 from "./v2-to-v3";
 import v3ToV4 from "./v3-to-v4";
 import v4ToV5 from "./v4-to-v5";
+import v5ToV6 from "./v5-to-v6";
 
 /**
  * Les migrations, dans l'ordre. Ajouter un saut de version consiste à ajouter un fichier et
  * une ligne ici, puis à incrémenter `PROJECT_SCHEMA_VERSION` dans le schéma du projet.
  */
-const MIGRATIONS: ProjectMigration[] = [v0ToV1, v1ToV2, v2ToV3, v3ToV4, v4ToV5];
+const MIGRATIONS: ProjectMigration[] = [
+	v0ToV1,
+	v1ToV2,
+	v2ToV3,
+	v3ToV4,
+	v4ToV5,
+	v5ToV6,
+];
 
 /**
  * Amène un projet brut à la version courante de sa forme.

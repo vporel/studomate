@@ -14,7 +14,7 @@ import VariableSelector, {
 } from "@/ui/components/variables/VariableSelector";
 import { Dialect } from "@/expression-language/dialect.enum";
 import { formatTypedValue } from "@/ui/components/variables/format-variable-value";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { Box, Typography } from "@mui/material";
 import { Fragment, useRef } from "react";
 

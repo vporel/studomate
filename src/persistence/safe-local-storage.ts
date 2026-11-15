@@ -12,6 +12,15 @@ export function readString(key: string): string | null {
 	}
 }
 
+/** The stored value when it is one of `knownValues`; `null` otherwise or when storage is unavailable. */
+export function readKnownString<T extends string>(
+	key: string,
+	knownValues: readonly T[],
+): T | null {
+	const stored = readString(key);
+	return knownValues.find((value) => value === stored) ?? null;
+}
+
 /** `undefined` when the key is missing, holds invalid JSON, or storage is unavailable. */
 export function readJson(key: string): unknown {
 	const raw = readString(key);

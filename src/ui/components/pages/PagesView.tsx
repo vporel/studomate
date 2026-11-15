@@ -3,6 +3,7 @@
 import { APP_NAME } from "@/app-info";
 import { useT } from "@/ui/i18n/useT";
 import { Box, Typography } from "@mui/material";
+import dynamic from "next/dynamic";
 import { Fragment } from "react";
 import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "../projects/ProjectContext";
@@ -17,8 +18,14 @@ import ProjectStartupPage from "./ProjectStartupPage";
 import SystemVariablesPage from "./SystemVariablesPage";
 import PagesTabBar from "./tab-bar/PagesTabBar";
 import VariablesPage, { VariablesPageData } from "./VariablesPage";
+import EditorTour from "../product-tour/editor-tour/EditorTour";
 import HmiPageView from "../hmi/HmiPageView";
 import HmiSimulationPageView from "../hmi/HmiSimulationPageView";
+
+//Three.js and WebGL are loaded when the scene is first displayed.
+const Scene3dPageView = dynamic(() => import("../3d-scene/Scene3dPageView"), {
+	ssr: false,
+});
 
 const NoPage = () => {
 	const t = useT("pages.noPage");
@@ -134,6 +141,7 @@ const PagesView = () => {
 			) : (
 				<Fragment>
 					<PagesTabBar />
+					<EditorTour />
 					{pagesOrder.map((id) => {
 						const pageData = pagesData[id];
 						if (!pageData) return null;
@@ -150,6 +158,8 @@ const PagesView = () => {
 								return <HardwareConfigurationPage key={id} />;
 							case "scene3d-configuration":
 								return <Scene3dConfigurationPage key={id} />;
+							case "scene3d-view":
+								return <Scene3dPageView key={id} pageId={id} />;
 							case "variables":
 								return (
 									<VariablesPage

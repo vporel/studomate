@@ -5,7 +5,7 @@ import { getHardwareDevice } from "@/hardware/hardware-device.registry";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useT } from "@/ui/i18n/useT";
 import { selectHardwareActions } from "@/ui/stores/project/hardware-actions.selector";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import FileDownloadRoundedIcon from "@mui/icons-material/FileDownloadRounded";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import StopRoundedIcon from "@mui/icons-material/StopRounded";

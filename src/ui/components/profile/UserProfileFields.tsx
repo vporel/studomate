@@ -1,9 +1,9 @@
 "use client";
 
 import { useT } from "@/ui/i18n/useT";
-import { SchoolType } from "@/user-profile/SchoolType.enum";
-import { UserType } from "@/user-profile/UserType.enum";
+import { SchoolType } from "@/user-profile/school-type.enum";
 import normalizeUserProfile, { UserProfile } from "@/user-profile/user-profile";
+import { UserType } from "@/user-profile/user-type.enum";
 import { MenuItem, TextField } from "@mui/material";
 
 type Props = {

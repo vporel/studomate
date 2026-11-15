@@ -42,7 +42,7 @@ function fakeDragEvent(clientX: number, clientY: number) {
 
 describe("useToolDragOverHandlers", () => {
 	const addNodes = jest.fn();
-	const workflowManager = { addNodes };
+	const workflowManager = { addDroppedNode: addNodes };
 	const screenToFlowPosition = jest.fn(({ x, y }) => ({ x, y }));
 
 	afterEach(() => jest.clearAllMocks());
@@ -76,8 +76,7 @@ describe("useToolDragOverHandlers", () => {
 
 		expect(event.preventDefault).toHaveBeenCalled();
 		expect(addNodes).toHaveBeenCalledTimes(1);
-		const [nodes] = addNodes.mock.calls[0];
-		const [node] = nodes;
+		const [node] = addNodes.mock.calls[0];
 		expect(node).toMatchObject({
 			type: "step",
 			position: { x: 100, y: 100 },

@@ -1,5 +1,7 @@
 import type { ProjectCapabilities } from "./environment/project-store-environment";
 import type { ClipboardStore } from "@/ui/stores/shared/clipboard.store";
+import type { Scene3dDisplayMode } from "./scene3d-display-mode.enum";
+import type Scene3dDisplayManager from "./managers/3d-scene/scene3d-display.manager";
 import type Scene3dLinkManager from "./managers/3d-scene/scene3d-link.manager";
 import type { Scene3d } from "@/schemas/3d-scene/scene3d.schema";
 import type HmiPage from "@/schemas/hmi/hmi-page.schema";
@@ -21,7 +23,7 @@ import GrafcetsManager from "./managers/grafcets.manager";
 import LaddersManager from "./managers/ladders.manager";
 import PagesManager from "./managers/pages.manager";
 import HmiManager from "./managers/hmi.manager";
-import type { SimulationKind } from "./SimulationKind";
+import type { SimulationKind } from "./simulation-kind";
 import type ModeManager from "./managers/mode.manager";
 import HardwareLinkManager from "./managers/hardware-link/hardware-link.manager";
 import type {
@@ -34,8 +36,8 @@ import SimulationManager from "./managers/simulation/simulation.manager";
 import VariablesManager from "./managers/variables.manager";
 import ProjectLifecycleManager from "./managers/lifecycle.manager";
 import ProjectSharingManager from "./managers/sharing.manager";
-import { ProjectMode } from "./ProjectMode.enum";
-import { SimulationMode } from "./SimulationMode.enum";
+import { ProjectMode } from "./project-mode.enum";
+import { SimulationMode } from "./simulation-mode.enum";
 
 type SimpleCallback = () => void;
 
@@ -155,6 +157,10 @@ export interface ProjectUiState {
 	shareRequiresCloudModalVisible: boolean;
 	analysisResultVisible: boolean;
 	crossReferenceResultVisible: boolean;
+	scene3dSidePanelVisible: boolean;
+	scene3dFloatingVisible: boolean;
+	scene3dBrowserTabOpen: boolean;
+	scene3dDisplayMode: Scene3dDisplayMode;
 	watchTablesVisible: boolean;
 	draftConflictModal: {
 		visible: boolean;
@@ -325,6 +331,7 @@ export interface ProjectStoreState {
 	hardwareObservation: HardwareObservationState;
 	hardwareLinkManager: HardwareLinkManager;
 	scene3dLinkManager: Scene3dLinkManager;
+	scene3dDisplayManager: Scene3dDisplayManager;
 	modeManager: ModeManager;
 
 	//=============== COMMANDS ===============

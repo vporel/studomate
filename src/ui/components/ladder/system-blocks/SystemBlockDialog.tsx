@@ -34,7 +34,7 @@ type SystemBlockDialogProps<
 
 /**
  * Configuration window of a system block (name + variant), in creation as in edition: opened
- * by `useLadderDropHandlers` on a drop from the explorer's "System blocks" section
+ * by `useLadderDropHandlers` on a drop from the explorer's "Library" section
  * (`pendingSystemBlockCreation`, inserts the element only on validation), or by the "Configure"
  * entry of an instance's context menu (`pendingSystemBlockEdit`, prefilled with its current
  * values). On the canvas, name and variant of an existing block are edited in place (see

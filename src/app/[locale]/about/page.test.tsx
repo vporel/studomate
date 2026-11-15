@@ -143,6 +143,22 @@ describe("About page", () => {
 		expect(link.getAttribute("href")).toBe(routes.app());
 	});
 
+	it.each([
+		["fr", "/enseignants"],
+		["en", "/en/teachers"],
+	] as const)(
+		"links the teachers page after the audience (%s)",
+		async (locale, href) => {
+			await renderAbout(locale);
+
+			expect(
+				screen.getByRole("link", {
+					name: getMessages(locale).public.about.teachersLink,
+				}),
+			).toHaveAttribute("href", href);
+		},
+	);
+
 	it("links the contact call-to-action to /contact", async () => {
 		await renderAbout("en");
 

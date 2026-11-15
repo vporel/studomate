@@ -4,6 +4,7 @@ import { Dimensions } from "./shared-types";
 export const STEP_HANDLE_TARGET_PREDECESSOR = "target:predecessor";
 export const STEP_HANDLE_SOURCE_SUCCESSOR = "source:successor";
 export const STEP_HANDLE_SOURCE_ACTION = "source:action";
+export const STEP_HANDLE_SOURCE_ACTION_LIMIT = 4;
 
 export type StepHandle =
 	| typeof STEP_HANDLE_TARGET_PREDECESSOR

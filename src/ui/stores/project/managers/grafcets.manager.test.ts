@@ -1,5 +1,5 @@
 import Project from "@/schemas/project/project.schema";
-import { ProjectMode } from "../ProjectMode.enum";
+import { ProjectMode } from "../project-mode.enum";
 import { ProjectStoreState } from "../project.store";
 import GrafcetsManager from "./grafcets.manager";
 

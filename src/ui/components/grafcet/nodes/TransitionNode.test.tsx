@@ -7,7 +7,7 @@ import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
 import { useGrafcetContext, useGrafcetStore } from "../context/GrafcetContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { fakeStoreApi, selectorImplementation } from "@tests/utils/store-mocks";
 import TransitionNode, { TransitionNodeType } from "./TransitionNode";
 
@@ -166,6 +166,53 @@ describe("TransitionNode", () => {
 		fireEvent.doubleClick(document.querySelector(".grafcet-transition-node")!);
 		expect(expressionTextarea()).toHaveStyle({
 			background: "rgb(238, 238, 238)",
+		});
+	});
+	describe("zone cliquable du texte", () => {
+		function textZone(): HTMLElement {
+			return document.querySelector(".transition_node__text") as HTMLElement;
+		}
+
+		it("au repos, la zone du texte est cliquable mais le conteneur de 230 px laisse passer les clics", () => {
+			setup({ expression: "I0" });
+			expect(textZone()).toHaveStyle({ pointerEvents: "auto" });
+			expect(textZone()).toHaveStyle({ width: "fit-content" });
+			expect(textZone().parentElement).toHaveStyle({ pointerEvents: "none" });
+			expect(expressionTextarea()).toHaveStyle({ pointerEvents: "none" });
+		});
+
+		it("au repos, une réceptivité vide n'a aucune zone cliquable", () => {
+			setup({ expression: "" });
+			expect(textZone()).toHaveStyle({ pointerEvents: "none" });
+		});
+
+		it("pendant l'édition, la zone occupe toute la largeur et reste cliquable même vide", () => {
+			setup({ expression: "" });
+			fireEvent.doubleClick(
+				document.querySelector(".grafcet-transition-node")!,
+			);
+			expect(textZone()).toHaveStyle({
+				width: "100%",
+				pointerEvents: "auto",
+			});
+			expect(expressionTextarea()).toHaveStyle({ pointerEvents: "all" });
+		});
+
+		it("le double-clic sur le texte démarre l'édition", () => {
+			setup({ expression: "I0" });
+			fireEvent.doubleClick(textZone());
+			expect(expressionTextarea()).toHaveStyle({
+				background: "rgb(238, 238, 238)",
+			});
+		});
+
+		it("le miroir caché reprend l'expression saisie", () => {
+			setup({ expression: "I0 ET M1" });
+			expect(textZone().querySelector("span")).toHaveTextContent("I0 ET M1");
+			expect(textZone().querySelector("span")).toHaveAttribute(
+				"aria-hidden",
+				"true",
+			);
 		});
 	});
 });

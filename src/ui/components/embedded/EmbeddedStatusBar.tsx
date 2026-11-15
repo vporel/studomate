@@ -1,7 +1,7 @@
 "use client";
 
 import { useT } from "@/ui/i18n/useT";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { Box, Button } from "@mui/material";
 import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "../projects/ProjectContext";

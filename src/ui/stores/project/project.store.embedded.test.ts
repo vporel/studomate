@@ -1,13 +1,14 @@
 /**
  * @jest-environment jsdom
  */
+import { Scene3dDisplayMode } from "@/ui/stores/project/scene3d-display-mode.enum";
 import { toast } from "react-toastify";
 import trackEvent from "@/ui/services/analytics";
 import { GrafcetFactory } from "@tests/utils/grafcet-factory";
 import { ProjectFactory } from "@tests/utils/project-factory";
 import createEmbeddedProjectStoreEnvironment from "./environment/embedded-project-store-environment";
 import { PersistenceUnavailableError } from "./environment/project-store-environment";
-import { ProjectMode } from "./ProjectMode.enum";
+import { ProjectMode } from "./project-mode.enum";
 import { createProjectStore } from "./project.store";
 
 jest.mock("react-toastify", () => ({
@@ -28,6 +29,33 @@ function openedStore() {
 	store.getState().lifecycleManager.openProjectInstance(project, []);
 	return { store, project };
 }
+
+describe("3D scene display modes of an embedded block", () => {
+	beforeEach(() => localStorage.clear());
+
+	it("offers the page only, whatever the browser remembers", () => {
+		localStorage.setItem("studomate_scene3d_display_mode", "browser-tab");
+		const store = createProjectStore(
+			createEmbeddedProjectStoreEnvironment({ locale: "fr" }),
+		);
+		expect(store.getState().scene3dDisplayManager.availableModes).toEqual([
+			"page",
+		]);
+		expect(store.getState().ui.scene3dDisplayMode).toBe("page");
+	});
+
+	it("refuses the other modes and does not remember a choice", () => {
+		const store = createProjectStore(
+			createEmbeddedProjectStoreEnvironment({ locale: "fr" }),
+		);
+		expect(
+			store
+				.getState()
+				.scene3dDisplayManager.show(Scene3dDisplayMode.FLOATING_BOX),
+		).toBe(false);
+		expect(localStorage.getItem("studomate_scene3d_display_mode")).toBeNull();
+	});
+});
 
 describe("openProjectInstance", () => {
 	const pages = ["a", "b", "c"].map((id) => ({
@@ -168,7 +196,7 @@ describe("project store with the embedded environment", () => {
 
 		expect(first.preferences.getSimulationMode()).toBe("step-by-step");
 		expect(second.preferences.getSimulationMode()).toBe("continuous");
-		expect(localStorage.getItem("studomate:simulationMode")).toBeNull();
+		expect(localStorage.getItem("studomate_simulation_mode")).toBeNull();
 	});
 
 	it("refuses to share, since there is no persistence", async () => {

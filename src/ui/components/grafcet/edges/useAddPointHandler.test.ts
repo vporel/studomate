@@ -4,7 +4,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useGrafcetStore } from "@/ui/components/grafcet/context/GrafcetContext";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import useAddPointHandler, { getPointsForAdding } from "./useAddPointHandler";
 

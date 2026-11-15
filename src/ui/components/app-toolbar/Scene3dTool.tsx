@@ -8,8 +8,8 @@ import AppTool from "./AppTool";
 const Scene3dTool = () => {
 	const t = useT("chrome.toolbar");
 	const hasScene = useProjectStore((state) => !!state.project?.scene3d);
-	const scene3dLinkManager = useProjectStore(
-		(state) => state.scene3dLinkManager,
+	const scene3dDisplayManager = useProjectStore(
+		(state) => state.scene3dDisplayManager,
 	);
 
 	if (!hasScene) return null;
@@ -17,7 +17,7 @@ const Scene3dTool = () => {
 		<AppTool
 			name="scene3d"
 			label={t("scene3d")}
-			onClick={() => scene3dLinkManager.open()}
+			onClick={() => scene3dDisplayManager.open()}
 		>
 			<ViewInArIcon />
 		</AppTool>

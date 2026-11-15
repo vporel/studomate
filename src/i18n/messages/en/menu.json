@@ -25,7 +25,13 @@
 		"explorer": "Explorer",
 		"crossReferences": "Cross-references",
 		"analysisResults": "Analysis results",
-		"scene3d": "3D scene"
+		"scene3d": "3D scene",
+		"scene3dMode": {
+			"side-panel": "Side panel",
+			"floating-box": "Floating box",
+			"page": "Page",
+			"browser-tab": "Browser tab"
+		}
 	},
 	"project": {
 		"title": "Project",

@@ -8,6 +8,13 @@ jest.mock("@/ui/services/analytics", () => ({
 	default: (...args: unknown[]) => mockTrackEvent(...args),
 }));
 
+const mockCreateTransport = jest.fn((sessionId: string) => ({ sessionId }));
+jest.mock("@/3d-scenes/link/scene-channel", () => ({
+	__esModule: true,
+	createBrowserSceneTransport: (sessionId: string) =>
+		mockCreateTransport(sessionId),
+}));
+
 const KEY = "studomate:3d-scene-session";
 const getStore = (() => ({})) as unknown as ProjectStoreGetFunction;
 
@@ -139,7 +146,19 @@ describe("createBrowserScene3dLinkHost session id", () => {
 		(await loadHost())(store).openWindow("s1");
 		expect(mockTrackEvent).toHaveBeenCalledWith("scene-opened", {
 			scene: "carton-sorting",
+			mode: "window",
 		});
+	});
+
+	it("links a scene shown in the page over the channel of the session, like the editor", async () => {
+		removeLocks();
+		const host = (await loadHost())(getStore);
+		const editorEnd = host.createTransport("s1");
+		const sceneEnd = host.connectScene!("s1");
+		expect(mockCreateTransport).toHaveBeenCalledTimes(2);
+		expect(mockCreateTransport).toHaveBeenNthCalledWith(1, "s1");
+		expect(mockCreateTransport).toHaveBeenNthCalledWith(2, "s1");
+		expect(sceneEnd).not.toBe(editorEnd);
 	});
 
 	it("reads the project name from the store, empty without a project", async () => {

@@ -6,7 +6,7 @@ import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
 import {
 	ActionExecutionMode,
 	ActionType,
-	ACTION_HANDLE_TARGET_STEP,
+	ACTION_HANDLE_TARGET_PREDECESSOR,
 } from "@/schemas/grafcet/action.schema";
 import {
 	STEP_HANDLE_SOURCE_SUCCESSOR,
@@ -193,14 +193,14 @@ export function createLinearSequenceSolution(locale: Locale = "fr"): Project {
 				e1,
 				STEP_HANDLE_SOURCE_ACTION,
 				a1,
-				ACTION_HANDLE_TARGET_STEP,
+				ACTION_HANDLE_TARGET_PREDECESSOR,
 			),
 			ConnectionBuilder.betweenElements(
 				createRandomId(),
 				e2,
 				STEP_HANDLE_SOURCE_ACTION,
 				a2,
-				ACTION_HANDLE_TARGET_STEP,
+				ACTION_HANDLE_TARGET_PREDECESSOR,
 			),
 		)
 		.build();

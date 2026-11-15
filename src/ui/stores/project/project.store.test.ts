@@ -1,7 +1,11 @@
 /** @jest-environment jsdom */
-import { setDefaultDialect } from "@/persistence/preferences.storage";
+import {
+	setDefaultDialect,
+	setStoredScene3dDisplayMode,
+} from "@/persistence/preferences.storage";
 import { Dialect } from "@/expression-language/dialect.enum";
 import createAppProjectStoreEnvironment from "./environment/app-project-store-environment";
+import { Scene3dDisplayMode } from "./scene3d-display-mode.enum";
 import { createProjectStore } from "./project.store";
 import { getDraft, saveDraft } from "@/persistence/draft.storage";
 
@@ -27,6 +31,30 @@ describe("createProjectStore", () => {
 		const store = createProjectStore(createAppProjectStoreEnvironment());
 		expect(store.getState().project).toBeNull();
 		expect(store.getState().hasUnsavedChanges).toBe(false);
+	});
+
+	describe("3D scene display modes", () => {
+		it("offers every mode in the app, with the side panel by default", () => {
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+			const { scene3dDisplayManager, ui } = store.getState();
+			expect([...scene3dDisplayManager.availableModes].sort()).toEqual([
+				"browser-tab",
+				"floating-box",
+				"page",
+				"side-panel",
+			]);
+			expect(ui.scene3dDisplayMode).toBe(Scene3dDisplayMode.SIDE_PANEL);
+			expect(ui.scene3dFloatingVisible).toBe(false);
+			expect(ui.scene3dSidePanelVisible).toBe(false);
+		});
+
+		it("starts in the mode the user chose in this browser", () => {
+			setStoredScene3dDisplayMode(Scene3dDisplayMode.BROWSER_TAB);
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+			expect(store.getState().ui.scene3dDisplayMode).toBe(
+				Scene3dDisplayMode.BROWSER_TAB,
+			);
+		});
 	});
 
 	describe("setOpenModalVisible", () => {

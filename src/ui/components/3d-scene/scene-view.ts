@@ -88,6 +88,11 @@ export default class SceneView {
 		this.channel.send({ type: "interaction", interaction });
 	}
 
+	/** Asks the editor to show the scene in its page again; it closes this tab in answer. */
+	requestDock(): void {
+		this.channel.send({ type: "dock-request" });
+	}
+
 	dispose(): void {
 		clearInterval(this.watchTimer);
 		this.channel.send({ type: "bye" });

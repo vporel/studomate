@@ -7,7 +7,7 @@ import { createClipboardStore } from "@/ui/stores/shared/clipboard.store";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import mitt from "mitt";
 import { act } from "react";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useLadderContext, useLadderStore } from "../context/LadderContext";
 import LadderContextMenu from "./LadderContextMenu";

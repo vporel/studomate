@@ -159,7 +159,7 @@ export default async function Training({ params }: Props) {
 	return (
 		<Container maxWidth="lg" sx={{ my: 4 }}>
 			<Box maxWidth={720}>
-				<PageTitle>{t("landingTitle")}</PageTitle>
+				<PageTitle>{t("landingHeading")}</PageTitle>
 				<Typography textAlign="justify" color="text.secondary">
 					{t("landingIntro")}
 				</Typography>

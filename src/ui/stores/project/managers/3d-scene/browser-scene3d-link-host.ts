@@ -77,6 +77,7 @@ export default function createBrowserScene3dLinkHost(
 		sendInteraction: (interaction) =>
 			getStoreState().simulationManager.sendScene3dInteraction(interaction),
 		createTransport: createBrowserSceneTransport,
+		connectScene: createBrowserSceneTransport,
 		getSessionId: claimPageSession,
 		openWindow: (sessionId) => {
 			const opened = window.open(
@@ -86,6 +87,7 @@ export default function createBrowserScene3dLinkHost(
 			if (!opened) return false;
 			trackEvent("scene-opened", {
 				scene: getStoreState().project?.scene3d?.sceneId,
+				mode: "window",
 			});
 			return true;
 		},

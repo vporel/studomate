@@ -39,6 +39,8 @@ const StepNumberInput = ({
 		onBlur={onCommit}
 		style={{
 			width: "100%",
+			height: "15px",
+			padding: 0,
 			textAlign: "center",
 			border: "none",
 			outline: "none",

@@ -107,7 +107,7 @@ describe("GrafcetPreCompiler", () => {
 				.addConnection(
 					new ConnectionBuilder()
 						.source("step", "step-1", "source:action")
-						.target("action", "action-1", "target:step")
+						.target("action", "action-1", "target:predecessor")
 						.build(),
 				)
 				.build();
@@ -143,7 +143,7 @@ describe("GrafcetPreCompiler", () => {
 				.addConnection(
 					new ConnectionBuilder()
 						.source("step", "step-1", "source:action")
-						.target("action", "action-1", "target:step")
+						.target("action", "action-1", "target:predecessor")
 						.build(),
 				)
 				.build();
@@ -436,7 +436,7 @@ describe("GrafcetPreCompiler", () => {
 				.addConnection(
 					new ConnectionBuilder()
 						.source("step", "step-1", "source:action")
-						.target("action", "action-1", "target:step")
+						.target("action", "action-1", "target:predecessor")
 						.build(),
 				)
 				.build();
@@ -508,7 +508,7 @@ describe("GrafcetPreCompiler", () => {
 				.addConnection(
 					new ConnectionBuilder()
 						.source("step", "step-2", "source:action")
-						.target("action", "action-1", "target:step")
+						.target("action", "action-1", "target:predecessor")
 						.build(),
 				)
 				.build();

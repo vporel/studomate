@@ -13,7 +13,7 @@ import {
 } from "@/schemas/variable/variable.validator";
 import { Dialect } from "@/expression-language/dialect.enum";
 import { useT } from "@/ui/i18n/useT";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { GridColDef } from "@mui/x-data-grid";
 import { useMemo } from "react";
 import { useProjectStore } from "../projects/ProjectContext";

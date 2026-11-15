@@ -43,7 +43,9 @@ const Footer = () => {
 			title: t("resources"),
 			links: [
 				{ label: t("training"), href: "/training" },
+				{ label: t("glossary"), href: "/training/glossary" },
 				{ label: t("manual"), href: "/user-manual" },
+				{ label: t("teachers"), href: "/teachers" },
 				{ label: t("about"), href: "/about" },
 			],
 		},

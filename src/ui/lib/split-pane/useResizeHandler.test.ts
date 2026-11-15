@@ -152,4 +152,52 @@ describe("useResizeHandler", () => {
 
 		expect(setSizes).toHaveBeenCalledWith([55, 45]);
 	});
+
+	it("reports the new size of both adjacent panes once the drag ends", () => {
+		const ref = createRef({ width: 1000, height: 1000 });
+		const onLeftSizeChange = jest.fn();
+		const onRightSizeChange = jest.fn();
+		const children = [
+			fakePane({ onSizeChange: onLeftSizeChange }),
+			fakePane({ onSizeChange: onRightSizeChange }),
+		];
+		const { result } = renderHook(() =>
+			useResizeHandler(ref, true, [50, 50], jest.fn(), children),
+		);
+
+		act(() => {
+			result.current(0, fakeMouseDownEvent(100, 0));
+		});
+		act(() => {
+			document.dispatchEvent(
+				new MouseEvent("mousemove", { clientX: 200, clientY: 0 }),
+			);
+		});
+		expect(onLeftSizeChange).not.toHaveBeenCalled();
+
+		act(() => {
+			document.dispatchEvent(new MouseEvent("mouseup"));
+		});
+
+		expect(onLeftSizeChange).toHaveBeenCalledWith({ px: 600, percent: 60 });
+		expect(onRightSizeChange).toHaveBeenCalledWith({ px: 400, percent: 40 });
+	});
+
+	it("reports nothing when the drag did not resize the panes", () => {
+		const ref = createRef({ width: 1000, height: 1000 });
+		const onSizeChange = jest.fn();
+		const children = [fakePane({ onSizeChange }), fakePane({})];
+		const { result } = renderHook(() =>
+			useResizeHandler(ref, true, [50, 50], jest.fn(), children),
+		);
+
+		act(() => {
+			result.current(0, fakeMouseDownEvent(100, 0));
+		});
+		act(() => {
+			document.dispatchEvent(new MouseEvent("mouseup"));
+		});
+
+		expect(onSizeChange).not.toHaveBeenCalled();
+	});
 });

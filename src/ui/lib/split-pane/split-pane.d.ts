@@ -9,6 +9,8 @@ export interface PaneProps extends BoxProps {
 	minSize?: SizeValue;
 	maxSize?: SizeValue;
 	visible?: boolean; //default: true
+	/** Called once a drag of an adjacent divider has resized the pane. */
+	onSizeChange?: (size: { px: number; percent: number }) => void;
 }
 
 export interface SplitPaneProps extends BoxProps {

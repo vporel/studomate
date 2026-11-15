@@ -21,15 +21,12 @@ describe.each([
 	["fr", fr.metadata],
 	["en", en.metadata],
 ])("titres de pages (%s)", (_locale, metadata) => {
-	const titles = collectTitles(metadata as Metadata).filter(
-		([path]) => !path.includes("trainingStepFallbackTitle"),
-	);
+	const titles = collectTitles(metadata as Metadata);
 
 	it.each(titles)(
 		"%s tient dans la limite de longueur une fois suffixé",
 		(path, title) => {
 			const hasOwnSuffix =
-				path === "homeTitle" ||
 				path.startsWith("manualSections.") ||
 				path.startsWith("trainingSteps.");
 			const full = hasOwnSuffix ? title : TITLE_TEMPLATE.replace("%s", title);
@@ -40,7 +37,6 @@ describe.each([
 	it("les titres soumis au template ne répètent pas le suffixe", () => {
 		const templated = titles.filter(
 			([path]) =>
-				path !== "homeTitle" &&
 				!path.startsWith("manualSections.") &&
 				!path.startsWith("trainingSteps."),
 		);

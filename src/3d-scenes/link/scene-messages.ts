@@ -26,7 +26,8 @@ export type SceneToEditorMessage =
 	| { type: "hello" }
 	| { type: "interaction"; interaction: unknown }
 	| { type: "pong" }
-	| { type: "bye" };
+	| { type: "bye" }
+	| { type: "dock-request" };
 
 export type SceneMessage = EditorToSceneMessage | SceneToEditorMessage;
 
@@ -47,6 +48,7 @@ const MESSAGE_TYPES: readonly SceneMessage["type"][] = [
 	"interaction",
 	"pong",
 	"bye",
+	"dock-request",
 ];
 
 export function toEnvelope<M extends SceneMessage>(

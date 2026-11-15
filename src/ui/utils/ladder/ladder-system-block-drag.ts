@@ -5,7 +5,7 @@ import {
 
 /**
  * Type MIME du glisser-déposer d'un bloc système (tempo, compteur, compare, affectation,
- * arithmétique) depuis la section "Blocs systèmes" de l'explorateur (ou l'outil dédié de la
+ * arithmétique) depuis la section "Bibliothèque" de l'explorateur (ou l'outil dédié de la
  * toolbar, voir `LadderSystemBlockTool`) vers le canevas d'un ladder — même mécanisme que
  * `LADDER_PROGRAM_DRAG_MIME_TYPE` (`DataTransfer` natif, explorateur et éditeur ladder ne
  * partageant aucun contexte React commun). La valeur transportée est le `blockType`.

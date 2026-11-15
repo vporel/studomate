@@ -37,7 +37,6 @@ const publicPaths: LocalizedHref[] = [
 		moduleEntryPathname(moduleId),
 		...buildModuleSteps(moduleId, DEFAULT_LOCALE)
 			.slice(1)
-			.filter((step) => step.kind === "theory")
 			.map(
 				({ id }): LocalizedHref =>
 					(locale) => ({

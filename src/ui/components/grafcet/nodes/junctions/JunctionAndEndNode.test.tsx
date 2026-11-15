@@ -9,6 +9,7 @@ import {
 	useGrafcetStore,
 } from "@/ui/components/grafcet/context/GrafcetContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
+import Junction from "@/schemas/grafcet/junction.schema";
 import JunctionAndEndNode, {
 	JunctionAndEndNodeType,
 } from "./JunctionAndEndNode";
@@ -53,5 +54,44 @@ describe("JunctionAndEndNode", () => {
 		expect(
 			container.querySelector(".junction-and-end-node"),
 		).toBeInTheDocument();
+	});
+
+	it("empile des hauteurs qui tiennent dans celle du nœud pour que les deux traits horizontaux restent visibles", () => {
+		const junction = new JunctionAndEndBuilder()
+			.id("junction-1")
+			.position(0, 0)
+			.build();
+		(useGrafcetContext as jest.Mock).mockReturnValue({
+			contextMenuEvents: { on: jest.fn(), off: jest.fn(), emit: jest.fn() },
+		});
+		(useGrafcetStore as unknown as jest.Mock).mockImplementation(
+			selectorImplementation({ workflowManager: {}, highlightedNodesIds: [] }),
+		);
+
+		const { container } = render(
+			<ReactFlowProvider>
+				<JunctionAndEndNode
+					{...({
+						id: "junction-1",
+						data: junction.data,
+						selected: false,
+						width: 200,
+						type: "junction-and-end",
+						position: { x: 0, y: 0 },
+						dragging: false,
+						zIndex: 0,
+						isConnectable: true,
+					} as any)}
+				/>
+			</ReactFlowProvider>,
+		);
+
+		const node = container.querySelector(".junction-and-end-node")!;
+		const stacked = Array.from(node.children)
+			.filter((child) => getComputedStyle(child).position !== "absolute")
+			.map((child) => parseFloat(getComputedStyle(child).height))
+			.filter((height) => !Number.isNaN(height))
+			.reduce((sum, height) => sum + height, 0);
+		expect(stacked + 3).toBeLessThanOrEqual(Junction.DEFAULT_DIMENSIONS.height);
 	});
 });

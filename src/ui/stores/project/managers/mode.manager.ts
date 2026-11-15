@@ -1,6 +1,6 @@
 import type { ProjectStoreGetFunction } from "@/ui/stores/project/project.store";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
-import type { SimulationKind } from "@/ui/stores/project/SimulationKind";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
+import type { SimulationKind } from "@/ui/stores/project/simulation-kind";
 
 /** What the mode menu offers: who runs the logic, and where the inputs and outputs come from. */
 export type ModeChoice =

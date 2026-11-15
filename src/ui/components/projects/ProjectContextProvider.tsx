@@ -38,7 +38,7 @@ import HardwareFirmwareDialog from "./HardwareFirmwareDialog";
 import HardwareObservationDialog from "./HardwareObservationDialog";
 import UnsavedChangesDialog from "./ProjectUnsavedChangesDialog";
 import useShortcutsHandler from "./useShortcutsHandler";
-import { suppressProductTourForThisPageLoad } from "@/ui/components/product-tour/product-tour-eligibility";
+import { suppressToursForThisPageLoad } from "@/ui/components/product-tour/engine/tour-suppression";
 import { parseDraftProject } from "@/persistence/draft.storage";
 import { getHandoff } from "@/persistence/handoff.storage";
 import { EXERCISE_PAGE_DATA } from "@/ui/stores/project/pages-data";
@@ -99,7 +99,7 @@ export const ProjectContextProvider = ({
 	useEffect(() => {
 		const shareToken = getShareTokenFromUrl();
 		if (!shareToken) return;
-		suppressProductTourForThisPageLoad();
+		suppressToursForThisPageLoad();
 		const reopen = async () => {
 			const opened = await store
 				.getState()
@@ -147,7 +147,7 @@ export const ProjectContextProvider = ({
 			getTemplateModeFromUrl() === "solution" && !!template.solution;
 		const autostartSimulation = getTemplateAutostartFromUrl();
 		const locale = getTemplateLocaleFromUrl() ?? resolveUiLocale();
-		if (autostartSimulation) suppressProductTourForThisPageLoad();
+		if (autostartSimulation) suppressToursForThisPageLoad();
 		const open = async () => {
 			await store
 				.getState()

@@ -7,7 +7,7 @@ import { i18nWrapper } from "@tests/utils/i18n";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import Project from "@/schemas/project/project.schema";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { useProjectStore } from "../projects/ProjectContext";
 import ExplorerProgramsItems from "./ExplorerProgramsItems";
 

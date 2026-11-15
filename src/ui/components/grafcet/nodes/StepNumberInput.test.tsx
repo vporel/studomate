@@ -23,6 +23,13 @@ function setup({ editing = true } = {}) {
 }
 
 describe("StepNumberInput", () => {
+	it("a une hauteur fixe de 15px, qui laisse un renvoi de 40px avec son espace de 5px et sa flèche de 20px", () => {
+		const { input } = setup();
+
+		expect(input).toHaveStyle({ height: "15px" });
+		expect(15 + 5 + 20).toBe(40);
+	});
+
 	it("porte la classe fournie et la valeur", () => {
 		const { input } = setup();
 

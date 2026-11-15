@@ -1,5 +1,5 @@
 "use client";
-import { Box, useTheme } from "@mui/material";
+import { useTheme } from "@mui/material";
 import { NodeProps } from "@xyflow/react";
 import { type FC } from "react";
 import JunctionBarsRow from "./JunctionBarsRow";
@@ -32,14 +32,6 @@ const JunctionAndEndNode: FC<JunctionAndEndNodeProps> = (props) => {
 				marginTop="3px"
 			/>
 			<JunctionBarsRow data={data} color={borderColor} height="12px" pivot />
-			<Box
-				sx={{
-					marginLeft: data.pivotPosition + "px",
-					width: "1px",
-					height: "12px",
-					background: borderColor,
-				}}
-			/>
 			<JunctionNodeBranchAddButtons top={-10} />
 		</JunctionNode>
 	);

@@ -5,8 +5,8 @@ import {
 	modeChoiceOf,
 	type ModeChoice,
 } from "@/ui/stores/project/managers/mode.manager";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
-import { SimulationMode } from "@/ui/stores/project/SimulationMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
+import { SimulationMode } from "@/ui/stores/project/simulation-mode.enum";
 import { Box } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useT } from "@/ui/i18n/useT";

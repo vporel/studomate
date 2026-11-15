@@ -23,6 +23,16 @@ export type TransitionNodeProps = NodeProps<TransitionNodeType>;
 const TEXTAREA_LINE_HEIGHT_REM = 1.2;
 const TEXTAREA_MAX_LINES = 6;
 
+// Shared by the textarea and its hidden mirror: the mirror sizes the clickable area at rest,
+// so both must lay out the text identically.
+const TEXT_TYPOGRAPHY = {
+	margin: 0,
+	padding: 0,
+	fontFamily: "inherit",
+	fontSize: "0.75rem",
+	lineHeight: `${TEXTAREA_LINE_HEIGHT_REM}rem`,
+} as const;
+
 /** Formate un temps écoulé de tempo (en ms) en secondes, ex. `1500` → `"1.5s"`, `5000` → `"5.0s"`. */
 function formatTimerElapsed(elapsedMs: number): string {
 	const seconds = Math.round(elapsedMs / 100) / 10;
@@ -156,43 +166,67 @@ const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 						width: "230px",
 						display: "flex",
 						alignItems: "center",
+						pointerEvents: "none",
 					}}
 				>
-					<textarea
-						ref={textareaRef}
-						className="node__input transition_node__textarea nodrag"
-						value={editingExpression}
-						onChange={(e) => {
-							setEditingExpression(e.target.value);
-							fitTextareaHeight(e.target);
+					<Box
+						className="transition_node__text"
+						sx={{
+							display: "grid",
+							width: editing ? "100%" : "fit-content",
+							maxWidth: "100%",
+							pointerEvents: editing || editingExpression ? "auto" : "none",
 						}}
-						onKeyDown={(e) => {
-							if ((e.key === "Enter" && !e.shiftKey) || e.key === "Escape") {
-								//The save is done only on blur to avoid multiple saves when pressing enter
-								textareaRef.current?.blur();
-							}
-						}}
-						onBlur={() => {
-							setEditing(false);
-							saveExpression();
-						}}
-						rows={1}
-						style={{
-							width: "100%",
-							height: "auto",
-							maxHeight: `${TEXTAREA_LINE_HEIGHT_REM * TEXTAREA_MAX_LINES}rem`,
-							border: "none",
-							outline: "none",
-							resize: "none",
-							overflowY: "auto",
-							padding: "0",
-							lineHeight: `${TEXTAREA_LINE_HEIGHT_REM}rem`,
-							fontSize: "0.75rem",
-							pointerEvents: !editing ? "none" : "all",
-							color: trueInSimulator ? colorIfTrueInSimulation : "black",
-							background: editing ? th.palette.grey[200] : "transparent",
-						}}
-					/>
+					>
+						<Box
+							component="span"
+							aria-hidden
+							sx={{
+								...TEXT_TYPOGRAPHY,
+								gridArea: "1 / 1",
+								visibility: "hidden",
+								whiteSpace: "pre-wrap",
+								overflowWrap: "anywhere",
+							}}
+						>
+							{editingExpression + " "}
+						</Box>
+						<textarea
+							ref={textareaRef}
+							className="node__input transition_node__textarea nodrag"
+							value={editingExpression}
+							onChange={(e) => {
+								setEditingExpression(e.target.value);
+								fitTextareaHeight(e.target);
+							}}
+							onKeyDown={(e) => {
+								if ((e.key === "Enter" && !e.shiftKey) || e.key === "Escape") {
+									//The save is done only on blur to avoid multiple saves when pressing enter
+									textareaRef.current?.blur();
+								}
+							}}
+							onBlur={() => {
+								setEditing(false);
+								saveExpression();
+							}}
+							rows={1}
+							style={{
+								...TEXT_TYPOGRAPHY,
+								gridArea: "1 / 1",
+								width: 0,
+								minWidth: "100%",
+								height: "auto",
+								maxHeight: `${TEXTAREA_LINE_HEIGHT_REM * TEXTAREA_MAX_LINES}rem`,
+								border: "none",
+								outline: "none",
+								resize: "none",
+								overflowY: "auto",
+								pointerEvents: !editing ? "none" : "all",
+								color: trueInSimulator ? colorIfTrueInSimulation : "black",
+								background: editing ? th.palette.grey[200] : "transparent",
+							}}
+						/>
+					</Box>
 				</Box>
 			</GrafcetNode>
 		</>

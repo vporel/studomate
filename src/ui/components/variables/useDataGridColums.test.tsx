@@ -10,7 +10,7 @@ import {
 import { renderHook } from "@testing-library/react";
 import { i18nWrapper } from "@tests/utils/i18n";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import { VariableZone } from "@/schemas/variable/variable.schema";
 import useGridColumns from "./useDataGridColums";

@@ -4,7 +4,7 @@ import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useT } from "@/ui/i18n/useT";
 import { platformShortcut } from "@/ui/lib/platform";
 import { activeCopyCutPasteManager } from "@/ui/stores/project/copy-cut-paste";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import {
 	canRedoActiveScope,
 	canUndoActiveScope,

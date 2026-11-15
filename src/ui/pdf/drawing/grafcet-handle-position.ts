@@ -1,3 +1,4 @@
+import { ACTION_HANDLE_SOURCE_NEXT } from "@/schemas/grafcet/action.schema";
 import Element from "@/schemas/grafcet/element.schema";
 import {
 	STEP_HANDLE_SOURCE_ACTION,
@@ -33,7 +34,8 @@ export default function grafcetHandlePosition(
 				return [x + w / 2, y];
 			return [x + w / 2, y + h]; // successor
 		case "action":
-			return [x, y + h / 2]; // target:step, sur le bord gauche
+			if (handle === ACTION_HANDLE_SOURCE_NEXT) return [x + w, y + h / 2];
+			return [x, y + h / 2]; // target:predecessor, sur le bord gauche
 		case "step-referral-source":
 			return [x + w / 2, y]; // target:predecessor, en haut
 		case "step-referral-target":

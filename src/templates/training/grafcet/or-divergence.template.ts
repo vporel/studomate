@@ -8,7 +8,7 @@ import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
 import {
 	ActionExecutionMode,
 	ActionType,
-	ACTION_HANDLE_TARGET_STEP,
+	ACTION_HANDLE_TARGET_PREDECESSOR,
 } from "@/schemas/grafcet/action.schema";
 import { JUNCTION_HANDLE_PIVOT } from "@/schemas/grafcet/junction.schema";
 import { STEP_REFERRAL_SOURCE_HANDLE_TARGET_PREDECESSOR } from "@/schemas/grafcet/step-referral-source.schema";
@@ -240,14 +240,14 @@ export function createOrDivergenceSolution(locale: Locale = "fr"): Project {
 				e1,
 				STEP_HANDLE_SOURCE_ACTION,
 				a1,
-				ACTION_HANDLE_TARGET_STEP,
+				ACTION_HANDLE_TARGET_PREDECESSOR,
 			),
 			ConnectionBuilder.betweenElements(
 				createRandomId(),
 				e2,
 				STEP_HANDLE_SOURCE_ACTION,
 				a2,
-				ACTION_HANDLE_TARGET_STEP,
+				ACTION_HANDLE_TARGET_PREDECESSOR,
 			),
 		)
 		.build();

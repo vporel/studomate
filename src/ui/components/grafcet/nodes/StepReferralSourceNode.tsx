@@ -58,6 +58,7 @@ const StepReferralSourceNode: FC<StepReferralSourceNodeProps> = ({
 				error={error}
 				sx={{
 					width: StepReferral.DEFAULT_DIMENSIONS.width + "px",
+					height: StepReferral.DEFAULT_DIMENSIONS.height + "px",
 					display: "flex",
 					flexDirection: "column",
 					alignItems: "center",

@@ -54,7 +54,7 @@ describe("Pipeline — charge", () => {
 					new ConnectionBuilder()
 						.id(`ca${i}`)
 						.source("step", `s${i}`, "source:action")
-						.target("action", `a${i}`, "target:step")
+						.target("action", `a${i}`, "target:predecessor")
 						.build(),
 				);
 			}

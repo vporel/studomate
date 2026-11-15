@@ -39,6 +39,13 @@ export const SCENE3D_CONFIGURATION_PAGE_DATA: PageData = {
 	title: "Configuration scène 3D",
 };
 
+export const SCENE3D_VIEW_PAGE_ID = "scene3d-view";
+export const SCENE3D_VIEW_PAGE_DATA: PageData = {
+	id: SCENE3D_VIEW_PAGE_ID,
+	type: "scene3d-view",
+	title: "Scène 3D",
+};
+
 export const SYSTEM_VARIABLES_PAGE_ID = "system-variables";
 export const SYSTEM_VARIABLES_PAGE_DATA: PageData = {
 	id: SYSTEM_VARIABLES_PAGE_ID,

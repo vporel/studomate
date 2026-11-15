@@ -9,9 +9,18 @@ import A5_STEP_IDS from "./step-ids/a5";
 
 type StepIdOf<T> = T[keyof T] & string;
 
+type StepIds = {
+	a0: typeof A0_STEP_IDS;
+	a1: typeof A1_STEP_IDS;
+	a2: typeof A2_STEP_IDS;
+	a3: typeof A3_STEP_IDS;
+	a4: typeof A4_STEP_IDS;
+	a5: typeof A5_STEP_IDS;
+};
+
 /**
  * URL slug of each training step in French, per module (step ids are only unique within a
- * module). English URLs use the step id itself.
+ * module). English URLs use the step id itself, except for the steps listed in `EN_STEP_SLUGS`.
  */
 const FR_STEP_SLUGS: {
 	a0: Record<StepIdOf<typeof A0_STEP_IDS>, string>;
@@ -29,7 +38,7 @@ const FR_STEP_SLUGS: {
 	},
 	a1: {
 		"grafcet-definition": "definition-grafcet",
-		theory: "theorie",
+		theory: "etapes-transitions-receptivites",
 		"observe-linear": "observer-sequence-lineaire",
 		"theory-actions": "theorie-actions",
 		"observe-actions": "observer-actions",
@@ -69,9 +78,9 @@ const FR_STEP_SLUGS: {
 		"exercise-counters": "exercice-compteurs",
 		"theory-numeric": "theorie-grandeurs-numeriques",
 		"exercise-tank": "exercice-reservoir",
-		"theory-types": "theorie-types",
+		"theory-types": "theorie-types-int-dint-real",
 		"exercise-scaling": "exercice-mise-a-l-echelle",
-		"theory-structure": "theorie-structure",
+		"theory-structure": "theorie-sous-programmes",
 		"exercise-subprograms": "exercice-sous-programmes",
 		"synthesis-packing": "synthese-conditionnement",
 		conclusion: "conclusion",
@@ -103,12 +112,27 @@ const FR_STEP_SLUGS: {
 	},
 };
 
+/** English slugs of the steps whose id does not name their topic. */
+const EN_STEP_SLUGS: {
+	[M in TrainingModuleId]: Partial<Record<StepIdOf<StepIds[M]>, string>>;
+} = {
+	a0: {},
+	a1: { theory: "steps-transitions-conditions" },
+	a2: {},
+	a3: {
+		"theory-types": "theory-int-dint-real-types",
+		"theory-structure": "theory-subprograms",
+	},
+	a4: {},
+	a5: {},
+};
+
 const SLUGS: Record<
 	Locale,
 	Record<TrainingModuleId, Record<string, string>>
 > = {
 	fr: FR_STEP_SLUGS,
-	en: { a0: {}, a1: {}, a2: {}, a3: {}, a4: {}, a5: {} },
+	en: EN_STEP_SLUGS,
 };
 
 /** Slug of a training step in `locale`; the id itself when the step has none. */

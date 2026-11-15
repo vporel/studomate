@@ -3,7 +3,7 @@
  */
 import { isWebSerialSupported } from "@/hardware/arduino/remote-io/web-serial.transport";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { i18nWrapper } from "@tests/utils/i18n";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import { renderHook } from "@testing-library/react";

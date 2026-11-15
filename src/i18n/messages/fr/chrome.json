@@ -27,13 +27,14 @@
 	"autoSaveUnavailable": "Sauvegarde automatique indisponible — enregistrez manuellement",
 	"statusBar": {
 		"author": "Auteur : {name}",
-		"unknownAuthor": "Inconnu",
+		"unknownAuthor": "Non renseigné",
 		"offline": "Hors ligne",
 		"offlineHint": "Les projets cloud, les liens de partage et la connexion à un compte sont indisponibles sans réseau."
 	},
 	"footerActions": {
 		"watchTables": "Tables de visualisation",
 		"hmiSimulation": "Simulation HMI",
+		"scene3d": "Scène 3D",
 		"analysisResults": "Résultats de l'analyse",
 		"ok": "(OK)",
 		"errors": "(Erreurs)",

@@ -10,7 +10,7 @@ import React from "react";
  * Outil de dépose pour un bloc système (compare, assign, arithmetic) — même geste que `LadderTool`
  * (glisser-déposer une icône vers le canevas), mais porte le glissement en `DataTransfer` natif
  * plutôt que par le contexte React `LadderToolbarDnDContext` : c'est le même mécanisme que la
- * section "Blocs systèmes" de l'explorateur (voir `ExplorerSystemBlocksItems`), pour que
+ * section "Bibliothèque" de l'explorateur (voir `ExplorerSystemBlocksItems`), pour que
  * `useLadderDropHandlers` déclenche exactement le même comportement (insertion directe d'un bloc
  * vide, configuré ensuite sur le canevas) quelle que soit la source du glisser-déposer.
  */

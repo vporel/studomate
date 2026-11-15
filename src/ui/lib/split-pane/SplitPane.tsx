@@ -44,6 +44,7 @@ const SplitPane = ({
 					initialSize,
 					minSize,
 					maxSize,
+					onSizeChange: _onSizeChange,
 					...rest
 				} = child.props;
 

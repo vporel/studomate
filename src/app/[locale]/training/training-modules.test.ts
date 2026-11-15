@@ -34,7 +34,7 @@ describe("training modules", () => {
 	);
 
 	it.each(["fr", "en"] as const)(
-		"%s : titre et description pour chaque étape de théorie indexable (hors première) et rien d'autre",
+		"%s : titre et description pour chaque étape indexable (hors première) et rien d'autre",
 		(locale) => {
 			const messages = (
 				getMessages(locale) as {
@@ -45,7 +45,6 @@ describe("training modules", () => {
 			for (const moduleId of TRAINING_MODULE_IDS) {
 				const expected = buildModuleSteps(moduleId, locale)
 					.slice(1)
-					.filter((s) => s.kind === "theory")
 					.map((s) => s.id)
 					.sort();
 				expect(Object.keys(messages[moduleId] ?? {}).sort()).toEqual(expected);
@@ -58,6 +57,13 @@ describe("training modules", () => {
 			}
 		},
 	);
+
+	it("lie à chaque module le manuel des éditeurs qu'il fait pratiquer", () => {
+		expect(TRAINING_MODULES.a0.manualSections).toEqual([]);
+		expect(TRAINING_MODULES.a1.manualSections).toEqual(["grafcet"]);
+		expect(TRAINING_MODULES.a3.manualSections).toEqual(["ladder"]);
+		expect(TRAINING_MODULES.a5.manualSections).toEqual(["grafcet", "ladder"]);
+	});
 
 	it("chaque module pointe vers le suivant du parcours, le dernier n'en a pas", () => {
 		expect(TRAINING_MODULES.a0.next?.href).toBe("/training/a1");

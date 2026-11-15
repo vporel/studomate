@@ -338,3 +338,65 @@ describe("TransitionHelper.getPredecessorSteps", () => {
 		);
 	});
 });
+
+describe("TransitionHelper.getSuccessorReferrals", () => {
+	it("returns the step referrals the transition leads to", () => {
+		const grafcet = new GrafcetBuilder()
+			.addTransition(new TransitionBuilder().id("t").build())
+			.addStepReferralSource(new StepReferralSourceBuilder().id("r").build())
+			.addConnection(
+				conn(
+					"transition",
+					"t",
+					"source:successor",
+					"step-referral-source",
+					"r",
+					"target:predecessor",
+				),
+			)
+			.build();
+
+		expect(
+			TransitionHelper.getSuccessorReferrals("t", grafcet).map((r) => r.id),
+		).toEqual(["r"]);
+	});
+
+	it("ignores the other successors of the transition", () => {
+		const grafcet = new GrafcetBuilder()
+			.addTransition(new TransitionBuilder().id("t").build())
+			.addStep(new StepBuilder().id("s").number(1).build())
+			.addConnection(
+				conn(
+					"transition",
+					"t",
+					"source:successor",
+					"step",
+					"s",
+					"target:predecessor",
+				),
+			)
+			.build();
+
+		expect(TransitionHelper.getSuccessorReferrals("t", grafcet)).toEqual([]);
+	});
+
+	it("ignores the referrals linked to another transition", () => {
+		const grafcet = new GrafcetBuilder()
+			.addTransition(new TransitionBuilder().id("t").build())
+			.addTransition(new TransitionBuilder().id("other").build())
+			.addStepReferralSource(new StepReferralSourceBuilder().id("r").build())
+			.addConnection(
+				conn(
+					"transition",
+					"other",
+					"source:successor",
+					"step-referral-source",
+					"r",
+					"target:predecessor",
+				),
+			)
+			.build();
+
+		expect(TransitionHelper.getSuccessorReferrals("t", grafcet)).toEqual([]);
+	});
+});

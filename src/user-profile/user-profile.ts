@@ -1,5 +1,5 @@
-import { SchoolType } from "./SchoolType.enum";
-import { UserType } from "./UserType.enum";
+import { SchoolType } from "./school-type.enum";
+import { UserType } from "./user-type.enum";
 
 /** Self-declared profile. `null` means "not provided". */
 export type UserProfile = {

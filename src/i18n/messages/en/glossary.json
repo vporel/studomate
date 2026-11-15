@@ -8,8 +8,9 @@
 	"resultsOne": "1 term",
 	"resultsOther": "{count} terms",
 	"noResults": "No term matches your search.",
-	"aliasesLabel": "Also called",
-	"relatedLabel": "See also",
+	"aliasesLabel": "Also called:",
+	"relatedLabel": "See also:",
+	"lessonLabel": "Learn it:",
 	"sections": {
 		"general": {
 			"title": "General concepts"
@@ -163,6 +164,13 @@
 			"aliases": "chronogram",
 			"definition": "A chart showing how several signals change over time, stacked on the same time axis.",
 			"details": "",
+			"figureAlt": ""
+		},
+		"grafcet": {
+			"term": "GRAFCET",
+			"aliases": "IEC 60848",
+			"definition": "A standardised graphical language (IEC 60848) that describes the behaviour of an automated system as steps and transitions: what to do, in what order and under what conditions.",
+			"details": "It does not depend on the hardware: a GRAFCET can be run by a PLC, for example by translating it into ladder logic, or by relays. The SFC language (Sequential Function Chart) of the IEC 61131-3 standard is derived from it.",
 			"figureAlt": ""
 		},
 		"step": {

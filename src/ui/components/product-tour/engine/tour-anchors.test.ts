@@ -1,11 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import {
-	PRODUCT_TOUR_STEP_IDS,
-	productTourAnchorSelector,
-	selectAvailableSteps,
-} from "./product-tour-steps";
+import { selectAvailableSteps, tourAnchorSelector } from "./tour-anchors";
 
 describe("selectAvailableSteps", () => {
 	afterEach(() => {
@@ -28,20 +24,12 @@ describe("selectAvailableSteps", () => {
 	});
 
 	it("builds the selector from the step id", () => {
-		expect(productTourAnchorSelector("hmiPages")).toBe(
-			'[data-tour="hmiPages"]',
-		);
+		expect(tourAnchorSelector("hmiPages")).toBe('[data-tour="hmiPages"]');
 	});
 
-	it("declares the steps in display order", () => {
-		expect(PRODUCT_TOUR_STEP_IDS).toEqual([
-			"menubar",
-			"explorer",
-			"pages",
-			"hmiPages",
-			"simulation",
-			"crossReference",
-			"analysis",
-		]);
+	it("prefixes the selector with the scope when given", () => {
+		expect(tourAnchorSelector("canvas", '[id="page-a"]')).toBe(
+			'[id="page-a"] [data-tour="canvas"]',
+		);
 	});
 });

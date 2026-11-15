@@ -1,8 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
-import { SimulationMode } from "@/ui/stores/project/SimulationMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
+import { SimulationMode } from "@/ui/stores/project/simulation-mode.enum";
 import { screen } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { selectorImplementation } from "@tests/utils/store-mocks";

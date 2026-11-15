@@ -121,7 +121,7 @@
 		"interfaceTitle": "Interface principale",
 		"interfaceIntro": "L'interface est divisée en plusieurs zones :",
 		"interfaceItems": [
-			"Barre de menus (haut) : Fichier, Édition, Interface, Projet, Cible (carte Arduino), Aide",
+			"Barre de menus (haut) : Fichier, Édition, Affichage, Projet, Cible (carte Arduino), Aide",
 			"Barre d'outils (haut) : accès rapide aux actions courantes et outils de création Grafcet ou Ladder",
 			"Explorateur (gauche) : arborescence des variables, grafcets, ladders et interfaces HMI du projet",
 			"Zone principale (centre) : onglets des pages ouvertes (grafcets, ladders, variables, propriétés). Cliquez sur un onglet pour l'activer, sur sa croix pour le fermer.",
@@ -142,7 +142,7 @@
 		"preferencesItems": [
 			"Langue de l'interface : français ou anglais. Le sélecteur de langue du bandeau des pages publiques (accueil, manuel) est distinct et ne concerne pas l'application ;",
 			"Lieu de stockage par défaut : local ou cloud, utilisé pour le premier enregistrement d'un projet neuf ;",
-			"Ouvrir automatiquement la vue de simulation : à l'entrée en simulation, bascule sur l'onglet « Simulation HMI » si le projet a une page HMI, sinon sur l'onglet de la scène 3D si le projet en a une."
+			"Ouvrir automatiquement la vue de simulation : à l'entrée en simulation, bascule sur l'onglet « Simulation HMI » si le projet a une page HMI, sinon sur la scène 3D si le projet en a une."
 		]
 	},
 	"projects": {
@@ -174,6 +174,7 @@
 			"Récupérer le travail : Studomate n'a pas de vue enseignant, vous ne voyez pas les projets cloud de vos élèves. Chaque élève vous envoie un fichier (Fichier → Exporter → Fichier projet), que vous ouvrez par « Ouvrir depuis un fichier… », ou un lien de partage de son propre projet.",
 			"Compte rendu : l'export PDF du projet complet donne une page de garde (nom, auteur, énoncé) puis les grafcets, les ladders et, si la case est cochée, les tables de variables."
 		],
+		"teacherPageLink": "Enseigner le GRAFCET et le Ladder avec Studomate",
 		"addProgramTitle": "Ajouter un grafcet, un ladder ou une page HMI",
 		"addProgramBody": "Projet → Nouveau grafcet (Ctrl+G), Projet → Nouveau ladder (Ctrl+L) ou Projet → Nouvelle page HMI (sans raccourci). Le nouvel élément est ajouté au projet et son onglet s'ouvre automatiquement. Vous pouvez le renommer en double-cliquant sur son nom dans l'explorateur ou via le clic droit → Renommer (F2).",
 		"addProgramOutro": "Le menu Projet regroupe aussi « Énoncé de l'exercice » (si le projet en a un), « Partager » / « Gérer le partage » (voir la section Comptes & partage) et « Propriétés ».",
@@ -222,7 +223,7 @@
 	},
 	"explorer": {
 		"title": "Explorateur",
-		"p1": "L'explorateur est un panneau latéral gauche affichant l'arborescence du projet. Il peut être affiché ou masqué via le menu Interface → Explorateur. Le menu Interface regroupe les bascules d'affichage de trois panneaux : Explorateur, Références croisées (voir la section dédiée) et Résultats de l'analyse (voir la section Analyse).",
+		"p1": "L'explorateur est un panneau latéral gauche affichant l'arborescence du projet. Il peut être affiché ou masqué via le menu Affichage → Explorateur. Le menu Affichage regroupe les bascules d'affichage de trois panneaux : Explorateur, Références croisées (voir la section dédiée) et Résultats de l'analyse (voir la section Analyse).",
 		"structureTitle": "Structure de l'explorateur",
 		"structureIntro": "L'explorateur est organisé en plusieurs sections :",
 		"variablesLabel": "Variables :",
@@ -242,7 +243,7 @@
 		"blockInstancesItems": [
 			"Apparaît uniquement lorsque le projet contient au moins un bloc temporisateur ou compteur. Liste toutes les instances nommées, avec un menu contextuel permettant de les configurer ou d'accéder au ladder qui les contient."
 		],
-		"systemBlocksLabel": "Blocs systèmes :",
+		"systemBlocksLabel": "Bibliothèque :",
 		"systemBlocksItems": [
 			"Palette des blocs disponibles pour l'éditeur ladder : Temporisation, Compteur, Comparaison, Affectation, Calcul, Conversion. Faites glisser un bloc depuis cette section vers le canvas d'un ladder pour l'insérer. Cette section n'apparaît que lorsqu'un ladder est ouvert."
 		],
@@ -405,7 +406,7 @@
 			"Front dans une réceptivité : il n'existe pas de syntaxe de front (pas de « ↑a »). Pour réagir à un changement de valeur, faites écrire une variable mémoire par une bobine de front montant ou descendant d'un ladder (vraie pendant un seul cycle), ou par une action de front sur une étape, puis utilisez cette variable dans la réceptivité."
 		],
 		"actionsTitle": "Actions",
-		"actionsIntro": "Les actions sont des blocs liés aux étapes qui décrivent ce que fait le système lorsqu'une étape est active. Une étape peut avoir plusieurs actions.",
+		"actionsIntro": "Les actions sont des blocs liés aux étapes qui décrivent ce que fait le système lorsqu'une étape est active. Une étape peut avoir plusieurs actions : elles se chaînent les unes aux autres (étape → action → action…), chaque action ayant un point de connexion à droite vers la suivante. Une étape peut aussi être reliée directement à 4 actions au plus. Une action déposée à droite d'une autre s'y chaîne et s'y colle ; si la place est prise, elle va au bout de la chaîne. Supprimer l'étape laisse la chaîne soudée : il suffit de relier sa première action à une autre étape.",
 		"actionsTypesTitle": "Types d'actions",
 		"actionsTypes": [
 			"Texte : description textuelle libre, sans exécution ni vérification syntaxique. Représentée par une bordure fine.",
@@ -466,7 +467,8 @@
 			"Transition → Étape",
 			"Jonction divergence → Branche → Étape ou Transition",
 			"Étape ou Transition → Branche → Jonction convergence",
-			"Étape → Action"
+			"Étape → Action",
+			"Action → Action (actions chaînées d'une même étape)"
 		],
 		"connectionsWaypointsTitle": "Points de passage",
 		"connectionsWaypointsBody": "Cliquez sur une liaison pour ajouter un point de passage ; faites-le glisser pour modifier le tracé. Cela permet de contourner d'autres éléments ou d'améliorer la lisibilité du diagramme."
@@ -512,7 +514,7 @@
 		],
 		"coilsOutro": "Comme pour les contacts, la variable se choisit par double-clic sur la bobine. En simulation, une bobine alimentée est mise en évidence. Dans la barre d'outils ladder, seules les bobines normale, Set et Reset sont visibles par défaut : le bouton « Afficher d'autres bobines » révèle l'inversée et les deux bobines de front, et « Masquer les bobines supplémentaires » les cache de nouveau.",
 		"blocksTitle": "Blocs",
-		"blocksIntro1": "Les blocs sont des éléments fonctionnels avancés qui s'insèrent dans un réseau comme un contact ou une bobine. Deux façons de les poser : en faisant glisser le bloc depuis la section « Blocs systèmes » de l'explorateur vers le canvas d'un ladder, ou (pour la Comparaison, l'Affectation, le Calcul et la Conversion) depuis l'outil dédié de la barre d'outils ladder.",
+		"blocksIntro1": "Les blocs sont des éléments fonctionnels avancés qui s'insèrent dans un réseau comme un contact ou une bobine. Deux façons de les poser : en faisant glisser le bloc depuis la section « Bibliothèque » de l'explorateur vers le canvas d'un ladder, ou (pour la Comparaison, l'Affectation, le Calcul et la Conversion) depuis l'outil dédié de la barre d'outils ladder.",
 		"timerBlockFigureAlt": "Réseau avec un contact S1 relié à l'entrée IN d'un bloc temporisation T1 de variante TON. La broche PT porte la constante T#5s, la broche ET la variable T1_ET, et la sortie Q alimente une bobine H1.",
 		"blocksIntro2": "La Temporisation et le Compteur ouvrent une fenêtre de configuration à la dépose (nom et variante) ; on la rouvre ensuite en double-cliquant sur le bloc ou par clic droit → Paramétrer sur l'instance dans l'explorateur. La Comparaison, l'Affectation, le Calcul et la Conversion sont insérés vides et se configurent directement sur le canvas : opérandes saisis sur les broches (variable ou constante), opérateur choisi dans le menu qui s'ouvre au clic sur le bloc. L'Affectation, le Calcul et la Conversion recopient leur entrée EN sur leur sortie ENO : plusieurs de ces blocs peuvent s'enchaîner sur un même réseau.",
 		"timerTitle": "Temporisation",
@@ -601,7 +603,7 @@
 		"title": "Références croisées",
 		"p1": "Les références croisées indiquent, pour n'importe quelle variable du projet, tous les endroits où elle est lue et tous les endroits où elle est écrite (grafcets, ladders et interfaces HMI confondus).",
 		"openTitle": "Ouvrir le panneau",
-		"openBody": "Cliquez sur le bouton « Références croisées » dans la barre inférieure, ou utilisez le menu Interface → Références croisées. L'entrée de menu bascule l'affichage du panneau.",
+		"openBody": "Cliquez sur le bouton « Références croisées » dans la barre inférieure, ou utilisez le menu Affichage → Références croisées. L'entrée de menu bascule l'affichage du panneau.",
 		"panelTitle": "Contenu du panneau",
 		"panelIntro": "Le panneau liste les variables du projet avec un champ de filtre. Pour la variable sélectionnée, il affiche deux listes :",
 		"panelItems": [
@@ -731,7 +733,7 @@
 			"Les valeurs des variables sont mises à jour en temps réel.",
 			"Si le projet est lié à une scène 3D, ses capteurs alimentent les entrées liées et les sorties du programme commandent la scène (voir la section Scène 3D).",
 			"Les éditeurs grafcet et ladder sont en lecture seule.",
-			"À l'entrée en simulation, l'onglet « Simulation HMI » s'ouvre automatiquement si le projet contient des pages HMI (voir la section Interfaces HMI) ; sans page HMI, c'est l'onglet de la scène 3D qui s'ouvre si le projet en a une (voir la section Scène 3D). Cette ouverture automatique se désactive dans Fichier → Préférences."
+			"À l'entrée en simulation, l'onglet « Simulation HMI » s'ouvre automatiquement si le projet contient des pages HMI (voir la section Interfaces HMI) ; sans page HMI, c'est la scène 3D qui s'ouvre si le projet en a une (voir la section Scène 3D). Cette ouverture automatique se désactive dans Fichier → Préférences."
 		],
 		"watchTitle": "Tables de visualisation et de modification des variables",
 		"watchIntro": "Le panneau inférieur affiche les tables de visualisation et de modification des variables avec quatre onglets :",
@@ -878,14 +880,19 @@
 			"« Créer les variables manquantes » crée les variables des points non liés avec le nom suggéré par la scène (ou réutilise une variable compatible portant déjà ce nom) et les lie, en une seule opération annulable."
 		],
 		"openTitle": "Afficher la scène",
-		"openBody": "Dès qu'une scène est choisie, l'entrée « Scène 3D » du menu Interface ouvre l'onglet de la scène, avant ou pendant la simulation :",
+		"openBody": "Dès qu'une scène est choisie, l'entrée « Scène 3D » du menu Affichage, le bouton « Scène 3D » de la barre d'état (à gauche de « Références croisées ») et celui de la barre d'outils montrent la scène, avant ou pendant la simulation. Elle s'affiche selon quatre modes, au choix dans le sous-menu « Scène 3D » du menu Affichage (cliquer sur le mode où la scène est affichée la ferme), le dernier choisi étant mémorisé par le navigateur :",
 		"openItems": [
+			"panneau latéral (mode par défaut) : la scène s'affiche dans une colonne à droite des éditeurs, qui se rétrécissent pour lui laisser la place : rien n'est masqué, et on suit le grafcet et la partie opérative en même temps, par exemple en projection. On règle la largeur de la colonne en faisant glisser son bord gauche. En simulation, les tables d'observation s'affichent sous la scène dans la même colonne, et le séparateur entre les deux règle leur hauteur. Le navigateur mémorise ces réglages ;",
+			"cadre flottant : la scène s'affiche dans un cadre au-dessus de l'éditeur, qu'on déplace par sa barre de titre et qu'on redimensionne par ses bords et ses coins, comme une fenêtre. Il reste visible quand on change de page ;",
+			"page : la scène s'ouvre dans un onglet de l'éditeur, comme un programme. Une petite barre en bas à gauche de la page permet de passer aux autres modes ;",
+			"onglet du navigateur : la scène s'ouvre dans un onglet séparé, utile avec un second écran. Son bouton « Revenir dans l'éditeur » la ramène dans l'éditeur ;",
+			"les boutons de la barre de titre du panneau latéral et du cadre flottant changent de mode en un clic ;",
 			"hors simulation, la scène montre son état initial : les commandes éventuelles de la scène sont désactivées et sans effet sur le projet ;",
 			"en simulation, les capteurs de la scène alimentent les entrées liées, et les commandes éventuelles de la scène agissent sur le modèle ;",
-			"à l'entrée en simulation, l'onglet de la scène s'ouvre automatiquement si le projet n'a aucune page HMI (sinon la page HMI est affichée) ; si le navigateur bloque cette ouverture, un message cliquable propose de l'ouvrir (l'entrée « Scène 3D » du menu Interface le permet aussi) ;",
+			"à l'entrée en simulation, la scène s'ouvre automatiquement dans le mode choisi si le projet n'a aucune page HMI (sinon la page HMI est affichée) ; si le navigateur bloque l'ouverture d'un onglet, un message cliquable propose de l'ouvrir (l'entrée « Scène 3D » du menu Affichage le permet aussi) ;",
 			"la pause et l'exécution pas à pas de la simulation s'appliquent aussi à la scène ;",
-			"dans l'onglet de la scène, la souris oriente la vue : glisser pour tourner autour de la scène, molette pour zoomer, clic droit (ou glisser avec Maj) pour déplacer la vue ;",
-			"fermer le projet ferme l'onglet de la scène."
+			"dans la scène, la souris oriente la vue : glisser pour tourner autour de la scène, molette pour zoomer, clic droit (ou glisser avec Maj) pour déplacer la vue ;",
+			"fermer le projet ferme la scène."
 		],
 		"limitsTitle": "Limites",
 		"limitsItems": [
@@ -1017,5 +1024,10 @@
 	},
 	"navHeading": "Plan du manuel",
 	"searchPlaceholder": "Rechercher dans le manuel…",
-	"searchNoResults": "Aucun résultat pour « {query} »."
+	"searchNoResults": "Aucun résultat pour « {query} ».",
+	"trainingLinks": {
+		"grafcet": "Apprendre le GRAFCET pas à pas, avec des exercices corrigés",
+		"ladder": "Apprendre le Ladder pas à pas, avec des exercices corrigés",
+		"gettingStarted": "Suivre la formation GRAFCET et Ladder gratuite"
+	}
 }

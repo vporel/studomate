@@ -8,8 +8,8 @@ jest.mock("./supabase-client", () => ({
 	},
 }));
 
-import { SchoolType } from "@/user-profile/SchoolType.enum";
-import { UserType } from "@/user-profile/UserType.enum";
+import { SchoolType } from "@/user-profile/school-type.enum";
+import { UserType } from "@/user-profile/user-type.enum";
 import ProfileRepository from "./profile.repository";
 
 describe("ProfileRepository", () => {

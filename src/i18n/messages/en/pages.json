@@ -10,7 +10,8 @@
 		"constantVariables": "Constants",
 		"systemVariables": "System variables",
 		"hardwareConfiguration": "Hardware configuration",
-		"scene3dConfiguration": "3D scene configuration"
+		"scene3dConfiguration": "3D scene configuration",
+		"scene3dView": "3D scene"
 	},
 	"systemVariables": {
 		"heading": "System variables",

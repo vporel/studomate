@@ -249,6 +249,7 @@ const HmiCanvas = ({ isSimulation, zoom }: HmiCanvasProps) => {
 		>
 			{/* Conteneur aux dimensions zoomées — clippe le canvas transformé */}
 			<Box
+				data-tour="canvas"
 				ref={canvasWrapperRef}
 				onDragOver={onDragOver}
 				onDrop={onDrop}
@@ -344,6 +345,7 @@ const HmiCanvas = ({ isSimulation, zoom }: HmiCanvasProps) => {
 
 			{inspectable && (
 				<Box
+					data-tour="properties"
 					sx={{
 						width: 300,
 						flexShrink: 0,

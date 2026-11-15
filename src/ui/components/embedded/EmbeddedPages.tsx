@@ -20,7 +20,7 @@ function PageLoading() {
 }
 
 //Three.js and WebGL are loaded when the scene is first displayed.
-const EmbeddedSceneView = dynamic(() => import("./EmbeddedSceneView"), {
+const Scene3dPageView = dynamic(() => import("../3d-scene/Scene3dPageView"), {
 	ssr: false,
 	loading: () => <PageLoading />,
 });
@@ -90,7 +90,7 @@ export default function EmbeddedPages() {
 							<HmiSimulationPageView key={id} tabPageId={id} fitToContainer />
 						);
 					case "scene3d-view":
-						return <EmbeddedSceneView key={id} pageId={id} />;
+						return <Scene3dPageView key={id} pageId={id} />;
 					case "variables":
 						return isVariablesPageId(id) ? (
 							<EmbeddedVariablesView key={id} pageId={id} />

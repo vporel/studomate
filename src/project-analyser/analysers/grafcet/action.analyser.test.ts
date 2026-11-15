@@ -10,6 +10,7 @@ import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import ActionAnalyser from "./action.analyser";
+import { actionLink } from "@tests/utils/grafcet-factory";
 
 describe("ActionAnalyser", () => {
 	const analyser = new ActionAnalyser();
@@ -251,7 +252,7 @@ describe("ActionAnalyser", () => {
 			const connection = new ConnectionBuilder()
 				.id("c1")
 				.source("transition", "trans-1", "source:successor")
-				.target("action", "action-1", "target:step")
+				.target("action", "action-1", "target:predecessor")
 				.build();
 			const grafcet = new GrafcetBuilder()
 				.id("grafcet-1")
@@ -286,7 +287,7 @@ describe("ActionAnalyser", () => {
 			const c1 = new ConnectionBuilder()
 				.id("c1")
 				.source("step", "step-1", "source:action")
-				.target("action", "action-1", "target:step")
+				.target("action", "action-1", "target:predecessor")
 				.build();
 			const grafcet = new GrafcetBuilder()
 				.id("grafcet-1")
@@ -328,7 +329,7 @@ describe("ActionAnalyser", () => {
 			const c1 = new ConnectionBuilder()
 				.id("c1")
 				.source("step", "step-1", "source:action")
-				.target("action", "action-1", "target:step")
+				.target("action", "action-1", "target:predecessor")
 				.build();
 			const grafcet = new GrafcetBuilder()
 				.id("grafcet-1")
@@ -369,7 +370,7 @@ describe("ActionAnalyser", () => {
 			const c1 = new ConnectionBuilder()
 				.id("c1")
 				.source("step", "step-1", "source:action")
-				.target("action", "action-1", "target:step")
+				.target("action", "action-1", "target:predecessor")
 				.build();
 			const grafcet = new GrafcetBuilder()
 				.id("grafcet-1")
@@ -421,7 +422,7 @@ describe("ActionAnalyser", () => {
 						new ConnectionBuilder()
 							.id("c1")
 							.source("step", "step-1", "source:action")
-							.target("action", "action-1", "target:step")
+							.target("action", "action-1", "target:predecessor")
 							.build(),
 					)
 					.build();
@@ -460,7 +461,7 @@ describe("ActionAnalyser", () => {
 			const c1 = new ConnectionBuilder()
 				.id("c1")
 				.source("step", "step-1", "source:action")
-				.target("action", "action-1", "target:step")
+				.target("action", "action-1", "target:predecessor")
 				.build();
 			const grafcet = new GrafcetBuilder()
 				.id("grafcet-1")
@@ -502,7 +503,7 @@ describe("ActionAnalyser", () => {
 			const c1 = new ConnectionBuilder()
 				.id("c1")
 				.source("step", "step-1", "source:action")
-				.target("action", "action-1", "target:step")
+				.target("action", "action-1", "target:predecessor")
 				.build();
 			const grafcet = new GrafcetBuilder()
 				.id("grafcet-1")
@@ -545,7 +546,7 @@ describe("ActionAnalyser", () => {
 			const c1 = new ConnectionBuilder()
 				.id("c1")
 				.source("step", "step-1", "source:action")
-				.target("action", "action-1", "target:step")
+				.target("action", "action-1", "target:predecessor")
 				.build();
 			const grafcet = new GrafcetBuilder()
 				.id("grafcet-1")
@@ -586,7 +587,7 @@ describe("ActionAnalyser", () => {
 			const c1 = new ConnectionBuilder()
 				.id("c1")
 				.source("step", "step-1", "source:action")
-				.target("action", "action-1", "target:step")
+				.target("action", "action-1", "target:predecessor")
 				.build();
 			const grafcet = new GrafcetBuilder()
 				.id("grafcet-1")
@@ -625,7 +626,7 @@ describe("ActionAnalyser", () => {
 			const c1 = new ConnectionBuilder()
 				.id("c1")
 				.source("step", "step-2", "source:action")
-				.target("action", "action-1", "target:step")
+				.target("action", "action-1", "target:predecessor")
 				.build();
 			const grafcet = new GrafcetBuilder()
 				.id("grafcet-1")
@@ -671,12 +672,12 @@ describe("ActionAnalyser", () => {
 			const c1 = new ConnectionBuilder()
 				.id("c1")
 				.source("step", "step-1", "source:action")
-				.target("action", "action-set", "target:step")
+				.target("action", "action-set", "target:predecessor")
 				.build();
 			const c2 = new ConnectionBuilder()
 				.id("c2")
 				.source("step", "step-1", "source:action")
-				.target("action", "action-reset", "target:step")
+				.target("action", "action-reset", "target:predecessor")
 				.build();
 			const grafcet = new GrafcetBuilder()
 				.id("grafcet-1")
@@ -723,12 +724,12 @@ describe("ActionAnalyser", () => {
 			const c1 = new ConnectionBuilder()
 				.id("c1")
 				.source("step", "step-1", "source:action")
-				.target("action", "action-set", "target:step")
+				.target("action", "action-set", "target:predecessor")
 				.build();
 			const c2 = new ConnectionBuilder()
 				.id("c2")
 				.source("step", "step-2", "source:action")
-				.target("action", "action-reset", "target:step")
+				.target("action", "action-reset", "target:predecessor")
 				.build();
 			const grafcet = new GrafcetBuilder()
 				.id("grafcet-1")
@@ -766,7 +767,7 @@ describe("ActionAnalyser", () => {
 			const c1 = new ConnectionBuilder()
 				.id("c1")
 				.source("step", "step-1", "source:action")
-				.target("action", "action-1", "target:step")
+				.target("action", "action-1", "target:predecessor")
 				.build();
 			const grafcet = new GrafcetBuilder()
 				.id("grafcet-1")
@@ -786,5 +787,90 @@ describe("ActionAnalyser", () => {
 				issues.find((i) => i.code === "ACTION_VARIABLE_IS_CONSTANT")?.severity,
 			).toBe("error");
 		});
+	});
+});
+
+describe("ActionAnalyser: chained actions", () => {
+	const analyser = new ActionAnalyser();
+
+	const boolAction = (id: string, type = ActionType.BOOLEAN_VARIABLE) =>
+		new ActionBuilder()
+			.id(id)
+			.expression(type === ActionType.TEXT ? "Some text" : "sensor")
+			.type(type)
+			.executionMode(
+				type === ActionType.TEXT ? null : ActionExecutionMode.CONTINUOUS,
+			)
+			.build();
+	function grafcetOf(
+		actions: ReturnType<typeof boolAction>[],
+		connections: ReturnType<typeof actionLink>[],
+		withStep = true,
+	) {
+		let builder = new GrafcetBuilder().id("g");
+		if (withStep)
+			builder = builder.addStep(
+				new StepBuilder().id("s").number(1).initial().build(),
+			);
+		for (const action of actions) builder = builder.addAction(action);
+		return builder.addConnections(...connections).build();
+	}
+
+	const notConnected = (
+		grafcet: ReturnType<typeof grafcetOf>,
+		actions: ReturnType<typeof boolAction>[],
+	) =>
+		actions
+			.filter((action) =>
+				analyser
+					.analyseInContext(action, grafcet, analyserEnvironment(), Dialect.FR)
+					.some((issue) => issue.code === "ACTION_NOT_CONNECTED_TO_STEP"),
+			)
+			.map((action) => action.id);
+
+	it("accepts actions chained after an action linked to a step", () => {
+		const actions = [boolAction("a1"), boolAction("a2"), boolAction("a3")];
+		const grafcet = grafcetOf(actions, [
+			actionLink("step", "s", "a1"),
+			actionLink("action", "a1", "a2"),
+			actionLink("action", "a2", "a3"),
+		]);
+
+		expect(notConnected(grafcet, actions)).toEqual([]);
+	});
+
+	it("reports a chain detached from its step once, on its first action", () => {
+		const actions = [boolAction("a1"), boolAction("a2"), boolAction("a3")];
+		const grafcet = grafcetOf(actions, [
+			actionLink("action", "a1", "a2"),
+			actionLink("action", "a2", "a3"),
+		]);
+
+		expect(notConnected(grafcet, actions)).toEqual(["a1"]);
+	});
+
+	it("reports a detached chain on its first non-text action when it starts with text actions", () => {
+		const actions = [
+			boolAction("t1", ActionType.TEXT),
+			boolAction("a2"),
+			boolAction("a3"),
+		];
+		const grafcet = grafcetOf(actions, [
+			actionLink("action", "t1", "a2"),
+			actionLink("action", "a2", "a3"),
+		]);
+
+		expect(notConnected(grafcet, actions)).toEqual(["a2"]);
+	});
+
+	it("reports every action of a loop of actions", () => {
+		const actions = [boolAction("a1"), boolAction("a2")];
+		const grafcet = grafcetOf(
+			actions,
+			[actionLink("action", "a1", "a2"), actionLink("action", "a2", "a1")],
+			false,
+		);
+
+		expect(notConnected(grafcet, actions)).toEqual(["a1", "a2"]);
 	});
 });

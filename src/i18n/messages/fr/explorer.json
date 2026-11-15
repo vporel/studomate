@@ -7,7 +7,7 @@
 		"variables": "Variables",
 		"programs": "Programmes",
 		"blockInstances": "Instances de blocs",
-		"systemBlocks": "Blocs systèmes",
+		"systemBlocks": "Bibliothèque",
 		"hmi": "Interfaces HMI",
 		"configuration": "Configuration"
 	},

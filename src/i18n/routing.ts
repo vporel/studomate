@@ -17,6 +17,7 @@ export const routing = defineRouting({
 	pathnames: {
 		"/": "/",
 		"/about": { fr: "/a-propos", en: "/about" },
+		"/teachers": { fr: "/enseignants", en: "/teachers" },
 		"/contact": { fr: "/contact", en: "/contact" },
 		"/legal": { fr: "/mentions-legales", en: "/legal" },
 		"/terms": { fr: "/conditions-d-utilisation", en: "/terms" },

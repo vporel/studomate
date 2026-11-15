@@ -102,6 +102,7 @@ function LadderFlowContent() {
 	return (
 		<Box
 			ref={containerRef}
+			data-tour="canvas"
 			className={`ladder-page flow-page${canEdit ? "" : " flow-page--readonly"}`}
 			sx={{
 				padding: "25px",

@@ -7,6 +7,7 @@ import type {
 import type { Scene3d } from "@/schemas/3d-scene/scene3d.schema";
 import Scene3dLinkManager, {
 	PING_INTERVAL_MS,
+	TAB_FIRST_ANSWER_TIMEOUT_MS,
 	type Scene3dLinkHost,
 } from "./scene3d-link.manager";
 import type { Scene3dStateSnapshot } from "./scene3d-simulation.bridge";
@@ -41,6 +42,7 @@ function createHarness() {
 	const interactions: unknown[] = [];
 	const openWindow = jest.fn(() => true);
 	const unsubscribe = jest.fn();
+	const onDockRequested = jest.fn();
 	const host: Scene3dLinkHost = {
 		getScene: () => scene,
 		getProjectName: () => projectName,
@@ -53,9 +55,14 @@ function createHarness() {
 		createTransport: () => editorEnd,
 		getSessionId: () => "session-1",
 		openWindow,
+		connectScene: () => sceneEnd,
 		now: () => now,
 	};
-	const manager = new Scene3dLinkManager(host);
+	const onTabConnectionChange = jest.fn();
+	const manager = new Scene3dLinkManager(host, {
+		onDockRequested,
+		onTabConnectionChange,
+	});
 	const sceneChannel = new SceneChannel<
 		SceneToEditorMessage,
 		EditorToSceneMessage
@@ -72,6 +79,8 @@ function createHarness() {
 		received,
 		interactions,
 		openWindow,
+		onDockRequested,
+		onTabConnectionChange,
 		unsubscribe,
 		emit: (s: Scene3dStateSnapshot) => stateListener!(s),
 		setProjectName: (name: string) => (projectName = name),
@@ -226,5 +235,162 @@ describe("Scene3dLinkManager", () => {
 		h.received.length = 0;
 		h.advance(PING_INTERVAL_MS * 3);
 		expect(h.received).toEqual([]);
+	});
+
+	it("passes on the request of the scene tab to be shown in the page", () => {
+		const h = createHarness();
+		h.open();
+		h.sceneChannel.send({ type: "dock-request" });
+		expect(h.onDockRequested).toHaveBeenCalledTimes(1);
+	});
+
+	describe("connection of the scene tab", () => {
+		it("reports the tab once it answers", () => {
+			const h = createHarness();
+			h.open();
+			h.sceneChannel.send({ type: "hello" });
+			expect(h.onTabConnectionChange).toHaveBeenCalledTimes(1);
+			expect(h.onTabConnectionChange).toHaveBeenCalledWith(true);
+		});
+
+		it("does not report the same connection twice", () => {
+			const h = createHarness();
+			h.open();
+			h.sceneChannel.send({ type: "hello" });
+			h.sceneChannel.send({ type: "pong" });
+			h.advance(PING_INTERVAL_MS);
+			expect(h.onTabConnectionChange).toHaveBeenCalledTimes(1);
+		});
+
+		it("reports the tab once it stopped answering", () => {
+			const h = createHarness();
+			h.open();
+			h.sceneChannel.send({ type: "hello" });
+			h.onTabConnectionChange.mockClear();
+			h.advance(PING_INTERVAL_MS * 4);
+			expect(h.onTabConnectionChange).toHaveBeenCalledWith(false);
+		});
+
+		it("gives a tab that has not answered yet the time to load", () => {
+			const h = createHarness();
+			h.open();
+			h.advance(TAB_FIRST_ANSWER_TIMEOUT_MS);
+			expect(h.onTabConnectionChange).not.toHaveBeenCalled();
+		});
+
+		it("reports the tab closed once it never answered in time, only once", () => {
+			const h = createHarness();
+			h.open();
+			h.advance(TAB_FIRST_ANSWER_TIMEOUT_MS + PING_INTERVAL_MS);
+			h.advance(PING_INTERVAL_MS * 4);
+			expect(h.onTabConnectionChange).toHaveBeenCalledTimes(1);
+			expect(h.onTabConnectionChange).toHaveBeenCalledWith(false);
+		});
+
+		it("reports a tab that answers after the deadline as connected", () => {
+			const h = createHarness();
+			h.open();
+			h.advance(TAB_FIRST_ANSWER_TIMEOUT_MS + PING_INTERVAL_MS);
+			h.onTabConnectionChange.mockClear();
+			h.sceneChannel.send({ type: "hello" });
+			expect(h.onTabConnectionChange).toHaveBeenCalledWith(true);
+		});
+
+		it("does not wait for a first answer from a tab already connected", () => {
+			const h = createHarness();
+			h.open();
+			h.sceneChannel.send({ type: "hello" });
+			h.manager.open();
+			h.sceneChannel.send({ type: "pong" });
+			h.onTabConnectionChange.mockClear();
+			for (let i = 0; i < 10; i++) {
+				h.advance(PING_INTERVAL_MS);
+				h.sceneChannel.send({ type: "pong" });
+			}
+			expect(h.onTabConnectionChange).not.toHaveBeenCalled();
+		});
+
+		it("reports the tab closed as soon as it says goodbye", () => {
+			const h = createHarness();
+			h.open();
+			h.sceneChannel.send({ type: "hello" });
+			h.onTabConnectionChange.mockClear();
+			h.sceneChannel.send({ type: "bye" });
+			expect(h.onTabConnectionChange).toHaveBeenCalledWith(false);
+		});
+
+		it("does not wait for the tab when the browser blocked it", () => {
+			const h = createHarness();
+			h.openWindow.mockReturnValueOnce(false);
+			h.open();
+			h.advance(TAB_FIRST_ANSWER_TIMEOUT_MS + PING_INTERVAL_MS);
+			expect(h.onTabConnectionChange).not.toHaveBeenCalled();
+		});
+
+		it("reports nothing for the scene shown in the page", () => {
+			const h = createHarness();
+			h.manager.openInline();
+			h.sceneChannel.send({ type: "hello" });
+			h.advance(PING_INTERVAL_MS * 4);
+			expect(h.onTabConnectionChange).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("scene shown in the page", () => {
+		it("hands the scene its end of the link and answers its hello", () => {
+			const h = createHarness();
+			const sceneEnd = h.manager.openInline();
+			expect(sceneEnd).toBeDefined();
+			h.received.length = 0;
+			h.sceneChannel.send({ type: "hello" });
+			expect(h.received.map((message) => message.type)).toEqual([
+				"config",
+				"state",
+			]);
+		});
+
+		it("ends the link when the page releases it", () => {
+			const h = createHarness();
+			h.manager.openInline();
+			h.manager.releaseInline();
+			expect(h.unsubscribe).toHaveBeenCalledTimes(1);
+			h.received.length = 0;
+			h.advance(PING_INTERVAL_MS * 2);
+			expect(h.received).toEqual([]);
+		});
+
+		it("keeps the link of a window opened since, whose view replaces the page's", () => {
+			const h = createHarness();
+			h.manager.openInline();
+			h.manager.open();
+			h.manager.releaseInline();
+			expect(h.unsubscribe).not.toHaveBeenCalled();
+		});
+
+		it("still ends the link of the page's scene when the browser blocked the window opened over it", () => {
+			const h = createHarness();
+			h.manager.openInline();
+			h.openWindow.mockReturnValueOnce(false);
+			h.manager.open();
+			h.manager.releaseInline();
+			expect(h.unsubscribe).toHaveBeenCalledTimes(1);
+		});
+
+		it("ignores a release when no scene is shown in the page", () => {
+			const h = createHarness();
+			h.open();
+			h.manager.releaseInline();
+			expect(h.unsubscribe).not.toHaveBeenCalled();
+		});
+
+		it("can be linked again after a release", () => {
+			const h = createHarness();
+			h.manager.openInline();
+			h.manager.releaseInline();
+			h.manager.openInline();
+			h.sceneChannel.send({ type: "hello" });
+			h.manager.releaseInline();
+			expect(h.unsubscribe).toHaveBeenCalledTimes(2);
+		});
 	});
 });

@@ -43,6 +43,44 @@ describe("trainingStepSlug", () => {
 		expect(trainingStepSlug("en", "a1", "theory-timer")).toBe("theory-timer");
 	});
 
+	it.each([
+		[
+			"a1",
+			"theory",
+			"etapes-transitions-receptivites",
+			"steps-transitions-conditions",
+		],
+		[
+			"a3",
+			"theory-types",
+			"theorie-types-int-dint-real",
+			"theory-int-dint-real-types",
+		],
+		["a3", "theory-structure", "theorie-sous-programmes", "theory-subprograms"],
+	] as const)(
+		"donne un slug qui nomme le sujet à l'étape %s/%s, dans les deux langues",
+		(moduleId, stepId, fr, en) => {
+			expect(trainingStepSlug("fr", moduleId, stepId)).toBe(fr);
+			expect(trainingStepSlug("en", moduleId, stepId)).toBe(en);
+		},
+	);
+
+	it("ne retrouve plus aucune étape depuis les anciens slugs génériques", () => {
+		const a1 = TRAINING_MODULE_STEP_IDS.find((m) => m.moduleId === "a1")!;
+		const a3 = TRAINING_MODULE_STEP_IDS.find((m) => m.moduleId === "a3")!;
+
+		expect(
+			trainingStepIdFromSlug("fr", "a1", "theorie", a1.stepIds),
+		).toBeNull();
+		expect(trainingStepIdFromSlug("en", "a1", "theory", a1.stepIds)).toBeNull();
+		for (const slug of ["theorie-types", "theorie-structure"]) {
+			expect(trainingStepIdFromSlug("fr", "a3", slug, a3.stepIds)).toBeNull();
+		}
+		for (const slug of ["theory-types", "theory-structure"]) {
+			expect(trainingStepIdFromSlug("en", "a3", slug, a3.stepIds)).toBeNull();
+		}
+	});
+
 	it("traduit en français", () => {
 		expect(trainingStepSlug("fr", "a1", "theory-timer")).toBe(
 			"theorie-temporisation",

@@ -12,17 +12,15 @@ import { GrafcetFactory } from "@tests/utils/grafcet-factory";
 import { ProjectFactory } from "@tests/utils/project-factory";
 import { VariableFactory } from "@tests/utils/variable-factory";
 import { ProjectStoreState } from "@/ui/stores/project/project.store";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
-import { SimulationMode } from "@/ui/stores/project/SimulationMode.enum";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
+import { SimulationMode } from "@/ui/stores/project/simulation-mode.enum";
 import { DivisionByZeroException } from "@/expression-language/interpreter/exceptions/division-by-zero.exception";
 import { getAutoOpenHmiSimulationOnStart } from "@/persistence/preferences.storage";
 import { isSystemVariableName } from "@/schemas/variable/system-variables";
 import { PROJECT_TEMPLATES } from "@/templates";
 import { compileProject } from "@tests/utils/test-helpers";
 import { stubLocalStorage } from "@tests/utils/local-storage-stub";
-import createAppProjectStoreEnvironment, {
-	getPersistedSimulationMode,
-} from "@/ui/stores/project/environment/app-project-store-environment";
+import createAppProjectStoreEnvironment from "@/ui/stores/project/environment/app-project-store-environment";
 import SimulationManager from "./simulation.manager";
 import SimulationNotifier from "./simulation.notifier";
 
@@ -85,7 +83,7 @@ function makeStore(project: ReturnType<typeof ProjectFactory.create>) {
 			openHmiSimulationPageIfAny: jest.fn(),
 			closeHmiSimulationPage: jest.fn(),
 		},
-		scene3dLinkManager: { open: jest.fn(() => true) },
+		scene3dDisplayManager: { open: jest.fn(() => true) },
 		hardwareLink: { status: "disconnected", drivenInputIds: [] },
 		hardwareLinkManager: {
 			onSimulationStart: jest.fn(),
@@ -351,7 +349,7 @@ describe("SimulationManager", () => {
 			manager.setSimulationMode();
 			const opened = {
 				hmi: get().hmiManager.openHmiSimulationPageIfAny as jest.Mock,
-				scene: get().scene3dLinkManager.open as jest.Mock,
+				scene: get().scene3dDisplayManager.open as jest.Mock,
 			};
 			manager.setDesignMode();
 			return opened;
@@ -371,7 +369,7 @@ describe("SimulationManager", () => {
 			expect(opened.scene).toHaveBeenCalledTimes(1);
 		});
 
-		it("signale une ouverture bloquée par le navigateur, et permet de la retenter", () => {
+		it("laisse le gestionnaire d'affichage signaler une ouverture bloquée par le navigateur", () => {
 			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
 			const project = ProjectFactory.create(
 				[VariableFactory.createLogicInput("I0")],
@@ -383,7 +381,7 @@ describe("SimulationManager", () => {
 				bindings: {},
 			};
 			const { get, set } = makeStore(project);
-			const open = get().scene3dLinkManager.open as jest.Mock;
+			const open = get().scene3dDisplayManager.open as jest.Mock;
 			open.mockReturnValueOnce(false);
 			const notifier = stubNotifier();
 			const manager = new SimulationManager(set, get, simulationEnv(notifier));
@@ -391,11 +389,8 @@ describe("SimulationManager", () => {
 			manager.setSimulationMode();
 			manager.setDesignMode();
 
-			expect(notifier.scene3dOpenBlocked).toHaveBeenCalledTimes(1);
-			const retry = (notifier.scene3dOpenBlocked as jest.Mock).mock
-				.calls[0][0] as () => void;
-			retry();
-			expect(open).toHaveBeenCalledTimes(2);
+			expect(open).toHaveBeenCalledTimes(1);
+			expect(notifier.scene3dOpenBlocked).not.toHaveBeenCalled();
 		});
 
 		it("ne signale rien quand la scène s'est ouverte", () => {
@@ -458,7 +453,7 @@ describe("SimulationManager", () => {
 				new ConnectionBuilder()
 					.id("a-empty-conn")
 					.source("step", "g1-step-0", "source:action")
-					.target("action", "a-empty", "target:step")
+					.target("action", "a-empty", "target:predecessor")
 					.build(),
 			);
 			return ProjectFactory.createWithGrafcets([grafcet]);
@@ -738,7 +733,7 @@ describe("SimulationManager", () => {
 				new ConnectionBuilder()
 					.id("a-empty-conn")
 					.source("step", "g1-step-0", "source:action")
-					.target("action", "a-empty", "target:step")
+					.target("action", "a-empty", "target:predecessor")
 					.build(),
 			);
 			return ProjectFactory.createWithGrafcets([grafcet]);
@@ -1448,7 +1443,9 @@ describe("SimulationManager", () => {
 				getItem: () => SimulationMode.STEP_BY_STEP,
 			});
 
-			expect(getPersistedSimulationMode()).toBe(SimulationMode.STEP_BY_STEP);
+			expect(
+				createAppProjectStoreEnvironment().preferences.getSimulationMode(),
+			).toBe(SimulationMode.STEP_BY_STEP);
 		});
 
 		it("retombe sur le mode continu quand le stockage est indisponible", () => {
@@ -1458,7 +1455,9 @@ describe("SimulationManager", () => {
 				},
 			});
 
-			expect(getPersistedSimulationMode()).toBe(SimulationMode.CONTINUOUS);
+			expect(
+				createAppProjectStoreEnvironment().preferences.getSimulationMode(),
+			).toBe(SimulationMode.CONTINUOUS);
 		});
 
 		it("applique le mode même si l'écriture dans le stockage échoue", () => {
