@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 import { act, fireEvent, render, screen } from "@testing-library/react";
-import FloatingBox from "./FloatingBox";
+import FloatingBox, { type FloatingBoxAnchor } from "./FloatingBox";
 
 function mockSizes() {
 	jest
@@ -49,12 +49,20 @@ function setup({
 	minWidth,
 	minHeight,
 	actions,
+	closable = true,
+	zIndex,
+	onActivate,
+	anchor,
 }: {
+	anchor?: FloatingBoxAnchor;
+	zIndex?: number;
+	onActivate?: jest.Mock;
+	closable?: boolean;
 	onClose?: jest.Mock;
 	position?: { x: number; y: number } | null;
 	onPositionChange?: jest.Mock;
 	top?: number;
-	width?: number;
+	width?: number | "auto";
 	resizable?: boolean;
 	height?: number;
 	size?: { width: number; height: number } | null;
@@ -63,14 +71,18 @@ function setup({
 	minHeight?: number;
 	actions?: React.ReactNode;
 } = {}) {
+	const anchorProps = (anchor ? { anchor } : {}) as object;
+	const closeProps = (closable ? { closeLabel: "Fermer", onClose } : {}) as {
+		closeLabel: string;
+		onClose: () => void;
+	};
 	const view = render(
 		<div data-testid="parent" style={{ position: "relative" }}>
 			<FloatingBox
 				title="Bibliothèque"
-				closeLabel="Fermer"
+				{...closeProps}
 				position={position}
 				onPositionChange={onPositionChange}
-				onClose={onClose}
 				top={top}
 				width={width}
 				height={height}
@@ -80,6 +92,9 @@ function setup({
 				minWidth={minWidth}
 				minHeight={minHeight}
 				actions={actions}
+				{...anchorProps}
+				zIndex={zIndex}
+				onActivate={onActivate}
 			>
 				<p>contenu</p>
 			</FloatingBox>
@@ -112,9 +127,41 @@ describe("FloatingBox", () => {
 		expect(onClose).toHaveBeenCalledTimes(1);
 	});
 
+	it("n'offre ni bouton de fermeture ni fermeture par Échap sans onClose", () => {
+		const { onClose } = setup({ closable: false });
+
+		fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
+
+		expect(screen.queryByLabelText("Fermer")).not.toBeInTheDocument();
+		expect(onClose).not.toHaveBeenCalled();
+	});
+
 	it("applique la largeur demandée", () => {
 		setup({ width: 320 });
 		expect(screen.getByRole("dialog")).toHaveStyle({ width: "320px" });
+	});
+
+	it("se place au-dessus du reste avec l'indice demandé, 20 par défaut", () => {
+		const { unmount } = setup();
+		expect(screen.getByRole("dialog")).toHaveStyle({ zIndex: "20" });
+		unmount();
+		setup({ zIndex: 35 });
+		expect(screen.getByRole("dialog")).toHaveStyle({ zIndex: "35" });
+	});
+
+	it("signale que le pointeur s'enfonce n'importe où dans la boîte", () => {
+		const onActivate = jest.fn();
+		setup({ onActivate });
+
+		fireEvent.pointerDown(screen.getByText("contenu"));
+		fireEvent.pointerDown(screen.getByLabelText("Fermer"));
+
+		expect(onActivate).toHaveBeenCalledTimes(2);
+	});
+
+	it("prend la largeur de son contenu quand la largeur est auto", () => {
+		setup({ width: "auto" });
+		expect(screen.getByRole("dialog")).toHaveStyle({ width: "auto" });
 	});
 
 	describe("position d'ouverture", () => {
@@ -306,6 +353,179 @@ describe("FloatingBox", () => {
 		fireEvent.click(screen.getByLabelText("Action"));
 
 		expect(onAction).toHaveBeenCalledTimes(1);
+	});
+
+	describe("ancrage à un coin du conteneur", () => {
+		afterEach(() => jest.restoreAllMocks());
+
+		const box = () => screen.getByRole("dialog");
+		const header = () => screen.getByText("Bibliothèque").parentElement!;
+
+		it("se positionne depuis le coin haut gauche par défaut", () => {
+			mockSizes();
+			setup({ top: 20, position: { x: 30, y: 40 } });
+			expect(box().style.left).toBe("30px");
+			expect(box().style.top).toBe("40px");
+			expect(box().style.right).toBe("");
+			expect(box().style.bottom).toBe("");
+		});
+
+		it.each([
+			["top-right", { right: "8px", top: "46px" }],
+			["bottom-left", { left: "8px", bottom: "46px" }],
+			["bottom-right", { right: "8px", bottom: "46px" }],
+		] as const)(
+			"s'ouvre à la marge du coin %s, à `top` de son bord",
+			(anchor, expected) => {
+				mockSizes();
+				const { onPositionChange } = setup({ anchor, top: 46 });
+
+				expect(box()).toHaveStyle(expected);
+				expect(onPositionChange).toHaveBeenCalledWith({ x: 8, y: 46 });
+			},
+		);
+
+		it("ne positionne que depuis le coin demandé", () => {
+			mockSizes();
+			setup({ anchor: "bottom-right" });
+			expect(box().style.left).toBe("");
+			expect(box().style.top).toBe("");
+		});
+
+		it.each([
+			["top-right", { right: "30px", top: "40px" }],
+			["bottom-left", { left: "30px", bottom: "40px" }],
+			["bottom-right", { right: "30px", bottom: "40px" }],
+		] as const)(
+			"s'ouvre à la position retenue, comptée depuis le coin %s",
+			(anchor, expected) => {
+				mockSizes();
+				const { onPositionChange } = setup({
+					anchor,
+					position: { x: 30, y: 40 },
+				});
+
+				expect(box()).toHaveStyle(expected);
+				expect(onPositionChange).toHaveBeenCalledWith({ x: 30, y: 40 });
+			},
+		);
+
+		it("ramène dans son conteneur une position retenue devenue hors limites", () => {
+			mockSizes();
+			setup({ anchor: "top-right", position: { x: 5000, y: 5000 } });
+			expect(box()).toHaveStyle({ right: "400px", top: "250px" });
+		});
+
+		it.each([
+			["top-right", { right: "100px", top: "70px" }, { x: 100, y: 70 }],
+			["bottom-left", { left: "140px", bottom: "130px" }, { x: 140, y: 130 }],
+			["bottom-right", { right: "100px", bottom: "130px" }, { x: 100, y: 130 }],
+		] as const)(
+			"se déplace dans le sens du pointeur depuis le coin %s",
+			(anchor, expected, reported) => {
+				mockSizes();
+				const { onPositionChange } = setup({
+					anchor,
+					position: { x: 120, y: 100 },
+				});
+
+				fireEvent.pointerDown(header(), { clientX: 300, clientY: 200 });
+				fireEvent.pointerMove(header(), { clientX: 320, clientY: 170 });
+				fireEvent.pointerUp(header());
+
+				expect(box()).toHaveStyle(expected);
+				expect(onPositionChange).toHaveBeenLastCalledWith(reported);
+			},
+		);
+
+		it("reste dans les limites de son conteneur pendant un déplacement", async () => {
+			mockSizes();
+			setup({ anchor: "bottom-right", position: { x: 120, y: 100 } });
+
+			fireEvent.pointerDown(header(), { clientX: 300, clientY: 200 });
+			fireEvent.pointerMove(header(), { clientX: 9000, clientY: -9000 });
+			await nextFrame();
+			expect(box()).toHaveStyle({ right: "0px", bottom: "250px" });
+			fireEvent.pointerUp(header());
+		});
+
+		describe("quand son conteneur change de taille", () => {
+			let resized: () => void;
+
+			beforeEach(() => {
+				(globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver =
+					class {
+						constructor(callback: () => void) {
+							resized = callback;
+						}
+						observe() {}
+						disconnect() {}
+					};
+			});
+
+			afterEach(() => {
+				delete (globalThis as unknown as { ResizeObserver?: unknown })
+					.ResizeObserver;
+			});
+
+			it("ramène dans son conteneur la boîte ancrée à droite quand il rétrécit", () => {
+				mockSizes();
+				const { onPositionChange } = setup({
+					anchor: "top-right",
+					position: { x: 350, y: 20 },
+				});
+				onPositionChange.mockClear();
+				jest
+					.spyOn(HTMLElement.prototype, "clientWidth", "get")
+					.mockImplementation(() => 300);
+
+				act(() => resized());
+
+				expect(box()).toHaveStyle({ right: "100px" });
+				expect(onPositionChange).toHaveBeenCalledWith({ x: 100, y: 20 });
+			});
+
+			it("ne signale rien quand la boîte reste dans son conteneur", () => {
+				mockSizes();
+				const { onPositionChange } = setup({
+					anchor: "top-right",
+					position: { x: 10, y: 20 },
+				});
+				onPositionChange.mockClear();
+
+				act(() => resized());
+
+				expect(onPositionChange).not.toHaveBeenCalled();
+			});
+
+			it("ne surveille pas son conteneur avec l'ancrage par défaut", () => {
+				mockSizes();
+				const observe = jest.fn();
+				(globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver =
+					class {
+						observe = observe;
+						disconnect() {}
+					};
+				setup({ position: { x: 350, y: 20 } });
+				expect(observe).not.toHaveBeenCalled();
+			});
+		});
+
+		it("ne demande pas d'ancrage hors du coin haut gauche à une boîte redimensionnable", () => {
+			const compileOnly = () => (
+				// @ts-expect-error a resizable box is positioned from its top left corner
+				<FloatingBox
+					title="x"
+					position={null}
+					onPositionChange={() => {}}
+					anchor="top-right"
+					resizable
+				>
+					x
+				</FloatingBox>
+			);
+			expect(compileOnly).toBeDefined();
+		});
 	});
 
 	describe("redimensionnement", () => {

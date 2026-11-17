@@ -16,15 +16,19 @@ jest.mock("./InlineScene", () => {
 		default: function InlineSceneStub({
 			openTransport,
 			onDisconnect,
+			foldPanels,
 		}: {
 			openTransport: () => unknown;
 			onDisconnect: () => void;
+			foldPanels?: boolean;
 		}) {
 			useEffect(() => {
 				openTransport();
 				return onDisconnect;
 			}, [openTransport, onDisconnect]);
-			return <div data-testid="scene" />;
+			return (
+				<div data-testid="scene" data-fold-panels={String(!!foldPanels)} />
+			);
 		},
 	};
 });
@@ -87,6 +91,14 @@ describe("Scene3dFloatingBox", () => {
 		).toBeInTheDocument();
 		expect(screen.getByTestId("scene")).toBeInTheDocument();
 		expect(openInline).toHaveBeenCalledTimes(1);
+	});
+
+	it("starts with only the first panel of the controls open", () => {
+		setup();
+		expect(screen.getByTestId("scene")).toHaveAttribute(
+			"data-fold-panels",
+			"true",
+		);
 	});
 
 	it("ends the link of the page when closed from outside", () => {

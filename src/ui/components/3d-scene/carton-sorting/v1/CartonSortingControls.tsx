@@ -11,11 +11,13 @@ import type { SceneComponentProps } from "@/ui/components/3d-scene/scene-views";
 import useSampledValue from "@/ui/components/3d-scene/useSampledValue";
 import {
 	ChromeRing,
+	CONSOLE_BUTTON_SIZE,
 	ConsoleDisplay,
-	ConsoleGroup,
 	consoleButtonStyle,
 	PushButtonIllustration,
 } from "@/ui/components/3d-scene/parts/ConsoleParts";
+import ConsoleGroup from "@/ui/components/3d-scene/parts/ConsoleGroup";
+import ConsolePanels from "@/ui/components/3d-scene/parts/ConsolePanels";
 import CartonSortingLamps from "./CartonSortingLamps";
 
 const PRESS_FEEDBACK_MS = 200;
@@ -31,7 +33,12 @@ const selectCounter = (state: CartonSortingState) => state.counter;
 /** Front view of a two-position selector: the handle leans toward the low or the high mark. */
 function SelectorIllustration({ high }: { high: boolean }) {
 	return (
-		<svg width={64} height={64} viewBox="0 0 64 64" aria-hidden="true">
+		<svg
+			width={CONSOLE_BUTTON_SIZE}
+			height={CONSOLE_BUTTON_SIZE}
+			viewBox="0 0 64 64"
+			aria-hidden="true"
+		>
 			<ChromeRing />
 			<circle cx={32} cy={32} r={22} fill="#212121" />
 			<g
@@ -82,7 +89,7 @@ export default function CartonSortingControls({
 	const placeDisabled = !interactive || !canPlace;
 
 	return (
-		<div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+		<ConsolePanels>
 			<ConsoleGroup title={t("feeder")}>
 				<button
 					type="button"
@@ -174,6 +181,6 @@ export default function CartonSortingControls({
 					<CartonSortingLamps sample={sample} />
 				</div>
 			</ConsoleGroup>
-		</div>
+		</ConsolePanels>
 	);
 }

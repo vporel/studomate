@@ -9,14 +9,16 @@ import { getSceneViewDefinition } from "./scene-views";
 /**
  * A 3D scene shown inside the page. `openTransport` returns the end of the link shared with its
  * editor, and is called again each time the effect runs: a transport is single-use, closed
- * with the view that reads it.
+ * with the view that reads it. With `foldPanels`, only the first panel of its controls starts open.
  */
 export default function InlineScene({
 	openTransport,
 	onDisconnect,
+	foldPanels = false,
 }: {
 	openTransport: () => SceneTransport;
 	onDisconnect: () => void;
+	foldPanels?: boolean;
 }) {
 	const [view, setView] = useState<SceneView | null>(null);
 
@@ -37,5 +39,5 @@ export default function InlineScene({
 	}, [openTransport, onDisconnect]);
 
 	if (!view) return null;
-	return <SceneContent view={view} inline />;
+	return <SceneContent view={view} inline foldPanels={foldPanels} />;
 }

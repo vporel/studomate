@@ -4,6 +4,7 @@ import ParkingModel, {
 } from "@/3d-scenes/parking/v1/parking.model";
 import { act, fireEvent, screen, within } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
+import ScenePanelsProvider from "@/ui/components/3d-scene/parts/ScenePanelsContext";
 import ParkingControls from "./ParkingControls";
 
 function setup({
@@ -16,18 +17,20 @@ function setup({
 		.mockImplementation((callback) => frames.push(callback));
 	const send = jest.fn();
 	const view = renderWithI18n(
-		<ParkingControls
-			sample={() => state}
-			interactive={interactive}
-			send={send}
-		/>,
+		<ScenePanelsProvider foldPanels={false}>
+			<ParkingControls
+				sample={() => state}
+				interactive={interactive}
+				send={send}
+			/>
+		</ScenePanelsProvider>,
 	);
 	act(() => frames.splice(0).forEach((callback) => callback(0)));
 	return { send, ...view };
 }
 
 const group = (title: RegExp) =>
-	within(screen.getByText(title).parentElement as HTMLElement);
+	within(screen.getByRole("group", { name: title }));
 
 describe("ParkingControls", () => {
 	afterEach(() => jest.restoreAllMocks());
@@ -66,7 +69,9 @@ describe("ParkingControls", () => {
 
 	it("puts the buttons in their own panel, apart from the console", () => {
 		setup();
-		expect(group(/Pupitre/i).queryByRole("button")).toBeNull();
+		expect(
+			group(/Pupitre/i).queryByRole("button", { name: /Arrivée|Sortie/ }),
+		).toBeNull();
 	});
 
 	it("stacks the lamps in a single column", () => {

@@ -16,7 +16,9 @@ jest.mock("../pages/Page", () => ({
 }));
 jest.mock("./InlineScene", () => ({
 	__esModule: true,
-	default: () => <div data-testid="scene" />,
+	default: ({ foldPanels }: { foldPanels?: boolean }) => (
+		<div data-testid="scene" data-fold-panels={String(!!foldPanels)} />
+	),
 }));
 
 const show = jest.fn();
@@ -41,6 +43,14 @@ describe("Scene3dPageView", () => {
 	it("shows the scene while its page is the active one only", () => {
 		setup();
 		expect(screen.getByTestId("scene")).toBeInTheDocument();
+	});
+
+	it("starts with every panel of the controls open", () => {
+		setup();
+		expect(screen.getByTestId("scene")).toHaveAttribute(
+			"data-fold-panels",
+			"false",
+		);
 	});
 
 	it("does not show the scene, nor its bar, in a page that is not active", () => {

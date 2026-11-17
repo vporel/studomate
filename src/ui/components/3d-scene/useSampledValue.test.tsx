@@ -32,6 +32,21 @@ describe("useSampledValue", () => {
 		expect(result.current).toBe(true);
 	});
 
+	it("goes back to the fallback when the scene loses its state", () => {
+		let state: State | null = { flag: false };
+		const sample = () => state;
+		const { result } = renderHook(() =>
+			useSampledValue(sample, selectFlag, true),
+		);
+
+		runFrame();
+		expect(result.current).toBe(false);
+
+		state = null;
+		runFrame();
+		expect(result.current).toBe(true);
+	});
+
 	it("follows the selected value of the sampled state", () => {
 		let state: State = { flag: false };
 		const sample = () => state;

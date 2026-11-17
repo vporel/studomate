@@ -16,6 +16,11 @@
 		"title": "3D scene",
 		"close": "Close the 3D scene"
 	},
+	"panels": {
+		"title": "Controls",
+		"collapse": "Collapse the panel",
+		"expand": "Expand the panel"
+	},
 	"showAs": {
 		"side-panel": "Show in the side panel",
 		"floating-box": "Show in a floating box",

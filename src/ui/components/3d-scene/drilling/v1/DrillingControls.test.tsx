@@ -4,6 +4,7 @@ import DrillingModel, {
 } from "@/3d-scenes/drilling/v1/drilling.model";
 import { act, fireEvent, screen } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
+import ScenePanelsProvider from "@/ui/components/3d-scene/parts/ScenePanelsContext";
 import DrillingControls from "./DrillingControls";
 
 function setup({
@@ -16,11 +17,13 @@ function setup({
 		.mockImplementation((callback) => frames.push(callback));
 	const send = jest.fn();
 	const view = renderWithI18n(
-		<DrillingControls
-			sample={() => state}
-			interactive={interactive}
-			send={send}
-		/>,
+		<ScenePanelsProvider foldPanels={false}>
+			<DrillingControls
+				sample={() => state}
+				interactive={interactive}
+				send={send}
+			/>
+		</ScenePanelsProvider>,
 	);
 	act(() => frames.splice(0).forEach((callback) => callback(0)));
 	return { send, ...view };
