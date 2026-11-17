@@ -13,19 +13,32 @@ jest.mock("@react-three/drei", () => ({
 	OrbitControls: () => null,
 }));
 
+jest.mock("./scene-views", () => ({
+	getSceneViewDefinition: () => ({
+		interpolate: () => null,
+		Component: () => null,
+		Controls: ({ sample }: { sample: () => unknown }) => (
+			<span data-testid="controls">{JSON.stringify(sample())}</span>
+		),
+	}),
+}));
+
 const requestDock = jest.fn();
 
-function createView(phase = "running"): SceneView {
+function createView(
+	phase = "running",
+	sceneId: string | null = null,
+): SceneView {
 	const snapshot = {
 		phase,
-		sceneId: null,
-		sceneVersion: null,
+		sceneId,
+		sceneVersion: sceneId ? 1 : null,
 		projectName: "Parking",
 	};
 	return {
 		subscribe: () => () => {},
 		getSnapshot: () => snapshot,
-		sampleState: () => null,
+		sampleState: () => ({ lit: true }),
 		sendInteraction: () => {},
 		requestDock,
 	} as unknown as SceneView;
@@ -42,6 +55,26 @@ describe("SceneContent", () => {
 	it("leaves the project title out when shown inline", () => {
 		renderWithI18n(<SceneContent view={createView()} inline />);
 		expect(screen.queryByText("Parking")).not.toBeInTheDocument();
+	});
+
+	describe("state shown by the controls", () => {
+		it.each(["running", "paused"])(
+			"follows the state of the scene while it is %s",
+			(phase) => {
+				renderWithI18n(<SceneContent view={createView(phase, "parking")} />);
+				expect(screen.getByTestId("controls")).toHaveTextContent(
+					'{"lit":true}',
+				);
+			},
+		);
+
+		it.each(["stopped", "waiting", "editor-closed"])(
+			"shows no state while the scene is %s",
+			(phase) => {
+				renderWithI18n(<SceneContent view={createView(phase, "parking")} />);
+				expect(screen.getByTestId("controls")).toHaveTextContent("null");
+			},
+		);
 	});
 
 	describe("button back to the editor", () => {

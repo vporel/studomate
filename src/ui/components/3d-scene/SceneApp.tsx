@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { SCENE_ORIGIN } from "@/ui/components/3d-scene/scene-origin";
 import ProjectTitle from "./ProjectTitle";
+import ScenePanelsProvider from "./parts/ScenePanelsContext";
 import SceneWidthFit from "./SceneWidthFit";
 import SceneView, { type SceneViewPhase } from "./scene-view";
 import { getSceneViewDefinition, type SceneCamera } from "./scene-views";
@@ -61,13 +62,17 @@ const NO_SNAPSHOT = {
 	projectName: null,
 } as const;
 
-/** @param inline The scene fills its parent instead of the window, and shows neither the project title nor the title of the document. */
+/**
+ * @param foldPanels Only the first panel of the controls starts open, so that a small view keeps the scene visible.
+ * @param inline The scene fills its parent instead of the window, and shows neither the project title nor the title of the document. */
 export function SceneContent({
 	view,
 	inline = false,
+	foldPanels = false,
 }: {
 	view: SceneView;
 	inline?: boolean;
+	foldPanels?: boolean;
 }) {
 	const t = useTranslations("scene3d");
 	const { phase, sceneId, sceneVersion, projectName } = useSyncExternalStore(
@@ -89,6 +94,10 @@ export function SceneContent({
 	const interactive = phase === "running" || phase === "paused";
 	const canDock = !inline && EDITOR_LINKED_PHASES.has(phase);
 	const sample = useCallback(() => view.sampleState(), [view]);
+	const controlsSample = useCallback(
+		() => (interactive ? view.sampleState() : null),
+		[view, interactive],
+	);
 	const send = useCallback(
 		(interaction: unknown) => view.sendInteraction(interaction),
 		[view],
@@ -121,13 +130,16 @@ export function SceneContent({
 			</Canvas>
 			{!inline && <ProjectTitle name={projectName} />}
 			{definition?.Controls && (
-				<div style={{ position: "absolute", top: 12, right: 12 }}>
+				<ScenePanelsProvider
+					key={`${sceneId}@${sceneVersion}`}
+					foldPanels={foldPanels}
+				>
 					<definition.Controls
-						sample={sample}
+						sample={controlsSample}
 						interactive={interactive}
 						send={send}
 					/>
-				</div>
+				</ScenePanelsProvider>
 			)}
 			{canDock && (
 				<button

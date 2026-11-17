@@ -16,6 +16,11 @@
 		"title": "Scène 3D",
 		"close": "Fermer la scène 3D"
 	},
+	"panels": {
+		"title": "Commandes",
+		"collapse": "Replier le panneau",
+		"expand": "Déplier le panneau"
+	},
 	"showAs": {
 		"side-panel": "Afficher dans le panneau latéral",
 		"floating-box": "Afficher dans un cadre flottant",

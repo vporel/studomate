@@ -8,11 +8,12 @@ import {
 import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
 import {
-	ConsoleGroup,
 	consoleButtonStyle,
 	Lamp,
 	PushButtonIllustration,
 } from "@/ui/components/3d-scene/parts/ConsoleParts";
+import ConsoleGroup from "@/ui/components/3d-scene/parts/ConsoleGroup";
+import ConsolePanels from "@/ui/components/3d-scene/parts/ConsolePanels";
 import type { SceneComponentProps } from "@/ui/components/3d-scene/scene-views";
 import useSampledValue from "@/ui/components/3d-scene/useSampledValue";
 
@@ -67,68 +68,70 @@ export default function DrillingControls({
 	};
 
 	return (
-		<ConsoleGroup title={t("console")}>
-			<div
-				style={{
-					display: "flex",
-					flexDirection: "column",
-					alignItems: "center",
-					gap: 12,
-				}}
-			>
-				<button
-					type="button"
-					disabled={!interactive}
-					style={{
-						...consoleButtonStyle,
-						cursor: interactive ? "pointer" : "default",
-					}}
-					onPointerDown={(event) => {
-						if (event.button === 0) pressStart();
-					}}
-					onPointerUp={releaseStart}
-					onPointerLeave={releaseStart}
-					onPointerCancel={releaseStart}
-					onBlur={releaseStart}
-					onKeyDown={(event) => {
-						if (event.key === " " || event.key === "Enter") pressStart();
-					}}
-					onKeyUp={(event) => {
-						if (event.key === " " || event.key === "Enter") releaseStart();
-					}}
-				>
-					<PushButtonIllustration
-						color={START_GREEN}
-						pressed={startPressed}
-						disabled={!interactive}
-					/>
-					{t("startCycle")}
-				</button>
+		<ConsolePanels>
+			<ConsoleGroup title={t("console")}>
 				<div
 					style={{
-						display: "grid",
-						gridTemplateRows: `repeat(${LAMP_ROWS}, auto)`,
-						gridAutoFlow: "column",
-						gap: "8px 24px",
+						display: "flex",
+						flexDirection: "column",
+						alignItems: "center",
+						gap: 12,
 					}}
 				>
-					{LAMPS.map(({ id, color }, i) => (
-						<span
-							key={id}
-							style={{
-								display: "flex",
-								alignItems: "center",
-								gap: 6,
-								font: "12px system-ui, sans-serif",
-								color: "#37474f",
-							}}
-						>
-							<Lamp on={lit[i] === "true"} color={color} label={tLamps(id)} />
-							{tLamps(id)}
-						</span>
-					))}
+					<button
+						type="button"
+						disabled={!interactive}
+						style={{
+							...consoleButtonStyle,
+							cursor: interactive ? "pointer" : "default",
+						}}
+						onPointerDown={(event) => {
+							if (event.button === 0) pressStart();
+						}}
+						onPointerUp={releaseStart}
+						onPointerLeave={releaseStart}
+						onPointerCancel={releaseStart}
+						onBlur={releaseStart}
+						onKeyDown={(event) => {
+							if (event.key === " " || event.key === "Enter") pressStart();
+						}}
+						onKeyUp={(event) => {
+							if (event.key === " " || event.key === "Enter") releaseStart();
+						}}
+					>
+						<PushButtonIllustration
+							color={START_GREEN}
+							pressed={startPressed}
+							disabled={!interactive}
+						/>
+						{t("startCycle")}
+					</button>
+					<div
+						style={{
+							display: "grid",
+							gridTemplateRows: `repeat(${LAMP_ROWS}, auto)`,
+							gridAutoFlow: "column",
+							gap: "8px 24px",
+						}}
+					>
+						{LAMPS.map(({ id, color }, i) => (
+							<span
+								key={id}
+								style={{
+									display: "flex",
+									alignItems: "center",
+									gap: 6,
+									font: "12px system-ui, sans-serif",
+									color: "#37474f",
+								}}
+							>
+								<Lamp on={lit[i] === "true"} color={color} label={tLamps(id)} />
+								{tLamps(id)}
+							</span>
+						))}
+					</div>
 				</div>
-			</div>
-		</ConsoleGroup>
+			</ConsoleGroup>
+		</ConsolePanels>
 	);
 }

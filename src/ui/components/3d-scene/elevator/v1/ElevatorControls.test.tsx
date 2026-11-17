@@ -4,6 +4,7 @@ import ElevatorModel, {
 } from "@/3d-scenes/elevator/v1/elevator.model";
 import { act, fireEvent, screen, within } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
+import ScenePanelsProvider from "@/ui/components/3d-scene/parts/ScenePanelsContext";
 import ElevatorControls from "./ElevatorControls";
 
 function setup({
@@ -16,18 +17,20 @@ function setup({
 		.mockImplementation((callback) => frames.push(callback));
 	const send = jest.fn();
 	const view = renderWithI18n(
-		<ElevatorControls
-			sample={() => state}
-			interactive={interactive}
-			send={send}
-		/>,
+		<ScenePanelsProvider foldPanels={false}>
+			<ElevatorControls
+				sample={() => state}
+				interactive={interactive}
+				send={send}
+			/>
+		</ScenePanelsProvider>,
 	);
 	act(() => frames.splice(0).forEach((callback) => callback(0)));
 	return { send, ...view };
 }
 
 const group = (title: RegExp) =>
-	within(screen.getByText(title).parentElement as HTMLElement);
+	within(screen.getByRole("group", { name: title }));
 const floorButton = (panel: RegExp, name: RegExp) =>
 	group(panel).getByRole("button", { name });
 
@@ -110,6 +113,21 @@ describe("ElevatorControls", () => {
 		setup();
 		const display = screen.getByRole("status", { name: "Étage" });
 		expect(group(/Extérieur cabine/i).getByRole("status")).toBe(display);
+	});
+
+	it("stacks the lamps in a single column", () => {
+		setup();
+		const lamps = screen.getByText("Montée").parentElement!;
+		expect(lamps.style.display).toBe("flex");
+		expect(lamps.style.flexDirection).toBe("column");
+		expect(group(/Voyants/i).getByText("Descente")).toBeInTheDocument();
+	});
+
+	it("gives the panels a fixed width of 250px", () => {
+		setup();
+		expect(screen.getByRole("dialog", { name: "Commandes" })).toHaveStyle({
+			width: "250px",
+		});
 	});
 
 	it("lights the lamps of the commands and of the open door", () => {

@@ -9,11 +9,12 @@ import {
 import { useTranslations } from "next-intl";
 import {
 	ConsoleDisplay,
-	ConsoleGroup,
 	Lamp,
 	consoleButtonStyle,
 	PushButtonIllustration,
 } from "@/ui/components/3d-scene/parts/ConsoleParts";
+import ConsoleGroup from "@/ui/components/3d-scene/parts/ConsoleGroup";
+import ConsolePanels from "@/ui/components/3d-scene/parts/ConsolePanels";
 import type { SceneComponentProps } from "@/ui/components/3d-scene/scene-views";
 import useSampledValue from "@/ui/components/3d-scene/useSampledValue";
 
@@ -52,7 +53,7 @@ export default function ParkingControls({
 	);
 
 	return (
-		<div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+		<ConsolePanels>
 			<ConsoleGroup title={t("console")}>
 				<div
 					style={{ display: "flex", flexDirection: "column", gap: 12, flex: 1 }}
@@ -122,6 +123,6 @@ export default function ParkingControls({
 					))}
 				</div>
 			</ConsoleGroup>
-		</div>
+		</ConsolePanels>
 	);
 }

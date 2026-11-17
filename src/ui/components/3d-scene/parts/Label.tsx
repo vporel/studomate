@@ -13,6 +13,9 @@ export const labelStyle: React.CSSProperties = {
 	pointerEvents: "none",
 };
 
+/** Stacks the labels with the scene, under the floating boxes laid over it (z-index 20). */
+const LABEL_Z_INDEX_RANGE: [number, number] = [10, 0];
+
 /** Text anchored to a point of the scene, mounted once the first frame has been rendered. */
 export default function Label({
 	position,
@@ -29,7 +32,12 @@ export default function Label({
 	});
 	if (!ready) return null;
 	return (
-		<Html position={position} center distanceFactor={9}>
+		<Html
+			position={position}
+			center
+			distanceFactor={9}
+			zIndexRange={LABEL_Z_INDEX_RANGE}
+		>
 			<div style={style}>{children}</div>
 		</Html>
 	);

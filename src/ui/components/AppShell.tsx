@@ -26,7 +26,7 @@ const Scene3dFloatingBox = dynamic(
 	{ ssr: false },
 );
 
-const DEFAULT_SIDE_PANEL_WIDTH = 350;
+const DEFAULT_SIDE_PANEL_WIDTH = 400;
 
 const AppShell = () => {
 	const { viewAppearance } = useAppContext();

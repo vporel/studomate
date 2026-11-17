@@ -51,7 +51,7 @@ export default function Scene3dSidePanel() {
 					overflow: "hidden",
 				}}
 			>
-				<InlineScene {...link} />
+				<InlineScene {...link} foldPanels />
 			</Box>
 		</Box>
 	);

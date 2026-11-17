@@ -83,7 +83,7 @@ export default function Scene3dFloatingBox() {
 			top={TOP_OFFSET}
 			actions={<Scene3dModeButtons modes={otherModes} sx={{ p: 0.25 }} />}
 		>
-			<InlineScene {...link} />
+			<InlineScene {...link} foldPanels />
 		</FloatingBox>
 	);
 }

@@ -10,11 +10,12 @@ import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
 import {
 	ConsoleDisplay,
-	ConsoleGroup,
 	Lamp,
 	consoleButtonStyle,
 	PushButtonIllustration,
 } from "@/ui/components/3d-scene/parts/ConsoleParts";
+import ConsoleGroup from "@/ui/components/3d-scene/parts/ConsoleGroup";
+import ConsolePanels from "@/ui/components/3d-scene/parts/ConsolePanels";
 import type { SceneComponentProps } from "@/ui/components/3d-scene/scene-views";
 import useSampledValue from "@/ui/components/3d-scene/useSampledValue";
 
@@ -22,6 +23,7 @@ const BUTTON_COLOR = "#37474f";
 const COMMAND_COLOR = "#ef6c00";
 const SENSOR_COLOR = "#2e7d32";
 const FLOORS = [2, 1, 0] as const;
+const PANELS_WIDTH = 250;
 
 const selectCabinPressed = (state: ElevatorState) =>
 	FLOORS.map((floor) => isButtonPressed(state, `cabinButton${floor}`)).join();
@@ -128,7 +130,7 @@ export default function ElevatorControls({
 	};
 
 	return (
-		<div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+		<ConsolePanels width={PANELS_WIDTH}>
 			<ConsoleGroup title={t("outside")}>
 				<div
 					style={{
@@ -158,7 +160,7 @@ export default function ElevatorControls({
 				/>
 			</ConsoleGroup>
 			<ConsoleGroup title={t("lamps")}>
-				<div style={{ display: "flex", gap: 16 }}>
+				<div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
 					{(
 						[
 							{ id: "up", on: up, color: COMMAND_COLOR },
@@ -182,6 +184,6 @@ export default function ElevatorControls({
 					))}
 				</div>
 			</ConsoleGroup>
-		</div>
+		</ConsolePanels>
 	);
 }

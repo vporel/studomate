@@ -2,6 +2,9 @@
 
 const OFF_COLOR = "#cfd8dc";
 
+/** Side, in px, of the round illustration of a console button. */
+export const CONSOLE_BUTTON_SIZE = 55;
+
 export const consoleButtonStyle: React.CSSProperties = {
 	display: "flex",
 	flexDirection: "column",
@@ -34,7 +37,12 @@ export function PushButtonIllustration({
 	disabled: boolean;
 }) {
 	return (
-		<svg width={64} height={64} viewBox="0 0 64 64" aria-hidden="true">
+		<svg
+			width={CONSOLE_BUTTON_SIZE}
+			height={CONSOLE_BUTTON_SIZE}
+			viewBox="0 0 64 64"
+			aria-hidden="true"
+		>
 			<ChromeRing />
 			<circle
 				cx={32}
@@ -90,42 +98,6 @@ export function ConsoleDisplay({
 			>
 				{value ?? "-"}
 			</span>
-		</div>
-	);
-}
-
-export function ConsoleGroup({
-	title,
-	children,
-}: {
-	title: string;
-	children: React.ReactNode;
-}) {
-	return (
-		<div
-			style={{
-				display: "flex",
-				flexDirection: "column",
-				gap: 6,
-				padding: "10px 16px 12px",
-				borderRadius: 8,
-				background: "rgba(255,255,255,0.9)",
-				boxShadow: "0 1px 4px rgba(0,0,0,0.25)",
-			}}
-		>
-			<span
-				style={{
-					font: "11px system-ui, sans-serif",
-					color: "#607d8b",
-					textTransform: "uppercase",
-					letterSpacing: 0.5,
-				}}
-			>
-				{title}
-			</span>
-			<div style={{ display: "flex", alignItems: "flex-end", gap: 20 }}>
-				{children}
-			</div>
 		</div>
 	);
 }

@@ -17,6 +17,13 @@ import {
 export type FloatingBoxPosition = { x: number; y: number };
 export type FloatingBoxSize = { width: number; height: number };
 
+/** The corner of its parent a box is positioned from. */
+export type FloatingBoxAnchor =
+	| "top-left"
+	| "top-right"
+	| "bottom-left"
+	| "bottom-right";
+
 type ResizeDirection = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
 
 const EDGE_MARGIN = 8;
@@ -24,7 +31,9 @@ const HANDLE_THICKNESS = 6;
 const HANDLE_CORNER = 14;
 const DEFAULT_MIN_WIDTH = 160;
 const DEFAULT_MIN_HEIGHT = 100;
+const DEFAULT_WIDTH = 200;
 const DEFAULT_HEIGHT = 240;
+const DEFAULT_Z_INDEX = 20;
 
 const RESIZE_HANDLES: {
 	direction: ResizeDirection;
@@ -95,6 +104,16 @@ const RESIZE_HANDLES: {
 
 type Frame = FloatingBoxPosition & FloatingBoxSize;
 
+/** A box that is resized is positioned from its top left corner only. */
+type Anchoring =
+	| { anchor?: "top-left" }
+	| { anchor: Exclude<FloatingBoxAnchor, "top-left">; resizable?: false };
+
+/** The close button and its label come together, or not at all. */
+type Closable =
+	| { onClose: () => void; closeLabel: string }
+	| { onClose?: undefined; closeLabel?: undefined };
+
 const between = (value: number, min: number, max: number) =>
 	Math.max(min, Math.min(max, value));
 
@@ -141,6 +160,17 @@ function resizeFrame(
  * there is none, and reports where it was left (on opening and after each move) so that the
  * owner can restore it.
  *
+ * With an `anchor` other than the default `"top-left"`, the box is positioned from that corner of
+ * its parent: `position.x` and `position.y` are its distances to the horizontal and vertical
+ * edges of that corner, and `top` the distance to the vertical one. Resizing its parent then
+ * moves the box with that corner, and a parent that becomes too small brings it back inside.
+ * Only a box that is not `resizable` can be anchored to another corner.
+ *
+ * It offers a close button (and closes on Escape) only when it has an `onClose`: the owner then
+ * puts any other header control in `actions`.
+ *
+ * A non-resizable box is `width` px wide, or as wide as its content when `width` is `"auto"`.
+ *
  * A `resizable` box can be resized from every edge and corner, like a window: its size starts at
  * `size`, or `width` by `height`, is bounded by `minWidth` / `minHeight` and its parent, and is
  * reported like its position. Its content then fills the area under the header.
@@ -151,7 +181,7 @@ const FloatingBox = ({
 	position,
 	onPositionChange,
 	onClose,
-	width = 200,
+	width = DEFAULT_WIDTH,
 	height = DEFAULT_HEIGHT,
 	size = null,
 	onSizeChange,
@@ -159,15 +189,16 @@ const FloatingBox = ({
 	minWidth = DEFAULT_MIN_WIDTH,
 	minHeight = DEFAULT_MIN_HEIGHT,
 	top = EDGE_MARGIN,
+	anchor = "top-left",
+	zIndex = DEFAULT_Z_INDEX,
+	onActivate,
 	actions,
 	children,
 }: {
 	title: string;
-	closeLabel: string;
 	position: FloatingBoxPosition | null;
 	onPositionChange: (position: FloatingBoxPosition) => void;
-	onClose: () => void;
-	width?: number;
+	width?: number | "auto";
 	/** Initial height of a resizable box. */
 	height?: number;
 	size?: FloatingBoxSize | null;
@@ -176,16 +207,28 @@ const FloatingBox = ({
 	minWidth?: number;
 	minHeight?: number;
 	top?: number;
+	zIndex?: number;
+	/** Called when the pointer goes down anywhere in the box
+	 * useCase : bring the box to the front in case of many floating boxes sharing the same space.
+	 */
+	onActivate?: () => void;
 	/** Buttons shown in the header, before the close button. */
 	actions?: ReactNode;
 	children: ReactNode;
-}) => {
+} & Closable &
+	Anchoring) => {
 	const boxRef = useRef<HTMLDivElement>(null);
+	const fromRight = anchor.endsWith("right");
+	const fromBottom = anchor.startsWith("bottom");
+	const horizontalSign = fromRight ? -1 : 1;
+	const verticalSign = fromBottom ? -1 : 1;
+	const horizontalEdge = fromRight ? "right" : "left";
+	const verticalEdge = fromBottom ? "bottom" : "top";
 	const [current, setCurrent] = useState<FloatingBoxPosition>(
 		position ?? { x: EDGE_MARGIN, y: top },
 	);
 	const [dimensions, setDimensions] = useState<FloatingBoxSize>(
-		size ?? { width, height },
+		size ?? { width: width === "auto" ? DEFAULT_WIDTH : width, height },
 	);
 	const currentRef = useRef(current);
 	const dimensionsRef = useRef(dimensions);
@@ -194,10 +237,14 @@ const FloatingBox = ({
 		onPositionChange,
 		onSizeChange,
 		top,
+		anchor,
 		minWidth,
 		minHeight,
 	});
-	const grab = useRef<{ x: number; y: number } | null>(null);
+	const grab = useRef<{
+		pointer: FloatingBoxPosition;
+		start: FloatingBoxPosition;
+	} | null>(null);
 	const resizing = useRef<{
 		direction: ResizeDirection;
 		pointer: FloatingBoxPosition;
@@ -221,13 +268,13 @@ const FloatingBox = ({
 		pendingFrame.current = null;
 		const box = boxRef.current;
 		if (!box) return;
-		box.style.left = `${currentRef.current.x}px`;
-		box.style.top = `${currentRef.current.y}px`;
+		box.style[horizontalEdge] = `${currentRef.current.x}px`;
+		box.style[verticalEdge] = `${currentRef.current.y}px`;
 		if (resizable) {
 			box.style.width = `${dimensionsRef.current.width}px`;
 			box.style.height = `${dimensionsRef.current.height}px`;
 		}
-	}, [resizable]);
+	}, [resizable, horizontalEdge, verticalEdge]);
 
 	const scheduleFrameWrite = () => {
 		pendingFrame.current ??= requestAnimationFrame(writeFrameToElement);
@@ -272,6 +319,7 @@ const FloatingBox = ({
 			onPositionChange: report,
 			onSizeChange: reportSize,
 			top: openingTop,
+			anchor: openingAnchor,
 			minWidth: openingMinWidth,
 			minHeight: openingMinHeight,
 		} = opening.current;
@@ -294,20 +342,41 @@ const FloatingBox = ({
 			resize(fitted);
 			reportSize?.(fitted);
 		}
-		const start = remembered ?? {
-			x: parent.clientWidth - fitted.width - EDGE_MARGIN,
-			y: openingTop,
-		};
+		const start =
+			remembered ??
+			(openingAnchor === "top-left"
+				? {
+						x: parent.clientWidth - fitted.width - EDGE_MARGIN,
+						y: openingTop,
+					}
+				: { x: EDGE_MARGIN, y: openingTop });
 		const next = clampToParent(start.x, start.y, fitted.width, fitted.height);
 		place(next);
 		report(next);
 	}, [place, resize, resizable]);
 
+	useEffect(() => {
+		const box = boxRef.current;
+		const parent = box?.offsetParent;
+		if (anchor === "top-left" || !box || !parent) return;
+		if (typeof ResizeObserver === "undefined") return;
+		const observer = new ResizeObserver(() => {
+			if (grab.current) return;
+			const before = currentRef.current;
+			const fitted = clampToParent(before.x, before.y);
+			if (fitted.x === before.x && fitted.y === before.y) return;
+			place(fitted);
+			onPositionChange(fitted);
+		});
+		observer.observe(parent);
+		return () => observer.disconnect();
+	}, [anchor, place, onPositionChange]);
+
 	const startMove = (event: PointerEvent<HTMLDivElement>) => {
 		if ((event.target as HTMLElement).closest("button")) return;
 		grab.current = {
-			x: event.clientX - currentRef.current.x,
-			y: event.clientY - currentRef.current.y,
+			pointer: { x: event.clientX, y: event.clientY },
+			start: currentRef.current,
 		};
 		event.currentTarget.setPointerCapture(event.pointerId);
 	};
@@ -316,8 +385,8 @@ const FloatingBox = ({
 		const start = grab.current;
 		if (!start) return;
 		currentRef.current = clampToParent(
-			event.clientX - start.x,
-			event.clientY - start.y,
+			start.start.x + horizontalSign * (event.clientX - start.pointer.x),
+			start.start.y + verticalSign * (event.clientY - start.pointer.y),
 		);
 		scheduleFrameWrite();
 	};
@@ -366,7 +435,7 @@ const FloatingBox = ({
 	};
 
 	const closeOnEscape = (event: KeyboardEvent) => {
-		if (event.key === "Escape") onClose();
+		if (event.key === "Escape") onClose?.();
 	};
 
 	return (
@@ -376,15 +445,16 @@ const FloatingBox = ({
 			aria-label={title}
 			elevation={6}
 			onKeyDown={closeOnEscape}
+			onPointerDownCapture={onActivate}
 			style={{
-				left: current.x,
-				top: current.y,
+				[horizontalEdge]: current.x,
+				[verticalEdge]: current.y,
 				width: resizable ? dimensions.width : width,
 				height: resizable ? dimensions.height : undefined,
 			}}
 			sx={{
 				position: "absolute",
-				zIndex: 20,
+				zIndex,
 				display: "flex",
 				flexDirection: "column",
 			}}
@@ -430,15 +500,17 @@ const FloatingBox = ({
 					{title}
 				</Typography>
 				{actions}
-				<IconButton
-					size="small"
-					onClick={onClose}
-					aria-label={closeLabel}
-					title={closeLabel}
-					sx={{ p: 0.25 }}
-				>
-					<CloseIcon fontSize="small" />
-				</IconButton>
+				{onClose && (
+					<IconButton
+						size="small"
+						onClick={onClose}
+						aria-label={closeLabel}
+						title={closeLabel}
+						sx={{ p: 0.25 }}
+					>
+						<CloseIcon fontSize="small" />
+					</IconButton>
+				)}
 			</Box>
 			{resizable ? (
 				<Box

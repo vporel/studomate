@@ -4,6 +4,7 @@ import CartonSortingModel, {
 } from "@/3d-scenes/carton-sorting/v1/carton-sorting.model";
 import { act, fireEvent, screen } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
+import ScenePanelsProvider from "@/ui/components/3d-scene/parts/ScenePanelsContext";
 import CartonSortingControls from "./CartonSortingControls";
 
 function setup({
@@ -16,11 +17,13 @@ function setup({
 		.mockImplementation((callback) => frames.push(callback));
 	const send = jest.fn();
 	const view = renderWithI18n(
-		<CartonSortingControls
-			sample={() => state}
-			interactive={interactive}
-			send={send}
-		/>,
+		<ScenePanelsProvider foldPanels={false}>
+			<CartonSortingControls
+				sample={() => state}
+				interactive={interactive}
+				send={send}
+			/>
+		</ScenePanelsProvider>,
 	);
 	act(() => frames.splice(0).forEach((callback) => callback(0)));
 	return { send, ...view };
@@ -151,11 +154,13 @@ describe("CartonSortingControls", () => {
 				interactive: boolean,
 			) =>
 				view.rerender(
-					<CartonSortingControls
-						sample={() => CartonSortingModel.createState()}
-						interactive={interactive}
-						send={send}
-					/>,
+					<ScenePanelsProvider foldPanels={false}>
+						<CartonSortingControls
+							sample={() => CartonSortingModel.createState()}
+							interactive={interactive}
+							send={send}
+						/>
+					</ScenePanelsProvider>,
 				);
 
 			it("presses again after a restart, without sending a release for the lost press", () => {
