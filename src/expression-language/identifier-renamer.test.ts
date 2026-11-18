@@ -124,6 +124,12 @@ describe("IdentifierRenamer", () => {
 					IdentifierRenamer.rename("t1/X10/5s", { s: "SECONDE" }, Dialect.FR),
 				).toBe("t1/X10/5s");
 			});
+
+			it("renomme l'entrée d'une temporisation écrite durée d'abord, sans toucher à l'unité", () => {
+				expect(
+					IdentifierRenamer.rename("5s/X1 ET 2s/(X1 OU s)", { X1: "X10", s: "SECONDE" }, Dialect.FR),
+				).toBe("5s/X10 ET 2s/(X10 OU SECONDE)");
+			});
 		});
 
 		// Les expressions ne sont lexées qu'à l'analyse ou à la simulation : pendant

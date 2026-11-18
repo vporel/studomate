@@ -325,11 +325,9 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 				// Expression invalide : déjà signalée par `TransitionAnalyser`, on l'ignore ici.
 				continue;
 			}
-			for (const declaration of declarations) {
-				nameCounts.set(
-					declaration.name,
-					(nameCounts.get(declaration.name) ?? 0) + 1,
-				);
+			for (const { name } of declarations) {
+				if (name === null) continue;
+				nameCounts.set(name, (nameCounts.get(name) ?? 0) + 1);
 			}
 		}
 

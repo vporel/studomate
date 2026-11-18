@@ -387,15 +387,17 @@
 		],
 		"transitionsOutro": "To change the condition, double-click the transition's text area. The syntax is checked when the project is analysed. A transition must be a Boolean expression: an assignment (:=) or a bare numeric constant is not accepted.",
 		"transitionsTimerTitle": "Timer",
-		"transitionsTimerBody": "To wait before crossing a transition (for example 5 seconds after a step becomes active), write a timer directly in the condition, in the form \"identifier/input/duration\":",
+		"transitionsTimerBody": "To wait before crossing a transition (for example 5 seconds after a step becomes active), write a timer directly in the condition, in the form \"identifier/input/duration\", or in the short form \"duration/input\" of the IEC 60848 standard:",
 		"transitionsTimerItems": [
-			"Identifier: the timer's name (\"t1\", \"door_timer\"...). It must be unique within the grafcet and must not match a project variable name, otherwise the analysis reports an error",
+			"Identifier: the timer's name (\"t1\", \"door_timer\"...). It must be unique within the grafcet and must not match a project variable name, otherwise the analysis reports an error. The short form has none",
 			"Input: the condition that starts the countdown. Most often a step's activity (\"X10\"), but also a variable, \"TRUE\", or an expression in parentheses (\"(X10 AND sensor1)\")",
 			"Duration: a number followed by a unit, \"ms\", \"s\", \"m\", \"h\" or \"d\" for days (\"500ms\", \"5s\", \"2m\"). The \"T#5s\" form is not accepted here: it is reserved for Ladder timer blocks",
 			"Example: \"t1/X10/5s\" becomes true once step 10 has been active for 5 seconds",
-			"Combined example: \"door_open AND t7/X7/4s\""
+			"Combined example: \"door_open AND t7/X7/4s\"",
+			"Short form: \"5s/X10\" is equivalent to \"t1/X10/5s\", without an identifier. The input follows the same rules (\"5s/(X10 AND sensor1)\")",
+			"The variants \"5s/X10/2s\" (delay on deactivation) and \"X10/5s\" are not accepted: the analysis reports a malformed timer"
 		],
-		"transitionsTimerOutro": "The timer is true once its input has stayed true for the whole duration, and becomes false again as soon as the input drops: the countdown therefore restarts from zero each time the step is activated. During simulation, each timer's elapsed time is shown with its transition.",
+		"transitionsTimerOutro": "The timer is true once its input has stayed true for the whole duration, and becomes false again as soon as the input drops: the countdown therefore restarts from zero each time the step is activated. During simulation, each timer's elapsed time is shown with its transition. When a transition contains several, each one is labelled with its identifier, or with its duration if it has none.",
 		"transitionsSyntaxTitle": "Expression syntax (conditions and actions)",
 		"transitionsSyntaxItems": [
 			"Precedence, from lowest to highest: OR, AND, NOT, comparisons, + and −, * and /, unary minus. So \"a AND b OR c\" reads \"(a AND b) OR c\" and \"NOT a = b\" reads \"NOT (a = b)\". Parentheses can be used to force another grouping.",
@@ -972,7 +974,7 @@
 					"the grafcet is not excluded from execution: an excluded grafcet has no active step;",
 					"the condition of the next transition is true: open \"Watch tables\" (bottom bar) and look at the value of the variables it uses;",
 					"an input with a \"push button\" behaviour is only true while you hold it down (with the mouse or the Space key);",
-					"a timer (\"t1/X1/5s\") waits for the given duration before becoming true;",
+					"a timer (\"t1/X1/5s\" or \"5s/X1\") waits for the given duration before becoming true;",
 					"a forced step (padlock on the step) keeps its value: release the force with a right-click on the step;",
 					"a variable written by a ladder is only seen by a grafcet on the next cycle (see \"Order of execution within a cycle\" in the Simulation section)."
 				]

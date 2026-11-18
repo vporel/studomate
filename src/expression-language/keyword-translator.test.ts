@@ -55,6 +55,7 @@ describe("KeywordTranslator", () => {
 
 		it("ne prend pas l'unité d'une durée pour un mot", () => {
 			expect(frToEn("t1/X10/5s ET a")).toBe("t1/X10/5s AND a");
+			expect(frToEn("5s/(X10 ET VRAI) OU a")).toBe("5s/(X10 AND TRUE) OR a");
 		});
 	});
 

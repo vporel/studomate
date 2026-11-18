@@ -45,6 +45,7 @@ import InvalidConversionArgumentException from "@/simulator/interpreter/semantic
 import InvalidTimeLiteralException from "@/expression-language/lexer/exceptions/invalid-time-literal.exception";
 import ForeignKeywordException from "@/expression-language/parser/exceptions/foreign-keyword.exception";
 import UnknownFunctionException from "@/expression-language/parser/exceptions/unknown-function.exception";
+import MalformedTimerException from "@/expression-language/parser/exceptions/malformed-timer.exception";
 import {
 	getConversionFunctionName,
 	isConversionSupported,
@@ -504,6 +505,13 @@ export default class SimulatorExceptionsMapper {
 					name: exception.getFunctionName(),
 					position: exception.getPosition(),
 				},
+			};
+		}
+
+		if (exception instanceof MalformedTimerException) {
+			return {
+				code: "MALFORMED_TIMER",
+				params: { position: exception.getPosition() },
 			};
 		}
 

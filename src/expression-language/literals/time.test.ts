@@ -1,4 +1,4 @@
-import { isTimeLiteral, parseTimeLiteral } from "./time";
+import { formatDurationMs, isTimeLiteral, parseTimeLiteral } from "./time";
 
 describe("isTimeLiteral", () => {
 	it("reconnaît le préfixe T#", () => {
@@ -45,5 +45,29 @@ describe("parseTimeLiteral", () => {
 	it("rejette des caractères inattendus", () => {
 		expect(parseTimeLiteral("T#5sx")).toBeNull();
 		expect(parseTimeLiteral("T#abc")).toBeNull();
+	});
+});
+
+describe("formatDurationMs", () => {
+	it("formats whole seconds and decimal seconds", () => {
+		expect(formatDurationMs(5000)).toBe("5s");
+		expect(formatDurationMs(1500)).toBe("1.5s");
+		expect(formatDurationMs(1000)).toBe("1s");
+	});
+
+	it("formats durations below one second in ms", () => {
+		expect(formatDurationMs(200)).toBe("200ms");
+		expect(formatDurationMs(0)).toBe("0ms");
+	});
+
+	it("uses the largest of d/h/m that divides the duration exactly", () => {
+		expect(formatDurationMs(120_000)).toBe("2m");
+		expect(formatDurationMs(3_600_000)).toBe("1h");
+		expect(formatDurationMs(86_400_000)).toBe("1d");
+		expect(formatDurationMs(7_200_000)).toBe("2h");
+	});
+
+	it("falls back to seconds when no larger unit divides the duration", () => {
+		expect(formatDurationMs(90_000)).toBe("90s");
 	});
 });

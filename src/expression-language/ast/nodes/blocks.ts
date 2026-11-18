@@ -14,13 +14,13 @@ export interface TimerNode extends BaseNode {
 }
 
 /**
- * A simple timer declaration using a string format like t1/X10/5s
+ * A simple timer declaration written `t1/X10/5s` (named) or `5s/X10` (anonymous, `name` is null).
  * This node can not be directly evaluated, it's just a convenient way to declare timers with a simple syntax
  * It could be transformed into a TimerNode during an intermediate compilation step
  */
 export interface TimerStringDeclarationNode extends BaseNode {
 	type: "TIMER_STRING_DECLARATION";
-	name: string;
+	name: string | null;
 	input: ASTNode; //should be of native type boolean
 	presetTime: number; //in ms
 }

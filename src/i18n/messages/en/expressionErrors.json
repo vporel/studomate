@@ -78,6 +78,7 @@
 	"UNSUPPORTED_CONVERSION": "No conversion from {actual} to {targetType}.",
 	"UNKNOWN_FUNCTION": "Unknown function \"{name}\" at position {position}: only the standard's conversion functions (INT_TO_REAL, DINT_TO_INT…) are available.",
 	"INVALID_TIME_LITERAL": "Invalid time constant \"{literal}\" at position {position}",
+	"MALFORMED_TIMER": "Malformed timer at position {position}: a timer is written t1/X1/5s or 5s/X1 (the condition is a variable, TRUE, FALSE or an expression in parentheses).",
 	"DIVISION_BY_ZERO": "Division by zero: {left} / {right}",
 	"PARSING_ENDED_BEFORE_EOF": "Invalid expression: unexpected character at position {position}",
 	"MISSING_PRIMARY_OR_LEFT_PARENTHESE": "Expected expression (variable, number, string) or '(' at position {position}",

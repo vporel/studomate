@@ -387,15 +387,17 @@
 		],
 		"transitionsOutro": "Pour modifier la réceptivité, double-cliquez sur la zone de texte de la transition. La syntaxe est vérifiée lors de l'analyse du projet. Une transition doit être une expression booléenne : une affectation (:=) ou une constante numérique seule ne sont pas acceptées.",
 		"transitionsTimerTitle": "Temporisation",
-		"transitionsTimerBody": "Pour attendre avant de franchir une transition (par exemple 5 secondes après l'activation d'une étape), on écrit une temporisation directement dans la réceptivité, sous la forme « identifiant/entrée/durée » :",
+		"transitionsTimerBody": "Pour attendre avant de franchir une transition (par exemple 5 secondes après l'activation d'une étape), on écrit une temporisation directement dans la réceptivité, sous la forme « identifiant/entrée/durée », ou sous la forme courte « durée/entrée » de la norme IEC 60848 :",
 		"transitionsTimerItems": [
-			"Identifiant : le nom de la temporisation (« t1 », « tempo_porte »…). Il doit être unique dans le grafcet et ne pas porter le nom d'une variable du projet, sinon l'analyse signale une erreur",
+			"Identifiant : le nom de la temporisation (« t1 », « tempo_porte »…). Il doit être unique dans le grafcet et ne pas porter le nom d'une variable du projet, sinon l'analyse signale une erreur. La forme courte n'en a pas",
 			"Entrée : la condition qui déclenche le décompte. Le plus souvent l'activité d'une étape (« X10 »), mais aussi une variable, « VRAI », ou une expression entre parenthèses (« (X10 ET capteur1) »)",
 			"Durée : un nombre suivi d'une unité, « ms », « s », « m », « h » ou « d » pour les jours (« 500ms », « 5s », « 2m »). La forme « T#5s » n'est pas acceptée ici : elle est réservée aux blocs de temporisation du Ladder",
 			"Exemple : « t1/X10/5s » devient vrai lorsque l'étape 10 est active depuis 5 secondes",
-			"Exemple combiné : « porte_ouverte ET t7/X7/4s »"
+			"Exemple combiné : « porte_ouverte ET t7/X7/4s »",
+			"Forme courte : « 5s/X10 » équivaut à « t1/X10/5s », sans identifiant. L'entrée suit les mêmes règles (« 5s/(X10 ET capteur1) »)",
+			"Les variantes « 5s/X10/2s » (retard à la désactivation) et « X10/5s » ne sont pas acceptées : l'analyse signale une temporisation mal écrite"
 		],
-		"transitionsTimerOutro": "La temporisation est vraie lorsque son entrée est restée vraie pendant toute la durée, et redevient fausse dès que l'entrée tombe : le décompte repart donc de zéro à chaque nouvelle activation de l'étape. En simulation, le temps écoulé de chaque temporisation est affiché avec la transition concernée.",
+		"transitionsTimerOutro": "La temporisation est vraie lorsque son entrée est restée vraie pendant toute la durée, et redevient fausse dès que l'entrée tombe : le décompte repart donc de zéro à chaque nouvelle activation de l'étape. En simulation, le temps écoulé de chaque temporisation est affiché avec la transition concernée. Quand une transition en contient plusieurs, chacune est désignée par son identifiant, ou par sa durée si elle n'en a pas.",
 		"transitionsSyntaxTitle": "Syntaxe des expressions (réceptivités et actions)",
 		"transitionsSyntaxItems": [
 			"Précédence, du plus faible au plus fort : OU, ET, NON, comparaisons, + et −, * et /, moins unaire. Ainsi « a ET b OU c » se lit « (a ET b) OU c » et « NON a = b » se lit « NON (a = b) ». Les parenthèses sont acceptées pour imposer un autre groupement.",
@@ -975,7 +977,7 @@
 					"le grafcet n'est pas exclu de l'exécution : un grafcet exclu n'a aucune étape active ;",
 					"la réceptivité de la transition suivante est vraie : ouvrez « Tables de visualisation » (barre inférieure) et regardez la valeur des variables qu'elle utilise ;",
 					"une entrée à comportement « bouton poussoir » n'est vraie que tant qu'on la maintient enfoncée (à la souris ou avec la touche Espace) ;",
-					"une temporisation (« t1/X1/5s ») attend la durée indiquée avant de devenir vraie ;",
+					"une temporisation (« t1/X1/5s » ou « 5s/X1 ») attend la durée indiquée avant de devenir vraie ;",
 					"une étape forcée (cadenas sur l'étape) garde sa valeur : relâchez le forçage par clic droit sur l'étape ;",
 					"une variable écrite par un ladder n'est vue par un grafcet qu'au cycle suivant (voir « Ordre d'exécution d'un cycle » dans la section Simulation)."
 				]

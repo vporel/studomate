@@ -1463,6 +1463,37 @@ describe("GrafcetAnalyser", () => {
 				expect(issue?.params).toMatchObject({ timerName: "t1" });
 			});
 
+			it("ne compte pas les temporisations sans nom (5s/X0) comme des doublons", () => {
+				const step = new StepBuilder()
+					.id("s0")
+					.number(0)
+					.initial()
+					.position(0, 0)
+					.build();
+				const t1 = new TransitionBuilder()
+					.id("t1")
+					.expression("5s/X0")
+					.position(0, 50)
+					.build();
+				const t2 = new TransitionBuilder()
+					.id("t2")
+					.expression("5s/X0 ET t1/X0/3s")
+					.position(0, 150)
+					.build();
+				const grafcet = new GrafcetBuilder()
+					.id("g")
+					.name("G")
+					.addStep(step)
+					.addTransitions(t1, t2)
+					.build();
+
+				expect(
+					analyse(grafcet).issues.find(
+						(i) => i.code === "GRAFCET_DUPLICATE_TIMER_NAME",
+					),
+				).toBeUndefined();
+			});
+
 			it("accepte des identifiants de temporisation distincts", () => {
 				const step = new StepBuilder()
 					.id("s0")

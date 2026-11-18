@@ -78,6 +78,7 @@
 	"UNSUPPORTED_CONVERSION": "Aucune conversion de {actual} vers {targetType}.",
 	"UNKNOWN_FUNCTION": "Fonction inconnue « {name} » à la position {position} : seules les fonctions de conversion de la norme (INT_TO_REAL, DINT_TO_INT…) sont disponibles.",
 	"INVALID_TIME_LITERAL": "Constante de temps invalide « {literal} » à la position {position}",
+	"MALFORMED_TIMER": "Temporisation mal écrite à la position {position} : une temporisation s'écrit t1/X1/5s ou 5s/X1 (la condition est une variable, VRAI, FAUX ou une expression entre parenthèses).",
 	"DIVISION_BY_ZERO": "Division par zéro : {left} / {right}",
 	"PARSING_ENDED_BEFORE_EOF": "Expression invalide : caractère inattendu à la position {position}",
 	"MISSING_PRIMARY_OR_LEFT_PARENTHESE": "Expression attendue (variable, nombre, chaîne) ou '(' à la position {position}",

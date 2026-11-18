@@ -55,9 +55,13 @@ export default class SimulationManager {
 	 * Dernier ensemble complet des entrées observables publiées par propriétaire (transition),
 	 * maintenu à jour à chaque changement pour republier un tableau complet et cohérent (pas
 	 * seulement l'entrée qui a changé) sans avoir à relire tout l'état courant du PLC.
+	 * Keyed by variable id: a label is not unique within a transition (two unnamed timers of
+	 * the same duration, `5s/X1 ET 5s/X2`, are both labelled `5s`).
 	 */
-	private currentObservableEntries: Map<string, Map<string | null, unknown>> =
-		new Map();
+	private currentObservableEntries: Map<
+		string,
+		Map<string, ObservableValueState>
+	> = new Map();
 
 	/**
 	 * Dernières valeurs publiées dans le store (par id de variable), pour ne republier à chaque
@@ -423,7 +427,7 @@ export default class SimulationManager {
 						ownerEntries = new Map();
 						this.currentObservableEntries.set(source.ownerId, ownerEntries);
 					}
-					ownerEntries.set(source.label, value);
+					ownerEntries.set(id, { label: source.label, value });
 					changedOwnerIds.add(source.ownerId);
 				}
 				continue;
@@ -448,8 +452,7 @@ export default class SimulationManager {
 		const changedObservableValues: Record<string, ObservableValueState[]> = {};
 		for (const ownerId of changedOwnerIds) {
 			changedObservableValues[ownerId] = Array.from(
-				this.currentObservableEntries.get(ownerId)!,
-				([label, value]) => ({ label, value }),
+				this.currentObservableEntries.get(ownerId)!.values(),
 			);
 		}
 

@@ -7,6 +7,7 @@ import MissingRightParentheseException from "./exceptions/missing-right-parenthe
 import ParsingEndedBeforeEOFException from "./exceptions/parsing-ended-before-eof.exception";
 import Parser from "./parser";
 import UnknownFunctionException from "./exceptions/unknown-function.exception";
+import MalformedTimerException from "./exceptions/malformed-timer.exception";
 
 describe("Parser", () => {
 	let lexer: Lexer;
@@ -314,6 +315,177 @@ describe("Parser", () => {
 			expect((parseExpression("t/x/5s") as any).presetTime).toBe(5000);
 			expect((parseExpression("t/x/2m") as any).presetTime).toBe(120000);
 			expect((parseExpression("t/x/1h") as any).presetTime).toBe(3600000);
+		});
+
+		it("reads a/b/5s as a timer named a, not as a division", () => {
+			const ast = parseExpression("a/b/5s");
+			expect(ast.type).toBe("TIMER_STRING_DECLARATION");
+			expect((ast as any).name).toBe("a");
+			expect((ast as any).input.value).toBe("b");
+		});
+
+		it("accepts a boolean literal as the input of a named timer", () => {
+			const ast = parseExpression("t1/VRAI/5s");
+			expect(ast.type).toBe("TIMER_STRING_DECLARATION");
+			expect((ast as any).input.type).toBe("BOOLEAN_LITERAL");
+		});
+	});
+
+	describe("timer definitions written duration first (5s/X1)", () => {
+		it("parses a timer without a name", () => {
+			const ast = parseExpression("5s/X1");
+			expect(ast.type).toBe("TIMER_STRING_DECLARATION");
+			expect((ast as any).name).toBeNull();
+			expect((ast as any).input.type).toBe("IDENTIFIER");
+			expect((ast as any).input.value).toBe("X1");
+			expect((ast as any).presetTime).toBe(5000);
+			expect((ast as any).position).toBe(0);
+		});
+
+		it("converts duration units, including decimals, and tells ms apart from m", () => {
+			expect((parseExpression("1.5s/X1") as any).presetTime).toBe(1500);
+			expect((parseExpression("200ms/X1") as any).presetTime).toBe(200);
+			expect((parseExpression("5ms/X1") as any).presetTime).toBe(5);
+			expect((parseExpression("5m/X1") as any).presetTime).toBe(300000);
+			expect((parseExpression("1h/X1") as any).presetTime).toBe(3600000);
+		});
+
+		it("accepts a parenthesized compound input", () => {
+			const ast = parseExpression("5s/(X1 ET X2)");
+			expect(ast.type).toBe("TIMER_STRING_DECLARATION");
+			expect((ast as any).name).toBeNull();
+			expect((ast as any).input.type).toBe("LOGICAL_EXPRESSION");
+			expect((ast as any).input.operator).toBe("AND");
+		});
+
+		it("accepts a boolean literal as input", () => {
+			const ast = parseExpression("5s/VRAI");
+			expect(ast.type).toBe("TIMER_STRING_DECLARATION");
+			expect((ast as any).input.type).toBe("BOOLEAN_LITERAL");
+			expect((ast as any).input.value).toBe(true);
+		});
+
+		it("takes only the atomic input, the rest of the expression applies to the timer", () => {
+			const ast = parseExpression("5s/X1 ET X2");
+			expect(ast.type).toBe("LOGICAL_EXPRESSION");
+			expect((ast as any).operator).toBe("AND");
+			expect((ast as any).left.type).toBe("TIMER_STRING_DECLARATION");
+			expect((ast as any).left.input.value).toBe("X1");
+			expect((ast as any).right.value).toBe("X2");
+		});
+
+		it("combines with OR and NOT like any boolean operand", () => {
+			const or = parseExpression("X3 OU 5s/X1");
+			expect(or.type).toBe("LOGICAL_EXPRESSION");
+			expect((or as any).operator).toBe("OR");
+			expect((or as any).right.type).toBe("TIMER_STRING_DECLARATION");
+
+			const not = parseExpression("NON 5s/X1");
+			expect(not.type).toBe("UNARY_EXPRESSION");
+			expect((not as any).operator).toBe("NOT");
+			expect((not as any).expr.type).toBe("TIMER_STRING_DECLARATION");
+		});
+
+		it("accepts the timer inside parentheses", () => {
+			const ast = parseExpression("(5s/X1)");
+			expect(ast.type).toBe("TIMER_STRING_DECLARATION");
+		});
+
+		it("parses both forms side by side", () => {
+			const ast = parseExpression("t1/X1/5s ET 2s/X2");
+			expect((ast as any).left.name).toBe("t1");
+			expect((ast as any).left.presetTime).toBe(5000);
+			expect((ast as any).right.name).toBeNull();
+			expect((ast as any).right.presetTime).toBe(2000);
+		});
+
+		it("parses the English dialect's keywords in the input", () => {
+			const enLexer = new Lexer(Dialect.EN);
+			const ast = new Parser(enLexer.tokenize("5s/(X1 AND TRUE)")).parse();
+			expect(ast.type).toBe("TIMER_STRING_DECLARATION");
+			expect((ast as any).input.operator).toBe("AND");
+		});
+
+		it("parses a timer applied to an arithmetic result as such, leaving the type error to the semantic analysis", () => {
+			const ast = parseExpression("5s/X1 + 1");
+			expect(ast.type).toBe("ARITHMETIC_EXPRESSION");
+			expect((ast as any).left.type).toBe("TIMER_STRING_DECLARATION");
+		});
+	});
+
+	describe("expressions that must not be read as a timer", () => {
+		it("keeps a number divided by an identifier as a division", () => {
+			const ast = parseExpression("10/X1");
+			expect(ast.type).toBe("ARITHMETIC_EXPRESSION");
+			expect((ast as any).operator).toBe("/");
+		});
+
+		it("keeps a T# constant divided by an identifier as a division", () => {
+			const ast = parseExpression("T#5s/X1");
+			expect(ast.type).toBe("ARITHMETIC_EXPRESSION");
+			expect((ast as any).operator).toBe("/");
+			expect((ast as any).left.kind).toBe("time");
+		});
+
+		it("rejects a duration on its own", () => {
+			expect(() => parseExpression("5s")).toThrow(MalformedTimerException);
+		});
+
+		it("rejects a duration followed by a slash and nothing", () => {
+			expect(() => parseExpression("5s/")).toThrow(MalformedTimerException);
+		});
+
+		it("rejects a number as timer input", () => {
+			expect(() => parseExpression("5s/1")).toThrow(MalformedTimerException);
+		});
+
+		it("rejects a compound input written without parentheses", () => {
+			expect(() => parseExpression("5s/-X1")).toThrow(MalformedTimerException);
+		});
+
+		it("rejects the rise-and-fall delay form 5s/X1/2s instead of reading a division", () => {
+			expect(() => parseExpression("5s/X1/2s")).toThrow(MalformedTimerException);
+		});
+
+		it("rejects the duration written after the input without a name (X1/5s)", () => {
+			expect(() => parseExpression("X1/5s")).toThrow(MalformedTimerException);
+		});
+
+		it("rejects a mix of both forms (t1/5s/X1) instead of reading t1 divided by a timer", () => {
+			let error: unknown;
+			try {
+				parseExpression("t1/5s/X1");
+			} catch (e) {
+				error = e;
+			}
+			expect(error).toBeInstanceOf(MalformedTimerException);
+			expect((error as MalformedTimerException).getPosition()).toBe(0);
+		});
+
+		it("never reads a named timer as the input of an anonymous one (5s/t1/X1/5s)", () => {
+			expect(() => parseExpression("5s/t1/X1/5s")).toThrow(MalformedTimerException);
+		});
+
+		it("rejects a duration glued to the next word instead of silently splitting it", () => {
+			expect(() => parseExpression("5sET X1")).toThrow();
+		});
+
+		it("reads an input glued to a keyword as a single identifier", () => {
+			expect((parseExpression("5s/X1ET") as any).input.value).toBe("X1ET");
+		});
+
+		it("rejects an upper-case unit, which is not a duration", () => {
+			expect(() => parseExpression("5S/X1")).toThrow();
+		});
+
+		it("rejects a space between the number and its unit", () => {
+			expect(() => parseExpression("5 s/X1")).toThrow();
+		});
+
+		it("rejects a compound named-timer input written without parentheses with a timer error", () => {
+			expect(() => parseExpression("timer1/a ET b/10s")).toThrow(
+				MalformedTimerException,
+			);
 		});
 	});
 

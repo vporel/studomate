@@ -47,6 +47,7 @@ import IncompatibleNumericTypesException from "@/simulator/interpreter/semantic-
 import InvalidConversionArgumentException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-conversion-argument.exception";
 import InvalidTimeLiteralException from "@/expression-language/lexer/exceptions/invalid-time-literal.exception";
 import UnknownFunctionException from "@/expression-language/parser/exceptions/unknown-function.exception";
+import MalformedTimerException from "@/expression-language/parser/exceptions/malformed-timer.exception";
 
 function timerNode(): TimerNode {
 	return BlocksBuilder.buildTimerNode(
@@ -197,6 +198,16 @@ describe("SimulatorExceptionsMapper", () => {
 					"fr",
 				),
 			).toBe("Aucune conversion de REAL vers WORD.");
+		});
+
+		it("maps MalformedTimerException, naming both timer forms", () => {
+			const e = new MalformedTimerException(4);
+			expect(message(e, "fr")).toContain(
+				"Temporisation mal écrite à la position 4 : une temporisation s'écrit t1/X1/5s ou 5s/X1",
+			);
+			expect(message(e, "en")).toContain(
+				"Malformed timer at position 4: a timer is written t1/X1/5s or 5s/X1",
+			);
 		});
 
 		it("maps UnknownFunctionException and InvalidTimeLiteralException", () => {

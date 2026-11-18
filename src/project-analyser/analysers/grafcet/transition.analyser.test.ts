@@ -417,6 +417,66 @@ describe("TransitionAnalyser", () => {
 			expect(conflictIssues).toHaveLength(0);
 		});
 
+		it("accepts an unnamed timer without looking for a name conflict", () => {
+			const variable = new VariableBuilder()
+				.id("var-1")
+				.mnemonic("T1")
+				.zone("memory")
+				.type("BOOL")
+				.build();
+			const transition = new TransitionBuilder()
+				.id("trans-1")
+				.expression("5s/T1")
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addTransition(transition)
+				.build();
+
+			const issues = analyser.analyseInContext(
+				transition,
+				grafcet,
+				analyserEnvironment([variable]),
+				Dialect.FR,
+			);
+
+			expect(
+				issues.filter(
+					(i) =>
+						i.code === "TRANSITION_TIMER_NAME_CONFLICT" ||
+						i.code === "TRANSITION_INVALID_EXPRESSION",
+				),
+			).toHaveLength(0);
+		});
+
+		it.each([
+			["a mix of both timer forms", "t1/5s/VRAI"],
+			["the rise-and-fall delay form", "5s/VRAI/2s"],
+			["a duration after an unnamed input", "VRAI/5s"],
+			["an unnamed timer used in a calculation", "5s/VRAI + 1"],
+			["a T# constant divided by a boolean", "T#5s/VRAI"],
+		])("reports %s (%s) as an invalid expression", (_, expression) => {
+			const transition = new TransitionBuilder()
+				.id("trans-1")
+				.expression(expression)
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addTransition(transition)
+				.build();
+
+			const issues = analyser.analyseInContext(
+				transition,
+				grafcet,
+				analyserEnvironment(),
+				Dialect.FR,
+			);
+
+			expect(
+				issues.find((i) => i.code === "TRANSITION_INVALID_EXPRESSION"),
+			).toBeDefined();
+		});
+
 		it("detects a constant division by zero", () => {
 			const transition = new TransitionBuilder()
 				.id("trans-1")

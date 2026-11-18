@@ -19,6 +19,7 @@ import MissingPrimaryOrLeftParentheseException from "./exceptions/missing-primar
 import MissingRightParentheseException from "./exceptions/missing-right-parenthese.exception";
 import ParsingEndedBeforeEOFException from "./exceptions/parsing-ended-before-eof.exception";
 import UnknownFunctionException from "./exceptions/unknown-function.exception";
+import MalformedTimerException from "./exceptions/malformed-timer.exception";
 import { parseConversionFunctionName } from "../conversions";
 
 export default class Parser {
@@ -189,6 +190,12 @@ export default class Parser {
 			if (this.isTimerPattern()) {
 				return this.parseTimerDefinition();
 			}
+			if (
+				this.tokens[this.position + 1]?.type === TokenType.SLASH &&
+				this.tokens[this.position + 2]?.type === TokenType.DURATION
+			) {
+				throw new MalformedTimerException(token.position);
+			}
 			if (this.tokens[this.position + 1]?.type === TokenType.LPAREN) {
 				return this.parseFunctionCall();
 			}
@@ -214,6 +221,13 @@ export default class Parser {
 				token.position,
 				token.value.includes(".") ? "real" : "integer",
 			);
+		}
+
+		if (this.at(TokenType.DURATION)) {
+			if (this.isDurationFirstTimerPattern()) {
+				return this.parseDurationFirstTimerDefinition();
+			}
+			throw new MalformedTimerException(token.position);
 		}
 
 		if (this.at(TokenType.TIME_LITERAL)) {
@@ -273,43 +287,52 @@ export default class Parser {
 		);
 	}
 
+	/** `t1/X1/5s` */
 	private isTimerPattern(): boolean {
 		const p = this.position;
-		// Identifier followed by /
-		if (!(
-			this.tokens[p]?.type === TokenType.IDENTIFIER &&
-			this.tokens[p + 1]?.type === TokenType.SLASH
-		)) {
+		if (
+			this.tokens[p]?.type !== TokenType.IDENTIFIER ||
+			this.tokens[p + 1]?.type !== TokenType.SLASH
+		) {
 			return false;
 		}
+		const inputEnd = this.findTimerInputEnd(p + 2);
+		return (
+			inputEnd !== -1 &&
+			this.tokens[inputEnd + 1]?.type === TokenType.SLASH &&
+			this.tokens[inputEnd + 2]?.type === TokenType.DURATION
+		);
+	}
 
-		// L'entrée du timer doit être une valeur atomique seule (identifiant,
-		// booléen...), ou une expression parenthésée — jamais une expression
-		// composée à nu, sous peine de confondre le / de clôture du timer avec
-		// un / de division plus loin dans l'expression englobante.
-		const inputStart = p + 2;
-		const inputToken = this.tokens[inputStart];
+	/** `5s/X1` */
+	private isDurationFirstTimerPattern(): boolean {
+		const p = this.position;
+		return (
+			this.tokens[p]?.type === TokenType.DURATION &&
+			this.tokens[p + 1]?.type === TokenType.SLASH &&
+			this.findTimerInputEnd(p + 2) !== -1
+		);
+	}
+
+	/**
+	 * Index of the last token of a timer input starting at `start`, or -1 if there is none.
+	 * The input is a lone atomic value (identifier, boolean) or a parenthesized expression, never
+	 * a bare compound expression: otherwise a `/` of the timer could not be told apart from a
+	 * division further in the enclosing expression.
+	 */
+	private findTimerInputEnd(start: number): number {
+		const type = this.tokens[start]?.type;
 		if (
-			inputToken?.type === TokenType.IDENTIFIER ||
-			inputToken?.type === TokenType.TRUE ||
-			inputToken?.type === TokenType.FALSE
+			type === TokenType.IDENTIFIER ||
+			type === TokenType.TRUE ||
+			type === TokenType.FALSE
 		) {
-			return (
-				this.tokens[inputStart + 1]?.type === TokenType.SLASH &&
-				this.tokens[inputStart + 2]?.type === TokenType.DURATION
-			);
+			return start;
 		}
-
-		if (this.tokens[inputStart]?.type === TokenType.LPAREN) {
-			const closingParenIndex = this.findMatchingParenIndex(inputStart);
-			return (
-				closingParenIndex !== -1 &&
-				this.tokens[closingParenIndex + 1]?.type === TokenType.SLASH &&
-				this.tokens[closingParenIndex + 2]?.type === TokenType.DURATION
-			);
+		if (type === TokenType.LPAREN) {
+			return this.findMatchingParenIndex(start);
 		}
-
-		return false;
+		return -1;
 	}
 
 	private findMatchingParenIndex(openIndex: number): number {
@@ -333,7 +356,7 @@ export default class Parser {
 		const timerIdToken = this.consume(TokenType.IDENTIFIER);
 		this.consume(TokenType.SLASH);
 
-		const inputExpr = this.parsePrimary();
+		const inputExpr = this.parseTimerInput();
 
 		this.consume(TokenType.SLASH);
 		const durationToken = this.consume(TokenType.DURATION);
@@ -343,6 +366,39 @@ export default class Parser {
 			inputExpr,
 			this.convertDurationToMs(durationToken.value),
 			startPos,
+		);
+	}
+
+	private parseDurationFirstTimerDefinition(): ASTNode {
+		const durationToken = this.consume(TokenType.DURATION);
+		this.consume(TokenType.SLASH);
+		const inputExpr = this.parseTimerInput();
+
+		return BlocksBuilder.buildTimerStringDeclarationNode(
+			null,
+			inputExpr,
+			this.convertDurationToMs(durationToken.value),
+			durationToken.position,
+		);
+	}
+
+	/**
+	 * An identifier input is read as a bare identifier, never through `parsePrimary`: there it
+	 * could start a nested timer (`5s/t1/X1/5s`) or a function call.
+	 */
+	private parseTimerInput(): ASTNode {
+		const token = this.current();
+		if (this.at(TokenType.LPAREN)) {
+			return this.parsePrimary();
+		}
+		if (this.at(TokenType.IDENTIFIER)) {
+			this.consume(TokenType.IDENTIFIER);
+			return IdentifiersBuilder.buildIdentifierNode(token.value, token.position);
+		}
+		this.consume(token.type);
+		return LiteralsBuilder.buildBooleanNode(
+			token.type === TokenType.TRUE,
+			token.position,
 		);
 	}
 

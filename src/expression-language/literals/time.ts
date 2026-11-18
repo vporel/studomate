@@ -58,3 +58,19 @@ export function findTimeLiteralEnd(text: string, position: number): number | nul
 	while (end < text.length && /[A-Za-z0-9_.]/.test(text[end])) end++;
 	return end;
 }
+
+const DURATION_FORMAT_UNITS: [unit: string, ms: number][] = [
+	["d", UNIT_TO_MS.d],
+	["h", UNIT_TO_MS.h],
+	["m", UNIT_TO_MS.m],
+];
+
+/** Formats a duration in ms the way it is written in a timer (`5s`, `1.5s`, `200ms`, `2m`): the
+ * largest of `d`/`h`/`m` that divides it exactly, otherwise seconds, or `ms` below one second. */
+export function formatDurationMs(ms: number): string {
+	for (const [unit, unitMs] of DURATION_FORMAT_UNITS) {
+		if (ms >= unitMs && ms % unitMs === 0) return `${ms / unitMs}${unit}`;
+	}
+	if (ms >= UNIT_TO_MS.s) return `${ms / UNIT_TO_MS.s}s`;
+	return `${ms}ms`;
+}
