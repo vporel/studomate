@@ -285,7 +285,7 @@ describe("TransitionPreCompiler", () => {
 			);
 
 			expect(result.timerElapsedVariables).toEqual([
-				{ name: "T1", variableId: "_GeneratedMemo_1" },
+				{ label: "T1", variableId: "_GeneratedMemo_1" },
 			]);
 		});
 
@@ -304,8 +304,100 @@ describe("TransitionPreCompiler", () => {
 			);
 
 			expect(result.timerElapsedVariables).toEqual([
-				{ name: "T1", variableId: "_GeneratedMemo_1" },
-				{ name: "T2", variableId: "_GeneratedMemo_4" },
+				{ label: "T1", variableId: "_GeneratedMemo_1" },
+				{ label: "T2", variableId: "_GeneratedMemo_4" },
+			]);
+		});
+
+		it("compiles a timer written 5s/X1 into a TON timer, like t1/X1/5s", () => {
+			const precompile = (expression: string) => {
+				const transition = new TransitionBuilder()
+					.id("trans-1")
+					.expression(expression)
+					.build();
+				const grafcet = new GrafcetBuilder().addTransition(transition).build();
+				return TransitionPreCompiler.preCompile(
+					transition,
+					grafcet,
+					[...variables],
+					Dialect.FR,
+				);
+			};
+
+			const anonymous = precompile("5s/E1");
+			const named = precompile("T1/E1/5s");
+
+			expect(anonymous.node.type).toBe("TIMER_BLOCK");
+			expect(anonymous.timers).toHaveLength(1);
+			const [timer] = anonymous.timers;
+			expect(timer.timerType).toBe("TON");
+			expect((timer.input as any).value).toBe("E1");
+			expect((timer.presetTime as any).value).toBe(5000);
+			expect(anonymous.pureNode.type).toBe("IDENTIFIER");
+			const memoNames = (t: typeof timer) =>
+				[t.lastInput, t.elapsedTime, t.output].map((n) => (n as any).value);
+			expect(memoNames(timer)).toEqual(memoNames(named.timers[0]));
+		});
+
+		it("labels the elapsed-time variable of an unnamed timer with its formatted duration", () => {
+			const transition = new TransitionBuilder()
+				.id("trans-1")
+				.expression("1500ms/E1")
+				.build();
+			const grafcet = new GrafcetBuilder().addTransition(transition).build();
+
+			const result = TransitionPreCompiler.preCompile(
+				transition,
+				grafcet,
+				variables,
+				Dialect.FR,
+			);
+
+			expect(result.timerElapsedVariables).toEqual([
+				{ label: "1.5s", variableId: "_GeneratedMemo_1" },
+			]);
+		});
+
+		it("gives distinct memos to two unnamed timers of the same duration, labelled in declaration order", () => {
+			const transition = new TransitionBuilder()
+				.id("trans-1")
+				.expression("5s/E1 ET 5s/M1")
+				.build();
+			const grafcet = new GrafcetBuilder().addTransition(transition).build();
+
+			const result = TransitionPreCompiler.preCompile(
+				transition,
+				grafcet,
+				variables,
+				Dialect.FR,
+			);
+
+			expect(result.timers).toHaveLength(2);
+			expect((result.timers[0].input as any).value).toBe("E1");
+			expect((result.timers[1].input as any).value).toBe("M1");
+			expect(result.timerElapsedVariables).toEqual([
+				{ label: "5s", variableId: "_GeneratedMemo_1" },
+				{ label: "5s", variableId: "_GeneratedMemo_4" },
+			]);
+		});
+
+		it("labels a named and an unnamed timer of the same transition", () => {
+			const transition = new TransitionBuilder()
+				.id("trans-1")
+				.expression("T1/E1/1s ET 2s/M1")
+				.build();
+			const grafcet = new GrafcetBuilder().addTransition(transition).build();
+
+			const result = TransitionPreCompiler.preCompile(
+				transition,
+				grafcet,
+				variables,
+				Dialect.FR,
+			);
+
+			expect(result.timerElapsedVariables).toEqual([
+				{ label: "T1", variableId: "_GeneratedMemo_1" },
+				{ label: "2s", variableId: "_GeneratedMemo_4" },
 			]);
 		});
 

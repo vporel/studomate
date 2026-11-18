@@ -177,14 +177,14 @@ export default class TransitionAnalyser extends GrafcetElementAnalyser<Transitio
 				);
 				const timerStringDeclarations = finder.visit(node);
 				//For each declaration, make sure the name doesn't conflict with an existing variable
-				timerStringDeclarations.forEach((decl) => {
-					if (env.existsVariableWithName(decl.name)) {
+				timerStringDeclarations.forEach(({ name }) => {
+					if (name !== null && env.existsVariableWithName(name)) {
 						issues.push(
 							new ProjectAnalyserIssue(
 								"error",
 								"TRANSITION_TIMER_NAME_CONFLICT",
 								source,
-								{ timerName: decl.name },
+								{ timerName: name },
 							),
 						);
 					}

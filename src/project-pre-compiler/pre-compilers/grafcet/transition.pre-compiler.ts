@@ -19,10 +19,14 @@ import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
 import SimplifierVisitor from "@/expression-language/interpreter/simplifier/simplifier.visitor";
 import { Dialect } from "@/expression-language/dialect.enum";
 import { parseExpressionCached } from "@/expression-language/parse-expression-cached";
+import { formatDurationMs } from "@/expression-language/literals/time";
 
-/** A timer's elapsed-time variable, paired with the timer name as typed by the user (`t1`, `t2`...). */
+/**
+ * A timer's elapsed-time variable, paired with its display label: the timer name as typed by the
+ * user (`t1` in `t1/X1/5s`), or its formatted duration for a timer without a name (`5s` in `5s/X1`).
+ */
 export type TimerElapsedVariableRef = {
-	name: string;
+	label: string;
 	variableId: string;
 };
 
@@ -165,7 +169,7 @@ export default class TransitionPreCompiler {
 			);
 			takenVariablesNames.add(elapsedTimeVariable.getName());
 			timerElapsedVariables.push({
-				name: decl.name,
+				label: decl.name ?? formatDurationMs(decl.presetTime),
 				variableId: elapsedTimeVariable.getId(),
 			});
 			const outputVariable = MemoVariableGenerator.generate(

@@ -124,7 +124,7 @@ export default class GrafcetsCompiler implements NotationCompiler {
 				for (const timerVar of transition.timerElapsedVariables) {
 					(observableExpressionVariableIds[transitionId] ??= []).push({
 						variableId: timerVar.variableId,
-						label: timerVar.name,
+						label: timerVar.label,
 					});
 				}
 			}

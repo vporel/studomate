@@ -29,7 +29,8 @@ function identifiersIn(node: ASTNode): string[] {
 function timerDeclarationNames(node: ASTNode): string[] {
 	return new FinderVisitor<TimerStringDeclarationNode>("TIMER_STRING_DECLARATION")
 		.visit(node)
-		.map((declaration) => declaration.name);
+		.map((declaration) => declaration.name)
+		.filter((name) => name !== null);
 }
 
 /**

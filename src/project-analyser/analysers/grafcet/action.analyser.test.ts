@@ -10,6 +10,7 @@ import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import ActionAnalyser from "./action.analyser";
+import UnauthorizedNodeException from "@/simulator/interpreter/semantic-analyser/exceptions/unauthorized-node.exception";
 import { actionLink } from "@tests/utils/grafcet-factory";
 
 describe("ActionAnalyser", () => {
@@ -269,6 +270,49 @@ describe("ActionAnalyser", () => {
 				),
 			).not.toThrow();
 		});
+
+		it.each(["flag := t1/VRAI/5s", "flag := 5s/VRAI"])(
+			"refuses a timer declaration in an action (%s)",
+			(expression) => {
+				const flag = new VariableBuilder()
+					.id("var-1")
+					.mnemonic("flag")
+					.zone("memory")
+					.type("BOOL")
+					.build();
+				const action = new ActionBuilder()
+					.id("action-1")
+					.expression(expression)
+					.type(ActionType.NUMERIC_VARIABLE)
+					.executionMode(ActionExecutionMode.CONTINUOUS)
+					.build();
+				const step = new StepBuilder().id("step-1").number(1).initial().build();
+				const c1 = new ConnectionBuilder()
+					.id("c1")
+					.source("step", "step-1", "source:action")
+					.target("action", "action-1", "target:predecessor")
+					.build();
+				const grafcet = new GrafcetBuilder()
+					.id("grafcet-1")
+					.addStep(step)
+					.addAction(action)
+					.addConnection(c1)
+					.build();
+
+				const issues = analyser.analyseInContext(
+					action,
+					grafcet,
+					analyserEnvironment([flag]),
+					Dialect.FR,
+				);
+
+				const issue = issues.find((i) => i.code === "ACTION_INVALID_EXPRESSION");
+				expect(issue?.cause).toBeInstanceOf(UnauthorizedNodeException);
+				expect((issue?.cause as UnauthorizedNodeException).getNodeType()).toBe(
+					"TIMER_STRING_DECLARATION",
+				);
+			},
+		);
 
 		it("validates variable types in numeric assignment", () => {
 			const boolVar = new VariableBuilder()

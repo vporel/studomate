@@ -8,7 +8,7 @@ import GrafcetsCompiler from "./grafcets.compiler";
 
 function simpleGrafcet(
 	transitionObservations: PreCompiledGrafcet["transitionObservations"] = new Map(),
-	timerElapsedVariables: { name: string; variableId: string }[] = [],
+	timerElapsedVariables: { label: string; variableId: string }[] = [],
 ): PreCompiledGrafcet {
 	const memo0 = new PLCVariable("memo-0", "_memo_0", "memory", "boolean");
 	const memo1 = new PLCVariable("memo-1", "_memo_1", "memory", "boolean");
@@ -118,8 +118,8 @@ describe("GrafcetsCompiler", () => {
 			variables: [],
 			programs: {
 				"grafcet-1": simpleGrafcet(new Map(), [
-					{ name: "T1", variableId: "elapsed-1" },
-					{ name: "T2", variableId: "elapsed-2" },
+					{ label: "T1", variableId: "elapsed-1" },
+					{ label: "T2", variableId: "elapsed-2" },
 				]),
 			},
 		};

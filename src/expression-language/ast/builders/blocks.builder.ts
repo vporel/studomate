@@ -59,7 +59,7 @@ export default class BlocksBuilder {
 	}
 
 	static buildTimerStringDeclarationNode(
-		name: string,
+		name: string | null,
 		input: ASTNode,
 		presetTime: number,
 		position?: number,

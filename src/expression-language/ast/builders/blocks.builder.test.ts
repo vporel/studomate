@@ -138,6 +138,20 @@ describe("BlocksBuilder", () => {
 			expect(node.id).toBeDefined();
 		});
 
+		it("creates a timer string declaration without a name", () => {
+			const input = IdentifiersBuilder.buildIdentifierNode("X1", 3);
+			const node = BlocksBuilder.buildTimerStringDeclarationNode(
+				null,
+				input,
+				5000,
+				0,
+			);
+
+			expect(node.type).toBe("TIMER_STRING_DECLARATION");
+			expect(node.name).toBeNull();
+			expect(node.presetTime).toBe(5000);
+		});
+
 		it("creates timer string declaration with different names", () => {
 			const input = IdentifiersBuilder.buildIdentifierNode("input", 0);
 			const node1 = BlocksBuilder.buildTimerStringDeclarationNode(

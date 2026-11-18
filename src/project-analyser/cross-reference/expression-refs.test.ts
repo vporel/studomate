@@ -43,6 +43,12 @@ describe("expressionRefs", () => {
 		expect(reads).toEqual(["X1"]);
 	});
 
+	it("ne déclare aucune écriture pour une temporisation sans nom, son entrée reste lue", () => {
+		const { reads, writes } = expressionRefs("5s/X1", Dialect.FR);
+		expect(writes).toEqual([]);
+		expect(reads).toEqual(["X1"]);
+	});
+
 	it("dédoublonne les identifiants répétés", () => {
 		const { reads } = expressionRefs("a ET a ET b", Dialect.FR);
 		expect(new Set(reads)).toEqual(new Set(["a", "b"]));

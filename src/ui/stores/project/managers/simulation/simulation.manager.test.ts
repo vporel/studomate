@@ -178,6 +178,36 @@ describe("SimulationManager", () => {
 			manager.setDesignMode();
 		});
 
+		it("publie le temps écoulé de deux tempos sans nom de même durée, sans que l'une écrase l'autre", async () => {
+			const inputVar = VariableFactory.createLogicInput("I0");
+			const grafcet = GrafcetFactory.createSimpleCycle(
+				"g1",
+				"VRAI",
+				"5s/X1 ET 5s/I0",
+			);
+			const project = ProjectFactory.create([inputVar], [grafcet]);
+			const { get, set } = makeStore(project);
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
+
+			manager.setSimulationMode();
+			await jest.advanceTimersByTimeAsync(60);
+
+			const timerEntries = get().observableExpressionsValues[
+				"g1-trans-1"
+			].filter((v) => v.label !== null);
+
+			// In order of appearance: 5s/X1 counts (step 1 active), 5s/I0 does not (I0 false).
+			expect(timerEntries.map((v) => v.label)).toEqual(["5s", "5s"]);
+			expect(timerEntries[0].value as number).toBeGreaterThan(0);
+			expect(timerEntries[1].value).toBe(0);
+
+			manager.setDesignMode();
+		});
+
 		it("réinitialise les valeurs à l'arrêt de la simulation", async () => {
 			const inputVar = VariableFactory.createLogicInput("I0");
 			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
