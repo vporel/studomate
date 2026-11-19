@@ -1,0 +1,1 @@
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,372444,(e,t,a)=>{let s;self.onmessage=e=>{clearInterval(s),s=void 0,"start"===e.data.type&&(s=setInterval(()=>self.postMessage("tick"),e.data.intervalMs))}}]);

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 132" font-family="sans-serif">
+	<defs>
+		<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+			<path d="M 0 0 L 10 5 L 0 10 z" fill="#263238" />
+		</marker>
+	</defs>
+	<rect x="20" y="24" width="140" height="56" rx="6" fill="#e3f2fd" stroke="#263238" stroke-width="1.5" />
+	<text x="90" y="48" font-size="13" text-anchor="middle" fill="#263238" font-weight="bold">1. Read</text>
+	<text x="90" y="66" font-size="13" text-anchor="middle" fill="#263238">the inputs</text>
+	<rect x="200" y="24" width="140" height="56" rx="6" fill="#c8e6c9" stroke="#263238" stroke-width="1.5" />
+	<text x="270" y="48" font-size="13" text-anchor="middle" fill="#263238" font-weight="bold">2. Run</text>
+	<text x="270" y="66" font-size="13" text-anchor="middle" fill="#263238">the program</text>
+	<rect x="380" y="24" width="140" height="56" rx="6" fill="#ffe0b2" stroke="#263238" stroke-width="1.5" />
+	<text x="450" y="48" font-size="13" text-anchor="middle" fill="#263238" font-weight="bold">3. Write</text>
+	<text x="450" y="66" font-size="13" text-anchor="middle" fill="#263238">the outputs</text>
+	<line x1="160" y1="52" x2="198" y2="52" stroke="#263238" stroke-width="2.5" marker-end="url(#arrow)" />
+	<line x1="340" y1="52" x2="378" y2="52" stroke="#263238" stroke-width="2.5" marker-end="url(#arrow)" />
+	<path d="M 450 80 L 450 116 L 90 116 L 90 82" fill="none" stroke="#263238" stroke-width="2.5" marker-end="url(#arrow)" />
+	<text x="270" y="108" font-size="11" text-anchor="middle" fill="#607d8b">one cycle, repeated endlessly</text>
+</svg>

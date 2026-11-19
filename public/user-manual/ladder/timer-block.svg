@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 115" font-family="Helvetica, Arial, sans-serif" fill="none" stroke="#263238">
+	<line x1="10" y1="15" x2="10" y2="75" stroke-width="3" />
+	<line x1="10" y1="45" x2="50" y2="45" stroke-width="2" />
+	<line x1="50" y1="29" x2="50" y2="61" stroke-width="2" />
+	<line x1="90" y1="29" x2="90" y2="61" stroke-width="2" />
+	<text x="70" y="19" font-size="12" text-anchor="middle" dominant-baseline="central" fill="#263238" stroke="none">S1</text>
+	<line x1="90" y1="45" x2="160" y2="45" stroke-width="2" />
+	<rect x="160" y="30" width="130" height="75" fill="#ffffff" stroke-width="1.5" />
+	<text x="225" y="20" font-size="13" text-anchor="middle" dominant-baseline="central" fill="#263238" stroke="none" font-weight="bold">T1</text>
+	<text x="165" y="45" font-size="11" text-anchor="start" dominant-baseline="central" fill="#263238" stroke="none">IN</text>
+	<text x="285" y="45" font-size="11" text-anchor="end" dominant-baseline="central" fill="#263238" stroke="none">Q</text>
+	<text x="225" y="68" font-size="15" text-anchor="middle" dominant-baseline="central" fill="#263238" stroke="none" font-weight="bold">TON</text>
+	<text x="165" y="90" font-size="11" text-anchor="start" dominant-baseline="central" fill="#263238" stroke="none">PT</text>
+	<text x="154" y="90" font-size="11" text-anchor="end" dominant-baseline="central" fill="#1565c0" stroke="none">T#5s</text>
+	<text x="285" y="90" font-size="11" text-anchor="end" dominant-baseline="central" fill="#263238" stroke="none">ET</text>
+	<text x="296" y="90" font-size="11" text-anchor="start" dominant-baseline="central" fill="#1565c0" stroke="none">T1_ET</text>
+	<line x1="290" y1="45" x2="360" y2="45" stroke-width="2" />
+	<path d="M 360 29 C 346 38.6 346 51.4 360 61" stroke-width="2" />
+	<path d="M 404 29 C 418 38.6 418 51.4 404 61" stroke-width="2" />
+	<text x="382" y="19" font-size="12" text-anchor="middle" dominant-baseline="central" fill="#263238" stroke="none">H1</text>
+	<line x1="404" y1="45" x2="430" y2="45" stroke-width="2" />
+</svg>

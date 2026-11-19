@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 250" font-family="sans-serif">
+	<rect x="115" y="20" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<rect x="120" y="25" width="20" height="20" fill="none" stroke="#263238" stroke-width="1.8" />
+	<text x="130" y="40" font-size="12" font-weight="bold" text-anchor="middle" fill="#263238">0</text>
+	<line x1="130" y1="50" x2="130" y2="70" stroke="#263238" stroke-width="1.8" />
+	<line x1="70" y1="70" x2="190" y2="70" stroke="#263238" stroke-width="1.8" />
+	<line x1="70" y1="70" x2="70" y2="115" stroke="#263238" stroke-width="1.8" />
+	<line x1="60" y1="92" x2="80" y2="92" stroke="#263238" stroke-width="3" />
+	<text x="82" y="96" font-size="11" text-anchor="start" fill="#263238">dcy1</text>
+	<rect x="55" y="115" width="30" height="30" fill="#1976d2" stroke="#263238" stroke-width="1.8" />
+	<text x="70" y="135" font-size="12" font-weight="bold" text-anchor="middle" fill="#fff">1</text>
+	<line x1="190" y1="70" x2="190" y2="115" stroke="#263238" stroke-width="1.8" />
+	<line x1="180" y1="92" x2="200" y2="92" stroke="#263238" stroke-width="3" />
+	<text x="202" y="96" font-size="11" text-anchor="start" fill="#263238">dcy2</text>
+	<rect x="175" y="115" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<text x="190" y="135" font-size="12" font-weight="bold" text-anchor="middle" fill="#263238">2</text>
+	<text x="130" y="176" font-size="14" text-anchor="middle" fill="#263238" font-weight="bold">OU = choix</text>
+	<text x="130" y="194" font-size="12" text-anchor="middle" fill="#607d8b">un seul chemin est pris</text>
+	<rect x="375" y="20" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<rect x="380" y="25" width="20" height="20" fill="none" stroke="#263238" stroke-width="1.8" />
+	<text x="390" y="40" font-size="12" font-weight="bold" text-anchor="middle" fill="#263238">0</text>
+	<line x1="390" y1="50" x2="390" y2="100" stroke="#263238" stroke-width="1.8" />
+	<line x1="380" y1="62" x2="400" y2="62" stroke="#263238" stroke-width="3" />
+	<text x="404" y="66" font-size="11" text-anchor="start" fill="#263238">dcy</text>
+	<line x1="330" y1="80" x2="450" y2="80" stroke="#263238" stroke-width="1.8" />
+	<line x1="330" y1="86" x2="450" y2="86" stroke="#263238" stroke-width="1.8" />
+	<line x1="330" y1="86" x2="330" y2="115" stroke="#263238" stroke-width="1.8" />
+	<rect x="315" y="115" width="30" height="30" fill="#1976d2" stroke="#263238" stroke-width="1.8" />
+	<text x="330" y="135" font-size="12" font-weight="bold" text-anchor="middle" fill="#fff">1</text>
+	<line x1="450" y1="86" x2="450" y2="115" stroke="#263238" stroke-width="1.8" />
+	<rect x="435" y="115" width="30" height="30" fill="#1976d2" stroke="#263238" stroke-width="1.8" />
+	<text x="450" y="135" font-size="12" font-weight="bold" text-anchor="middle" fill="#fff">2</text>
+	<text x="390" y="176" font-size="14" text-anchor="middle" fill="#263238" font-weight="bold">ET = en même temps</text>
+	<text x="390" y="194" font-size="12" text-anchor="middle" fill="#607d8b">tous les chemins sont lancés</text>
+</svg>

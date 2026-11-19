@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 580 276" font-family="sans-serif">
+	<!-- Time grid -->
+	<line x1="150" y1="30" x2="150" y2="244" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="150" y="260" font-size="11" text-anchor="middle" fill="#607d8b">0</text>
+	<line x1="250" y1="30" x2="250" y2="244" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="250" y="260" font-size="11" text-anchor="middle" fill="#607d8b">0.5</text>
+	<line x1="350" y1="30" x2="350" y2="244" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="350" y="260" font-size="11" text-anchor="middle" fill="#607d8b">1</text>
+	<line x1="450" y1="30" x2="450" y2="244" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="450" y="260" font-size="11" text-anchor="middle" fill="#607d8b">1.5</text>
+	<line x1="550" y1="30" x2="550" y2="244" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="550" y="260" font-size="11" text-anchor="middle" fill="#607d8b">2</text>
+	<text x="564" y="260" font-size="11" text-anchor="start" fill="#607d8b">s</text>
+
+	<!-- Square waves -->
+	<text x="8" y="52" font-size="11" font-family="monospace" font-weight="bold" text-anchor="start" fill="#263238">_SYS_TB_200ms</text>
+	<path d="M 150 60 L 150 60 L 150 38 L 170 38 L 170 60 L 190 60 L 190 38 L 210 38 L 210 60 L 230 60 L 230 38 L 250 38 L 250 60 L 270 60 L 270 38 L 290 38 L 290 60 L 310 60 L 310 38 L 330 38 L 330 60 L 350 60 L 350 38 L 370 38 L 370 60 L 390 60 L 390 38 L 410 38 L 410 60 L 430 60 L 430 38 L 450 38 L 450 60 L 470 60 L 470 38 L 490 38 L 490 60 L 510 60 L 510 38 L 530 38 L 530 60 L 550 60" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" />
+	<text x="8" y="108" font-size="11" font-family="monospace" font-weight="bold" text-anchor="start" fill="#263238">_SYS_TB_500ms</text>
+	<path d="M 150 116 L 150 116 L 150 94 L 200 94 L 200 116 L 250 116 L 250 94 L 300 94 L 300 116 L 350 116 L 350 94 L 400 94 L 400 116 L 450 116 L 450 94 L 500 94 L 500 116 L 550 116" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" />
+	<text x="8" y="164" font-size="11" font-family="monospace" font-weight="bold" text-anchor="start" fill="#263238">_SYS_TB_1s</text>
+	<path d="M 150 172 L 150 172 L 150 150 L 250 150 L 250 172 L 350 172 L 350 150 L 450 150 L 450 172 L 550 172" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" />
+
+	<!-- Period of the 500 ms base -->
+	<line x1="150" y1="128" x2="250" y2="128" stroke="#455a64" stroke-width="1" />
+	<line x1="150" y1="124" x2="150" y2="132" stroke="#455a64" stroke-width="1" />
+	<line x1="250" y1="124" x2="250" y2="132" stroke="#455a64" stroke-width="1" />
+	<text x="200" y="142" font-size="11" text-anchor="middle" fill="#455a64">period 500 ms</text>
+
+	<!-- Lamp wired on _SYS_TB_500ms -->
+	<text x="8" y="220" font-size="12" font-weight="bold" text-anchor="start" fill="#263238">lamp</text>
+	<path d="M 150 228 L 150 228 L 150 206 L 200 206 L 200 228 L 250 228 L 250 206 L 300 206 L 300 228 L 350 228 L 350 206 L 400 206 L 400 228 L 450 228 L 450 206 L 500 206 L 500 228 L 550 228" fill="none" stroke="#d84315" stroke-width="2.2" stroke-linejoin="round" />
+	<text x="550" y="194" font-size="11" text-anchor="end" fill="#455a64">on 250 ms, off 250 ms</text>
+</svg>
