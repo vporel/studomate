@@ -69,6 +69,7 @@ export default function createEmbeddedProjectStoreEnvironment({
 		capabilities: {
 			pdfExport: false,
 			crossReference: false,
+			programExecutionExclusionToggle: false,
 		},
 		analytics: { trackEvent: () => {} },
 		simulationNotifier: createEmbeddedSimulationNotifier(locale),

@@ -4,12 +4,13 @@ import {
 	LOCAL_STORAGE_LAYOUT_VERSION_KEY,
 } from "./keys";
 import v0ToV1 from "./v0-to-v1";
+import v1ToV2 from "./v1-to-v2";
 
 /**
  * Les migrations de disposition, dans l'ordre. En ajouter une : un fichier `vN-to-vN+1.ts`, une
  * ligne ici, et incrémenter `CURRENT_LAYOUT_VERSION` dans `./keys`.
  */
-const LAYOUT_MIGRATIONS: LayoutMigration[] = [v0ToV1];
+const LAYOUT_MIGRATIONS: LayoutMigration[] = [v0ToV1, v1ToV2];
 
 /**
  * Version de la disposition du `localStorage` telle qu'écrite sur ce navigateur. `0` (v0) tant

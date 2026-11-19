@@ -57,7 +57,7 @@ describe("useHelpMenu", () => {
 		feedbackStore.getState().close();
 	});
 
-	it("ouvre le mailto de signalement au clic sur 'Signaler un problème'", () => {
+	it("opens the contact page on the problem topic in a new tab when 'Signaler un problème' is clicked", () => {
 		const openSpy = jest.spyOn(window, "open").mockImplementation(() => null);
 		const { result } = renderHook(() => useHelpMenu(onShortcutsOpen), {
 			wrapper: i18nWrapper(),
@@ -66,9 +66,25 @@ describe("useHelpMenu", () => {
 		result.current.items[1][1].onClick?.();
 
 		expect(openSpy).toHaveBeenCalledWith(
-			expect.stringContaining("mailto:"),
+			"/contact?topic=problem",
 			"_blank",
-			"noopener,noreferrer",
+			"noopener",
+		);
+		openSpy.mockRestore();
+	});
+
+	it("opens the English contact page for an English interface", () => {
+		const openSpy = jest.spyOn(window, "open").mockImplementation(() => null);
+		const { result } = renderHook(() => useHelpMenu(onShortcutsOpen), {
+			wrapper: i18nWrapper("en"),
+		});
+
+		result.current.items[1][1].onClick?.();
+
+		expect(openSpy).toHaveBeenCalledWith(
+			"/en/contact?topic=problem",
+			"_blank",
+			"noopener",
 		);
 		openSpy.mockRestore();
 	});

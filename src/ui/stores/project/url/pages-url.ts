@@ -1,4 +1,4 @@
-import { getUrlQueryParam, setUrlQueryParam } from "@/ui/lib/url-query-param";
+import { getUrlQueryParam, setUrlQueryParam } from "@/ui/lib/url";
 
 const ACTIVE_PAGE_PARAM = "activePageId";
 

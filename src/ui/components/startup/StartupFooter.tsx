@@ -3,10 +3,13 @@
 import { APP_VERSION } from "@/app-info";
 import routes from "@/app/routes";
 import { useT } from "@/ui/i18n/useT";
-import { openReportIssue } from "@/ui/services/report-issue";
+import { toLocale } from "@/i18n/config";
+import { openReportIssue } from "@/ui/services/contact-page";
 import { whatsNewStore } from "@/ui/stores/whats-new/whats-new.store";
+import { WHATS_NEW_VERSION } from "@/whats-new/whats-new-slides";
 import { Box, Link as MuiLink, Typography } from "@mui/material";
 import Link from "next/link";
+import { useLocale } from "next-intl";
 import { Fragment, type ReactNode } from "react";
 
 const linkSx = {
@@ -17,6 +20,7 @@ const linkSx = {
 
 export default function StartupFooter() {
 	const t = useT("chrome.startup.footer");
+	const locale = toLocale(useLocale());
 	const links = [
 		{ href: routes.about(), label: t("about") },
 		{ href: routes.legalMentions(), label: t("legalMentions") },
@@ -33,7 +37,7 @@ export default function StartupFooter() {
 				component="button"
 				type="button"
 				variant="body2"
-				title={t("whatsNew", { version: APP_VERSION })}
+				title={t("whatsNew", { version: WHATS_NEW_VERSION })}
 				onClick={() => whatsNewStore.getState().open()}
 				sx={linkSx}
 			>
@@ -56,7 +60,7 @@ export default function StartupFooter() {
 			component="button"
 			type="button"
 			variant="body2"
-			onClick={openReportIssue}
+			onClick={() => openReportIssue(locale)}
 			sx={linkSx}
 		>
 			{t("reportIssue")}

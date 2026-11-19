@@ -154,27 +154,27 @@ broken build surfaces at deployment, which is an acceptable place to catch it.
 
 Node **≥ 20** (`engines` in `package.json`, enforced in CI on Node 22).
 
-| Package                                                       | Version                   | Role                                                                                                            |
-| ------------------------------------------------------------ | ------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `next`                                                       | 15.5.2                    | Framework (App Router, Turbopack)                                                                                |
-| `react` / `react-dom`                                        | 19.1.0                    | UI                                                                                                               |
-| `typescript`                                                 | ^5                        | Language                                                                                                          |
-| `@mui/material`                                              | ^7.3.2                    | UI components                                                                                                    |
-| `@mui/icons-material`                                        | ^7.3.2                    | Icons                                                                                                             |
-| `@mui/x-data-grid`                                           | ^8.27.1                   | Tables (variables, watch tables)                                                                                 |
-| `@mui/x-tree-view`                                           | ^8.14.0                   | Trees (explorer)                                                                                                  |
-| `@emotion/react` / `@emotion/styled`                         | ^11.14.0 / ^11.14.1       | MUI's CSS-in-JS engine                                                                                           |
-| `@xyflow/react`                                              | ^12.8.4                   | Graphical editor (React Flow) — GRAFCET and Ladder                                                                 |
+| Package                                                      | Version                   | Role                                                                                                                |
+| ------------------------------------------------------------ | ------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `next`                                                       | 15.5.2                    | Framework (App Router, Turbopack)                                                                                   |
+| `react` / `react-dom`                                        | 19.1.0                    | UI                                                                                                                  |
+| `typescript`                                                 | ^5                        | Language                                                                                                            |
+| `@mui/material`                                              | ^7.3.2                    | UI components                                                                                                       |
+| `@mui/icons-material`                                        | ^7.3.2                    | Icons                                                                                                               |
+| `@mui/x-data-grid`                                           | ^8.27.1                   | Tables (variables, watch tables)                                                                                    |
+| `@mui/x-tree-view`                                           | ^8.14.0                   | Trees (explorer)                                                                                                    |
+| `@emotion/react` / `@emotion/styled`                         | ^11.14.0 / ^11.14.1       | MUI's CSS-in-JS engine                                                                                              |
+| `@xyflow/react`                                              | ^12.8.4                   | Graphical editor (React Flow) — GRAFCET and Ladder                                                                  |
 | `zustand`                                                    | ^5.0.11                   | State (stores created via `createStore`, not the `create` hook — see `src/ui/stores/*/[project\|grafcet].store.ts`) |
-| `date-fns`                                                   | ^4.1.0                    | Dates                                                                                                             |
-| `mitt`                                                       | ^3.0.1                    | Event bus (grafcet context menus)                                                                                |
-| `nanoid`                                                     | ^5.1.16                   | Short identifiers — always via `createRandomId()` (`src/ids.ts`), never `nanoid` directly                        |
-| `jspdf`                                                      | ^4.2.1                    | PDF export (project: cover page + programs)                                                                      |
-| `@dnd-kit/core` / `@dnd-kit/sortable` / `@dnd-kit/utilities` | ^6.3.1 / ^10.0.0 / ^3.2.2 | Reordering Ladder sections                                                                                       |
-| `react-toastify`                                             | ^11.0.5                   | Notifications                                                                                                     |
-| `nextjs-toploader`                                           | ^3.9.17                   | Navigation progress bar                                                                                          |
-| `@supabase/supabase-js`                                      | ^2.112.3                  | Auth + cloud project storage (`src/persistence/repositories/supabase*`)                                          |
-| `@sentry/nextjs`                                             | ^8                        | Error monitoring (`sentry.{client,server,edge}.config.ts` at the root)                                           |
+| `date-fns`                                                   | ^4.1.0                    | Dates                                                                                                               |
+| `mitt`                                                       | ^3.0.1                    | Event bus (grafcet context menus)                                                                                   |
+| `nanoid`                                                     | ^5.1.16                   | Short identifiers — always via `createRandomId()` (`src/ids.ts`), never `nanoid` directly                           |
+| `jspdf`                                                      | ^4.2.1                    | PDF export (project: cover page + programs)                                                                         |
+| `@dnd-kit/core` / `@dnd-kit/sortable` / `@dnd-kit/utilities` | ^6.3.1 / ^10.0.0 / ^3.2.2 | Reordering Ladder sections                                                                                          |
+| `react-toastify`                                             | ^11.0.5                   | Notifications                                                                                                       |
+| `nextjs-toploader`                                           | ^3.9.17                   | Navigation progress bar                                                                                             |
+| `@supabase/supabase-js`                                      | ^2.112.3                  | Auth + cloud project storage (`src/persistence/repositories/supabase*`)                                             |
+| `@sentry/nextjs`                                             | ^8                        | Error monitoring (`sentry.{client,server,edge}.config.ts` at the root)                                              |
 
 Dev/CI: `eslint` ^9 + `eslint-config-next` 15.5.2, `jest` ^30.2.0 + `ts-jest` ^29.4.6.
 
@@ -234,9 +234,9 @@ Always check `package.json` before quoting a version: this table goes stale at t
     rule spans several entities;
   - a **`src/ui/utils/<editor>/` function** when it's editing geometry (grid footprints,
     collisions), not a domain rule.
-  A simple field read or a TypeScript union discriminant (`element.type === "block"`) is not a
-  rule and needs no method. Migrations never call schema methods: they work on raw data frozen
-  at their version.
+    A simple field read or a TypeScript union discriminant (`element.type === "block"`) is not a
+    rule and needs no method. Migrations never call schema methods: they work on raw data frozen
+    at their version.
 - **Hook dependencies** (`useEffect`, `useCallback`, `useMemo`): check that they're complete
   after any change touching their body.
 - **`box-sizing`**: already set to `border-box` globally for all elements
@@ -274,6 +274,15 @@ Always check `package.json` before quoting a version: this table goes stale at t
   above all to text meant to be read: UI strings and i18n files, manuals, docs, training
   content. Do not sprinkle em dashes as a default separator. Exception: the site-name suffix of
   page titles stays an em dash (`À propos — Studomate`, `About — Studomate`); keep it as is.
+- **User manual content**: every addition to the manual (`manual.json`, FR and EN) is weighed
+  for its relevance at that exact place before it is written, including when a code change
+  seems to "complete" an existing section. Information that helps the user find something,
+  understand what they see, or avoid a surprise belongs there, even when it describes something
+  the application does on its own. Leave out what only adds noise: the same content repeated in
+  several places (write it once and refer to it), generic interface behaviour that explains
+  itself (closing a tab, zoom buttons, a confirmation dialog's own text), and precise visual
+  details (icons, tooltips, colours) that do not help the user and go stale at the first
+  interface change.
 - **Comment/JSDoc language**: English. Existing French comments do not need to be translated
   in passing when a file is touched for an unrelated reason (avoid needless churn); write all
   new comments in English going forward.
@@ -394,15 +403,24 @@ then rebuilding the precompiled hex with `firmwares/arduino/build-uno-r3.sh` (a 
 all three agree). After **any** firmware change, rebuild the hex even when the version stays the
 same.
 
-## Application version and "what's new" (`APP_VERSION`)
+## Application version and "what's new" (`APP_VERSION`, `WHATS_NEW_VERSION`)
 
-`APP_VERSION` (`src/app-info.ts`, format `vX.Y.Z`) is recorded in `localStorage`
-(`studomate_app_version`, `src/persistence/app-version.storage.ts`). On any route (`/app` and the
-public pages), `WhatsNew` (`src/ui/components/whats-new/`) compares it with the stored one: no
-stored version, it is written silently, unless local projects already exist (`LocalStorageProjectRepository.hasProjects()`:
-an existing user predating the key), in which case the carousel is shown; same version, nothing
-happens; different version, it is updated and the `WhatsNewModal` carousel is shown. A downgrade is
-not handled specially.
+Two versions, format `vX.Y.Z`:
+
+- `APP_VERSION` (`src/app-info.ts`): the release, shown in the startup footer. Bumped by every
+  release, including those with no news to announce.
+- `WHATS_NEW_VERSION` (`src/whats-new/whats-new-slides.ts`): the last release that came with
+  news, the one the carousel's slides belong to. It never exceeds `APP_VERSION` (a test checks it).
+
+Both are recorded in `localStorage`: `studomate_whats_new_version`
+(`src/persistence/whats-new-version.storage.ts`) holds the last `WHATS_NEW_VERSION` seen, and
+`studomate_app_version` (`src/persistence/app-version.storage.ts`) the last `APP_VERSION` opened.
+On any route (`/app` and the public pages), `WhatsNew` (`src/ui/components/whats-new/`) first brings
+the `localStorage` layout up to date (`hasProjects()` does not migrate), records `APP_VERSION`, then
+compares `WHATS_NEW_VERSION` with the stored one: no stored version, it is written silently, unless
+local projects already exist (`LocalStorageProjectRepository.hasProjects()`), in which case the
+carousel is shown; same version, nothing happens; different version, it is updated and the
+`WhatsNewModal` carousel is shown. A downgrade is not handled specially.
 
 The modal's visibility lives in `whatsNewStore` (`src/ui/stores/whats-new/`): the version shown in
 the startup footer and the Help menu's "Nouveautés" entry reopen it at any time.
@@ -413,11 +431,15 @@ declared by id in `src/whats-new/whats-new-slides.ts`, with a `title` and a `bod
 
 Any **notable new feature** (not a minor bug fix or a small interface tweak) must come with a
 "what's new" slide, so before touching the version, **ask the developer whether the current
-`APP_VERSION` has already been deployed**:
+`WHATS_NEW_VERSION` has already been deployed**:
 
 - if not, stay on the current version and add the slide(s) to it;
 - if so, the developer chooses the new number: **never guess or increment it yourself**. Then
-  replace the slides with those of the new version.
+  replace the slides with those of the new version and set `WHATS_NEW_VERSION` and `APP_VERSION`
+  to it.
+
+A release with no notable feature only changes `APP_VERSION`: the slides and `WHATS_NEW_VERSION`
+stay, and browsers that already saw the carousel are not shown it again.
 
 ## Expression parsing cache (`parseExpressionCached`)
 

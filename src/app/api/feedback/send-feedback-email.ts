@@ -1,24 +1,13 @@
-import {
-	APP_CONTACT_EMAIL,
-	APP_FEEDBACK_EMAIL_FROM,
-	APP_NAME,
-} from "@/app-info";
+import { APP_NAME } from "@/app-info";
 import type { FeedbackSubmission } from "@/feedback/feedback-submission";
 import { FEEDBACK_RATING_MAX } from "@/feedback/feedback-prompt";
-
-const RESEND_URL = "https://api.resend.com/emails";
-
-export function isFeedbackEmailConfigured(): boolean {
-	return Boolean(process.env.RESEND_API_KEY);
-}
+import sendEmailToTeam from "../send-email";
 
 /** True when Resend accepted the message. */
 export default async function sendFeedbackEmail(
 	submission: FeedbackSubmission,
 	userId: string | null,
 ): Promise<boolean> {
-	if (!isFeedbackEmailConfigured()) return false;
-
 	const text = [
 		`Note : ${submission.rating}/${FEEDBACK_RATING_MAX}`,
 		`Langue : ${submission.locale ?? "inconnue"}`,
@@ -27,22 +16,8 @@ export default async function sendFeedbackEmail(
 		submission.comment ?? "(aucun commentaire)",
 	].join("\n");
 
-	try {
-		const response = await fetch(RESEND_URL, {
-			method: "POST",
-			headers: {
-				Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({
-				from: APP_FEEDBACK_EMAIL_FROM,
-				to: APP_CONTACT_EMAIL,
-				subject: `[${APP_NAME}] Nouvel avis : ${submission.rating}/${FEEDBACK_RATING_MAX}`,
-				text,
-			}),
-		});
-		return response.ok;
-	} catch {
-		return false;
-	}
+	return sendEmailToTeam({
+		subject: `[${APP_NAME}] Nouvel avis : ${submission.rating}/${FEEDBACK_RATING_MAX}`,
+		text,
+	});
 }

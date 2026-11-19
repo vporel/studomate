@@ -1,8 +1,10 @@
 "use client";
 
 import CustomModal from "@/ui/components/mui/CustomModal";
-import { useProjectStore } from "./ProjectContext";
 import { useT } from "@/ui/i18n/useT";
+import { getCurrentUrl } from "@/ui/lib/url";
+import CopyIcon from "@mui/icons-material/ContentCopy";
+import RevokeIcon from "@mui/icons-material/LinkOff";
 import {
 	Alert,
 	Box,
@@ -14,14 +16,13 @@ import {
 	Tooltip,
 	Typography,
 } from "@mui/material";
-import CopyIcon from "@mui/icons-material/ContentCopy";
-import RevokeIcon from "@mui/icons-material/LinkOff";
 import { useCallback, useState } from "react";
 import { useShallow } from "zustand/shallow";
+import { useProjectStore } from "./ProjectContext";
 
 function buildShareUrl(token: string): string {
 	if (typeof window === "undefined") return "";
-	const url = new URL(window.location.href);
+	const url = getCurrentUrl();
 	url.searchParams.delete("projectId");
 	url.searchParams.set("shareToken", token);
 	return url.toString();

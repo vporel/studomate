@@ -1,6 +1,10 @@
 "use client";
 
-import { importProjectFromFile } from "@/persistence/project-file";
+import {
+	importProjectFromFile,
+	ProjectFileError,
+	type ProjectFileErrorReason,
+} from "@/persistence/project-file";
 import Project from "@/schemas/project/project.schema";
 import {
 	openFileDialog,
@@ -8,12 +12,22 @@ import {
 	readFile,
 } from "@/ui/lib/file-system";
 import CustomModal from "@/ui/components/mui/CustomModal";
-import { Box, Button, Divider } from "@mui/material";
-import { useCallback } from "react";
+import { Alert, Box, Button, Divider } from "@mui/material";
+import { useCallback, useState } from "react";
 import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "./ProjectContext";
 import ProjectsList from "./ProjectsList";
 import { useT } from "@/ui/i18n/useT";
+
+type OpenError = ProjectFileErrorReason | "read-failed" | "save-failed";
+
+const ERROR_KEYS = {
+	"not-json": "errors.notJson",
+	"not-a-project": "errors.notAProject",
+	"newer-version": "errors.newerVersion",
+	"read-failed": "errors.readFailed",
+	"save-failed": "errors.saveFailed",
+} as const satisfies Record<OpenError, string>;
 
 export default function ProjectOpenModal() {
 	const t = useT("projects.open");
@@ -27,7 +41,10 @@ export default function ProjectOpenModal() {
 			})),
 		);
 
+	const [error, setError] = useState<OpenError | null>(null);
+
 	const onClose = useCallback(() => {
+		setError(null);
 		setOpenModalVisible(false);
 	}, [setOpenModalVisible]);
 
@@ -37,6 +54,7 @@ export default function ProjectOpenModal() {
 	};
 
 	const onFromFileBtnClick = useCallback(async () => {
+		setError(null);
 		let text: string | null = null;
 		if (typeof window !== "undefined" && window.showOpenFilePicker) {
 			try {
@@ -47,7 +65,7 @@ export default function ProjectOpenModal() {
 				text = await readFile(handle);
 			} catch (err: any) {
 				console.error("Failed to open file:", err);
-				alert(t("readError"));
+				setError("read-failed");
 			}
 		} else {
 			text = await openFileViaInput(".json");
@@ -58,12 +76,12 @@ export default function ProjectOpenModal() {
 			project = importProjectFromFile(text);
 		} catch (err: any) {
 			console.error("Failed to parse project JSON:", err);
-			alert(t("readError"));
+			setError(err instanceof ProjectFileError ? err.reason : "not-a-project");
 			return;
 		}
 		const saveResult = await projectRepository.save(project);
 		if (!saveResult.ok) {
-			alert(t("saveError"));
+			setError("save-failed");
 			return;
 		}
 		await lifecycleManager.openProject(project.id);
@@ -82,6 +100,11 @@ export default function ProjectOpenModal() {
 					{t("fromFile")}
 				</Button>
 			</Box>
+			{error && (
+				<Alert severity="error" onClose={() => setError(null)} sx={{ mt: 2 }}>
+					{t(ERROR_KEYS[error])}
+				</Alert>
+			)}
 			<Divider sx={{ mt: 2, mb: 0 }} />
 			<ProjectsList
 				reloadKey={openModalVisible}

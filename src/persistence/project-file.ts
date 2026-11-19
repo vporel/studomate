@@ -1,4 +1,5 @@
 import { createRandomId } from "@/ids";
+import { isRecord } from "@/lib/object";
 import Project from "@/schemas/project/project.schema";
 import { isFromNewerVersion, migrateProject } from "./migrations/schema";
 
@@ -13,23 +14,52 @@ export function serializeProjectToFile(project: Project): string {
 }
 
 /**
+ * Why a file could not be read as a project:
+ * - `not-json`: the content is not valid JSON
+ * - `not-a-project`: valid JSON, but not shaped like a project
+ * - `newer-version`: saved by a more recent version of the app than this one
+ */
+export type ProjectFileErrorReason =
+	"not-json" | "not-a-project" | "newer-version";
+
+export class ProjectFileError extends Error {
+	constructor(
+		readonly reason: ProjectFileErrorReason,
+		options?: { cause?: unknown },
+	) {
+		super(`Project file rejected: ${reason}`, options);
+		this.name = "ProjectFileError";
+	}
+}
+
+/**
  * Lit un fichier de projet, en le migrant si besoin.
  *
- * @throws si le contenu n'est pas un projet lisible, ou s'il vient d'une version plus récente
- * que celle que cette application sait interpréter
+ * @throws {ProjectFileError} si le contenu n'est pas un projet lisible, ou s'il vient d'une
+ * version plus récente que celle que cette application sait interpréter
  */
 export function parseProjectFromFile(text: string): Project {
-	const parsed = JSON.parse(text);
-	if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-		throw new Error("Le fichier ne contient pas un projet.");
+	let parsed: unknown;
+	try {
+		parsed = JSON.parse(text);
+	} catch (cause) {
+		throw new ProjectFileError("not-json", { cause });
 	}
-	if (isFromNewerVersion(parsed)) {
-		throw new Error(
-			"Ce projet a été enregistré par une version plus récente de Studomate. Mettez l'application à jour pour l'ouvrir.",
-		);
+	if (!isRecord(parsed)) throw new ProjectFileError("not-a-project");
+	if (isFromNewerVersion(parsed)) throw new ProjectFileError("newer-version");
+	let migrated: unknown;
+	try {
+		migrated = migrateProject(parsed).project;
+	} catch (cause) {
+		throw new ProjectFileError("not-a-project", { cause });
 	}
-	const { project } = migrateProject(parsed);
-	return Project.createFromJSON(JSON.stringify(project));
+	if (!Project.hasValidShape(migrated))
+		throw new ProjectFileError("not-a-project");
+	try {
+		return Project.createFromJSON(JSON.stringify(migrated));
+	} catch (cause) {
+		throw new ProjectFileError("not-a-project", { cause });
+	}
 }
 
 /**

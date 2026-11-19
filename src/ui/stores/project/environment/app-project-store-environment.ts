@@ -43,6 +43,7 @@ export default function createAppProjectStoreEnvironment(
 		capabilities: {
 			pdfExport: true,
 			crossReference: true,
+			programExecutionExclusionToggle: true,
 		},
 		analytics: { trackEvent },
 		feedback: { notify: notifyFeedbackMilestone },

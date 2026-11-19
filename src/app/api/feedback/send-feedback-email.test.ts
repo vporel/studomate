@@ -1,7 +1,5 @@
 import { APP_CONTACT_EMAIL, APP_FEEDBACK_EMAIL_FROM } from "@/app-info";
-import sendFeedbackEmail, {
-	isFeedbackEmailConfigured,
-} from "./send-feedback-email";
+import sendFeedbackEmail from "./send-feedback-email";
 
 const submission = { rating: 4, comment: "Très utile", locale: "fr" as const };
 
@@ -20,17 +18,6 @@ describe("sendFeedbackEmail", () => {
 
 	afterAll(() => {
 		process.env = originalEnv;
-	});
-
-	it("is configured by the API key alone", () => {
-		expect(isFeedbackEmailConfigured()).toBe(true);
-	});
-
-	it("is not configured without an API key", () => {
-		delete process.env.RESEND_API_KEY;
-		expect(isFeedbackEmailConfigured()).toBe(false);
-		process.env.RESEND_API_KEY = "";
-		expect(isFeedbackEmailConfigured()).toBe(false);
 	});
 
 	it("sends nothing and reports failure when not configured", async () => {

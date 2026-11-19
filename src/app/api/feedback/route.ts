@@ -1,9 +1,9 @@
 import { parseFeedbackSubmission } from "@/feedback/feedback-submission";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { clientAddress } from "../rate-limit";
 import allowFeedbackRequest from "./rate-limit";
-import sendFeedbackEmail, {
-	isFeedbackEmailConfigured,
-} from "./send-feedback-email";
+import { isEmailConfigured } from "../send-email";
+import sendFeedbackEmail from "./send-feedback-email";
 
 export const dynamic = "force-dynamic";
 
@@ -12,14 +12,6 @@ const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 function json(body: Record<string, unknown>, status: number): Response {
 	return Response.json(body, { status });
-}
-
-function clientAddress(request: Request): string {
-	return (
-		request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-		request.headers.get("x-real-ip") ||
-		"unknown"
-	);
 }
 
 /**
@@ -64,7 +56,7 @@ export async function POST(request: Request): Promise<Response> {
 	if (!submission) return json({ error: "invalid" }, 400);
 
 	const connection = await resolveSupabase(request);
-	if (!connection && !isFeedbackEmailConfigured()) {
+	if (!connection && !isEmailConfigured()) {
 		return json({ error: "not-configured" }, 503);
 	}
 

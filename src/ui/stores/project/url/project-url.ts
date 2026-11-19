@@ -1,5 +1,5 @@
 import { isLocale, type Locale } from "@/i18n/config";
-import { getUrlQueryParam, setUrlQueryParam } from "@/ui/lib/url-query-param";
+import { getUrlQueryParam, setUrlQueryParam } from "@/ui/lib/url";
 
 const PROJECT_ID_PARAM = "projectId";
 const SHARE_TOKEN_PARAM = "shareToken";

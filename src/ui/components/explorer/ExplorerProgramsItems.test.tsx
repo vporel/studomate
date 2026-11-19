@@ -32,7 +32,7 @@ function setup(project: Project) {
 }
 
 describe("ExplorerProgramsItems", () => {
-	it("shows a badge only on programs excluded from execution", () => {
+	it("shows a badge only on programs whose analyser is disabled", () => {
 		const project = new Project("p1", "P", "");
 		const excluded = new Grafcet("g1", "Illustratif");
 		excluded.excludedFromExecution = true;

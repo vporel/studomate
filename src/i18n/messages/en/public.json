@@ -289,9 +289,47 @@
 		"ctaTraining": "See the training"
 	},
 	"contact": {
-		"title": "Get in touch!",
-		"name": "Name",
-		"email": "Email"
+		"title": "Contact",
+		"intro": "Studomate is developed by {author}, who reads and answers every message. The answer comes by email, to the address you give in the form.",
+		"beforeTitle": "Before writing",
+		"beforeQuestion": "A question about using Studomate? The <manual>user manual</manual> and the <training>training courses</training> often answer it.",
+		"beforeContribution": "An idea, or want to contribute? Studomate's code is open: you can also suggest a change on <github>GitHub</github>.",
+		"formTitle": "Write a message",
+		"directEmail": "You can also write directly to <email></email>.",
+		"form": {
+			"topic": "Topic",
+			"topics": {
+				"question": "Question about using Studomate",
+				"forgotten-password": "Forgotten password, account access",
+				"problem": "Report an issue",
+				"teaching": "Teacher or school",
+				"contribution": "Idea or contribution",
+				"other": "Other"
+			},
+			"email": "Your email",
+			"emailHelper": "So that we can answer you.",
+			"name": "Your name (optional)",
+			"message": "Message",
+			"honeypot": "Do not fill in this field",
+			"userAgentNote": "The name and version of your browser are attached to the message, to help us reproduce the issue.",
+			"submit": "Send",
+			"sending": "Sending…",
+			"sent": "Message sent. You will get an answer by email.",
+			"writeAnother": "Write another message",
+			"emailInvalid": "Invalid email address.",
+			"messageTooShort": "The message must contain at least {min} characters.",
+			"messageUnchanged": "Complete the message before sending it.",
+			"pseudoMissing": "Give your username after \"{label}\".",
+			"errors": {
+				"invalid": "The message could not be sent: check the fields of the form.",
+				"rate-limited": "Too many messages sent from your connection. Try again in a few minutes, or write to us directly at <email></email>.",
+				"failed": "The message could not be sent. Write to us directly at <email></email>."
+			},
+			"templates": {
+				"forgotten-password": "Hello,\n\nI forgot the password of my account created with a username.\n\nMy username: ",
+				"problem": "Hello,\n\nIssue encountered: \n\nSteps to reproduce it:\n1. \n2. "
+			}
+		}
 	},
 	"legal": {
 		"title": "Legal notice",
@@ -378,8 +416,8 @@
 		"aboutDescription": "Studomate: a free teaching tool to learn, design and simulate GRAFCET, Ladder and HMIs in the browser.",
 		"teachersTitle": "GRAFCET and ladder logic simulator for teachers",
 		"teachersDescription": "Prepare and hand out automation lab exercises: ready-made projects, sharing by link, nothing for students to install, solved exercises, PDF export. Free.",
-		"contactTitle": "Contact",
-		"contactDescription": "Contact the Studomate team: ideas, feedback, contributions.",
+		"contactTitle": "Contact us",
+		"contactDescription": "A question about Studomate, an issue, a forgotten password or an idea? Write to us with the form and get an answer by email.",
 		"legalTitle": "Legal notice",
 		"legalDescription": "Legal notice for the Studomate site.",
 		"termsTitle": "Terms of use",

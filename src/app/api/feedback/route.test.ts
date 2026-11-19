@@ -10,7 +10,10 @@ const mockEmailConfigured = jest.fn();
 jest.mock("./send-feedback-email", () => ({
 	__esModule: true,
 	default: (...args: unknown[]) => mockSendEmail(...args),
-	isFeedbackEmailConfigured: () => mockEmailConfigured(),
+}));
+jest.mock("../send-email", () => ({
+	__esModule: true,
+	isEmailConfigured: () => mockEmailConfigured(),
 }));
 
 function post(body: unknown, headers: Record<string, string> = {}) {

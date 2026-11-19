@@ -4,7 +4,9 @@ import routes from "@/app/routes";
 import { useT } from "@/ui/i18n/useT";
 import { openFeedbackFromMenu } from "@/ui/services/feedback-prompt";
 import { whatsNewStore } from "@/ui/stores/whats-new/whats-new.store";
-import { openReportIssue } from "@/ui/services/report-issue";
+import { toLocale } from "@/i18n/config";
+import { openReportIssue } from "@/ui/services/contact-page";
+import { useLocale } from "next-intl";
 import { useMemo } from "react";
 import useStartAppTour from "@/ui/components/product-tour/app-tour/useStartAppTour";
 import { AppMenuType } from "../app-menu-bar";
@@ -12,6 +14,7 @@ import { AppMenuType } from "../app-menu-bar";
 export default function useHelpMenu(onShortcutsOpen: () => void): AppMenuType {
 	const t = useT("menu.help");
 	const startAppTour = useStartAppTour();
+	const locale = toLocale(useLocale());
 	return useMemo(
 		() => ({
 			id: "help",
@@ -52,11 +55,11 @@ export default function useHelpMenu(onShortcutsOpen: () => void): AppMenuType {
 					},
 					{
 						label: t("reportIssue"),
-						onClick: openReportIssue,
+						onClick: () => openReportIssue(locale),
 					},
 				],
 			],
 		}),
-		[onShortcutsOpen, startAppTour, t],
+		[onShortcutsOpen, startAppTour, t, locale],
 	);
 }

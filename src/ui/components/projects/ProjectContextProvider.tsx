@@ -32,6 +32,7 @@ import ShareRequiresCloudModal from "./ShareRequiresCloudModal";
 import DraftRecoveryDialog from "./DraftRecoveryDialog";
 import DraftConflictDialog from "./DraftConflictDialog";
 import CloudConflictDialog from "./CloudConflictDialog";
+import AnalyserDisabledNotice from "@/ui/components/programs/AnalyserDisabledNotice";
 import DefaultDialectModal from "./DefaultDialectModal";
 import SaveLocationModal from "./SaveLocationModal";
 import HardwareFirmwareDialog from "./HardwareFirmwareDialog";
@@ -224,6 +225,7 @@ export const ProjectContextProvider = ({
 			<CloudConflictDialog />
 			<SaveLocationModal />
 			<DefaultDialectModal />
+			<AnalyserDisabledNotice />
 		</ProjectStoreProvider>
 	);
 };

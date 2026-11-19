@@ -113,9 +113,12 @@ export default abstract class AbstractProgramsManager<
 		if (program.excludedFromExecution === excluded) return;
 		const newProject = project.copy();
 		this.getDocument(newProject, programId)!.excludedFromExecution = excluded;
-		this.setStoreState(() => ({
+		this.setStoreState((state) => ({
 			project: newProject,
 			hasUnsavedChanges: true,
+			ui: excluded
+				? { ...state.ui, analyserDisabledNoticeVisible: true }
+				: state.ui,
 		}));
 		// A mounted store pushes its own copy back to the project on its next change.
 		this.syncMountedStoresFromProject();

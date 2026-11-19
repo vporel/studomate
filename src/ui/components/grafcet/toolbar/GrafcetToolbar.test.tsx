@@ -19,11 +19,16 @@ describe("GrafcetToolbar", () => {
 			selectorImplementation({
 				mode: ProjectMode.DESIGN,
 				editingEnabled: true,
+				capabilities: { programExecutionExclusionToggle: true },
 			}),
 		);
 		(useGrafcetStore as unknown as jest.Mock).mockImplementation(
 			selectorImplementation({
-				grafcet: { id: "g1", excludedFromExecution: false },
+				grafcet: {
+					id: "g1",
+					excludedFromExecution: false,
+					canBeExcludedFromExecution: () => true,
+				},
 				nodes: [],
 				zoom: 1,
 				minZoom: 0.5,
@@ -65,18 +70,28 @@ describe("GrafcetToolbar", () => {
 		).toBeInTheDocument();
 	});
 
-	it("shows the execution warning for an excluded grafcet, whose dialog re-includes it", () => {
+	function renderToolbar({
+		excludedFromExecution = false,
+		canBeExcludedFromExecution = true,
+		mode = ProjectMode.DESIGN,
+		programExecutionExclusionToggle = true,
+	} = {}) {
 		const grafcetsManager = { setExcludedFromExecution: jest.fn() };
 		(useProjectStore as unknown as jest.Mock).mockImplementation(
 			selectorImplementation({
-				mode: ProjectMode.DESIGN,
+				mode,
 				editingEnabled: true,
 				grafcetsManager,
+				capabilities: { programExecutionExclusionToggle },
 			}),
 		);
 		(useGrafcetStore as unknown as jest.Mock).mockImplementation(
 			selectorImplementation({
-				grafcet: { id: "g1", excludedFromExecution: true },
+				grafcet: {
+					id: "g1",
+					excludedFromExecution,
+					canBeExcludedFromExecution: () => canBeExcludedFromExecution,
+				},
 				nodes: [],
 				zoom: 1,
 				minZoom: 0.5,
@@ -93,12 +108,82 @@ describe("GrafcetToolbar", () => {
 				<GrafcetToolbar />
 			</GrafcetToolbarDnDProvider>,
 		);
-		fireEvent.click(screen.getByText("Exclu de l'exécution"));
-		fireEvent.click(screen.getByText("Inclure dans l'exécution"));
+		return grafcetsManager;
+	}
+
+	it("offers to disable the analyser of an analysed grafcet", () => {
+		const grafcetsManager = renderToolbar();
+
+		fireEvent.click(screen.getByText("Désactiver l'analyseur"));
+
+		expect(grafcetsManager.setExcludedFromExecution).toHaveBeenCalledWith(
+			"g1",
+			true,
+		);
+	});
+
+	it("enables the analyser of a grafcet directly", () => {
+		const grafcetsManager = renderToolbar({ excludedFromExecution: true });
+
+		fireEvent.click(screen.getByText("Activer l'analyseur"));
 
 		expect(grafcetsManager.setExcludedFromExecution).toHaveBeenCalledWith(
 			"g1",
 			false,
 		);
+	});
+
+	it("offers no analyser toggle for a grafcet that cannot be excluded", () => {
+		renderToolbar({ canBeExcludedFromExecution: false });
+
+		expect(
+			screen.queryByText("Désactiver l'analyseur"),
+		).not.toBeInTheDocument();
+	});
+
+	it("still offers to enable the analyser of an excluded grafcet that cannot be excluded", () => {
+		renderToolbar({
+			excludedFromExecution: true,
+			canBeExcludedFromExecution: false,
+		});
+
+		expect(screen.getByText("Activer l'analyseur")).toBeInTheDocument();
+	});
+
+	it("only warns that an excluded grafcet is not executed during a simulation", () => {
+		renderToolbar({
+			mode: ProjectMode.SIMULATION,
+			excludedFromExecution: true,
+		});
+
+		expect(screen.getByText("Non exécuté")).toBeInTheDocument();
+		expect(screen.queryByText("Activer l'analyseur")).not.toBeInTheDocument();
+	});
+
+	it("shows no analyser item for an analysed grafcet during a simulation", () => {
+		renderToolbar({ mode: ProjectMode.SIMULATION });
+
+		expect(
+			screen.queryByText("Désactiver l'analyseur"),
+		).not.toBeInTheDocument();
+		expect(screen.queryByText("Non exécuté")).not.toBeInTheDocument();
+	});
+
+	it("only warns that an excluded grafcet is not executed when the toggle is not offered", () => {
+		renderToolbar({
+			excludedFromExecution: true,
+			programExecutionExclusionToggle: false,
+		});
+
+		expect(screen.getByText("Non exécuté")).toBeInTheDocument();
+		expect(screen.queryByText("Activer l'analyseur")).not.toBeInTheDocument();
+	});
+
+	it("shows no analyser item for an analysed grafcet when the toggle is not offered", () => {
+		renderToolbar({ programExecutionExclusionToggle: false });
+
+		expect(
+			screen.queryByText("Désactiver l'analyseur"),
+		).not.toBeInTheDocument();
 	});
 });

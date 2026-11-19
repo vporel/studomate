@@ -60,7 +60,7 @@ describe("LocalStorageProjectRepository", () => {
 
 			await repo.save(newProject("p2", "B"));
 
-			expect(store.get(LAYOUT_VERSION_KEY)).toBe("1");
+			expect(store.get(LAYOUT_VERSION_KEY)).toBe("2");
 			expect(JSON.parse(store.get(STORAGE_KEY)!)).toEqual({
 				p1: { name: "A" },
 				p2: { name: "B" },
@@ -283,7 +283,7 @@ describe("LocalStorageProjectRepository", () => {
 			const reopened = await new LocalStorageProjectRepository().get("a");
 
 			expect(reopened?.name).toBe("Contenu réel");
-			expect(store.get(LAYOUT_VERSION_KEY)).toBe("1");
+			expect(store.get(LAYOUT_VERSION_KEY)).toBe("2");
 		});
 	});
 

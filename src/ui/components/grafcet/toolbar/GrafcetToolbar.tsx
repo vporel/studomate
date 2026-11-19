@@ -1,7 +1,8 @@
 "use client";
 
 import useCanEdit from "@/ui/components/projects/useCanEdit";
-import ExcludedFromExecutionWarning from "@/ui/components/programs/ExcludedFromExecutionWarning";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
+import AnalyserToolbarItem from "@/ui/components/programs/AnalyserToolbarItem";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
 import { Divider } from "@mui/material";
@@ -24,7 +25,16 @@ const GrafcetToolbar = ({ style }: { style?: React.CSSProperties }) => {
 	const excludedFromExecution = useGrafcetStore(
 		(state) => state.grafcet.excludedFromExecution,
 	);
+	const canBeExcludedFromExecution = useGrafcetStore((state) =>
+		state.grafcet.canBeExcludedFromExecution(),
+	);
 	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
+	const simulating = useProjectStore(
+		(state) => state.mode === ProjectMode.SIMULATION,
+	);
+	const exclusionToggleAvailable = useProjectStore(
+		(state) => state.capabilities.programExecutionExclusionToggle,
+	);
 	const designing = useCanEdit();
 
 	return (
@@ -63,11 +73,14 @@ const GrafcetToolbar = ({ style }: { style?: React.CSSProperties }) => {
 				<CommentTool />
 			</FlexBox>
 			<FlexBox centerVertical sx={{ gap: "5px", height: "100%" }}>
-				{excludedFromExecution && (
-					<ExcludedFromExecutionWarning
-						includeDisabled={!designing}
-						onInclude={() =>
-							grafcetsManager.setExcludedFromExecution(grafcetId, false)
+				{(excludedFromExecution || canBeExcludedFromExecution) && (
+					<AnalyserToolbarItem
+						excluded={excludedFromExecution}
+						simulating={simulating}
+						toggleAvailable={exclusionToggleAvailable}
+						disabled={!designing}
+						onToggle={(excluded) =>
+							grafcetsManager.setExcludedFromExecution(grafcetId, excluded)
 						}
 					/>
 				)}

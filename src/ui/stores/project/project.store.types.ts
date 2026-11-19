@@ -187,6 +187,8 @@ export interface ProjectUiState {
 	 */
 	defaultDialectModalVisible: boolean;
 	onDefaultDialectChosen: ((dialect: Dialect | null) => void) | null;
+	/** Shown after the analyser of a program has been disabled. */
+	analyserDisabledNoticeVisible: boolean;
 }
 
 /**
@@ -296,6 +298,7 @@ export interface ProjectStoreState {
 	variableToReveal: string | null;
 	setVariableToReveal: (variableId: string | null) => void;
 	setWatchTablesVisible: (visible: boolean) => void;
+	setAnalyserDisabledNoticeVisible: (visible: boolean) => void;
 	plcConfig: PLCConfig;
 	/**
 	 * The current values of the variables during simulation, used to display them in the UI

@@ -23,6 +23,11 @@ export type ProjectCapabilities = {
 	crossReference: boolean;
 	/** A board can be linked. */
 	hardware: boolean;
+	/**
+	 * The user can exclude a program from execution or include it again. Programs already excluded
+	 * stay excluded and are shown as such either way.
+	 */
+	programExecutionExclusionToggle: boolean;
 };
 
 export type ProjectStoreAnalytics = {

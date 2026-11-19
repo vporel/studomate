@@ -4,9 +4,10 @@ import { getKeywordString } from "@/expression-language/keywords";
 import { parseConstantLiteral } from "@/schemas/variable/constant-value";
 import Grafcet from "../grafcet/grafcet.schema";
 import Ladder, { DEFAULT_MAIN_NAME } from "../ladder/ladder.schema";
-import Program, { ProgramType } from "../program/program.schema";
+import Program, { PROGRAM_TYPES, ProgramType } from "../program/program.schema";
 import { createRandomId } from "@/ids";
 import { nextAvailableName } from "@/lib/naming";
+import { isRecord } from "@/lib/object";
 import Variable from "../variable/variable.schema";
 import { getCounterBlockParams } from "../ladder/function-blocks/counter.schema";
 import { getTimerBlockParams } from "../ladder/function-blocks/timer.schema";
@@ -486,6 +487,25 @@ export default class Project {
 		const newProject = Project.rehydrate(this);
 		newProject.programs = { ...this.programs, [program.id]: program };
 		return newProject;
+	}
+
+	/**
+	 * Whether raw data, already migrated to the current schema version, has the minimal shape
+	 * `createFromJSON` needs to rebuild a coherent project.
+	 */
+	static hasValidShape(raw: unknown): boolean {
+		if (!isRecord(raw)) return false;
+		if (typeof raw.name !== "string") return false;
+		if (!Array.isArray(raw.variables)) return false;
+		if (raw.hmiPages !== undefined && !isRecord(raw.hmiPages)) return false;
+		if (!isRecord(raw.programs)) return false;
+		return Object.entries(raw.programs).every(
+			([key, program]) =>
+				isRecord(program) &&
+				program.id === key &&
+				typeof program.name === "string" &&
+				PROGRAM_TYPES.includes(program.type as ProgramType),
+		);
 	}
 
 	static createFromJSON(json: string): Project {

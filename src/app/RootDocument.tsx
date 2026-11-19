@@ -29,7 +29,8 @@ export default function RootDocument({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang={lang}>
+		// The inline script adds the `restoring` class to <html> before hydration.
+		<html lang={lang} suppressHydrationWarning>
 			<head>
 				<script
 					dangerouslySetInnerHTML={{

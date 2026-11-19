@@ -121,6 +121,16 @@ describe("project store with the embedded environment", () => {
 		jest.clearAllMocks();
 	});
 
+	it("does not let the user exclude a program from execution", () => {
+		const store = createProjectStore(
+			createEmbeddedProjectStoreEnvironment({ locale: "fr" }),
+		);
+
+		expect(store.getState().capabilities.programExecutionExclusionToggle).toBe(
+			false,
+		);
+	});
+
 	it("is idle at creation and keeps no repository", () => {
 		const store = createProjectStore(
 			createEmbeddedProjectStoreEnvironment({ locale: "fr" }),

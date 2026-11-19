@@ -9,9 +9,11 @@ import { useProjectStore } from "./ProjectContext";
 import { useAuthStore } from "@/ui/stores/auth/auth.store";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import { isSafari, isStandaloneDisplay } from "@/ui/lib/platform";
+import { toast } from "react-toastify";
 import ProjectsList from "./ProjectsList";
 
 jest.mock("./ProjectContext");
+jest.mock("react-toastify", () => ({ toast: { error: jest.fn() } }));
 jest.mock("@/ui/stores/auth/auth.store");
 jest.mock("@/ui/lib/platform");
 
@@ -22,6 +24,11 @@ jest.mock("@/persistence/repositories/supabase-client", () => ({
 	},
 	supabase: {},
 }));
+
+const MOVE_TO_CLOUD_FAILED =
+	"Le projet n'a pas pu être envoyé dans le cloud. Vérifiez votre connexion.";
+const MOVE_TO_LOCAL_FAILED =
+	"Le projet n'a pas pu être rapatrié en local. Vérifiez l'espace disponible.";
 
 function project(id: string, name: string): Project {
 	return new Project(id, name, "");
@@ -305,7 +312,6 @@ describe("ProjectsList", () => {
 	});
 
 	it("signale un message dédié quand l'envoi vers le cloud échoue en conflit", async () => {
-		const alertSpy = jest.spyOn(window, "alert").mockImplementation(() => {});
 		setup({
 			list: [project("p1", "Projet A")],
 			authenticated: true,
@@ -318,11 +324,27 @@ describe("ProjectsList", () => {
 		fireEvent.click(screen.getByLabelText("envoyer vers le cloud"));
 
 		await waitFor(() =>
-			expect(alertSpy).toHaveBeenCalledWith(
+			expect(toast.error).toHaveBeenCalledWith(
 				expect.stringContaining("existe déjà"),
 			),
 		);
-		alertSpy.mockRestore();
+	});
+
+	it("signale l'échec de l'envoi vers le cloud par un toast", async () => {
+		setup({
+			list: [project("p1", "Projet A")],
+			authenticated: true,
+			moveToCloudFn: jest
+				.fn()
+				.mockResolvedValue({ ok: false, reason: "error" }),
+		});
+		await waitFor(() => screen.getByText("Projet A"));
+
+		fireEvent.click(screen.getByLabelText("envoyer vers le cloud"));
+
+		await waitFor(() =>
+			expect(toast.error).toHaveBeenCalledWith(MOVE_TO_CLOUD_FAILED),
+		);
 	});
 
 	it("ne propose pas d'envoyer vers le cloud sans être connecté", async () => {
@@ -347,5 +369,23 @@ describe("ProjectsList", () => {
 		fireEvent.click(screen.getByLabelText("rapatrier en local"));
 
 		await waitFor(() => expect(moveToLocalFn).toHaveBeenCalled());
+	});
+
+	it("signale l'échec du rapatriement en local par un toast", async () => {
+		setup({
+			list: [project("p1", "Projet A")],
+			locationOf: () => "cloud",
+			authenticated: true,
+			moveToLocalFn: jest.fn().mockResolvedValue({ ok: false }),
+		});
+		await waitFor(() => screen.getByText("Aucun projet enregistré"));
+		fireEvent.click(screen.getByRole("tab", { name: "Cloud" }));
+		await waitFor(() => screen.getByText("Projet A"));
+
+		fireEvent.click(screen.getByLabelText("rapatrier en local"));
+
+		await waitFor(() =>
+			expect(toast.error).toHaveBeenCalledWith(MOVE_TO_LOCAL_FAILED),
+		);
 	});
 });

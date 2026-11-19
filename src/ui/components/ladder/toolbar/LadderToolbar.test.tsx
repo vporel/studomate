@@ -25,6 +25,8 @@ function setup({
 	editingEnabled = true,
 	executeOperation = jest.fn(),
 	excludedFromExecution = false,
+	isMain = false,
+	programExecutionExclusionToggle = true,
 	zoom = 1,
 	zoomIn = jest.fn(),
 	zoomOut = jest.fn(),
@@ -39,12 +41,17 @@ function setup({
 			mode,
 			editingEnabled,
 			laddersManager,
+			capabilities: { programExecutionExclusionToggle },
 		}),
 	);
 	(useLadderStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			commandsStackManager: { executeOperation },
-			ladder: { id: "l1", excludedFromExecution },
+			ladder: {
+				id: "l1",
+				excludedFromExecution,
+				canBeExcludedFromExecution: () => !isMain,
+			},
 			viewManager: { zoomIn, zoomOut },
 			zoom,
 		}),
@@ -152,16 +159,12 @@ describe("LadderToolbar", () => {
 			["hors du mode conception", { mode: ProjectMode.SIMULATION }],
 		])("grise le bouton %s, comme les autres outils", (_, state) => {
 			setup({ ...state });
-			expect(
-				screen.getByText("Bibliothèque").closest("button"),
-			).toBeDisabled();
+			expect(screen.getByText("Bibliothèque").closest("button")).toBeDisabled();
 		});
 
 		it("laisse le bouton actif en conception", () => {
 			setup();
-			expect(
-				screen.getByText("Bibliothèque").closest("button"),
-			).toBeEnabled();
+			expect(screen.getByText("Bibliothèque").closest("button")).toBeEnabled();
 		});
 
 		it("laisse la barre défiler en dernier recours, sans écraser ses outils", () => {
@@ -242,20 +245,75 @@ describe("LadderToolbar", () => {
 		expect(extraLabels.some(hasTool)).toBe(false);
 	});
 
-	it("shows no execution warning for an executed ladder", () => {
-		setup();
-		expect(screen.queryByText("Exclu de l'exécution")).not.toBeInTheDocument();
+	it("offers to disable the analyser of an analysed ladder", () => {
+		const { laddersManager } = setup();
+
+		fireEvent.click(screen.getByText("Désactiver l'analyseur"));
+
+		expect(laddersManager.setExcludedFromExecution).toHaveBeenCalledWith(
+			"l1",
+			true,
+		);
 	});
 
-	it("shows the execution warning for an excluded ladder, whose dialog re-includes it", () => {
+	it("enables the analyser of a ladder directly", () => {
 		const { laddersManager } = setup({ excludedFromExecution: true });
 
-		fireEvent.click(screen.getByText("Exclu de l'exécution"));
-		fireEvent.click(screen.getByText("Inclure dans l'exécution"));
+		fireEvent.click(screen.getByText("Activer l'analyseur"));
 
 		expect(laddersManager.setExcludedFromExecution).toHaveBeenCalledWith(
 			"l1",
 			false,
 		);
+	});
+
+	it("offers no analyser toggle for the Main", () => {
+		setup({ isMain: true });
+
+		expect(
+			screen.queryByText("Désactiver l'analyseur"),
+		).not.toBeInTheDocument();
+	});
+
+	it("disables the analyser toggle when the project cannot be edited", () => {
+		setup({ editingEnabled: false });
+
+		expect(
+			screen.getByText("Désactiver l'analyseur").closest("button"),
+		).toBeDisabled();
+	});
+
+	it("only warns that an excluded ladder is not executed during a simulation", () => {
+		setup({ mode: ProjectMode.SIMULATION, excludedFromExecution: true });
+
+		expect(screen.getByText("Non exécuté")).toBeInTheDocument();
+		expect(screen.queryByText("Activer l'analyseur")).not.toBeInTheDocument();
+	});
+
+	it("shows no analyser item for an analysed ladder during a simulation", () => {
+		setup({ mode: ProjectMode.SIMULATION });
+
+		expect(
+			screen.queryByText("Désactiver l'analyseur"),
+		).not.toBeInTheDocument();
+		expect(screen.queryByText("Non exécuté")).not.toBeInTheDocument();
+	});
+
+	it("only warns that an excluded ladder is not executed when the toggle is not offered", () => {
+		setup({
+			excludedFromExecution: true,
+			programExecutionExclusionToggle: false,
+		});
+
+		expect(screen.getByText("Non exécuté")).toBeInTheDocument();
+		expect(screen.queryByText("Activer l'analyseur")).not.toBeInTheDocument();
+	});
+
+	it("shows no analyser item for an analysed ladder when the toggle is not offered", () => {
+		setup({ programExecutionExclusionToggle: false });
+
+		expect(
+			screen.queryByText("Désactiver l'analyseur"),
+		).not.toBeInTheDocument();
 	});
 });

@@ -3,13 +3,13 @@
  */
 import { APP_VERSION } from "@/app-info";
 import routes from "@/app/routes";
-import { openReportIssue } from "@/ui/services/report-issue";
+import { openReportIssue } from "@/ui/services/contact-page";
 import { fireEvent, screen } from "@testing-library/react";
 import { whatsNewStore } from "@/ui/stores/whats-new/whats-new.store";
 import { renderWithI18n } from "@tests/utils/i18n";
 import StartupFooter from "./StartupFooter";
 
-jest.mock("@/ui/services/report-issue", () => ({
+jest.mock("@/ui/services/contact-page", () => ({
 	openReportIssue: jest.fn(),
 }));
 
@@ -47,7 +47,7 @@ describe("StartupFooter", () => {
 			screen.getByRole("button", { name: "Signaler un problème" }),
 		);
 
-		expect(openReportIssue).toHaveBeenCalledTimes(1);
+		expect(openReportIssue).toHaveBeenCalledWith("fr");
 	});
 
 	it("affiche la version à côté du copyright et rouvre les nouveautés au clic", () => {

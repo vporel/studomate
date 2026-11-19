@@ -6,7 +6,7 @@ import { useAuthStore } from "@/ui/stores/auth/auth.store";
 import { getStoredUserProfile } from "@/persistence/user-profile.storage";
 import { EMPTY_USER_PROFILE, UserProfile } from "@/user-profile/user-profile";
 import UserProfileFields from "@/ui/components/profile/UserProfileFields";
-import { Alert, Button, Divider, Typography } from "@mui/material";
+import { Alert, Box, Button, Divider, Typography } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import { useShallow } from "zustand/shallow";
 import AuthForm from "./AuthForm";
@@ -14,6 +14,7 @@ import AuthFormError from "./AuthFormError";
 import AuthIdentityField from "./AuthIdentityField";
 import AuthModeSelector, { AuthMode } from "./AuthModeSelector";
 import AuthPasswordField from "./AuthPasswordField";
+import ForgottenPseudoPasswordDialog from "./ForgottenPseudoPasswordDialog";
 
 type Screen = "signIn" | "signUp" | "resetPassword";
 type SignUpMode = AuthMode;
@@ -53,6 +54,7 @@ export default function AuthModal() {
 	const [successMessage, setSuccessMessage] = useState<string | null>(null);
 	const [submitting, setSubmitting] = useState(false);
 	const [profile, setProfile] = useState<UserProfile>(EMPTY_USER_PROFILE);
+	const [pseudoPasswordHelpOpen, setPseudoPasswordHelpOpen] = useState(false);
 
 	const resetForm = useCallback(() => {
 		setEmail("");
@@ -173,22 +175,26 @@ export default function AuthModal() {
 
 					<AuthFormError error={error} />
 
-					<Button type="submit" variant="contained" disabled={submitting}>
-						{t("signIn.submit")}
-					</Button>
-
-					{signInMode === "real" && (
+					<Box sx={{ textAlign: "right", mt: -1, mb: -1 }}>
 						<Button
 							variant="text"
 							size="small"
 							onClick={() => {
+								if (signInMode === "anonymous") {
+									setPseudoPasswordHelpOpen(true);
+									return;
+								}
 								resetForm();
 								setScreen("resetPassword");
 							}}
 						>
 							{t("signIn.forgotPassword")}
 						</Button>
-					)}
+					</Box>
+
+					<Button type="submit" variant="contained" disabled={submitting}>
+						{t("signIn.submit")}
+					</Button>
 
 					<Divider />
 
@@ -288,6 +294,10 @@ export default function AuthModal() {
 					</Button>
 				</AuthForm>
 			)}
+			<ForgottenPseudoPasswordDialog
+				open={pseudoPasswordHelpOpen}
+				onClose={() => setPseudoPasswordHelpOpen(false)}
+			/>
 		</CustomModal>
 	);
 }

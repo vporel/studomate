@@ -4,6 +4,7 @@ import useCollapseOnOverflow from "@/ui/lib/hooks/useCollapseOnOverflow";
 import WidgetsOutlinedIcon from "@mui/icons-material/WidgetsOutlined";
 import ZoomControls from "@/ui/components/app-toolbar/ZoomControls";
 import useCanEdit from "@/ui/components/projects/useCanEdit";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import SectionAddCommand from "@/schemas/ladder/commands/section-add.command";
 import { DEFAULT_SECTION_TITLE } from "@/schemas/ladder/ladder.schema";
 import { createRandomId } from "@/ids";
@@ -13,7 +14,7 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { Box, Button, Divider, IconButton } from "@mui/material";
 import { useRef, useState } from "react";
-import ExcludedFromExecutionWarning from "@/ui/components/programs/ExcludedFromExecutionWarning";
+import AnalyserToolbarItem from "@/ui/components/programs/AnalyserToolbarItem";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useT } from "@/ui/i18n/useT";
 import {
@@ -70,9 +71,18 @@ const LadderToolbar = ({
 	);
 	const canEdit = useCanEdit();
 	const laddersManager = useProjectStore((state) => state.laddersManager);
+	const simulating = useProjectStore(
+		(state) => state.mode === ProjectMode.SIMULATION,
+	);
+	const exclusionToggleAvailable = useProjectStore(
+		(state) => state.capabilities.programExecutionExclusionToggle,
+	);
 	const ladderId = useLadderStore((state) => state.ladder.id);
 	const excludedFromExecution = useLadderStore(
 		(state) => state.ladder.excludedFromExecution,
+	);
+	const canBeExcludedFromExecution = useLadderStore((state) =>
+		state.ladder.canBeExcludedFromExecution(),
 	);
 	const viewManager = useLadderStore((state) => state.viewManager);
 	const zoom = useLadderStore((state) => state.zoom);
@@ -241,11 +251,14 @@ const LadderToolbar = ({
 				centerVertical
 				sx={{ gap: "5px", height: "100%", flexShrink: 0 }}
 			>
-				{excludedFromExecution && (
-					<ExcludedFromExecutionWarning
-						includeDisabled={!canEdit}
-						onInclude={() =>
-							laddersManager.setExcludedFromExecution(ladderId, false)
+				{(excludedFromExecution || canBeExcludedFromExecution) && (
+					<AnalyserToolbarItem
+						excluded={excludedFromExecution}
+						simulating={simulating}
+						toggleAvailable={exclusionToggleAvailable}
+						disabled={!canEdit}
+						onToggle={(excluded) =>
+							laddersManager.setExcludedFromExecution(ladderId, excluded)
 						}
 					/>
 				)}
