@@ -39,7 +39,6 @@ export default function ToolbarSection() {
 			</Typography>
 			<Typography mb={2}>{t("grafcetToolsIntro")}</Typography>
 			<ManualList items={t.raw("grafcetTools") as string[]} />
-			<Typography mb={2}>{t("grafcetToolsZoom")}</Typography>
 			<Divider sx={{ my: 2 }} />
 
 			<Typography variant="h4" component={ManualH3} mb={2}>

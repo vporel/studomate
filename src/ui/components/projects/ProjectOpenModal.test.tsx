@@ -4,7 +4,10 @@
 import { renderWithI18n } from "@tests/utils/i18n";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import Project from "@/schemas/project/project.schema";
-import { importProjectFromFile } from "@/persistence/project-file";
+import {
+	importProjectFromFile,
+	ProjectFileError,
+} from "@/persistence/project-file";
 import {
 	openFileDialog,
 	openFileViaInput,
@@ -16,7 +19,10 @@ import ProjectOpenModal from "./ProjectOpenModal";
 
 jest.mock("./ProjectContext");
 jest.mock("@/ui/lib/file-system");
-jest.mock("@/persistence/project-file");
+jest.mock("@/persistence/project-file", () => ({
+	...jest.requireActual("@/persistence/project-file"),
+	importProjectFromFile: jest.fn(),
+}));
 jest.mock("./ProjectsList", () => ({
 	__esModule: true,
 	default: ({ onProjectClick }: { onProjectClick: (id: string) => void }) => (
@@ -88,27 +94,56 @@ describe("ProjectOpenModal", () => {
 			expect(openProject).not.toHaveBeenCalled();
 		});
 
-		it("alerte et n'ouvre rien si le fichier n'est pas un projet valide", async () => {
-			const alertSpy = jest.spyOn(window, "alert").mockImplementation(() => {});
+		it.each([
+			[
+				new ProjectFileError("not-json"),
+				"Ce fichier n'est pas un fichier de projet lisible : son contenu est mal formé.",
+			],
+			[
+				new ProjectFileError("not-a-project"),
+				"Ce fichier ne contient pas un projet Studomate.",
+			],
+			[
+				new ProjectFileError("newer-version"),
+				"Ce projet a été enregistré par une version plus récente de Studomate. Mettez l'application à jour pour l'ouvrir.",
+			],
+			[
+				new Error("unexpected"),
+				"Ce fichier ne contient pas un projet Studomate.",
+			],
+		])(
+			"shows why the file was rejected (%s) and opens nothing",
+			async (error, message) => {
+				(openFileDialog as jest.Mock).mockResolvedValue({});
+				(readFile as jest.Mock).mockResolvedValue("contenu");
+				(importProjectFromFile as jest.Mock).mockImplementation(() => {
+					throw error;
+				});
+				const { openProject, save, setOpenModalVisible } = setup();
+
+				fireEvent.click(screen.getByText("Ouvrir depuis un fichier..."));
+
+				expect(await screen.findByRole("alert")).toHaveTextContent(message);
+				expect(save).not.toHaveBeenCalled();
+				expect(openProject).not.toHaveBeenCalled();
+				expect(setOpenModalVisible).not.toHaveBeenCalled();
+			},
+		);
+
+		it("shows a read error when the picked file cannot be read", async () => {
 			(openFileDialog as jest.Mock).mockResolvedValue({});
-			(readFile as jest.Mock).mockResolvedValue("pas du json valide");
-			(importProjectFromFile as jest.Mock).mockImplementation(() => {
-				throw new Error("invalid");
-			});
+			(readFile as jest.Mock).mockRejectedValue(new Error("denied"));
 			const { openProject } = setup();
 
 			fireEvent.click(screen.getByText("Ouvrir depuis un fichier..."));
-			await Promise.resolve();
-			await Promise.resolve();
-			await Promise.resolve();
 
-			expect(alertSpy).toHaveBeenCalled();
+			expect(await screen.findByRole("alert")).toHaveTextContent(
+				"Le fichier n'a pas pu être lu.",
+			);
 			expect(openProject).not.toHaveBeenCalled();
-			alertSpy.mockRestore();
 		});
 
-		it("alerte et n'ouvre rien si l'enregistrement échoue", async () => {
-			const alertSpy = jest.spyOn(window, "alert").mockImplementation(() => {});
+		it("shows a save error and opens nothing when saving fails", async () => {
 			const project = new Project("p1", "Importé", "");
 			(openFileDialog as jest.Mock).mockResolvedValue({});
 			(readFile as jest.Mock).mockResolvedValue('{"id":"p1"}');
@@ -118,10 +153,30 @@ describe("ProjectOpenModal", () => {
 			});
 
 			fireEvent.click(screen.getByText("Ouvrir depuis un fichier..."));
-			await waitFor(() => expect(alertSpy).toHaveBeenCalled());
 
+			expect(await screen.findByRole("alert")).toHaveTextContent(
+				"Le projet n'a pas pu être enregistré dans le navigateur.",
+			);
 			expect(openProject).not.toHaveBeenCalled();
-			alertSpy.mockRestore();
+		});
+
+		it("clears the previous error on a new attempt", async () => {
+			(openFileDialog as jest.Mock).mockResolvedValue({});
+			(readFile as jest.Mock).mockResolvedValue("contenu");
+			(importProjectFromFile as jest.Mock).mockImplementationOnce(() => {
+				throw new ProjectFileError("not-json");
+			});
+			(openFileDialog as jest.Mock).mockResolvedValueOnce({});
+			setup();
+
+			fireEvent.click(screen.getByText("Ouvrir depuis un fichier..."));
+			await screen.findByRole("alert");
+			(openFileDialog as jest.Mock).mockResolvedValueOnce(null);
+			fireEvent.click(screen.getByText("Ouvrir depuis un fichier..."));
+
+			await waitFor(() =>
+				expect(screen.queryByRole("alert")).not.toBeInTheDocument(),
+			);
 		});
 	});
 

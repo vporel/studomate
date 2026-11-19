@@ -27,6 +27,7 @@ import {
 } from "@mui/material";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useT } from "@/ui/i18n/useT";
+import { toast } from "react-toastify";
 
 interface ProjectsListProps {
 	reloadKey: any;
@@ -114,7 +115,7 @@ export default function ProjectsList({
 		event.stopPropagation();
 		const result = await projectRepository.moveToCloud(project);
 		if (!result.ok) {
-			alert(
+			toast.error(
 				result.reason === "conflict"
 					? t("moveToCloudConflict")
 					: t("moveToCloudFailed"),
@@ -131,7 +132,7 @@ export default function ProjectsList({
 		event.stopPropagation();
 		const result = await projectRepository.moveToLocal(project);
 		if (!result.ok) {
-			alert(t("moveToLocalFailed"));
+			toast.error(t("moveToLocalFailed"));
 			return;
 		}
 		await reload();

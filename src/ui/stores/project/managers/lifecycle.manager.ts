@@ -317,9 +317,9 @@ export default class ProjectLifecycleManager {
 			toast.error(getT("toasts")("shareLinkOpenFailed"));
 			return false;
 		}
-		await this.doOpenProject(project);
+		await this.openAndRestore(project, { shared: true, unsaved: false });
 		this.env.analytics.trackEvent("shared-project-opened");
-		set(() => ({ isSharedProject: true, shareToken: null }));
+		set(() => ({ shareToken: null }));
 		//Un projet partagé n'a pas de brouillon ni d'entrée dans l'index local : seul le token
 		//permet de le rouvrir après un rechargement.
 		this.env.persistence?.url.setProjectId(null);

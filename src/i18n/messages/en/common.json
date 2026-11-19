@@ -15,12 +15,18 @@
 	},
 	"programExecution": {
 		"badge": "Not executed",
-		"warningLabel": "Excluded from execution",
-		"warningTooltip": "This program is not executed",
-		"modalTitle": "Program not executed",
-		"modalBody": "This program is excluded from execution. It can still be drawn, edited and exported to PDF, but it is neither analysed, compiled nor simulated.",
-		"modalFreeText": "Its mnemonics can therefore be free text, without matching a declared variable. Its step (Xn) and block variables do not exist for the other programs.",
-		"include": "Include in execution",
-		"close": "Close"
+		"disable": "Disable analyser",
+		"enable": "Enable analyser",
+		"disableTooltip": "Stop analysing and simulating this program, to write free text in it",
+		"enableTooltip": "The analyser of this program is disabled: it is neither analysed nor simulated",
+		"noticeTitle": "Analyser disabled",
+		"noticeBody": "This program can no longer be simulated, and its expressions are no longer validated. It can still be drawn, edited and exported to PDF.",
+		"noticeFreeText": "You can therefore write sentences in it rather than logical expressions, for example to describe a grafcet in plain language. Its step (Xn) and block variables do not exist for the other programs.",
+		"noticeEnable": "To enable the analyser again: \"Enable analyser\" button in the toolbar, or right-click the program in the explorer.",
+		"dontShowAgain": "Don't show again",
+		"notExecutedTitle": "Program not executed",
+		"notExecutedBody": "The analyser of this program has been disabled: its expressions are not validated and it is neither compiled nor simulated. None of its steps becomes active and it drives no output.",
+		"notExecutedEnable": "To enable it again, stop the simulation, then click \"Enable analyser\" in the program's toolbar.",
+		"close": "Got it"
 	}
 }

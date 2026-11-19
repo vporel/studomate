@@ -295,9 +295,47 @@
 		"ctaTraining": "Voir la formation"
 	},
 	"contact": {
-		"title": "Contactez-nous !",
-		"name": "Nom",
-		"email": "Email"
+		"title": "Contact",
+		"intro": "Studomate est développé par {author}, qui lit et répond à chaque message. La réponse arrive par email, à l'adresse que vous indiquez dans le formulaire.",
+		"beforeTitle": "Avant d'écrire",
+		"beforeQuestion": "Une question sur l'utilisation de Studomate ? Le <manual>manuel utilisateur</manual> et les <training>formations</training> y répondent souvent.",
+		"beforeContribution": "Une idée ou une envie de contribuer ? Le code de Studomate est ouvert : vous pouvez aussi proposer une évolution sur <github>GitHub</github>.",
+		"formTitle": "Écrire un message",
+		"directEmail": "Vous pouvez aussi écrire directement à <email></email>.",
+		"form": {
+			"topic": "Sujet",
+			"topics": {
+				"question": "Question sur l'utilisation",
+				"forgotten-password": "Mot de passe oublié, accès au compte",
+				"problem": "Signaler un problème",
+				"teaching": "Enseignant ou établissement",
+				"contribution": "Idée ou contribution",
+				"other": "Autre"
+			},
+			"email": "Votre email",
+			"emailHelper": "Pour vous répondre.",
+			"name": "Votre nom (facultatif)",
+			"message": "Message",
+			"honeypot": "Ne pas remplir ce champ",
+			"userAgentNote": "Le nom et la version de votre navigateur sont joints au message, pour nous aider à reproduire le problème.",
+			"submit": "Envoyer",
+			"sending": "Envoi…",
+			"sent": "Message envoyé. Vous recevrez une réponse par email.",
+			"writeAnother": "Écrire un autre message",
+			"emailInvalid": "Adresse email invalide.",
+			"messageTooShort": "Le message doit contenir au moins {min} caractères.",
+			"messageUnchanged": "Complétez le message avant de l'envoyer.",
+			"pseudoMissing": "Indiquez votre pseudo après « {label} ».",
+			"errors": {
+				"invalid": "Le message n'a pas pu être envoyé : vérifiez les champs du formulaire.",
+				"rate-limited": "Trop de messages envoyés depuis votre connexion. Réessayez dans quelques minutes, ou écrivez-nous directement à <email></email>.",
+				"failed": "Le message n'a pas pu être envoyé. Écrivez-nous directement à <email></email>."
+			},
+			"templates": {
+				"forgotten-password": "Bonjour,\n\nJ'ai oublié le mot de passe de mon compte créé avec un pseudo.\n\nMon pseudo : ",
+				"problem": "Bonjour,\n\nProblème rencontré : \n\nÉtapes pour le reproduire :\n1. \n2. "
+			}
+		}
 	},
 	"legal": {
 		"title": "Mentions légales",
@@ -384,8 +422,8 @@
 		"aboutDescription": "Studomate : un outil pédagogique gratuit pour apprendre, concevoir et simuler le GRAFCET, le Ladder et les HMI dans le navigateur.",
 		"teachersTitle": "Simulateur GRAFCET et Ladder pour enseignants",
 		"teachersDescription": "Préparez et distribuez vos TP d'automatisme : maquettes, partage par lien, rien à installer pour les élèves, exercices corrigés, export PDF. Gratuit.",
-		"contactTitle": "Contact",
-		"contactDescription": "Contacter l'équipe Studomate : idées, retours, contributions.",
+		"contactTitle": "Nous contacter",
+		"contactDescription": "Une question sur Studomate, un problème, un mot de passe oublié ou une idée ? Écrivez-nous depuis le formulaire, la réponse arrive par email.",
 		"legalTitle": "Mentions légales",
 		"legalDescription": "Mentions légales du site Studomate.",
 		"termsTitle": "Conditions d'utilisation",

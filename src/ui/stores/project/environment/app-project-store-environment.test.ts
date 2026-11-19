@@ -69,3 +69,12 @@ describe("simulation mode of the app", () => {
 		expect(preferences().getSimulationMode()).toBe(SimulationMode.CONTINUOUS);
 	});
 });
+
+describe("capabilities of the app", () => {
+	it("lets the user exclude a program from execution", () => {
+		expect(
+			createAppProjectStoreEnvironment().capabilities
+				.programExecutionExclusionToggle,
+		).toBe(true);
+	});
+});

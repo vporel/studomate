@@ -124,11 +124,11 @@
 			"Barre de menus (haut) : Fichier, Édition, Affichage, Projet, Cible (carte Arduino), Aide",
 			"Barre d'outils (haut) : accès rapide aux actions courantes et outils de création Grafcet ou Ladder",
 			"Explorateur (gauche) : arborescence des variables, grafcets, ladders et interfaces HMI du projet",
-			"Zone principale (centre) : onglets des pages ouvertes (grafcets, ladders, variables, propriétés). Cliquez sur un onglet pour l'activer, sur sa croix pour le fermer.",
+			"Zone principale (centre) : onglets des pages ouvertes (grafcets, ladders, variables, propriétés).",
 			"Barre inférieure (bas) : boutons qui ouvrent les panneaux « Résultats de l'analyse » et « Références croisées » ; en simulation, aussi « Tables de visualisation » et, si le projet a des pages HMI, « Simulation HMI » (ouvre l'onglet de la simulation HMI)"
 		],
 		"helpMenuTitle": "Menu Aide",
-		"helpMenuBody": "Le menu Aide contient : Manuel utilisateur (ouvre ce manuel dans un nouvel onglet), Formations (ouvre le parcours d'apprentissage dans un nouvel onglet), Raccourcis clavier (ouvre la liste des raccourcis), Revoir la visite guidée (relance la présentation de l'interface) et Signaler un problème (ouvre un courriel prérempli).",
+		"helpMenuBody": "Le menu Aide contient : Manuel utilisateur (ouvre ce manuel dans un nouvel onglet), Formations (ouvre le parcours d'apprentissage dans un nouvel onglet), Raccourcis clavier (ouvre la liste des raccourcis), Revoir la visite guidée (relance la présentation de l'interface) et Signaler un problème (ouvre la page Contact dans un nouvel onglet, sur le sujet « Signaler un problème »).",
 		"deviceTitle": "Navigateur et appareil",
 		"deviceIntro": "Studomate s'utilise dans un navigateur, sans installation :",
 		"deviceItems": [
@@ -190,7 +190,7 @@
 			"Projet complet : une page de garde (nom du projet, auteur, date, statistiques, énoncé s'il y en a un) puis une page par grafcet/ladder coché, chaque page titrée. La page de garde peut être décochée. La case « Tables de variables » (cochée par défaut) ajoute les tables de variables, regroupées par zone, après les programmes.",
 			"Page active uniquement : une seule page, titrée, pour le grafcet, le ladder ou la page de variables actuellement ouvert (sans page de garde). Indisponible si aucun programme n'est ouvert."
 		],
-		"exportOutro": "Une barre de progression indique l'avancement (rendu, assemblage) ; le fichier est téléchargé automatiquement à la fin. Le champ « Nom du fichier » est pré-rempli.",
+		"exportOutro": "Le fichier est téléchargé automatiquement à la fin.",
 		"exportContextMenu": "Raccourci : un clic droit sur le fond du canvas d'un grafcet ou d'un ladder propose « Exporter », qui génère directement le PDF de ce seul programme, sans passer par cette fenêtre et sans page de garde.",
 		"closeTitle": "Fermer un projet",
 		"closeBody": "Fichier → Fermer le projet (Ctrl+F4 sur Windows/Linux, Cmd+W sur macOS). Si des modifications non sauvegardées existent, une confirmation est demandée."
@@ -205,7 +205,7 @@
 		"authItems": [
 			"Connexion : avec l'adresse e-mail et le mot de passe d'un compte existant.",
 			"Inscription : création d'un compte réel (adresse e-mail + mot de passe), ou d'un compte anonyme identifié par un simple pseudo et un mot de passe, sans adresse e-mail.",
-			"Mot de passe oublié : envoi d'un lien de réinitialisation à l'adresse e-mail du compte (comptes réels uniquement)."
+			"Mot de passe oublié : pour un compte avec e-mail, un lien de réinitialisation est envoyé à son adresse ; un compte créé avec un pseudo n'a pas d'adresse, il faut alors nous contacter (page Contact)."
 		],
 		"storageTitle": "Emplacement de sauvegarde",
 		"storageBody": "Une fois connecté, chaque projet de la liste des projets peut être basculé entre stockage local et stockage cloud. L'emplacement par défaut des nouveaux projets se règle dans Fichier → Préférences.",
@@ -237,7 +237,7 @@
 		"programsLabel": "Programmes :",
 		"programsItems": [
 			"Liste de tous les grafcets et ladders du projet, chacun distingué par une icône propre à son type.",
-			"Un programme exclu de l'exécution porte le badge « Non exécuté »."
+			"Un programme dont l'analyseur est désactivé porte le badge « Non exécuté »."
 		],
 		"blockInstancesLabel": "Instances de blocs :",
 		"blockInstancesItems": [
@@ -249,26 +249,26 @@
 		],
 		"hmiLabel": "Interfaces HMI :",
 		"hmiItems": [
-			"Liste de toutes les pages HMI du projet. La page principale est identifiée par le badge « Principale ». Clic droit sur le dossier : créer une nouvelle page. Clic droit sur une page : Ouvrir, Renommer (F2), Supprimer."
+			"Liste des pages HMI du projet (voir la section Interfaces HMI)."
 		],
 		"actionsTitle": "Actions disponibles",
 		"actionsItems": [
 			"Cliquer sur une section de variables : ouvre la page de gestion de ces variables",
 			"Cliquer sur un grafcet ou un ladder : ouvre son onglet",
 			"Double-cliquer sur le nom d'un programme : édition du nom sur place",
-			"Clic droit sur un programme → Ouvrir, Renommer (F2), Supprimer, Exclure de l'exécution / Inclure dans l'exécution",
+			"Clic droit sur un programme → Ouvrir, Renommer (F2), Supprimer, Désactiver l'analyseur / Activer l'analyseur",
 			"Clic droit sur zone vide → Masquer l'explorateur"
 		],
-		"excludedTitle": "Exclure un programme de l'exécution",
-		"excludedP1": "Un grafcet ou un ladder peut exister dans le projet à titre purement illustratif : il reste dessiné, modifiable et exportable en PDF, mais il n'est ni analysé, ni compilé, ni simulé. C'est utile par exemple pour montrer, à côté d'un ladder, le grafcet qu'il implémente.",
+		"excludedTitle": "Désactiver l'analyseur d'un programme",
+		"excludedP1": "Un grafcet ou un ladder peut exister dans le projet à titre purement illustratif : en désactivant son analyseur, il reste dessiné, modifiable et exportable en PDF, mais ses expressions ne sont plus validées et il n'est ni compilé, ni simulé. C'est utile par exemple pour dessiner un grafcet dont les réceptivités et les actions sont des phrases plutôt que des expressions logiques, ou pour montrer, à côté d'un ladder, le grafcet qu'il implémente.",
 		"excludedItems": [
-			"Pour exclure un programme : clic droit sur le programme dans l'explorateur → Exclure de l'exécution. Pour l'inclure de nouveau : Inclure dans l'exécution. La bascule n'est possible qu'en mode conception.",
-			"Le Main ne peut pas être exclu : c'est le point d'entrée de l'exécution du projet.",
-			"Un programme exclu porte le badge « Non exécuté » dans l'explorateur, et la mention « Exclu de l'exécution » à droite de sa barre d'outils. Un clic sur cette mention explique ce que signifie l'exclusion et permet de réinclure le programme.",
+			"Pour désactiver l'analyseur : bouton « Désactiver l'analyseur » à droite de la barre d'outils du programme (à gauche du zoom), ou clic droit sur le programme dans l'explorateur → Désactiver l'analyseur. Pour le réactiver : « Activer l'analyseur », au même endroit. La bascule n'est possible qu'en mode conception.",
+			"L'analyseur du Main ne peut pas être désactivé : c'est le point d'entrée de l'exécution du projet.",
+			"À chaque désactivation, une fenêtre rappelle ce qu'elle implique ; la case « Ne plus afficher » la masque définitivement. Un programme dont l'analyseur est désactivé porte le badge « Non exécuté » dans l'explorateur, et sa barre d'outils propose « Activer l'analyseur ».",
 			"Ses mnémoniques (réceptivités, actions, contacts, bobines, paramètres de bloc) peuvent être du texte libre, sans correspondre à une variable déclarée : aucune erreur n'est signalée.",
-			"Il est invisible pour le reste du projet : ses variables d'étape (Xn) et de bloc n'existent pas pour les autres programmes, et il n'apparaît pas dans les références croisées. Un bloc qui appelle un ladder exclu est signalé comme une erreur par l'analyse.",
-			"En simulation, aucune étape d'un grafcet exclu n'est active et ses étapes ne peuvent pas être forcées.",
-			"Réinclure un programme ne le corrige pas : l'analyse reprend et signale ses éventuelles erreurs."
+			"Il est invisible pour le reste du projet : ses variables d'étape (Xn) et de bloc n'existent pas pour les autres programmes, et il n'apparaît pas dans les références croisées. Un bloc qui appelle un ladder dont l'analyseur est désactivé est signalé comme une erreur par l'analyse.",
+			"En simulation, aucune étape d'un grafcet dont l'analyseur est désactivé n'est active et ses étapes ne peuvent pas être forcées.",
+			"Réactiver l'analyseur ne corrige pas le programme : l'analyse reprend et signale ses éventuelles erreurs."
 		]
 	},
 	"variables": {
@@ -590,7 +590,6 @@
 			"Aboutissant (cible de renvoi)",
 			"Commentaire"
 		],
-		"grafcetToolsZoom": "Les boutons Zoom + et Zoom − permettent d'ajuster le niveau de zoom du canvas.",
 		"ladderToolsTitle": "Outils de création Ladder",
 		"ladderToolsIntro": "Lorsqu'un ladder est ouvert, sa propre barre d'outils apparaît sous la barre d'outils générale. Faites glisser l'outil choisi sur un réseau pour créer l'élément correspondant :",
 		"ladderTools": [
@@ -681,15 +680,14 @@
 		"eventsBody1": "Actuellement, seul le bouton poussoir expose un événement : « Bouton pressé » (déclenché à chaque appui, indépendamment du comportement configuré).",
 		"eventsBody2": "Action disponible : « Changer de page », qui navigue vers la page HMI choisie dans la vue Simulation HMI. Plusieurs actions peuvent être associées à un même événement et sont exécutées dans l'ordre.",
 		"simulationTitle": "Simulation HMI",
-		"simulationBody1": "L'onglet « Simulation HMI » s'ouvre automatiquement au démarrage de la simulation (si le projet contient au moins une page HMI). Il affiche la page principale et se ferme à l'arrêt de la simulation.",
+		"simulationBody1": "Pendant la simulation, l'onglet « Simulation HMI » affiche la page principale (son ouverture automatique est décrite dans la section Simulation).",
 		"simulationBody2": "En simulation, le canvas est en lecture/interaction seule : la palette, le panneau de propriétés et la sélection sont désactivés. Les widgets reflètent en temps réel les valeurs des variables du programme.",
 		"simulationItems": [
 			"Bouton poussoir et interrupteur : interagissent avec leur variable liée selon leur comportement configuré.",
 			"Saisie numérique : saisir une valeur et valider par Entrée ou en cliquant ailleurs l'écrit dans la variable.",
-			"Voyant, affichage numérique, jauge : reflètent la valeur courante de leur variable.",
-			"Animations de position et de style : actives en simulation."
+			"Voyant, affichage numérique, jauge : reflètent la valeur courante de leur variable."
 		],
-		"simulationOutro": "La navigation entre pages se fait via les événements de widgets configurés avec l'action « Changer de page » : la page affichée dans l'onglet change sans changer d'onglet."
+		"simulationOutro": "La navigation entre pages se fait via les événements de widgets configurés avec l'action « Changer de page »."
 	},
 	"simulation": {
 		"title": "Simulation",
@@ -711,8 +709,8 @@
 		"startError": "Si des erreurs sont détectées lors de l'analyse, la simulation ne démarrera pas.",
 		"startModesIntro": "Deux modes d'exécution se choisissent dans la liste déroulante « Continu / Pas-à-pas », juste à droite du sélecteur de mode (Conception / Simulation), puis un bouton icône à côté de cette liste pilote l'exécution :",
 		"startModes": [
-			"Continu : le cycle PLC tourne automatiquement à intervalle régulier (100 ms). L'icône Pause (infobulle « Mettre en pause ») suspend l'exécution ; elle devient une icône Lecture (« Reprendre la simulation ») qui la relance.",
-			"Pas-à-pas : le cycle PLC n'avance que d'un cran à chaque clic sur l'icône « Avancer d'un cycle » (flèche vers la droite). Utile pour observer précisément le comportement cycle par cycle."
+			"Continu : le cycle PLC tourne automatiquement à intervalle régulier (100 ms). Le bouton Pause le suspend, puis le relance.",
+			"Pas-à-pas : le cycle PLC n'avance que d'un cran à chaque clic sur l'icône « Avancer d'un cycle ». Utile pour observer précisément le comportement cycle par cycle."
 		],
 		"startTimers": "Les temporisations suivent le temps réel écoulé, y compris en pas-à-pas : si vous laissez passer deux secondes entre deux clics sur « Avancer d'un cycle », une temporisation de 2 s arrivera à échéance au clic suivant. Inutile de cliquer autant de fois qu'il y a de cycles. Les temporisations ne se figent que dans un seul cas : le mode continu mis en pause. Elles reprennent alors là où elles s'étaient arrêtées, la durée de la pause n'étant pas comptée.",
 		"cycleOrderTitle": "Ordre d'exécution d'un cycle",
@@ -735,7 +733,7 @@
 			"Les valeurs des variables sont mises à jour en temps réel.",
 			"Si le projet est lié à une scène 3D, ses capteurs alimentent les entrées liées et les sorties du programme commandent la scène (voir la section Scène 3D).",
 			"Les éditeurs grafcet et ladder sont en lecture seule.",
-			"À l'entrée en simulation, l'onglet « Simulation HMI » s'ouvre automatiquement si le projet contient des pages HMI (voir la section Interfaces HMI) ; sans page HMI, c'est la scène 3D qui s'ouvre si le projet en a une (voir la section Scène 3D). Cette ouverture automatique se désactive dans Fichier → Préférences."
+			"À l'entrée en simulation, l'onglet « Simulation HMI » s'ouvre automatiquement si le projet contient des pages HMI ; sans page HMI, c'est la scène 3D qui s'ouvre si le projet en a une (voir la section Scène 3D). Cette ouverture automatique se désactive dans Fichier → Préférences."
 		],
 		"watchTitle": "Tables de visualisation et de modification des variables",
 		"watchIntro": "Le panneau inférieur affiche les tables de visualisation et de modification des variables avec quatre onglets :",
@@ -770,7 +768,7 @@
 			"Expressions : syntaxe des réceptivités et des actions (transitions, actions grafcet, blocs comparaison et affectation)",
 			"Variables : références à des variables inexistantes, types incompatibles, affectation à une variable d'entrée",
 			"Jonctions : branches insuffisantes, branches non connectées, divergence ET sans convergence correspondante",
-			"Programmes exclus de l'exécution : ignorés par toutes les vérifications ; un bloc qui appelle un ladder exclu est signalé",
+			"Programmes dont l'analyseur est désactivé : ignorés par toutes les vérifications ; un bloc qui appelle un tel ladder est signalé",
 			"Configuration matérielle : carte inconnue, broche utilisée par plusieurs variables, adresse ou capacité de broche invalide, type non pris en charge par la carte, entrée lue sans adresse (avertissement)",
 			"Scène 3D : scène inconnue, point non lié (avertissement), variable liée absente, capteur non lié à une entrée, actionneur non lié à une sortie ou affichage non lié à une variable mémoire, type incompatible, capteur lié à plusieurs points ou déjà câblé sur une broche, capteur écrit par un widget HMI"
 		],
@@ -886,9 +884,9 @@
 		"openItems": [
 			"panneau latéral (mode par défaut) : la scène s'affiche dans une colonne à droite des éditeurs, qui se rétrécissent pour lui laisser la place : rien n'est masqué, et on suit le grafcet et la partie opérative en même temps, par exemple en projection. On règle la largeur de la colonne en faisant glisser son bord gauche. En simulation, les tables d'observation s'affichent sous la scène dans la même colonne, et le séparateur entre les deux règle leur hauteur. Le navigateur mémorise ces réglages ;",
 			"cadre flottant : la scène s'affiche dans un cadre au-dessus de l'éditeur, qu'on déplace par sa barre de titre et qu'on redimensionne par ses bords et ses coins, comme une fenêtre. Il reste visible quand on change de page ;",
-			"page : la scène s'ouvre dans un onglet de l'éditeur, comme un programme. Une petite barre en bas à gauche de la page permet de passer aux autres modes ;",
-			"onglet du navigateur : la scène s'ouvre dans un onglet séparé, utile avec un second écran. Son bouton « Revenir dans l'éditeur » la ramène dans l'éditeur ;",
-			"les boutons de la barre de titre du panneau latéral et du cadre flottant changent de mode en un clic ;",
+			"page : la scène s'ouvre dans un onglet de l'éditeur, comme un programme ;",
+			"onglet du navigateur : la scène s'ouvre dans un onglet séparé, utile avec un second écran ;",
+			"chaque mode affiche ses propres boutons pour passer aux autres ;",
 			"hors simulation, la scène montre son état initial : les commandes éventuelles de la scène sont désactivées et sans effet sur le projet ;",
 			"en simulation, les capteurs de la scène alimentent les entrées liées, et les commandes éventuelles de la scène agissent sur le modèle ;",
 			"à l'entrée en simulation, la scène s'ouvre automatiquement dans le mode choisi si le projet n'a aucune page HMI (sinon la page HMI est affichée) ; si le navigateur bloque l'ouverture d'un onglet, un message cliquable propose de l'ouvrir (l'entrée « Scène 3D » du menu Affichage le permet aussi) ;",
@@ -974,7 +972,7 @@
 				"intro": "Si les étapes ne s'enchaînent pas, vérifiez dans cet ordre :",
 				"items": [
 					"la simulation avance : en mode Pas-à-pas, le cycle ne progresse qu'à chaque clic sur « Avancer d'un cycle » ; en mode Continu, vérifiez qu'elle n'est pas en pause ;",
-					"le grafcet n'est pas exclu de l'exécution : un grafcet exclu n'a aucune étape active ;",
+					"l'analyseur du grafcet n'est pas désactivé : un grafcet dont l'analyseur est désactivé n'a aucune étape active ;",
 					"la réceptivité de la transition suivante est vraie : ouvrez « Tables de visualisation » (barre inférieure) et regardez la valeur des variables qu'elle utilise ;",
 					"une entrée à comportement « bouton poussoir » n'est vraie que tant qu'on la maintient enfoncée (à la souris ou avec la touche Espace) ;",
 					"une temporisation (« t1/X1/5s » ou « 5s/X1 ») attend la durée indiquée avant de devenir vraie ;",

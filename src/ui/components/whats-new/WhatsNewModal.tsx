@@ -1,9 +1,9 @@
 "use client";
 
-import { APP_VERSION } from "@/app-info";
 import CustomModal from "@/ui/components/mui/CustomModal";
 import { useT } from "@/ui/i18n/useT";
 import WHATS_NEW_SLIDE_IDS, {
+	WHATS_NEW_VERSION,
 	type WhatsNewSlideId,
 } from "@/whats-new/whats-new-slides";
 import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
@@ -35,7 +35,7 @@ export default function WhatsNewModal({ onClose }: { onClose: () => void }) {
 	const slideId = WHATS_NEW_SLIDE_IDS[index];
 	const SlideIcon = SLIDE_ICONS[slideId];
 	const isLast = index === WHATS_NEW_SLIDE_IDS.length - 1;
-	const title = t("title", { version: APP_VERSION });
+	const title = t("title", { version: WHATS_NEW_VERSION });
 
 	return (
 		<CustomModal

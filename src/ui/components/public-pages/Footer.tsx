@@ -5,7 +5,7 @@ import { Link } from "@/i18n/navigation";
 import type { PublicPathname } from "@/i18n/routing";
 import { useT } from "@/ui/i18n/useT";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
-import { openReportIssue } from "@/ui/services/report-issue";
+import trackEvent from "@/ui/services/analytics";
 import {
 	Box,
 	Container,
@@ -162,14 +162,11 @@ const Footer = () => {
 					<FlexBox gap={2} sx={{ flexWrap: "wrap" }}>
 						<InternalLink href="/contact">{t("contact")}</InternalLink>
 						<Typography
-							component="a"
-							href="#"
+							component={Link}
+							href={{ pathname: "/contact", query: { topic: "problem" } }}
 							variant="body2"
 							sx={linkSx}
-							onClick={(e: React.MouseEvent) => {
-								e.preventDefault();
-								openReportIssue();
-							}}
+							onClick={() => trackEvent("feedback-opened")}
 						>
 							{t("reportIssue")}
 						</Typography>

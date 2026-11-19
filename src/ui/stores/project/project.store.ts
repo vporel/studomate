@@ -148,6 +148,7 @@ export const createProjectStore = (env: ProjectStoreEnvironment) => {
 				onSaveLocationChosen: null,
 				defaultDialectModalVisible: false,
 				onDefaultDialectChosen: null,
+				analyserDisabledNoticeVisible: false,
 			},
 			savingProject: false,
 			projectRepository: env.persistence?.repository ?? UNAVAILABLE_REPOSITORY,
@@ -383,6 +384,9 @@ export const createProjectStore = (env: ProjectStoreEnvironment) => {
 			setVariableToReveal: (variableId) =>
 				set(() => ({ variableToReveal: variableId })),
 			setWatchTablesVisible: modalSetter("watchTablesVisible"),
+			setAnalyserDisabledNoticeVisible: modalSetter(
+				"analyserDisabledNoticeVisible",
+			),
 			plcConfig: {
 				scanTimeMs: 100,
 			},

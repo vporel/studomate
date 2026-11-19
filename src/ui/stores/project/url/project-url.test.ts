@@ -1,20 +1,22 @@
 /** @jest-environment jsdom */
+import { flushUrlQueryParams } from "@/ui/lib/url";
 import {
-	getProjectIdFromUrl,
-	setProjectIdInUrl,
-	getShareTokenFromUrl,
-	clearShareTokenFromUrl,
-	setShareTokenInUrl,
-	getTemplateIdFromUrl,
-	getTemplateModeFromUrl,
-	getTemplateLocaleFromUrl,
-	clearTemplateParamsFromUrl,
 	clearHandoffFromUrl,
+	clearShareTokenFromUrl,
+	clearTemplateParamsFromUrl,
 	getHandoffIdFromUrl,
+	getProjectIdFromUrl,
+	getShareTokenFromUrl,
+	getTemplateIdFromUrl,
+	getTemplateLocaleFromUrl,
+	getTemplateModeFromUrl,
+	setProjectIdInUrl,
+	setShareTokenInUrl,
 } from "./project-url";
 
 describe("project-url", () => {
 	beforeEach(() => {
+		flushUrlQueryParams();
 		window.history.replaceState(null, "", "/");
 	});
 
@@ -25,6 +27,7 @@ describe("project-url", () => {
 	it("setProjectIdInUrl pose le paramètre, getProjectIdFromUrl le relit", () => {
 		setProjectIdInUrl("p1");
 		expect(getProjectIdFromUrl()).toBe("p1");
+		flushUrlQueryParams();
 		expect(window.location.search).toBe("?projectId=p1");
 	});
 
@@ -32,12 +35,14 @@ describe("project-url", () => {
 		setProjectIdInUrl("p1");
 		setProjectIdInUrl(null);
 		expect(getProjectIdFromUrl()).toBeNull();
+		flushUrlQueryParams();
 		expect(window.location.search).toBe("");
 	});
 
 	it("ne modifie pas le reste de l'URL", () => {
 		window.history.replaceState(null, "", "/some/path?other=1");
 		setProjectIdInUrl("p1");
+		flushUrlQueryParams();
 		expect(window.location.pathname).toBe("/some/path");
 		expect(getProjectIdFromUrl()).toBe("p1");
 		expect(new URLSearchParams(window.location.search).get("other")).toBe("1");
@@ -64,6 +69,7 @@ describe("project-url", () => {
 		it("pose le shareToken, getShareTokenFromUrl le relit", () => {
 			setShareTokenInUrl("tok");
 			expect(getShareTokenFromUrl()).toBe("tok");
+			flushUrlQueryParams();
 			expect(window.location.search).toBe("?shareToken=tok");
 		});
 
@@ -99,6 +105,7 @@ describe("project-url", () => {
 			clearHandoffFromUrl();
 
 			expect(getHandoffIdFromUrl()).toBeNull();
+			flushUrlQueryParams();
 			expect(new URLSearchParams(window.location.search).get("other")).toBe(
 				"1",
 			);

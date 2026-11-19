@@ -1,4 +1,9 @@
-import { deepObjectsComparison, extractFields, invertRecord } from "./object";
+import {
+	deepObjectsComparison,
+	extractFields,
+	invertRecord,
+	isRecord,
+} from "./object";
 
 describe("invertRecord", () => {
 	it("swaps keys and values", () => {
@@ -85,5 +90,16 @@ describe("deepObjectsComparison", () => {
 
 	it("returns true for two nulls", () => {
 		expect(deepObjectsComparison(null, null)).toBe(true);
+	});
+});
+
+describe("isRecord", () => {
+	it("accepts a plain object", () => {
+		expect(isRecord({})).toBe(true);
+		expect(isRecord({ a: 1 })).toBe(true);
+	});
+
+	it.each([null, undefined, 42, "text", true, []])("rejects %p", (value) => {
+		expect(isRecord(value)).toBe(false);
 	});
 });

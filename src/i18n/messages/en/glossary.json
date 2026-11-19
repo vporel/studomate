@@ -505,7 +505,7 @@
 		"main": {
 			"term": "Main",
 			"aliases": "main program",
-			"definition": "The main program of a project, run on every cycle. It calls the subprograms and cannot be excluded from execution.",
+			"definition": "The main program of a project, run on every cycle. It calls the subprograms and its analyser cannot be disabled.",
 			"details": "",
 			"figureAlt": ""
 		}

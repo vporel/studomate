@@ -67,15 +67,50 @@ describe("AuthModal", () => {
 			expect(screen.getByLabelText(/^Mot de passe/)).toHaveValue("");
 		});
 
-		it("n'affiche « Mot de passe oublié ? » qu'en mode email", () => {
+		it("offers « Mot de passe oublié ? » above the sign-in button, in both modes", () => {
 			setup();
+			const link = screen.getByText("Mot de passe oublié ?");
+			const submit = screen.getByRole("button", { name: "Se connecter" });
 			expect(
-				screen.queryByText("Mot de passe oublié ?"),
-			).not.toBeInTheDocument();
+				link.compareDocumentPosition(submit) & Node.DOCUMENT_POSITION_FOLLOWING,
+			).toBeTruthy();
 
 			fireEvent.click(screen.getByRole("button", { name: "Email" }));
 
 			expect(screen.getByText("Mot de passe oublié ?")).toBeInTheDocument();
+		});
+
+		it("asks a username account to contact us, with a link to the contact page in a new tab", () => {
+			setup();
+
+			fireEvent.click(screen.getByText("Mot de passe oublié ?"));
+
+			expect(
+				screen.getByText(
+					/Un compte créé avec un pseudo n'a pas d'adresse email/,
+				),
+			).toBeInTheDocument();
+			const contact = screen.getByRole("link", { name: "Nous contacter" });
+			expect(contact).toHaveAttribute(
+				"href",
+				"/contact?topic=forgotten-password",
+			);
+			expect(contact).toHaveAttribute("target", "_blank");
+			expect(screen.getByLabelText(/^Pseudo/)).toBeInTheDocument();
+		});
+
+		it("closes the contact dialog without leaving the sign-in form", async () => {
+			setup();
+			fireEvent.click(screen.getByText("Mot de passe oublié ?"));
+
+			fireEvent.click(screen.getByRole("button", { name: "Fermer" }));
+
+			await waitFor(() =>
+				expect(
+					screen.queryByRole("link", { name: "Nous contacter" }),
+				).not.toBeInTheDocument(),
+			);
+			expect(screen.getByLabelText(/^Pseudo/)).toBeInTheDocument();
 		});
 
 		it("connecte en anonyme avec pseudo et mot de passe", async () => {

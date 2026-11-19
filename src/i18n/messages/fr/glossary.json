@@ -505,7 +505,7 @@
 		"main": {
 			"term": "Main",
 			"aliases": "programme principal",
-			"definition": "Programme principal d'un projet, exécuté à chaque cycle. Il appelle les sous-programmes et ne peut pas être exclu de l'exécution.",
+			"definition": "Programme principal d'un projet, exécuté à chaque cycle. Il appelle les sous-programmes et son analyseur ne peut pas être désactivé.",
 			"details": "",
 			"figureAlt": ""
 		}

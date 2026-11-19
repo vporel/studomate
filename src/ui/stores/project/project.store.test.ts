@@ -1,13 +1,14 @@
 /** @jest-environment jsdom */
+import { Dialect } from "@/expression-language/dialect.enum";
+import { getDraft, saveDraft } from "@/persistence/draft.storage";
 import {
 	setDefaultDialect,
 	setStoredScene3dDisplayMode,
 } from "@/persistence/preferences.storage";
-import { Dialect } from "@/expression-language/dialect.enum";
+import { flushUrlQueryParams } from "@/ui/lib/url";
 import createAppProjectStoreEnvironment from "./environment/app-project-store-environment";
-import { Scene3dDisplayMode } from "./scene3d-display-mode.enum";
 import { createProjectStore } from "./project.store";
-import { getDraft, saveDraft } from "@/persistence/draft.storage";
+import { Scene3dDisplayMode } from "./scene3d-display-mode.enum";
 
 const mockTrackEvent = jest.fn();
 jest.mock("@/ui/services/analytics", () => ({
@@ -614,6 +615,7 @@ describe("createProjectStore", () => {
 
 	describe("bootStatus", () => {
 		beforeEach(() => {
+			flushUrlQueryParams();
 			window.history.replaceState(null, "", "/");
 		});
 		afterEach(() => {

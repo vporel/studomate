@@ -28,8 +28,13 @@
 		"title": "Ouvrir un projet",
 		"fromFile": "Ouvrir depuis un fichier...",
 		"fileDialogName": "Fichiers JSON",
-		"readError": "Une erreur est survenue lors de la lecture du fichier. Assurez-vous que le fichier est un projet valide.",
-		"saveError": "Le projet n'a pas pu être enregistré dans le navigateur. Vérifiez l'espace disponible."
+		"errors": {
+			"notJson": "Ce fichier n'est pas un fichier de projet lisible : son contenu est mal formé.",
+			"notAProject": "Ce fichier ne contient pas un projet Studomate.",
+			"newerVersion": "Ce projet a été enregistré par une version plus récente de Studomate. Mettez l'application à jour pour l'ouvrir.",
+			"readFailed": "Le fichier n'a pas pu être lu.",
+			"saveFailed": "Le projet n'a pas pu être enregistré dans le navigateur. Vérifiez l'espace disponible."
+		}
 	},
 	"new": {
 		"title": "Nouveau projet",

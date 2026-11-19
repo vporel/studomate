@@ -124,11 +124,11 @@
 			"Menu bar (top): File, Edit, View, Project, Target (Arduino board), Help",
 			"Toolbar (top): quick access to common actions and GRAFCET or Ladder creation tools",
 			"Explorer (left): tree of the project's variables, grafcets, ladders and HMI screens",
-			"Main area (centre): tabs for the open pages (grafcets, ladders, variables, properties). Click a tab to activate it, click its cross to close it.",
+			"Main area (centre): tabs for the open pages (grafcets, ladders, variables, properties).",
 			"Bottom bar (bottom): buttons that open the \"Analysis results\" and \"Cross-references\" panels; during simulation, also \"Watch tables\" and, if the project has HMI pages, \"HMI simulation\" (opens the HMI simulation tab)"
 		],
 		"helpMenuTitle": "Help menu",
-		"helpMenuBody": "The Help menu contains: User manual (opens this manual in a new tab), Training (opens the learning path in a new tab), Keyboard shortcuts (opens the shortcut list), Replay the guided tour (restarts the interface walkthrough) and Report an issue (opens a pre-filled email).",
+		"helpMenuBody": "The Help menu contains: User manual (opens this manual in a new tab), Training (opens the learning path in a new tab), Keyboard shortcuts (opens the shortcut list), Replay the guided tour (restarts the interface walkthrough) and Report an issue (opens the Contact page in a new tab, on the \"Report an issue\" topic).",
 		"deviceTitle": "Browser and device",
 		"deviceIntro": "Studomate runs in a browser, with nothing to install:",
 		"deviceItems": [
@@ -190,7 +190,7 @@
 			"Whole project: a cover page (project name, author, date, statistics, statement if any) then one page per checked grafcet/ladder, each page titled. The cover page can be unchecked. The \"Variable tables\" box (checked by default) adds the variable tables, grouped by zone, after the programs.",
 			"Active page only: a single titled page for the currently open grafcet, ladder or variables page (no cover page). Unavailable if no program is open."
 		],
-		"exportOutro": "A progress bar shows progress (rendering, assembly); the file is downloaded automatically at the end. The \"File name\" field is pre-filled.",
+		"exportOutro": "The file is downloaded automatically at the end.",
 		"exportContextMenu": "Shortcut: right-clicking the background of a grafcet or ladder canvas offers \"Export\", which generates the PDF of that single program directly, bypassing this window and with no cover page.",
 		"closeTitle": "Close a project",
 		"closeBody": "File → Close project (Ctrl+F4 on Windows/Linux, Cmd+W on macOS). If there are unsaved changes, you'll be asked to confirm."
@@ -205,7 +205,7 @@
 		"authItems": [
 			"Sign in: with the email address and password of an existing account.",
 			"Sign up: create a real account (email address + password), or an anonymous account identified by just a nickname and a password, with no email address.",
-			"Forgot password: sends a reset link to the account's email address (real accounts only)."
+			"Forgot password: for an account with an email, a reset link is sent to its address; an account created with a username has no address, so contact us instead (Contact page)."
 		],
 		"storageTitle": "Storage location",
 		"storageBody": "Once signed in, each project in the project list can be switched between local and cloud storage. The default location for new projects is set in File → Preferences.",
@@ -237,7 +237,7 @@
 		"programsLabel": "Programs:",
 		"programsItems": [
 			"A list of all the project's grafcets and ladders, each marked by an icon specific to its type.",
-			"A program excluded from execution carries the \"Not executed\" badge."
+			"A program whose analyser is disabled carries the \"Not executed\" badge."
 		],
 		"blockInstancesLabel": "Block instances:",
 		"blockInstancesItems": [
@@ -249,26 +249,26 @@
 		],
 		"hmiLabel": "HMI screens:",
 		"hmiItems": [
-			"A list of all the project's HMI pages. The main page is marked by the \"Main\" badge. Right-click the folder: create a new page. Right-click a page: Open, Rename (F2), Delete."
+			"A list of the project's HMI pages (see the HMI screens section)."
 		],
 		"actionsTitle": "Available actions",
 		"actionsItems": [
 			"Click a variable section: opens the page to manage those variables",
 			"Click a grafcet or a ladder: opens its tab",
 			"Double-click a program's name: edit the name in place",
-			"Right-click a program → Open, Rename (F2), Delete, Exclude from execution / Include in execution",
+			"Right-click a program → Open, Rename (F2), Delete, Disable analyser / Enable analyser",
 			"Right-click empty area → Hide the explorer"
 		],
-		"excludedTitle": "Excluding a program from execution",
-		"excludedP1": "A grafcet or a ladder can exist in the project for illustration only: it can still be drawn, edited and exported to PDF, but it is neither analysed, compiled nor simulated. This is useful, for example, to show next to a ladder the grafcet it implements.",
+		"excludedTitle": "Disabling the analyser of a program",
+		"excludedP1": "A grafcet or a ladder can exist in the project for illustration only: with its analyser disabled, it can still be drawn, edited and exported to PDF, but its expressions are no longer validated and it is neither compiled nor simulated. This is useful, for example, to draw a grafcet whose receptivities and actions are sentences rather than logical expressions, or to show next to a ladder the grafcet it implements.",
 		"excludedItems": [
-			"To exclude a program: right-click it in the explorer → Exclude from execution. To include it again: Include in execution. Switching is only possible in design mode.",
-			"The Main cannot be excluded: it is the project's execution entry point.",
-			"An excluded program carries the \"Not executed\" badge in the explorer, and the \"Excluded from execution\" label on the right of its toolbar. Clicking this label explains what exclusion means and lets you include the program again.",
+			"To disable the analyser: \"Disable analyser\" button on the right of the program's toolbar (left of the zoom), or right-click the program in the explorer → Disable analyser. To enable it again: \"Enable analyser\", in the same places. Switching is only possible in design mode.",
+			"The analyser of the Main cannot be disabled: it is the project's execution entry point.",
+			"Each time the analyser is disabled, a window recalls what this implies; the \"Don't show again\" box hides it for good. A program whose analyser is disabled carries the \"Not executed\" badge in the explorer, and its toolbar offers \"Enable analyser\".",
 			"Its mnemonics (receptivities, actions, contacts, coils, block parameters) can be free text, without matching a declared variable: no error is reported.",
-			"It is invisible to the rest of the project: its step (Xn) and block variables do not exist for the other programs, and it does not appear in the cross-references. A block calling an excluded ladder is reported as an error by the analysis.",
-			"During simulation, no step of an excluded grafcet is active and its steps cannot be forced.",
-			"Including a program again does not fix it: the analysis resumes and reports any errors it contains."
+			"It is invisible to the rest of the project: its step (Xn) and block variables do not exist for the other programs, and it does not appear in the cross-references. A block calling a ladder whose analyser is disabled is reported as an error by the analysis.",
+			"During simulation, no step of a grafcet whose analyser is disabled is active and its steps cannot be forced.",
+			"Enabling the analyser again does not fix the program: the analysis resumes and reports any errors it contains."
 		]
 	},
 	"variables": {
@@ -590,7 +590,6 @@
 			"Target referral",
 			"Comment"
 		],
-		"grafcetToolsZoom": "The Zoom + and Zoom − buttons adjust the canvas zoom level.",
 		"ladderToolsTitle": "Ladder creation tools",
 		"ladderToolsIntro": "When a ladder is open, its own toolbar appears below the general toolbar. Drag the chosen tool onto a network to create the matching element:",
 		"ladderTools": [
@@ -681,15 +680,14 @@
 		"eventsBody1": "Currently, only the push button exposes an event: \"Button pressed\" (fired on every press, regardless of the configured behaviour).",
 		"eventsBody2": "Available action: \"Change page\", which navigates to the chosen HMI page in the HMI simulation view. Several actions can be attached to the same event and run in order.",
 		"simulationTitle": "HMI simulation",
-		"simulationBody1": "The \"HMI simulation\" tab opens automatically when simulation starts (if the project contains at least one HMI page). It shows the main page and closes when simulation stops.",
+		"simulationBody1": "During simulation, the \"HMI simulation\" tab shows the main page (its automatic opening is described in the Simulation section).",
 		"simulationBody2": "In simulation, the canvas is interaction-only: the palette, the properties panel and selection are disabled. Widgets reflect the program's variable values in real time.",
 		"simulationItems": [
 			"Push button and switch: interact with their bound variable according to their configured behaviour.",
 			"Numeric input: type a value and confirm with Enter or by clicking elsewhere to write it into the variable.",
-			"Indicator light, numeric display, gauge: reflect their variable's current value.",
-			"Position and style animations: active in simulation."
+			"Indicator light, numeric display, gauge: reflect their variable's current value."
 		],
-		"simulationOutro": "Navigation between pages is done via widget events configured with the \"Change page\" action: the page shown in the tab changes without switching tabs."
+		"simulationOutro": "Navigation between pages is done via widget events configured with the \"Change page\" action."
 	},
 	"simulation": {
 		"title": "Simulation",
@@ -711,8 +709,8 @@
 		"startError": "If errors are found during the analysis, the simulation will not start.",
 		"startModesIntro": "Two execution modes are chosen in the \"Continuous / Step by step\" drop-down, just to the right of the mode selector (Design / Simulation), then an icon button next to that list drives execution:",
 		"startModes": [
-			"Continuous: the PLC scan runs automatically at a regular interval (100 ms). The Pause icon (tooltip \"Pause\") suspends execution; it turns into a Play icon (\"Resume the simulation\") that restarts it.",
-			"Step-by-step: the PLC scan advances by one step on each click of the \"Step one cycle\" icon (right-pointing arrow). Useful for observing the behaviour scan by scan."
+			"Continuous: the PLC scan runs automatically at a regular interval (100 ms). The Pause button suspends it, then restarts it.",
+			"Step-by-step: the PLC scan advances by one step on each click of the \"Step one cycle\" icon. Useful for observing the behaviour scan by scan."
 		],
 		"startTimers": "Timers follow the real elapsed time, including in step-by-step: if you let two seconds pass between two clicks on \"Step one cycle\", a 2 s timer will elapse on the next click. No need to click as many times as there are scans. Timers freeze in only one case: continuous mode when paused. They then resume where they stopped, the pause duration not being counted.",
 		"cycleOrderTitle": "Order of execution within a cycle",
@@ -735,7 +733,7 @@
 			"Variable values are updated in real time.",
 			"If the project is bound to a 3D scene, its sensors feed the bound inputs and the program outputs drive the scene (see the 3D scene section).",
 			"The grafcet and ladder editors are read-only.",
-			"When simulation starts, the \"HMI simulation\" tab opens automatically if the project contains HMI pages (see the HMI screens section); without an HMI page, the 3D scene opens instead if the project has a scene (see the 3D scene section). This automatic opening can be turned off in File → Preferences."
+			"When simulation starts, the \"HMI simulation\" tab opens automatically if the project contains HMI pages; without an HMI page, the 3D scene opens instead if the project has a scene (see the 3D scene section). This automatic opening can be turned off in File → Preferences."
 		],
 		"watchTitle": "Watch and modify tables for variables",
 		"watchIntro": "The bottom panel shows the watch-and-modify tables for variables, with four tabs:",
@@ -770,7 +768,7 @@
 			"Expressions: syntax of transition conditions and actions (transitions, grafcet actions, comparison and assignment blocks)",
 			"Variables: references to non-existent variables, incompatible types, assignment to an input variable",
 			"Junctions: too few branches, disconnected branches, AND divergence with no matching convergence",
-			"Programs excluded from execution: skipped by every check; a block calling an excluded ladder is reported",
+			"Programs whose analyser is disabled: skipped by every check; a block calling such a ladder is reported",
 			"Hardware configuration: unknown board, pin used by several variables, invalid pin address or capability, type not supported by the board, input read without an address (warning)",
 			"3D scene: unknown scene, unbound point (warning), bound variable missing, sensor not bound to an input, actuator not bound to an output or display not bound to a memory variable, incompatible type, sensor bound to several points or already wired to a pin, sensor written by an HMI widget"
 		],
@@ -883,9 +881,9 @@
 		"openItems": [
 			"side panel (default mode): the scene is shown in a column on the right of the editors, which shrink to make room for it: nothing is hidden, and you follow the grafcet and the operative part at the same time, for example when projecting. Drag the left edge of the column to set its width. During the simulation, the watch tables are shown under the scene in the same column, and the divider between them sets their height. The browser remembers these settings;",
 			"floating box: the scene is shown in a box over the editor, which you move by its title bar and resize by its edges and corners, like a window. It stays visible when you change page;",
-			"page: the scene opens in a tab of the editor, like a program. A small bar at the bottom left of the page switches to the other modes;",
-			"browser tab: the scene opens in a separate tab, useful with a second screen. Its \"Back to the editor\" button brings it back in the editor;",
-			"the buttons in the title bar of the side panel and of the floating box change the mode in one click;",
+			"page: the scene opens in a tab of the editor, like a program;",
+			"browser tab: the scene opens in a separate tab, useful with a second screen;",
+			"each mode shows its own buttons to switch to the others;",
 			"outside simulation, the scene shows its initial state: the controls the scene may offer are disabled and have no effect on the project;",
 			"during simulation, the scene sensors feed the bound inputs, and the controls the scene may offer act on the model;",
 			"when simulation starts, the scene opens automatically in the chosen mode if the project has no HMI page (otherwise the HMI page is shown); if the browser blocks opening a tab, a clickable message offers to open it (the \"3D scene\" entry of the View menu does too);",
@@ -971,7 +969,7 @@
 				"intro": "If the steps do not follow one another, check in this order:",
 				"items": [
 					"the simulation is advancing: in Step by step mode, the cycle only moves on each click of \"Step one cycle\"; in Continuous mode, check that it is not paused;",
-					"the grafcet is not excluded from execution: an excluded grafcet has no active step;",
+					"the analyser of the grafcet is not disabled: a grafcet whose analyser is disabled has no active step;",
 					"the condition of the next transition is true: open \"Watch tables\" (bottom bar) and look at the value of the variables it uses;",
 					"an input with a \"push button\" behaviour is only true while you hold it down (with the mouse or the Space key);",
 					"a timer (\"t1/X1/5s\" or \"5s/X1\") waits for the given duration before becoming true;",

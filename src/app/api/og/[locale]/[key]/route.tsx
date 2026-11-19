@@ -40,44 +40,40 @@ export async function GET(
 	const title = ogTitle(locale, key);
 
 	return new ImageResponse(
-		(
-			<div
-				style={{
-					width: "100%",
-					height: "100%",
-					display: "flex",
-					flexDirection: "column",
-					justifyContent: "space-between",
-					padding: 72,
-					background: THEME_COLOR,
-					color: "white",
-				}}
-			>
-				<div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-					<div
-						style={{
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
-							width: 112,
-							height: 112,
-							borderRadius: 24,
-							background: "white",
-						}}
-					>
-						{/* eslint-disable-next-line @next/next/no-img-element */}
-						<img src={logoSrc} width={80} height={78} alt="" />
-					</div>
-					<div style={{ fontSize: 48, fontWeight: 700 }}>Studomate</div>
+		<div
+			style={{
+				width: "100%",
+				height: "100%",
+				display: "flex",
+				flexDirection: "column",
+				justifyContent: "space-between",
+				padding: 72,
+				background: THEME_COLOR,
+				color: "white",
+			}}
+		>
+			<div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+				<div
+					style={{
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "center",
+						width: 112,
+						height: 112,
+						borderRadius: 24,
+						background: "white",
+					}}
+				>
+					{/* eslint-disable-next-line @next/next/no-img-element */}
+					<img src={logoSrc} width={80} height={78} alt="" />
 				</div>
-				<div style={{ fontSize: 76, fontWeight: 700, lineHeight: 1.15 }}>
-					{title}
-				</div>
-				<div style={{ fontSize: 32, opacity: 0.85 }}>
-					{new URL(APP_URL).host}
-				</div>
+				<div style={{ fontSize: 48, fontWeight: 700 }}>Studomate</div>
 			</div>
-		),
+			<div style={{ fontSize: 76, fontWeight: 700, lineHeight: 1.15 }}>
+				{title}
+			</div>
+			<div style={{ fontSize: 32, opacity: 0.85 }}>{new URL(APP_URL).host}</div>
+		</div>,
 		OG_IMAGE_SIZE,
 	);
 }

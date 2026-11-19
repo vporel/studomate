@@ -27,6 +27,7 @@ function makeManager(initial: {
 		laddersStoresManagers: initial.laddersStoresManagers ?? {},
 		pagesData: initial.pagesData ?? {},
 		pagesManager: { openPage: jest.fn(), closePage: jest.fn() },
+		ui: { analyserDisabledNoticeVisible: false },
 	} as unknown as ProjectStoreState;
 
 	const set = (partial: any) => {
@@ -295,6 +296,18 @@ describe("LaddersManager", () => {
 			expect(
 				getState().project!.getLadder(ladderId)!.excludedFromExecution,
 			).toBe(false);
+		});
+
+		it("shows the analyser disabled notice when excluding, not when re-including", () => {
+			const { project, ladderId } = projectWithLadder();
+			const { manager, getState } = makeManager({ project });
+
+			manager.setExcludedFromExecution(ladderId, true);
+			expect(getState().ui.analyserDisabledNoticeVisible).toBe(true);
+
+			getState().ui.analyserDisabledNoticeVisible = false;
+			manager.setExcludedFromExecution(ladderId, false);
+			expect(getState().ui.analyserDisabledNoticeVisible).toBe(false);
 		});
 
 		it("refuses the change outside DESIGN mode", () => {

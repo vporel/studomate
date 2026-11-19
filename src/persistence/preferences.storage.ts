@@ -15,6 +15,8 @@ const DEFAULT_DIALECT_KEY = "studomate_default_dialect";
 const AUTO_OPEN_HMI_SIMULATION_KEY = "studomate_auto_open_hmi_simulation";
 const PRODUCT_TOUR_SEEN_KEY = "studomate_product_tour_seen";
 const PROJECT_EVER_SAVED_KEY = "studomate_project_ever_saved";
+const ANALYSER_DISABLED_NOTICE_HIDDEN_KEY =
+	"studomate_analyser_disabled_notice_hidden";
 const SIMULATION_MODE_KEY = "studomate_simulation_mode";
 const SCENE3D_DISPLAY_MODE_KEY = "studomate_scene3d_display_mode";
 const SCENE3D_FLOATING_FRAME_KEY = "studomate_scene3d_floating_frame";
@@ -130,6 +132,15 @@ export function getProjectEverSaved(): boolean {
 
 export function setProjectEverSaved(): void {
 	writeString(PROJECT_EVER_SAVED_KEY, "true");
+}
+
+/** Whether the user asked not to be shown again the explanation that follows disabling the analyser of a program. */
+export function getAnalyserDisabledNoticeHidden(): boolean {
+	return readString(ANALYSER_DISABLED_NOTICE_HIDDEN_KEY) === "true";
+}
+
+export function setAnalyserDisabledNoticeHidden(): void {
+	writeString(ANALYSER_DISABLED_NOTICE_HIDDEN_KEY, "true");
 }
 
 /**

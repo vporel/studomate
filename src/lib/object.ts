@@ -60,3 +60,8 @@ export function deepObjectsComparison(obj1: any, obj2: any): boolean {
 			Object.hasOwn(obj2, key) && deepObjectsComparison(obj1[key], obj2[key]),
 	);
 }
+
+/** A non-null object that is not an array. */
+export function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}

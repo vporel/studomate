@@ -6,7 +6,7 @@ export const LOCAL_STORAGE_LAYOUT_VERSION_KEY =
 	"studomate_local_storage_version";
 
 /** Version de disposition que cette version de l'app sait produire et lire. */
-export const CURRENT_LAYOUT_VERSION = 1;
+export const CURRENT_LAYOUT_VERSION = 2;
 
 /**
  * Index des projets locaux, indexé par id : `{ [id]: { name } }`. Cette clé portait, en

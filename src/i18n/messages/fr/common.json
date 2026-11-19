@@ -15,12 +15,18 @@
 	},
 	"programExecution": {
 		"badge": "Non exécuté",
-		"warningLabel": "Exclu de l'exécution",
-		"warningTooltip": "Ce programme n'est pas exécuté",
-		"modalTitle": "Programme non exécuté",
-		"modalBody": "Ce programme est exclu de l'exécution. Il reste dessiné, modifiable et exportable en PDF, mais il n'est ni analysé, ni compilé, ni simulé.",
-		"modalFreeText": "Ses mnémoniques peuvent donc être du texte libre, sans correspondre à une variable déclarée. Ses variables d'étape (Xn) et de bloc n'existent pas pour les autres programmes.",
-		"include": "Inclure dans l'exécution",
-		"close": "Fermer"
+		"disable": "Désactiver l'analyseur",
+		"enable": "Activer l'analyseur",
+		"disableTooltip": "Ne plus analyser ni simuler ce programme, pour y écrire du texte libre",
+		"enableTooltip": "L'analyseur de ce programme est désactivé : il n'est ni analysé, ni simulé",
+		"noticeTitle": "Analyseur désactivé",
+		"noticeBody": "Ce programme ne pourra plus être simulé, et ses expressions ne sont plus validées. Il reste dessiné, modifiable et exportable en PDF.",
+		"noticeFreeText": "Vous pouvez donc y écrire des phrases plutôt que des expressions logiques, par exemple pour décrire un grafcet en langage courant. Ses variables d'étape (Xn) et de bloc n'existent pas pour les autres programmes.",
+		"noticeEnable": "Pour réactiver l'analyseur : bouton « Activer l'analyseur » de la barre d'outils, ou clic droit sur le programme dans l'explorateur.",
+		"dontShowAgain": "Ne plus afficher",
+		"notExecutedTitle": "Programme non exécuté",
+		"notExecutedBody": "L'analyseur de ce programme a été désactivé : ses expressions ne sont pas validées et il n'est ni compilé, ni simulé. Aucune de ses étapes ne s'active et il ne pilote aucune sortie.",
+		"notExecutedEnable": "Pour le réactiver, arrêtez la simulation puis cliquez sur « Activer l'analyseur » dans la barre d'outils du programme.",
+		"close": "Compris"
 	}
 }

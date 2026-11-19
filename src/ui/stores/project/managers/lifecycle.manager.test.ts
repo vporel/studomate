@@ -1,29 +1,30 @@
 /** @jest-environment jsdom */
 import { Dialect } from "@/expression-language/dialect.enum";
-import Grafcet from "@/schemas/grafcet/grafcet.schema";
-import Project, {
-	DEFAULT_PROJECT_NAME,
-	PROJECT_SCHEMA_VERSION,
-} from "@/schemas/project/project.schema";
-import { toast } from "react-toastify";
-import { setPagesSession } from "@/persistence/pages-session.storage";
-import { setActivePageIdInUrl } from "@/ui/stores/project/url/pages-url";
-import createAppProjectStoreEnvironment from "../environment/app-project-store-environment";
-import { createProjectStore } from "../project.store";
 import { getDraft, saveDraft } from "@/persistence/draft.storage";
+import { setPagesSession } from "@/persistence/pages-session.storage";
 import {
 	getDefaultDialect,
 	getPreferredSaveLocation,
 	setDefaultDialect,
 	setPreferredSaveLocation,
 } from "@/persistence/preferences.storage";
+import Grafcet from "@/schemas/grafcet/grafcet.schema";
+import Project, {
+	DEFAULT_PROJECT_NAME,
+	PROJECT_SCHEMA_VERSION,
+} from "@/schemas/project/project.schema";
+import { flushUrlQueryParams } from "@/ui/lib/url";
+import { authStore } from "@/ui/stores/auth/auth.store";
+import { PROJECT_STARTUP_PAGE_ID } from "@/ui/stores/project/pages-data";
+import { setActivePageIdInUrl } from "@/ui/stores/project/url/pages-url";
 import {
 	getProjectIdFromUrl,
 	getShareTokenFromUrl,
 	setShareTokenInUrl,
 } from "@/ui/stores/project/url/project-url";
-import { authStore } from "@/ui/stores/auth/auth.store";
-import { PROJECT_STARTUP_PAGE_ID } from "@/ui/stores/project/pages-data";
+import { toast } from "react-toastify";
+import createAppProjectStoreEnvironment from "../environment/app-project-store-environment";
+import { createProjectStore } from "../project.store";
 
 jest.mock("react-toastify", () => ({ toast: { error: jest.fn() } }));
 
@@ -42,6 +43,8 @@ async function openBlankProject(store: ReturnType<typeof createProjectStore>) {
 
 describe("ProjectLifecycleManager", () => {
 	beforeEach(() => {
+		// URL writes left pending by the previous test would override the URL set by this one.
+		flushUrlQueryParams();
 		localStorage.clear();
 		// Sans préférence de lieu de stockage, le premier enregistrement d'un projet neuf ouvre
 		// la modale de choix (voir `describe("résolution du lieu de stockage")` plus bas) — non
@@ -1006,6 +1009,63 @@ describe("ProjectLifecycleManager", () => {
 
 			expect(getShareTokenFromUrl()).toBe("tok-1");
 			expect(getProjectIdFromUrl()).toBeNull();
+		});
+
+		describe("page named in the shared link", () => {
+			function storeSharing(project: Project) {
+				const store = createProjectStore(createAppProjectStoreEnvironment());
+				store.setState({
+					projectRepository: {
+						list: async () => ({ projects: [], skipped: [] }),
+						get: async () => null,
+						save: async () => ({ ok: true }),
+						delete: async () => ({ ok: true }),
+						getByShareToken: async () => project,
+						getShareToken: async () => null,
+						createShareToken: async () => ({ ok: false, message: "" }),
+						deleteShareToken: async () => ({ ok: true }),
+					} as never,
+				});
+				return store;
+			}
+
+			function sharedProject() {
+				const project = new Project("shared-id", "Projet partagé", "Author");
+				project.addProgram(new Grafcet("g1", "Grafcet 1"));
+				return project;
+			}
+
+			it("opens and activates the page of the link", async () => {
+				window.history.replaceState(
+					null,
+					"",
+					"/?shareToken=tok-1&activePageId=g1",
+				);
+				const store = storeSharing(sharedProject());
+
+				await lifecycle(store).openProjectByShareToken("tok-1");
+
+				expect(store.getState().activePageId).toBe("g1");
+				expect(store.getState().pagesOrder).toContain("g1");
+				flushUrlQueryParams();
+				expect(
+					new URLSearchParams(window.location.search).get("activePageId"),
+				).toBe("g1");
+			});
+
+			it("falls back to the startup page when the page of the link does not exist", async () => {
+				window.history.replaceState(
+					null,
+					"",
+					"/?shareToken=tok-1&activePageId=deleted-program",
+				);
+				const store = storeSharing(sharedProject());
+
+				await lifecycle(store).openProjectByShareToken("tok-1");
+
+				expect(store.getState().activePageId).toBe(PROJECT_STARTUP_PAGE_ID);
+				expect(store.getState().isSharedProject).toBe(true);
+			});
 		});
 
 		it("retourne false si le repository n'est pas partageable", async () => {

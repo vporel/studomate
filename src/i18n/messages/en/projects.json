@@ -28,8 +28,13 @@
 		"title": "Open a project",
 		"fromFile": "Open from a file...",
 		"fileDialogName": "JSON files",
-		"readError": "An error occurred while reading the file. Make sure the file is a valid project.",
-		"saveError": "The project could not be saved in the browser. Check the available space."
+		"errors": {
+			"notJson": "This file is not a readable project file: its content is malformed.",
+			"notAProject": "This file does not contain a Studomate project.",
+			"newerVersion": "This project was saved by a more recent version of Studomate. Update the application to open it.",
+			"readFailed": "The file could not be read.",
+			"saveFailed": "The project could not be saved in the browser. Check the available space."
+		}
 	},
 	"new": {
 		"title": "New project",

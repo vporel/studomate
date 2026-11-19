@@ -1,5 +1,6 @@
 import { Dialect } from "@/expression-language/dialect.enum";
 import {
+	getAnalyserDisabledNoticeHidden,
 	getAutoOpenHmiSimulationOnStart,
 	getDefaultDialect,
 	getPreferredLocale,
@@ -9,6 +10,7 @@ import {
 	getProjectEverSaved,
 	getStoredScene3dDisplayMode,
 	getStoredSimulationMode,
+	setAnalyserDisabledNoticeHidden,
 	setAutoOpenHmiSimulationOnStart,
 	setDefaultDialect,
 	setPreferredLocale,
@@ -208,6 +210,17 @@ describe("preferences.storage", () => {
 		it("remembers that a project was saved", () => {
 			setProjectEverSaved();
 			expect(getProjectEverSaved()).toBe(true);
+		});
+	});
+
+	describe("analyser disabled notice", () => {
+		it("is shown until the user hides it", () => {
+			expect(getAnalyserDisabledNoticeHidden()).toBe(false);
+		});
+
+		it("remembers that the user hid it", () => {
+			setAnalyserDisabledNoticeHidden();
+			expect(getAnalyserDisabledNoticeHidden()).toBe(true);
 		});
 	});
 });

@@ -1,11 +1,13 @@
 "use client";
 
-import { APP_VERSION } from "@/app-info";
+import { setStoredAppVersion } from "@/persistence/app-version.storage";
 import {
-	getStoredAppVersion,
-	setStoredAppVersion,
-} from "@/persistence/app-version.storage";
+	getStoredWhatsNewVersion,
+	setStoredWhatsNewVersion,
+} from "@/persistence/whats-new-version.storage";
+import { APP_VERSION } from "@/app-info";
 import checkAppVersion from "@/whats-new/app-version-check";
+import { WHATS_NEW_VERSION } from "@/whats-new/whats-new-slides";
 import {
 	whatsNewStore,
 	useWhatsNewStore,
@@ -22,26 +24,36 @@ async function hasLocalProjects(): Promise<boolean> {
 	return new LocalStorageProjectRepository().hasProjects();
 }
 
+/** Brings the `localStorage` layout up to date so the version keys read below are the current ones. */
+async function ensureLayout(): Promise<void> {
+	const { ensureLocalStorageLayout } =
+		await import("@/persistence/migrations/local-storage");
+	ensureLocalStorageLayout();
+}
+
 /**
- * Records the app version on the first visit and, when the recorded one differs from
- * `APP_VERSION` (or is missing in a browser that already holds projects), updates it and
+ * Records the application version and the news version on the first visit and, when the recorded one differs from
+ * `WHATS_NEW_VERSION` (or is missing in a browser that already holds projects), updates it and
  * presents the news; the store also lets menus reopen it. Needs an intl provider holding the `whatsNew` messages.
  */
 export default function WhatsNew() {
 	const visible = useWhatsNewStore((state) => state.visible);
 
 	useEffect(() => {
-		const stored = getStoredAppVersion();
-		if (stored === APP_VERSION) return;
 		let cancelled = false;
 		void (async () => {
+			await ensureLayout();
+			if (cancelled) return;
+			setStoredAppVersion(APP_VERSION);
+			const stored = getStoredWhatsNewVersion();
+			if (stored === WHATS_NEW_VERSION) return;
 			const check = checkAppVersion(
 				stored,
-				APP_VERSION,
+				WHATS_NEW_VERSION,
 				stored === null && (await hasLocalProjects()),
 			);
 			if (cancelled) return;
-			setStoredAppVersion(APP_VERSION);
+			setStoredWhatsNewVersion(WHATS_NEW_VERSION);
 			if (check === "changed") whatsNewStore.getState().open();
 		})();
 		return () => {

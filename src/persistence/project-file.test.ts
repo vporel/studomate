@@ -5,8 +5,20 @@ import { PROJECT_SCHEMA_VERSION } from "@/schemas/project/project.schema";
 import {
 	importProjectFromFile,
 	parseProjectFromFile,
+	ProjectFileError,
+	type ProjectFileErrorReason,
 	serializeProjectToFile,
 } from "./project-file";
+
+function rejectionReason(text: string): ProjectFileErrorReason | null {
+	try {
+		parseProjectFromFile(text);
+		return null;
+	} catch (error) {
+		expect(error).toBeInstanceOf(ProjectFileError);
+		return (error as ProjectFileError).reason;
+	}
+}
 
 function projetAvecGrafcet() {
 	const project = new Project("p1", "Projet", "Enseignante");
@@ -76,22 +88,16 @@ describe("fichier de projet", () => {
 
 	describe("contenu invalide", () => {
 		it("refuse un fichier qui n'est pas du JSON", () => {
-			expect(() => parseProjectFromFile("{ pas du JSON")).toThrow();
+			expect(rejectionReason("{ pas du JSON")).toBe("not-json");
 		});
 
 		it("refuse un contenu qui n'est pas un objet", () => {
-			expect(() => parseProjectFromFile("42")).toThrow(
-				"ne contient pas un projet",
-			);
-			expect(() => parseProjectFromFile("null")).toThrow(
-				"ne contient pas un projet",
-			);
+			expect(rejectionReason("42")).toBe("not-a-project");
+			expect(rejectionReason("null")).toBe("not-a-project");
 		});
 
 		it("refuse un tableau", () => {
-			expect(() => parseProjectFromFile("[]")).toThrow(
-				"ne contient pas un projet",
-			);
+			expect(rejectionReason("[]")).toBe("not-a-project");
 		});
 
 		// Scénario deux versions en parallèle : ne pas interpréter à moitié, ni réécrire
@@ -101,7 +107,18 @@ describe("fichier de projet", () => {
 				schemaVersion: PROJECT_SCHEMA_VERSION + 1,
 			});
 
-			expect(() => parseProjectFromFile(futur)).toThrow("version plus récente");
+			expect(rejectionReason(futur)).toBe("newer-version");
+		});
+
+		it("refuses a JSON object that is not a project", () => {
+			expect(rejectionReason('{"foo":1}')).toBe("not-a-project");
+		});
+
+		it("refuses a project whose shape is broken", () => {
+			const raw = JSON.parse(serializeProjectToFile(projetAvecGrafcet()));
+			raw.programs.g1.type = "sfc";
+
+			expect(rejectionReason(JSON.stringify(raw))).toBe("not-a-project");
 		});
 	});
 
@@ -138,12 +155,8 @@ describe("fichier de projet", () => {
 		});
 
 		it("refuse un contenu qui n'est pas un objet", () => {
-			expect(() => importProjectFromFile("[]")).toThrow(
-				"ne contient pas un projet",
-			);
-			expect(() => importProjectFromFile("42")).toThrow(
-				"ne contient pas un projet",
-			);
+			expect(() => importProjectFromFile("[]")).toThrow(ProjectFileError);
+			expect(() => importProjectFromFile("42")).toThrow(ProjectFileError);
 		});
 
 		it("refuse un projet écrit par une version plus récente", () => {
@@ -152,9 +165,7 @@ describe("fichier de projet", () => {
 				schemaVersion: PROJECT_SCHEMA_VERSION + 1,
 			});
 
-			expect(() => importProjectFromFile(futur)).toThrow(
-				"version plus récente",
-			);
+			expect(() => importProjectFromFile(futur)).toThrow(ProjectFileError);
 		});
 	});
 });
