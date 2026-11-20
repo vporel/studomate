@@ -102,12 +102,28 @@ describe("isFeedbackPromptDue", () => {
 		expect(isFeedbackPromptDue(state())).toBe(false);
 	});
 
-	it("is due once content exists and the app was simulated or exported", () => {
+	it("is due once content exists and the app was simulated or exported, from the second visit", () => {
 		expect(
 			isFeedbackPromptDue(
-				state({ hasContent: true, hasSimulatedOrExported: true }),
+				state({
+					hasContent: true,
+					hasSimulatedOrExported: true,
+					visitCount: 2,
+				}),
 			),
 		).toBe(true);
+	});
+
+	it("is not due on the first visit, even after content and a simulation", () => {
+		expect(
+			isFeedbackPromptDue(
+				state({
+					hasContent: true,
+					hasSimulatedOrExported: true,
+					visitCount: 1,
+				}),
+			),
+		).toBe(false);
 	});
 
 	it("is not due with only one half of the checklist", () => {

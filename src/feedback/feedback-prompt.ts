@@ -3,6 +3,7 @@ export type FeedbackMilestone =
 	"program-created" | "simulation-ended" | "pdf-exported";
 
 export const FEEDBACK_VISITS_BEFORE_ASK = 3;
+export const FEEDBACK_VISITS_BEFORE_ASK_AFTER_USE = 2;
 export const FEEDBACK_VISITS_BEFORE_REASK = 10;
 export const FEEDBACK_RATING_MAX = 5;
 export const FEEDBACK_COMMENT_MAX_LENGTH = 2000;
@@ -99,14 +100,17 @@ export function markAnswered(state: FeedbackPromptState): FeedbackPromptState {
 
 /**
  * Whether the request should be shown at the next milestone. The first request needs real use
- * (a program created, then a simulation or an export) or enough visits; the single reminder
+ * (a program created, then a simulation or an export) on a second visit at least, or enough
+ * visits; the single reminder
  * waits for the tenth visit and for a visit later than the one that postponed it.
  */
 export function isFeedbackPromptDue(state: FeedbackPromptState): boolean {
 	if (state.answered) return false;
 	if (state.dismissCount === 0) {
 		return (
-			(state.hasContent && state.hasSimulatedOrExported) ||
+			(state.hasContent &&
+				state.hasSimulatedOrExported &&
+				state.visitCount >= FEEDBACK_VISITS_BEFORE_ASK_AFTER_USE) ||
 			state.visitCount >= FEEDBACK_VISITS_BEFORE_ASK
 		);
 	}

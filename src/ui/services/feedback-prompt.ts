@@ -26,11 +26,10 @@ let pendingOpening: ReturnType<typeof setTimeout> | null = null;
 
 function openIfStillDue(): void {
 	pendingOpening = null;
-	if (
-		isFeedbackPromptDue(getFeedbackPromptState()) &&
-		getShareTokenFromUrl() === null
-	)
-		feedbackStore.getState().open("prompt");
+	const state = getFeedbackPromptState();
+	if (!isFeedbackPromptDue(state) || getShareTokenFromUrl() !== null) return;
+	feedbackStore.getState().open("prompt");
+	trackEvent("feedback-shown", { reminder: state.dismissCount >= 1 });
 }
 
 /**
