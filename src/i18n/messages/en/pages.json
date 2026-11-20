@@ -46,7 +46,8 @@
 		"dialectEn": "English — AND, OR, NOT, TRUE, FALSE",
 		"exerciseField": "Exercise brief",
 		"exerciseFieldHelper": "Markdown format. Shown read-only from the Project › Exercise brief menu.",
-		"readOnlyInSimulation": "Editable in Design mode only."
+		"readOnlyInSimulation": "Editable in Design mode only.",
+		"share": "Share the project"
 	},
 	"exercise": {
 		"heading": "Exercise brief",

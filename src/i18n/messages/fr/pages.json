@@ -46,7 +46,8 @@
 		"dialectEn": "Anglais — AND, OR, NOT, TRUE, FALSE",
 		"exerciseField": "Énoncé de l'exercice",
 		"exerciseFieldHelper": "Format Markdown. Affiché en lecture seule depuis le menu Projet › Énoncé de l'exercice.",
-		"readOnlyInSimulation": "Modifiable en mode Conception uniquement."
+		"readOnlyInSimulation": "Modifiable en mode Conception uniquement.",
+		"share": "Partager le projet"
 	},
 	"exercise": {
 		"heading": "Énoncé de l'exercice",

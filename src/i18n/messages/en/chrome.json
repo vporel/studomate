@@ -139,5 +139,8 @@
 	"mobileGuard": {
 		"title": "Desktop application only",
 		"body": "This application is only available on desktop. Please open it from a computer."
+	},
+	"share": {
+		"label": "Share"
 	}
 }

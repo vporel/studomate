@@ -3,7 +3,7 @@
  */
 import { Dialect } from "@/expression-language/dialect.enum";
 import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
-import { screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import { useProjectStore } from "../projects/ProjectContext";
@@ -13,7 +13,18 @@ jest.mock("../projects/ProjectContext");
 
 const READ_ONLY_TEXT = "Modifiable en mode Conception uniquement.";
 
-function setup(mode: ProjectMode) {
+const shareProject = jest.fn();
+const SHAREABLE_REPOSITORY = {
+	getByShareToken: jest.fn(),
+	getShareToken: jest.fn(),
+	createShareToken: jest.fn(),
+	deleteShareToken: jest.fn(),
+};
+
+function setup(
+	mode: ProjectMode,
+	{ shareable = true, isSharedProject = false } = {},
+) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			mode,
@@ -28,6 +39,9 @@ function setup(mode: ProjectMode) {
 			setProjectAuthor: jest.fn(),
 			setProjectDialect: jest.fn(),
 			setExerciseStatement: jest.fn(),
+			projectRepository: shareable ? SHAREABLE_REPOSITORY : {},
+			isSharedProject,
+			sharingManager: { shareProject },
 		}),
 	);
 	renderWithI18n(<ProjectPropertiesPage />);
@@ -41,6 +55,40 @@ const fields = () => [
 ];
 
 describe("ProjectPropertiesPage", () => {
+	beforeEach(() => shareProject.mockClear());
+
+	it("offers to share the project and reports where the sharing started from", () => {
+		setup(ProjectMode.DESIGN);
+
+		fireEvent.click(screen.getByRole("button", { name: "Partager le projet" }));
+
+		expect(shareProject).toHaveBeenCalledWith("properties");
+	});
+
+	it("also offers it in Simulation mode, like the Project menu", () => {
+		setup(ProjectMode.SIMULATION);
+
+		expect(
+			screen.getByRole("button", { name: "Partager le projet" }),
+		).toBeVisible();
+	});
+
+	it("does not offer it when the storage cannot share", () => {
+		setup(ProjectMode.DESIGN, { shareable: false });
+
+		expect(
+			screen.queryByRole("button", { name: "Partager le projet" }),
+		).not.toBeInTheDocument();
+	});
+
+	it("does not offer it on a project opened from a share link", () => {
+		setup(ProjectMode.DESIGN, { isSharedProject: true });
+
+		expect(
+			screen.queryByRole("button", { name: "Partager le projet" }),
+		).not.toBeInTheDocument();
+	});
+
 	it("keeps every field editable in Design mode without read-only hint", () => {
 		setup(ProjectMode.DESIGN);
 

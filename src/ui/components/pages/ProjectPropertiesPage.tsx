@@ -7,6 +7,7 @@ import { Box, Grid, MenuItem, TextField, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "../projects/ProjectContext";
+import ShareProjectButton from "../projects/ShareProjectButton";
 import Page from "./Page";
 import { PROJECT_PROPERTIES_PAGE_ID } from "@/ui/stores/project/pages-data";
 
@@ -166,6 +167,13 @@ const ProjectPropertiesPage = () => {
 						value={exerciseStatement}
 						onSave={changeExerciseStatement}
 						disabled={!designing}
+					/>
+				</Box>
+				<Box sx={{ mt: 3 }}>
+					<ShareProjectButton
+						source="properties"
+						label={t("share")}
+						variant="outlined"
 					/>
 				</Box>
 			</Box>

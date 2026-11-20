@@ -8,6 +8,11 @@ import { toast } from "react-toastify";
 import HybridProjectRepository from "@/persistence/repositories/hybrid.project.repository";
 
 jest.mock("react-toastify", () => ({ toast: { error: jest.fn() } }));
+const mockTrackEvent = jest.fn();
+jest.mock("@/ui/services/analytics", () => ({
+	__esModule: true,
+	default: (...args: unknown[]) => mockTrackEvent(...args),
+}));
 
 /** Ouvre un projet vierge : `newProject()` n'ouvre plus que la modale, c'est `newProjectFromTemplate(null)` qui crée réellement. */
 async function openBlankProject(store: ReturnType<typeof createProjectStore>) {
@@ -21,6 +26,7 @@ describe("ProjectSharingManager", () => {
 	});
 
 	afterEach(() => {
+		mockTrackEvent.mockClear();
 		jest.restoreAllMocks();
 		jest.mocked(toast.error).mockClear();
 		authStore.setState({
@@ -45,6 +51,75 @@ describe("ProjectSharingManager", () => {
 		expect(authStore.getState().ui.authModalVisible).toBe(true);
 		expect(authStore.getState().ui.authModalPrompt).toMatch(/partager/i);
 		expect(store.getState().pendingShareAfterAuth).toBe(true);
+	});
+
+	describe("share-started", () => {
+		const started = () =>
+			mockTrackEvent.mock.calls.filter(([name]) => name === "share-started");
+
+		it("is tracked with the source and the state the user starts from (signed out, local)", async () => {
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+			await openBlankProject(store);
+
+			await store.getState().sharingManager.shareProject("title-bar");
+
+			expect(started()).toEqual([
+				[
+					"share-started",
+					{ source: "title-bar", signedIn: false, inCloud: false },
+				],
+			]);
+		});
+
+		it("tells when the user is signed in and the project is in the cloud", async () => {
+			authStore.setState({ user: { id: "u1" } as never });
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+			await openBlankProject(store);
+			const repo = store.getState()
+				.projectRepository as HybridProjectRepository;
+			jest.spyOn(repo, "locationOf").mockReturnValue("cloud");
+			jest.spyOn(repo, "getShareToken").mockResolvedValue("tok");
+
+			await store.getState().sharingManager.shareProject("properties");
+
+			expect(started()).toEqual([
+				[
+					"share-started",
+					{ source: "properties", signedIn: true, inCloud: true },
+				],
+			]);
+		});
+
+		it("is not tracked without a source (resumption)", async () => {
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+			await openBlankProject(store);
+
+			await store.getState().sharingManager.shareProject();
+
+			expect(started()).toEqual([]);
+		});
+
+		it("is not tracked again when sharing resumes after sign-in", async () => {
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+			await openBlankProject(store);
+			await store.getState().sharingManager.shareProject("menu");
+
+			authStore.setState({
+				user: { id: "u1" } as never,
+				ui: { authModalVisible: false, authModalPrompt: null },
+			});
+			await Promise.resolve();
+
+			expect(started()).toHaveLength(1);
+		});
+
+		it("is not tracked when no project is open", async () => {
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+
+			await store.getState().sharingManager.shareProject("menu");
+
+			expect(started()).toEqual([]);
+		});
 	});
 
 	it("reprend le partage automatiquement après connexion (projet local → modale cloud)", async () => {

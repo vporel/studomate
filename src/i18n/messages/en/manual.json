@@ -210,7 +210,7 @@
 		"storageTitle": "Storage location",
 		"storageBody": "Once signed in, each project in the project list can be switched between local and cloud storage. The default location for new projects is set in File → Preferences.",
 		"sharingTitle": "Share a project",
-		"sharingIntro": "Project → Share creates a share link containing a token. Anyone with the link can open a copy of the project.",
+		"sharingIntro": "Project → Share (or the \"Share\" button in the title bar, or the one in the project properties) creates a share link containing a token. Anyone with the link can open a copy of the project.",
 		"sharingItems": [
 			"Sharing requires a cloud account: if you are not signed in, the sign-in dialog opens and sharing resumes afterwards; if the project is still stored locally, a dialog offers to move it to the cloud first.",
 			"The share dialog lets you copy the link and revoke sharing: the link then stops working.",

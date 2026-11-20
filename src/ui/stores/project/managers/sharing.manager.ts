@@ -13,6 +13,9 @@ import {
 	ProjectStoreSetFunction,
 } from "../project.store.types";
 
+/** Where the user started sharing from, for the usage statistics. */
+export type ShareSource = "menu" | "title-bar" | "properties";
+
 /**
  * Partage d'un projet par token d'URL : création/révocation du token, passage préalable dans le
  * cloud, reprise automatique après connexion. Actions ponctuelles (menu Projet, modales) — hors
@@ -32,7 +35,11 @@ export default class ProjectSharingManager {
 		this.getStoreState = get;
 	}
 
-	async shareProject(): Promise<void> {
+	/**
+	 * `source` is given when the user starts sharing: the resumptions after sign-in or after the
+	 * move to the cloud call it without one and are not counted as new attempts.
+	 */
+	async shareProject(source?: ShareSource): Promise<void> {
 		const set = this.setStoreState;
 		const get = this.getStoreState;
 		const project = get().project;
@@ -41,6 +48,16 @@ export default class ProjectSharingManager {
 		const authStore = auth.store;
 		const repo = get().projectRepository;
 		if (!isShareable(repo)) return;
+
+		if (source) {
+			this.env.analytics.trackEvent("share-started", {
+				source,
+				signedIn: authStore.getState().user !== null,
+				inCloud:
+					isStorageLocationAware(repo) &&
+					repo.locationOf(project.id) === "cloud",
+			});
+		}
 
 		// Non connecté : on ouvre la modale de connexion et on reprend le partage dès
 		// qu'une session s'ouvre. Si la modale se ferme sans connexion, on abandonne.

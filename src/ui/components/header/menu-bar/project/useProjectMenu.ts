@@ -95,7 +95,7 @@ export default function useProjectMenu(): AppMenuType {
 						disabled: isSharedProject,
 						onClick: () => {
 							if (isSharedProject) return;
-							void sharingManager.shareProject();
+							void sharingManager.shareProject("menu");
 						},
 					},
 					...(isSharedProject

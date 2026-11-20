@@ -210,7 +210,7 @@
 		"storageTitle": "Emplacement de sauvegarde",
 		"storageBody": "Une fois connecté, chaque projet de la liste des projets peut être basculé entre stockage local et stockage cloud. L'emplacement par défaut des nouveaux projets se règle dans Fichier → Préférences.",
 		"sharingTitle": "Partager un projet",
-		"sharingIntro": "Projet → Partager crée un lien de partage contenant un jeton. Toute personne disposant du lien peut ouvrir une copie du projet.",
+		"sharingIntro": "Projet → Partager (ou le bouton « Partager » de la barre de titre, ou celui des propriétés du projet) crée un lien de partage contenant un jeton. Toute personne disposant du lien peut ouvrir une copie du projet.",
 		"sharingItems": [
 			"Le partage exige un compte cloud : si vous n'êtes pas connecté, la fenêtre de connexion s'ouvre et le partage reprend ensuite ; si le projet est encore stocké en local, une fenêtre propose de le déplacer dans le cloud au préalable.",
 			"La fenêtre de partage permet de copier le lien et de révoquer le partage : le lien cesse alors de fonctionner.",

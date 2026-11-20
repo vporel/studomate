@@ -38,7 +38,11 @@ export default function AccountStatus() {
 		return (
 			<Box>
 				<Tooltip title={t("tooltip")}>
-					<Button size="small" onClick={() => setAuthModalVisible(true)}>
+					<Button
+						size="small"
+						startIcon={<AccountCircleIcon fontSize="small" />}
+						onClick={() => setAuthModalVisible(true)}
+					>
 						{t("signIn")}
 					</Button>
 				</Tooltip>
@@ -57,7 +61,7 @@ export default function AccountStatus() {
 				size="small"
 				color="inherit"
 				onClick={() => setCloudAccountModalVisible(true)}
-				endIcon={<AccountCircleIcon fontSize="small" />}
+				startIcon={<AccountCircleIcon fontSize="small" />}
 				sx={{ textTransform: "none" }}
 			>
 				<Typography
