@@ -9,6 +9,10 @@
 	},
 	"analyse": "Analizar",
 	"mode": {
+		"start": "Simular",
+		"startHint": "Iniciar la simulación del proyecto",
+		"stop": "Detener",
+		"stopHint": "Detener la simulación y volver al diseño",
 		"design": "Diseño",
 		"simulation": "Simulación",
 		"simulationHardwareIo": "Simulación con E/S reales",

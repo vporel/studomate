@@ -573,7 +573,8 @@
 		"analysisTitle": "Analysis and mode",
 		"analysisItems": [
 			"Analyse button: runs the project's static analysis. Turns red on errors, orange on warnings only.",
-			"Mode selector: switches between Design mode (editing) and Simulation mode. The background flashes orange-grey in Simulation mode. With a configured board, the mode menu also offers \"Simulation with real I/O\" and \"Board observation\" (see the Hardware section)."
+			"Simulate / Stop button: starts the simulation from Design mode, then stops it and returns to design. It flashes green during a continuous simulation.",
+			"Mode selector: switches between Design mode (editing) and Simulation mode. With a configured board, the mode menu also offers \"Simulation with real I/O\" and \"Board observation\" (see the Hardware section)."
 		],
 		"grafcetToolsTitle": "Grafcet creation tools",
 		"grafcetToolsIntro": "When a grafcet is open, extra tools appear. Drag the chosen tool onto the canvas to create the matching element:",
@@ -700,7 +701,7 @@
 			"Board observation (configured board): the board runs, Studomate displays what it reports. Editing is locked, there is no pause or step-by-step; unwired inputs, memories and forcing remain possible from Studomate."
 		],
 		"startTitle": "Start the simulation",
-		"startIntro": "Select \"Simulation\" in the mode selector (top right). Before it starts:",
+		"startIntro": "Click \"Simulate\" (top right). Before it starts:",
 		"startItems": [
 			"The project is analysed.",
 			"The project is compiled into programs the simulated PLC can run.",
@@ -745,7 +746,7 @@
 		],
 		"watchOutro": "Values update after every PLC scan. You can change the values of input and memory variables directly from the table to simulate external signals or force an internal state. Outputs are shown read-only.",
 		"stopTitle": "Stop the simulation",
-		"stopBody": "Switch back to \"Design\" mode via the mode selector. The PLC scan stops and editing the grafcet is available again."
+		"stopBody": "Click \"Stop\" (or switch back to \"Design\" mode via the mode selector). The PLC scan stops and editing the grafcet is available again."
 	},
 	"analysis": {
 		"title": "Analysis",

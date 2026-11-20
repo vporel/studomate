@@ -2,6 +2,7 @@
 
 import AnalyseButton from "@/ui/components/header/title-bar/AnalyseButton";
 import ProjectModeSwitcher from "@/ui/components/header/title-bar/ProjectModeSwitcher";
+import SimulationToggleButton from "@/ui/components/header/title-bar/SimulationToggleButton";
 import SimulationModeSelect from "@/ui/components/header/title-bar/SimulationModeSelect";
 import HardwareLinkControl from "@/ui/components/header/title-bar/HardwareLinkControl";
 import SimulationControls from "@/ui/components/header/title-bar/SimulationControls";
@@ -141,6 +142,7 @@ const MenuBar = () => {
 			</FlexBox>
 			<FlexBox data-tour="simulation" centerVertical sx={{ gap: 1, px: 1 }}>
 				<AnalyseButton />
+				<SimulationToggleButton />
 				<ProjectModeSwitcher />
 				<SimulationModeSelect />
 				<SimulationControls />

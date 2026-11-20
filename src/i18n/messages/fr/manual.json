@@ -573,7 +573,8 @@
 		"analysisTitle": "Analyse et mode",
 		"analysisItems": [
 			"Bouton Analyser : lance l'analyse statique du projet. Devient rouge en cas d'erreurs, orange en cas d'avertissements seulement.",
-			"Sélecteur de mode : permet de basculer entre le mode Conception (édition) et le mode Simulation. Le fond clignote en orange-gris en mode Simulation. Avec une carte configurée, le menu des modes propose aussi « Simulation avec E/S réelles » et « Observation de la carte » (voir la section Matériel)."
+			"Bouton Simuler / Arrêter : lance la simulation depuis le mode Conception, puis la stoppe et ramène à la conception. Il est vert pendant une simulation, et clignote pendant une simulation continue.",
+			"Sélecteur de mode : permet de basculer entre le mode Conception (édition) et le mode Simulation. Avec une carte configurée, le menu des modes propose aussi « Simulation avec E/S réelles » et « Observation de la carte » (voir la section Matériel)."
 		],
 		"grafcetToolsTitle": "Outils de création Grafcet",
 		"grafcetToolsIntro": "Lorsqu'un grafcet est ouvert, des outils supplémentaires apparaissent. Faites glisser l'outil choisi sur le canvas pour créer l'élément correspondant :",
@@ -700,7 +701,7 @@
 			"Observation de la carte (carte configurée) : c'est la carte qui exécute, Studomate affiche ce qu'elle rapporte. L'édition est verrouillée, il n'y a ni pause ni pas-à-pas ; les entrées non câblées, les mémoires et le forçage restent possibles depuis Studomate."
 		],
 		"startTitle": "Démarrer la simulation",
-		"startIntro": "Sélectionnez « Simulation » dans le sélecteur de mode (en haut à droite). Avant le démarrage :",
+		"startIntro": "Cliquez sur « Simuler » (en haut à droite). Avant le démarrage :",
 		"startItems": [
 			"Le projet est analysé.",
 			"Le projet est compilé en programmes exécutables par l'automate simulé.",
@@ -745,7 +746,7 @@
 		],
 		"watchOutro": "Les valeurs se mettent à jour après chaque cycle PLC. Vous pouvez modifier directement les valeurs des variables d'entrée et mémoire depuis la table pour simuler des signaux externes ou forcer un état interne. Les sorties sont affichées en lecture seule.",
 		"stopTitle": "Arrêter la simulation",
-		"stopBody": "Repassez en mode « Conception » via le sélecteur de mode. Le cycle PLC s'arrête et l'édition du grafcet est à nouveau disponible."
+		"stopBody": "Cliquez sur « Arrêter » (ou repassez en mode « Conception » via le sélecteur de mode). Le cycle PLC s'arrête et l'édition du grafcet est à nouveau disponible."
 	},
 	"analysis": {
 		"title": "Analyse",

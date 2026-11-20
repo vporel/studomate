@@ -65,7 +65,9 @@ describe("EmbeddedApp", () => {
 	it("shows no bar when no control is asked for", () => {
 		renderApp();
 
-		expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole("button", { name: "Simuler" }),
+		).not.toBeInTheDocument();
 		expect(
 			screen.queryByRole("button", { name: "Plein écran" }),
 		).not.toBeInTheDocument();
@@ -241,46 +243,47 @@ describe("EmbeddedApp", () => {
 	});
 
 	describe("controls", () => {
-		it("offers the switch between design and simulation", () => {
+		it("offers to start the simulation from design, and to stop it from the simulation", async () => {
 			renderApp({ controls: ["mode"] });
 
-			const select = screen.getByRole("combobox");
-			expect(select).toHaveValue("DESIGN");
+			fireEvent.click(screen.getByRole("button", { name: "Simuler" }));
+			await act(async () => {});
+
 			expect(
-				screen.queryByRole("option", { name: /carte|board/i }),
-			).not.toBeInTheDocument();
+				screen.getByRole("button", { name: "Arrêter" }),
+			).toBeInTheDocument();
+
+			fireEvent.click(screen.getByRole("button", { name: "Arrêter" }));
+
+			expect(
+				screen.getByRole("button", { name: "Simuler" }),
+			).toBeInTheDocument();
 		});
 
-		it("offers both modes on a project that can be edited", () => {
+		it("offers no mode selector, nor the modes of a board", () => {
 			renderApp({ controls: ["mode"] });
 
-			expect(screen.getAllByRole("option").map((o) => o.textContent)).toEqual([
-				"Conception",
-				"Simulation",
-			]);
+			expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
 		});
 
-		it("offers the simulation only on a read-only project, which starts running", () => {
+		it("only indicates the simulation on a read-only project, which starts running", () => {
 			renderApp({
 				controls: ["mode"],
 				editable: false,
 				initialMode: "simulation",
 			});
 
-			expect(screen.getAllByRole("option").map((o) => o.textContent)).toEqual([
-				"Simulation",
-			]);
-			expect(screen.getByRole("combobox")).toHaveValue("SIMULATION");
+			expect(screen.getByRole("status")).toHaveTextContent("Simulation");
+			expect(
+				screen.queryByRole("button", { name: /Simuler|Arrêter/ }),
+			).not.toBeInTheDocument();
 		});
 
 		it("switches to the simulation, then offers its controls", () => {
 			renderApp({ controls: ["mode", "simulation"] });
 
-			fireEvent.change(screen.getAllByRole("combobox")[0], {
-				target: { value: "SIMULATION" },
-			});
+			fireEvent.click(screen.getByRole("button", { name: "Simuler" }));
 
-			expect(screen.getAllByRole("combobox")[0]).toHaveValue("SIMULATION");
 			expect(
 				screen.getByRole("button", { name: "Mettre en pause" }),
 			).toBeInTheDocument();
@@ -345,9 +348,7 @@ describe("EmbeddedApp", () => {
 				screen.getByRole("button", { name: "Analyser" }),
 			).toBeInTheDocument();
 
-			fireEvent.change(screen.getByRole("combobox"), {
-				target: { value: "SIMULATION" },
-			});
+			fireEvent.click(screen.getByRole("button", { name: "Simuler" }));
 
 			expect(
 				screen.getByRole("button", { name: "Analyser" }),
@@ -367,9 +368,7 @@ describe("EmbeddedApp", () => {
 				screen.getByRole("button", { name: /Résultats de l'analyse/ }),
 			).toBeInTheDocument();
 
-			fireEvent.change(screen.getByRole("combobox"), {
-				target: { value: "SIMULATION" },
-			});
+			fireEvent.click(screen.getByRole("button", { name: "Simuler" }));
 
 			expect(
 				screen.queryByRole("button", { name: /Résultats de l'analyse/ }),
@@ -382,9 +381,7 @@ describe("EmbeddedApp", () => {
 				screen.queryByRole("button", { name: "Tables de visualisation" }),
 			).not.toBeInTheDocument();
 
-			fireEvent.change(screen.getByRole("combobox"), {
-				target: { value: "SIMULATION" },
-			});
+			fireEvent.click(screen.getByRole("button", { name: "Simuler" }));
 
 			expect(
 				screen.getByRole("button", { name: "Tables de visualisation" }),
@@ -464,7 +461,9 @@ describe("EmbeddedApp", () => {
 			expect(
 				screen.getByLabelText("close-analysis-errors"),
 			).toBeInTheDocument();
-			expect(screen.getByRole("combobox")).toHaveValue("DESIGN");
+			expect(
+				screen.getByRole("button", { name: "Simuler" }),
+			).toBeInTheDocument();
 		});
 
 		it("closes with its button", () => {
@@ -617,7 +616,9 @@ describe("EmbeddedApp", () => {
 			enter();
 
 			expect(container.querySelector("#page-g1")).toBe(page);
-			expect(screen.getByRole("combobox")).toHaveValue("SIMULATION");
+			expect(
+				screen.getByRole("button", { name: "Arrêter" }),
+			).toBeInTheDocument();
 		});
 
 		it("leaves the full screen of another block when one enters it", () => {
@@ -708,9 +709,11 @@ describe("EmbeddedApp", () => {
 		});
 
 		const switchMode = async (mode: "SIMULATION" | "DESIGN") => {
-			fireEvent.change(screen.getByRole("combobox"), {
-				target: { value: mode },
-			});
+			fireEvent.click(
+				screen.getByRole("button", {
+					name: mode === "SIMULATION" ? "Simuler" : "Arrêter",
+				}),
+			);
 			await act(async () => {});
 		};
 		const tabNames = () =>
@@ -1049,17 +1052,13 @@ describe("EmbeddedApp", () => {
 				[],
 			);
 
-			fireEvent.change(screen.getByRole("combobox"), {
-				target: { value: "SIMULATION" },
-			});
+			fireEvent.click(screen.getByRole("button", { name: "Simuler" }));
 			await act(async () => {});
 			expect(
 				screen.getAllByRole("img", { name: "Lecture seule" }),
 			).toHaveLength(2);
 
-			fireEvent.change(screen.getByRole("combobox"), {
-				target: { value: "DESIGN" },
-			});
+			fireEvent.click(screen.getByRole("button", { name: "Arrêter" }));
 			await act(async () => {});
 			expect(screen.queryAllByRole("img", { name: "Lecture seule" })).toEqual(
 				[],

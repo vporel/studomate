@@ -9,6 +9,10 @@
 	},
 	"analyse": "Analyse",
 	"mode": {
+		"start": "Simulate",
+		"startHint": "Run the project simulation",
+		"stop": "Stop",
+		"stopHint": "Stop the simulation and go back to design",
 		"design": "Design",
 		"simulation": "Simulation",
 		"simulationHardwareIo": "Simulation with real I/O",

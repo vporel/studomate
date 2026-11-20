@@ -8,6 +8,7 @@ import usePublicPageHref from "./usePublicPageHref";
 
 let mockPathname = "/about";
 let mockParams: Record<string, string> = {};
+let mockBrowserPath: string | null = null;
 
 jest.mock("@/i18n/navigation", () => ({
 	...jest.requireActual("@/i18n/navigation"),
@@ -16,6 +17,7 @@ jest.mock("@/i18n/navigation", () => ({
 jest.mock("next/navigation", () => ({
 	...jest.requireActual("next/navigation"),
 	useParams: () => mockParams,
+	usePathname: () => mockBrowserPath,
 }));
 
 function hrefIn(
@@ -35,6 +37,7 @@ describe("usePublicPageHref", () => {
 	beforeEach(() => {
 		mockPathname = "/about";
 		mockParams = {};
+		mockBrowserPath = null;
 	});
 
 	it("renvoie le chemin interne d'une page statique, quelle que soit la langue cible", () => {
@@ -83,6 +86,36 @@ describe("usePublicPageHref", () => {
 	])("renvoie à l'accueil : %s", (_label, pathname, params) => {
 		mockPathname = pathname as typeof mockPathname;
 		mockParams = { locale: "fr", ...params };
+
+		expect(hrefIn("en")).toBe("/");
+	});
+
+	it("lit le slug d'étape dans l'adresse affichée quand useParams n'a pas suivi replaceState (français)", () => {
+		mockPathname = "/training/a3/[step]";
+		mockParams = { locale: "fr" };
+		mockBrowserPath = "/formations/a3/exercice-temporisateurs";
+
+		expect(hrefIn("en")).toEqual({
+			pathname: "/training/a3/[step]",
+			params: { locale: "fr", step: "exercise-timers" },
+		});
+	});
+
+	it("lit le slug d'étape dans l'adresse affichée avec un préfixe de langue", () => {
+		mockPathname = "/training/a3/[step]";
+		mockParams = { locale: "en" };
+		mockBrowserPath = "/en/training/a3/exercise-timers";
+
+		expect(hrefIn("fr", { from: "en" })).toEqual({
+			pathname: "/training/a3/[step]",
+			params: { locale: "en", step: "exercice-temporisateurs" },
+		});
+	});
+
+	it("renvoie à l'accueil quand l'adresse affichée ne correspond pas à la route dynamique", () => {
+		mockPathname = "/training/a3/[step]";
+		mockParams = { locale: "fr" };
+		mockBrowserPath = "/formations/a3";
 
 		expect(hrefIn("en")).toBe("/");
 	});

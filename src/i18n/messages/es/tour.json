@@ -23,7 +23,7 @@
 		},
 		"simulation": {
 			"title": "Análisis y simulación",
-			"description": "Analiza el proyecto y luego cambia al modo simulación para ejecutarlo: inícialo, deténlo o avanza paso a paso."
+			"description": "Analiza el proyecto y luego haz clic en Simular para ejecutarlo: inícialo, deténlo o avanza paso a paso."
 		},
 		"crossReference": {
 			"title": "Referencias cruzadas",

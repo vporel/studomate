@@ -9,7 +9,8 @@ import { Box, IconButton, Tooltip } from "@mui/material";
 import RedoTool from "../app-toolbar/RedoTool";
 import UndoTool from "../app-toolbar/UndoTool";
 import AnalyseButton from "../header/title-bar/AnalyseButton";
-import ProjectModeSwitcher from "../header/title-bar/ProjectModeSwitcher";
+import SimulationIndicator from "../header/title-bar/SimulationIndicator";
+import SimulationToggleButton from "../header/title-bar/SimulationToggleButton";
 import SimulationControls from "../header/title-bar/SimulationControls";
 import SimulationModeSelect from "../header/title-bar/SimulationModeSelect";
 import { useProjectContext, useProjectStore } from "../projects/ProjectContext";
@@ -70,12 +71,8 @@ export default function EmbeddedToolbar({
 			}}
 		>
 			{has("analysis") && editingEnabled && <AnalyseButton />}
-			{has("mode") && (
-				<ProjectModeSwitcher
-					withBoardModes={false}
-					designAvailable={editingEnabled}
-				/>
-			)}
+			{has("mode") && editingEnabled && <SimulationToggleButton />}
+			{has("mode") && !editingEnabled && <SimulationIndicator />}
 			{has("simulation") && (
 				<Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
 					<SimulationModeSelect />

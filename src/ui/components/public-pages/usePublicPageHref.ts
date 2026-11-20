@@ -1,16 +1,51 @@
 import type { Locale } from "@/i18n/config";
 import { usePathname } from "@/i18n/navigation";
 import { manualIdFromSlug, manualSlug } from "@/i18n/manual-slugs";
+import { routing } from "@/i18n/routing";
 import TRAINING_MODULE_STEP_IDS from "@/training/module-step-ids";
 import {
 	trainingStepIdFromSlug,
 	trainingStepSlug,
 } from "@/training/step-slugs";
 import { useLocale } from "next-intl";
-import { useParams } from "next/navigation";
+import { useParams, usePathname as useBrowserPathname } from "next/navigation";
 
 const trainingModuleSteps = (moduleId: string) =>
 	TRAINING_MODULE_STEP_IDS.find((m) => m.moduleId === moduleId);
+
+/**
+ * Dynamic segments of `internalPathname` read from the address shown in the browser, which
+ * follows `history.replaceState` (step switches inside a training module) while `useParams()`
+ * keeps the parameters of the last router navigation.
+ */
+function paramsFromBrowserPath(
+	browserPath: string | null,
+	locale: Locale,
+	internalPathname: string,
+): Record<string, string> {
+	const localized = (
+		routing.pathnames as Record<string, string | Record<string, string>>
+	)[internalPathname];
+	const template =
+		typeof localized === "string" ? localized : localized?.[locale];
+	if (!browserPath || !template) return {};
+	const names = Array.from(template.matchAll(/\[(\w+)\]/g), (m) => m[1]);
+	if (names.length === 0) return {};
+	const prefix = `/${locale}`;
+	const path =
+		browserPath === prefix || browserPath.startsWith(`${prefix}/`)
+			? browserPath.slice(prefix.length)
+			: browserPath;
+	const pattern = template
+		.split(/\[\w+\]/)
+		.map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+		.join("([^/]+)");
+	const match = new RegExp(`^${pattern}/?$`).exec(path);
+	if (!match) return {};
+	return Object.fromEntries(
+		names.map((name, i) => [name, decodeURIComponent(match[i + 1])]),
+	);
+}
 
 /**
  * Href of the current public page in another language: the translated slug of a manual section
@@ -22,10 +57,17 @@ export default function usePublicPageHref(
 ) {
 	const currentPathname = usePathname();
 	const target = pathname ?? currentPathname;
-	const params = useParams();
+	const routerParams = useParams();
+	const browserPath = useBrowserPathname();
+	const current = useLocale() as Locale;
+	const params = {
+		...routerParams,
+		...(pathname === undefined || pathname === currentPathname
+			? paramsFromBrowserPath(browserPath, current, target)
+			: {}),
+	};
 	const paramNames = Array.from(target.matchAll(/\[(\w+)\]/g), (m) => m[1]);
 	const hasAllParams = paramNames.every((name) => name in params);
-	const current = useLocale() as Locale;
 	return (locale: Locale) => {
 		if (paramNames.length === 0) return target as "/";
 		if (!hasAllParams) return "/";

@@ -573,7 +573,8 @@
 		"analysisTitle": "Análisis y modo",
 		"analysisItems": [
 			"Botón Analizar: ejecuta el análisis estático del proyecto. Se pone rojo si hay errores y naranja si solo hay advertencias.",
-			"Selector de modo: alterna entre el modo Diseño (edición) y el modo Simulación. En modo Simulación el fondo parpadea en gris anaranjado. Con una placa configurada, el menú de modo también ofrece \"Simulación con E/S reales\" y \"Observación de la placa\" (consulta la sección Hardware)."
+			"Botón Simular / Detener: inicia la simulación desde el modo Diseño, y luego la detiene y vuelve al diseño. Parpadea en naranja durante una simulación continua.",
+			"Selector de modo: alterna entre el modo Diseño (edición) y el modo Simulación. Con una placa configurada, el menú de modo también ofrece \"Simulación con E/S reales\" y \"Observación de la placa\" (consulta la sección Hardware)."
 		],
 		"grafcetToolsTitle": "Herramientas de creación de grafcet",
 		"grafcetToolsIntro": "Cuando hay un grafcet abierto aparecen herramientas adicionales. Arrastra la herramienta elegida hasta el lienzo para crear el elemento correspondiente:",
@@ -700,7 +701,7 @@
 			"Observación de la placa (placa configurada): la placa ejecuta el programa y Studomate muestra lo que informa. La edición está bloqueada, no hay pausa ni ejecución paso a paso; las entradas sin cablear, las marcas de memoria y el forzado siguen siendo posibles desde Studomate."
 		],
 		"startTitle": "Iniciar la simulación",
-		"startIntro": "Selecciona \"Simulación\" en el selector de modo (arriba a la derecha). Antes de que empiece:",
+		"startIntro": "Haz clic en \"Simular\" (arriba a la derecha). Antes de que empiece:",
 		"startItems": [
 			"Se analiza el proyecto.",
 			"El proyecto se compila en programas que el PLC simulado puede ejecutar.",
@@ -745,7 +746,7 @@
 		],
 		"watchOutro": "Los valores se actualizan después de cada ciclo del PLC. Puedes cambiar los valores de las variables de entrada y de memoria directamente desde la tabla para simular señales externas o forzar un estado interno. Las salidas se muestran en solo lectura.",
 		"stopTitle": "Detener la simulación",
-		"stopBody": "Vuelve al modo \"Diseño\" con el selector de modo. El escaneo del PLC se detiene y la edición del grafcet vuelve a estar disponible."
+		"stopBody": "Haz clic en \"Detener\" (o vuelve al modo \"Diseño\" con el selector de modo). El escaneo del PLC se detiene y la edición del grafcet vuelve a estar disponible."
 	},
 	"analysis": {
 		"title": "Análisis",
