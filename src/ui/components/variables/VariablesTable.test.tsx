@@ -4,7 +4,7 @@
 import { Dialect } from "@/expression-language/dialect.enum";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
-import { LocaleProvider } from "@/ui/i18n/LocaleProvider";
+import { PreferredLocaleProvider } from "@/ui/i18n/LocaleProvider";
 import { useProjectStore } from "../projects/ProjectContext";
 import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import Variable from "@/schemas/variable/variable.schema";
@@ -264,9 +264,9 @@ describe("VariablesTable", () => {
 		);
 
 		renderWithI18n(
-			<LocaleProvider>
+			<PreferredLocaleProvider>
 				<VariablesTable zones={["logic-input"]} pageTitle="Variables" />
-			</LocaleProvider>,
+			</PreferredLocaleProvider>,
 		);
 
 		expect(screen.getByRole("button", { name: "Search" })).toBeInTheDocument();

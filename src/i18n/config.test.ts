@@ -38,8 +38,18 @@ describe("detectBrowserLocale", () => {
 		expect(detectBrowserLocale()).toBe("fr");
 	});
 
-	it("retombe sur le défaut si aucune langue n'est supportée", () => {
+	it("retombe sur l'anglais si aucune langue n'est supportée", () => {
 		setNavigator({ language: "de-DE", languages: ["de-DE"] });
+		expect(detectBrowserLocale()).toBe("en");
+	});
+
+	it("retombe sur l'anglais si le navigateur ne déclare aucune langue", () => {
+		setNavigator({ language: undefined, languages: undefined });
+		expect(detectBrowserLocale()).toBe("en");
+	});
+
+	it("retombe sur le défaut hors navigateur", () => {
+		setNavigator(undefined);
 		expect(detectBrowserLocale()).toBe(DEFAULT_LOCALE);
 	});
 });

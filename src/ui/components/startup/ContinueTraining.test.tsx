@@ -4,16 +4,16 @@
 import { setPreferredLocale } from "@/persistence/preferences.storage";
 import TRAINING_MODULE_STEP_IDS from "@/training/module-step-ids";
 import { trainingStepSlug } from "@/training/step-slugs";
-import { LocaleProvider } from "@/ui/i18n/LocaleProvider";
+import { PreferredLocaleProvider } from "@/ui/i18n/LocaleProvider";
 import { render, screen } from "@testing-library/react";
 import ContinueTraining from "./ContinueTraining";
 import type { TrainingResume } from "./training-resume";
 
 function renderCard(resume: TrainingResume) {
 	render(
-		<LocaleProvider>
+		<PreferredLocaleProvider>
 			<ContinueTraining resume={resume} />
-		</LocaleProvider>,
+		</PreferredLocaleProvider>,
 	);
 }
 

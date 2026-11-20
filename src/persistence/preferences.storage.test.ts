@@ -1,6 +1,8 @@
 import { Dialect } from "@/expression-language/dialect.enum";
 import {
 	getAnalyserDisabledNoticeHidden,
+	getLanguageSuggestionDismissed,
+	setLanguageSuggestionDismissed,
 	getAutoOpenHmiSimulationOnStart,
 	getDefaultDialect,
 	getPreferredLocale,
@@ -221,6 +223,17 @@ describe("preferences.storage", () => {
 		it("remembers that the user hid it", () => {
 			setAnalyserDisabledNoticeHidden();
 			expect(getAnalyserDisabledNoticeHidden()).toBe(true);
+		});
+	});
+
+	describe("language suggestion banner", () => {
+		it("is offered until the user closes it", () => {
+			expect(getLanguageSuggestionDismissed()).toBe(false);
+		});
+
+		it("remembers that the user closed it", () => {
+			setLanguageSuggestionDismissed();
+			expect(getLanguageSuggestionDismissed()).toBe(true);
 		});
 	});
 });

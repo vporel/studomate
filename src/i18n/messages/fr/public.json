@@ -8,6 +8,11 @@
 		"menu": "Menu",
 		"back": "Retour"
 	},
+	"languageSuggestion": {
+		"message": "Cette page est aussi disponible en français.",
+		"action": "Voir en français",
+		"dismiss": "Fermer"
+	},
 	"breadcrumb": {
 		"label": "Fil d'Ariane"
 	},

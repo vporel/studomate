@@ -17,6 +17,8 @@ const PRODUCT_TOUR_SEEN_KEY = "studomate_product_tour_seen";
 const PROJECT_EVER_SAVED_KEY = "studomate_project_ever_saved";
 const ANALYSER_DISABLED_NOTICE_HIDDEN_KEY =
 	"studomate_analyser_disabled_notice_hidden";
+const LANGUAGE_SUGGESTION_DISMISSED_KEY =
+	"studomate_language_suggestion_dismissed";
 const SIMULATION_MODE_KEY = "studomate_simulation_mode";
 const SCENE3D_DISPLAY_MODE_KEY = "studomate_scene3d_display_mode";
 const SCENE3D_FLOATING_FRAME_KEY = "studomate_scene3d_floating_frame";
@@ -143,10 +145,19 @@ export function setAnalyserDisabledNoticeHidden(): void {
 	writeString(ANALYSER_DISABLED_NOTICE_HIDDEN_KEY, "true");
 }
 
+/** Whether the user closed the banner suggesting the public pages in their browser's language. */
+export function getLanguageSuggestionDismissed(): boolean {
+	return readString(LANGUAGE_SUGGESTION_DISMISSED_KEY) === "true";
+}
+
+export function setLanguageSuggestionDismissed(): void {
+	writeString(LANGUAGE_SUGGESTION_DISMISSED_KEY, "true");
+}
+
 /**
  * Langue effective de l'interface : le choix explicite de l'utilisateur, sinon la langue du
  * navigateur. Pour le code hors React (managers zustand, mappers) qui a besoin de la locale
- * sans passer par le contexte `LocaleProvider`.
+ * sans passer par le contexte `PreferredLocaleProvider`.
  */
 export function resolveUiLocale(): Locale {
 	return getPreferredLocale() ?? detectBrowserLocale();

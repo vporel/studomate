@@ -1,7 +1,7 @@
 "use client";
 
 import { APP_NAME } from "@/app-info";
-import { LocaleProvider } from "@/ui/i18n/LocaleProvider";
+import { PreferredLocaleProvider } from "@/ui/i18n/LocaleProvider";
 import { useT } from "@/ui/i18n/useT";
 import { Box, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
@@ -52,9 +52,9 @@ const MobileGuard = ({ children }: { children: React.ReactNode }) => {
 
 	if (isMobile) {
 		return (
-			<LocaleProvider>
+			<PreferredLocaleProvider>
 				<DesktopOnlyMessage />
-			</LocaleProvider>
+			</PreferredLocaleProvider>
 		);
 	}
 

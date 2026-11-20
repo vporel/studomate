@@ -30,7 +30,11 @@ const LocaleContext = createContext<LocaleContextValue>({
  * Le premier rendu utilise `DEFAULT_LOCALE` pour correspondre à la sortie prérendue côté
  * serveur ; la préférence réelle est appliquée juste après le montage.
  */
-export function LocaleProvider({ children }: { children: React.ReactNode }) {
+export function PreferredLocaleProvider({
+	children,
+}: {
+	children: React.ReactNode;
+}) {
 	const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE);
 
 	useEffect(() => {

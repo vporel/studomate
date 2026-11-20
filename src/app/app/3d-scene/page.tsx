@@ -1,6 +1,6 @@
 "use client";
 
-import { LocaleProvider } from "@/ui/i18n/LocaleProvider";
+import { PreferredLocaleProvider } from "@/ui/i18n/LocaleProvider";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
@@ -17,10 +17,10 @@ function ScenePage() {
 
 export default function Page() {
 	return (
-		<LocaleProvider>
+		<PreferredLocaleProvider>
 			<Suspense>
 				<ScenePage />
 			</Suspense>
-		</LocaleProvider>
+		</PreferredLocaleProvider>
 	);
 }

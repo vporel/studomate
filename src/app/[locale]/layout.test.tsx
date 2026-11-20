@@ -1,6 +1,7 @@
 import { readFileSync } from "fs";
 import path from "path";
 import PUBLIC_PAGES_CLASS from "@/ui/components/public-pages/public-pages-class";
+import LanguageSuggestion from "@/ui/components/public-pages/LanguageSuggestion";
 import LocaleLayout from "./layout";
 
 jest.mock("@/app/RootDocument", () => ({
@@ -64,6 +65,26 @@ describe("LocaleLayout", () => {
 			expect.arrayContaining(["common.modal", "auth", "profile", "whatsNew"]),
 		);
 	});
+
+	it.each(["fr", "en"])(
+		"propose la page dans l'autre langue depuis la locale %s",
+		async (locale) => {
+			const element = await LocaleLayout({
+				children: null,
+				params: Promise.resolve({ locale }),
+			});
+			const wrapper = [element.props.children.props.children]
+				.flat()
+				.find((child: { type?: unknown }) => child?.type === "div");
+			const suggestion = [wrapper.props.children]
+				.flat()
+				.find(
+					(child: { type?: unknown }) => child?.type === LanguageSuggestion,
+				);
+
+			expect(suggestion.props.locale).toBe(locale);
+		},
+	);
 
 	it("répond 404 pour une locale inconnue", async () => {
 		await expect(

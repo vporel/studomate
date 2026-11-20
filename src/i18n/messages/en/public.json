@@ -8,6 +8,11 @@
 		"menu": "Menu",
 		"back": "Back"
 	},
+	"languageSuggestion": {
+		"message": "This page is also available in English.",
+		"action": "View in English",
+		"dismiss": "Close"
+	},
 	"breadcrumb": {
 		"label": "Breadcrumb"
 	},
