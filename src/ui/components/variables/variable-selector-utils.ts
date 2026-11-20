@@ -26,27 +26,38 @@ export type SelectorStatus =
 
 export type VariableColumn = "address" | "mnemonic" | "type" | "scope";
 
-// Pas de libellé pour "address" : sans texte à faire tenir, la colonne peut rester étroite
-// sans être coupée ni forcer l'en-tête à s'élargir.
-export const COLUMNS: Record<VariableColumn, { label: string; width: number }> =
-	{
-		address: { label: "", width: 40 },
-		mnemonic: { label: "Mnémonique", width: 180 },
-		type: { label: "Type", width: 60 },
-		scope: { label: "Scope", width: 70 },
-	};
+export const COLUMNS: Record<VariableColumn, { width: number }> = {
+	address: { width: 40 },
+	mnemonic: { width: 180 },
+	type: { width: 60 },
+	scope: { width: 70 },
+};
+
+/** Translator scoped to `pages.variablesGrid`. */
+export type VariableSelectorTranslator = (key: string) => string;
+
+/** Header of a column; none for "address", so that the column stays narrow without being cut. */
+export function columnLabel(
+	column: VariableColumn,
+	t: VariableSelectorTranslator,
+): string {
+	switch (column) {
+		case "address":
+			return "";
+		case "mnemonic":
+			return t("columns.mnemonic");
+		case "type":
+			return t("columns.type");
+		case "scope":
+			return t("selector.scope");
+	}
+}
 
 export const ALL_COLUMNS = Object.keys(COLUMNS) as VariableColumn[];
 
 const MIN_WIDTH_PX = 44;
 
 let measureCanvas: HTMLCanvasElement | null = null;
-
-const DIRECTION_LABELS: Record<VariableDirection, string> = {
-	IN: "Entrée",
-	OUT: "Sortie",
-	INOUT: "Mémoire",
-};
 
 /**
  * `.MuiAutocomplete-input` a `width: 0` en dur côté MUI (il grandit par flex-grow dans son
@@ -71,6 +82,7 @@ export function cellValue(
 		getDirection(): VariableDirection;
 	},
 	column: VariableColumn,
+	t: VariableSelectorTranslator,
 ): string {
 	switch (column) {
 		case "address":
@@ -80,7 +92,7 @@ export function cellValue(
 		case "type":
 			return variable.type;
 		case "scope":
-			return DIRECTION_LABELS[variable.getDirection()];
+			return t(`selector.directions.${variable.getDirection()}`);
 	}
 }
 

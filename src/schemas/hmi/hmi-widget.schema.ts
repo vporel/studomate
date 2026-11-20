@@ -635,12 +635,17 @@ function nextStackOrder(widgets: HmiWidget[]): number {
 		: Math.max(...widgets.map((w) => w.stackOrder)) + 1;
 }
 
-/** Nom à donner au prochain widget de ce type ajouté à `widgets` — format "Label_N" (voir
- * `HMI_WIDGET_DEFINITIONS[type].label`), en partant de 1 et en avançant jusqu'à trouver un nom
- * absent des `widgets` fournis (unicité par page, pas par projet — voir `HmiWidgetBase.name`). */
-function nextName(type: HmiWidgetType, widgets: HmiWidget[]): string {
+/** Nom à donner au prochain widget de ce type ajouté à `widgets` — format "Label_N" (`label`,
+ * par défaut `HMI_WIDGET_DEFINITIONS[type].label`), en partant de 1 et en avançant jusqu'à
+ * trouver un nom absent des `widgets` fournis (unicité par page, pas par projet — voir
+ * `HmiWidgetBase.name`). */
+function nextName(
+	type: HmiWidgetType,
+	widgets: HmiWidget[],
+	label: string = HMI_WIDGET_DEFINITIONS[type].label,
+): string {
 	return nextAvailableName(
-		HMI_WIDGET_DEFINITIONS[type].label,
+		label,
 		widgets.map((w) => w.name),
 	);
 }

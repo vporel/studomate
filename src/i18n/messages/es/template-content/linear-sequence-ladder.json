@@ -1,0 +1,7 @@
+{
+	"statement": "## Secuencia lineal en Ladder\n\nGRAFCET: S0 (inicial) → `cycle_start` → S1 (`output1`) → `end1` → S2 (`output2`) → `end2` → S3 → TRUE → S0. Acciones continuas.\n\nEntradas: `cycle_start` (pulsador), `end1` y `end2` (finales de carrera). Salidas: `output1` y `output2`. Marcas proporcionadas: `X0` a `X3` (una por etapa). El proyecto proporciona los programas vacíos `Automatic_cycle` y `Outputs`, llamados por el Main en este orden.\n\n### Tarea\n\nImplementa el GRAFCET con una red por transición:\n\n1. En `Automatic_cycle`, activa `X0` al arrancar, una sola vez.\n2. En `Automatic_cycle`, transiciones: una red por transición, llamadas `X0 -> X1`, `X1 -> X2`... Pone en serie la etapa anterior y la receptividad y, en paralelo, activa la etapa siguiente (set) y desactiva la etapa anterior (reset). Escribe las redes en el orden de la secuencia.\n3. En `Outputs`, una red por salida.\n\n### Cómo saber que es correcto\n\n- Al arrancar, solo `X0` está a verdadero; `cycle_start` activa `X1` sola y enciende `output1`; `end1` activa `X2` sola; `end2` vuelve a `X0` (la etapa 3, sin acción, se franquea inmediatamente porque su receptividad es siempre verdadera).\n- El panel de análisis no señala ningún error.",
+	"texts": {
+		"projectName": "Secuencia lineal en Ladder",
+		"solutionName": "Secuencia lineal en Ladder: solución"
+	}
+}

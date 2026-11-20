@@ -4,6 +4,10 @@ import { Box, Divider } from "@mui/material";
 import { useCallback } from "react";
 import { useProjectStore } from "../ProjectContext";
 import { useT } from "@/ui/i18n/useT";
+import {
+	type GrafcetElementsTranslator,
+	grafcetElementTypeLabel,
+} from "@/ui/components/grafcet/flow/describe-grafcet-element";
 import SeveritySection from "./SeveritySection";
 
 export type GotoProgram = (
@@ -19,6 +23,9 @@ export default function AnalysisResultSections({
 	onGotoProgram: GotoProgram;
 }) {
 	const t = useT("projects.analysisResult");
+	const tGrafcetElements = useT(
+		"grafcetEditor.elements",
+	) as unknown as GrafcetElementsTranslator;
 	const analysisErrors = useProjectStore((s) => s.analysisErrors);
 	const analysisWarnings = useProjectStore((s) => s.analysisWarnings);
 
@@ -39,10 +46,13 @@ export default function AnalysisResultSections({
 	);
 
 	const getGrafcetElementLabel = useCallback(
-		(grafcetId: string, elementId: string) =>
-			project?.getGrafcet(grafcetId)?.getElementById(elementId)?.getLabel() ??
-			"",
-		[project],
+		(grafcetId: string, elementId: string) => {
+			const element = project?.getGrafcet(grafcetId)?.getElementById(elementId);
+			return element
+				? grafcetElementTypeLabel(element.type, tGrafcetElements)
+				: "";
+		},
+		[project, tGrafcetElements],
 	);
 	const getLadderElementLabel = useCallback(
 		(ladderId: string, elementId: string) => {

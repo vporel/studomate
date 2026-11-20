@@ -4,7 +4,7 @@
  * langue ci-dessous est une préférence de l'utilisateur, elle ne touche jamais les données
  * persistées.
  */
-export const LOCALES = ["fr", "en"] as const;
+export const LOCALES = ["fr", "en", "es"] as const;
 
 export type Locale = (typeof LOCALES)[number];
 

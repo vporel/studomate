@@ -1,3 +1,4 @@
+import type { Locale } from "@/i18n/config";
 import HmiPage from "@/schemas/hmi/hmi-page.schema";
 import Project from "@/schemas/project/project.schema";
 import { ProjectStoreState } from "../project.store";
@@ -11,6 +12,7 @@ function makeManager(initial: {
 	hmiSimulationActivePageId?: string | null;
 	mode?: ProjectMode;
 	editingEnabled?: boolean;
+	locale?: Locale;
 }) {
 	let state = {
 		project: initial.project ?? null,
@@ -29,7 +31,12 @@ function makeManager(initial: {
 	const get = () => state;
 
 	return {
-		manager: new HmiManager(set, get, { trackEvent: mockTrackEvent }),
+		manager: new HmiManager(
+			set,
+			get,
+			{ trackEvent: mockTrackEvent },
+			() => initial.locale ?? "fr",
+		),
 		getState: () => state,
 	};
 }
@@ -77,6 +84,22 @@ describe("HmiManager", () => {
 			});
 			expect(mockTrackEvent).toHaveBeenCalledWith("hmi-page-created");
 		});
+
+		it.each([
+			["fr", "Page HMI_1"],
+			["en", "HMI page_1"],
+			["es", "Página HMI_1"],
+		] as const)(
+			"nomme une page sans nom dans la langue de l'interface (%s)",
+			(locale, expected) => {
+				const { manager } = makeManager({
+					project: new Project("p1", "Projet", "auteur"),
+					locale,
+				});
+
+				expect(manager.newHmiPage()!.name).toBe(expected);
+			},
+		);
 	});
 
 	describe("setMainHmiPage", () => {

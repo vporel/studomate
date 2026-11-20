@@ -24,7 +24,7 @@ describe("sitemap", () => {
 		expect(home?.priority).toBe(1);
 	});
 
-	it("expose chaque page publique dans les deux langues (FR sans préfixe, EN sous /en)", () => {
+	it("expose chaque page publique dans les trois langues (FR sans préfixe, EN sous /en, ES sous /es)", () => {
 		const urls = sitemap().map((e) => e.url);
 		// FR : slugs traduits sans préfixe
 		expect(urls).toContain(`${APP_URL}/a-propos`);
@@ -41,6 +41,12 @@ describe("sitemap", () => {
 		expect(urls).toContain(`${APP_URL}/en/training/a1`);
 		expect(urls).toContain(`${APP_URL}/en/training/glossary`);
 		expect(urls).toContain(`${APP_URL}/en/teachers`);
+		// ES : préfixe /es + slugs traduits
+		expect(urls).toContain(`${APP_URL}/es`);
+		expect(urls).toContain(`${APP_URL}/es/acerca-de`);
+		expect(urls).toContain(`${APP_URL}/es/formacion`);
+		expect(urls).toContain(`${APP_URL}/es/formacion/glosario`);
+		expect(urls).toContain(`${APP_URL}/es/docentes`);
 	});
 
 	it("n'expose aucune date lastModified artificielle", () => {
@@ -68,6 +74,7 @@ describe("sitemap", () => {
 		expect(about?.alternates?.languages).toEqual({
 			fr: `${APP_URL}/a-propos`,
 			en: `${APP_URL}/en/about`,
+			es: `${APP_URL}/es/acerca-de`,
 			"x-default": `${APP_URL}/a-propos`,
 		});
 	});
@@ -77,6 +84,7 @@ describe("sitemap", () => {
 		expect(training?.alternates?.languages).toEqual({
 			fr: `${APP_URL}/formations`,
 			en: `${APP_URL}/en/training`,
+			es: `${APP_URL}/es/formacion`,
 			"x-default": `${APP_URL}/formations`,
 		});
 	});
@@ -100,6 +108,7 @@ describe("sitemap", () => {
 		expect(grafcet?.alternates?.languages).toEqual({
 			fr: `${APP_URL}/manuel-utilisateur/grafcet`,
 			en: `${APP_URL}/en/user-manual/grafcet`,
+			es: `${APP_URL}/es/manual-de-usuario/grafcet`,
 			"x-default": `${APP_URL}/manuel-utilisateur/grafcet`,
 		});
 	});
@@ -117,13 +126,16 @@ describe("sitemap", () => {
 		expect(step?.alternates?.languages).toEqual({
 			fr: `${APP_URL}/formations/a1/theorie-temporisation`,
 			en: `${APP_URL}/en/training/a1/theory-timer`,
+			es: `${APP_URL}/es/formacion/a1/teoria-temporizacion`,
 			"x-default": `${APP_URL}/formations/a1/theorie-temporisation`,
 		});
 	});
 
 	it("expose les exercices et les synthèses, dans les deux langues", () => {
 		const urls = sitemap().map((e) => e.url);
-		expect(urls).toContain(`${APP_URL}/formations/a1/exercice-sequence-lineaire`);
+		expect(urls).toContain(
+			`${APP_URL}/formations/a1/exercice-sequence-lineaire`,
+		);
 		expect(urls).toContain(`${APP_URL}/formations/a1/synthese-parking`);
 		expect(urls).toContain(`${APP_URL}/en/training/a3/exercise-timers`);
 	});

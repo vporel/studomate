@@ -11,7 +11,7 @@ jest.mock("next-intl/server", () => ({
 		locale,
 		namespace,
 	}: {
-		locale: "fr" | "en";
+		locale: "fr" | "en" | "es";
 		namespace: string;
 	}) =>
 		Promise.resolve(
@@ -24,7 +24,7 @@ jest.mock("next-intl/server", () => ({
 	setRequestLocale: jest.fn(),
 }));
 
-const renderTeachers = async (locale: "fr" | "en") => {
+const renderTeachers = async (locale: "fr" | "en" | "es") => {
 	const ui = await Teachers({ params: Promise.resolve({ locale }) });
 	return render(
 		<NextIntlClientProvider locale={locale} messages={getMessages(locale)}>
@@ -34,7 +34,7 @@ const renderTeachers = async (locale: "fr" | "en") => {
 };
 
 describe("Teachers page", () => {
-	it.each(["fr", "en"] as const)(
+	it.each(["fr", "en", "es"] as const)(
 		"has a single h1 and no skipped heading level (%s)",
 		async (locale) => {
 			const { container } = await renderTeachers(locale);
@@ -154,6 +154,7 @@ describe("Teachers page", () => {
 			expect(metadata.alternates?.languages).toEqual({
 				fr: "https://studomate.com/enseignants",
 				en: "https://studomate.com/en/teachers",
+				es: "https://studomate.com/es/docentes",
 				"x-default": "https://studomate.com/enseignants",
 			});
 		},

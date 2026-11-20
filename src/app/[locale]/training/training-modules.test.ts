@@ -1,3 +1,4 @@
+import { LOCALES, type Locale } from "@/i18n/config";
 import { getMessages } from "@/i18n/messages";
 import {
 	buildModuleSteps,
@@ -25,15 +26,17 @@ describe("training modules", () => {
 	);
 
 	it.each(TRAINING_MODULE_IDS)(
-		"%s : mêmes étapes (ids et types) dans les deux langues",
+		"%s : mêmes étapes (ids et types) dans toutes les langues",
 		(moduleId) => {
-			const summary = (locale: "fr" | "en") =>
+			const summary = (locale: Locale) =>
 				buildModuleSteps(moduleId, locale).map((s) => [s.id, s.kind]);
-			expect(summary("en")).toEqual(summary("fr"));
+			for (const locale of LOCALES) {
+				expect(summary(locale)).toEqual(summary("fr"));
+			}
 		},
 	);
 
-	it.each(["fr", "en"] as const)(
+	it.each(LOCALES)(
 		"%s : titre et description pour chaque étape indexable (hors première) et rien d'autre",
 		(locale) => {
 			const messages = (
@@ -102,14 +105,14 @@ describe("training modules", () => {
 		]);
 	});
 
-	it("A4 et A5 ont un sous-titre dans les deux langues, les autres modules n'en ont pas", () => {
+	it("A4 et A5 ont un sous-titre dans toutes les langues, les autres modules n'en ont pas", () => {
 		for (const moduleId of TRAINING_MODULE_IDS) {
 			const { subtitleKey } = TRAINING_MODULES[moduleId];
 			if (moduleId !== "a4" && moduleId !== "a5") {
 				expect(subtitleKey).toBeUndefined();
 				continue;
 			}
-			for (const locale of ["fr", "en"] as const) {
+			for (const locale of LOCALES) {
 				const training = (
 					getMessages(locale) as unknown as {
 						training: Record<string, unknown>;

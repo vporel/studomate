@@ -1,0 +1,142 @@
+{
+	"traffic-light": {
+		"label": "Semáforo",
+		"description": "3 salidas booleanas (rojo, ámbar, verde) + una HMI con indicadores de color. Por programar."
+	},
+	"crossroads": {
+		"label": "Cruce con semáforos",
+		"description": "12 salidas booleanas (rojo/ámbar/verde × 4 semáforos: NS1, NS2, EO1, EO2) + una HMI con el cruce. Planta simulada por la escena 3D. Por programar."
+	},
+	"drilling": {
+		"label": "Estación de taladrado",
+		"description": "Ciclo secuencial gobernado por finales de carrera: pulsador de marcha, descenso, taladrado temporizado, subida. Consola y planta simuladas por la escena 3D. Por programar."
+	},
+	"elevator": {
+		"label": "Ascensor",
+		"description": "Ascensor de 3 plantas: botones de llamada y de cabina, indicador de planta y lámparas en la escena 3D que simula la planta. Por programar."
+	},
+	"parking": {
+		"label": "Aparcamiento con barreras",
+		"description": "Dos barreras (entrada y salida) y un contador de plazas: sensores de coche en espera, una fotocélula bajo la barrera, una lámpara de «completo» y un contador en la escena 3D, donde los botones Llegada y Salida traen coches. Por programar."
+	},
+	"carton-sorting": {
+		"label": "Estación de clasificación de cajas",
+		"description": "Clasificación de cajas por altura: detección en el puesto, desvío con tres cilindros hacia dos cintas de salida, conteo. Planta simulada por la escena 3D. Por programar."
+	},
+	"linear-sequence": {
+		"label": "Secuencia lineal",
+		"description": "Un GRAFCET de 4 etapas, una sola cadena, sin temporización ni divergencia. Miniejercicio del módulo de formación."
+	},
+	"and-divergence": {
+		"label": "Divergencia en Y",
+		"description": "Una divergencia en Y cerrada por su convergencia, dos ramas paralelas. Miniejercicio del módulo de formación."
+	},
+	"or-divergence": {
+		"label": "Divergencia en O",
+		"description": "Una divergencia en O de dos ramas mutuamente excluyentes, cada una de las cuales vuelve por sí sola al estado inicial. Miniejercicio del módulo de formación."
+	},
+	"timer-cycle": {
+		"label": "Temporizador",
+		"description": "Un GRAFCET de 2 etapas que alterna según dos temporizaciones, sin entradas. Observación del módulo de formación."
+	},
+	"ladder-and-or": {
+		"label": "Contactos en serie y en paralelo",
+		"description": "Dos redes proporcionadas: cambia a y b en simulación para observar AND y OR. Miniejercicio del módulo de formación."
+	},
+	"ladder-reading": {
+		"label": "Leer un programa Ladder",
+		"description": "Cuatro redes combinacionales proporcionadas: predice las salidas y compruébalas en simulación. Miniejercicio del módulo de formación."
+	},
+	"ladder-logic": {
+		"label": "Iluminación conmutada",
+		"description": "Lógica combinacional: dos interruptores y una habilitación. Miniejercicio del módulo de formación."
+	},
+	"ladder-self-holding": {
+		"label": "Bomba: autorretención",
+		"description": "Arranque por pulsador, prioridad de paro, autorretención. Miniejercicio del módulo de formación."
+	},
+	"ladder-interlock": {
+		"label": "Motor con inversión de giro",
+		"description": "Dos autorretenciones enclavadas entre sí con un paro común. Miniejercicio del módulo de formación."
+	},
+	"ladder-memory": {
+		"label": "Bomba: fallo memorizado",
+		"description": "Relé térmico, lámpara de fallo memorizado, rearme sin reinicio automático. Miniejercicio del módulo de formación."
+	},
+	"ladder-edges-reading": {
+		"label": "Leer flancos",
+		"description": "La misma entrada en un contacto NO, P y N: registra el cronograma. Miniejercicio del módulo de formación."
+	},
+	"ladder-toggle": {
+		"label": "Telerruptor",
+		"description": "Un botón enciende y luego apaga una lámpara: orden de ejecución de las redes y contacto P. Miniejercicio del módulo de formación."
+	},
+	"ladder-gate": {
+		"label": "Portón motorizado",
+		"description": "Dos sentidos enclavados, finales de carrera, paro, fotocélula. El estudiante declara las entradas. Síntesis del módulo de formación."
+	},
+	"ladder-timers-reading": {
+		"label": "Leer temporizadores",
+		"description": "Un TON, un TOF y un TP sobre la misma entrada: dibuja los cronogramas. Miniejercicio del módulo de formación."
+	},
+	"ladder-timers": {
+		"label": "Arranque estrella-triángulo",
+		"description": "Estrella y luego triángulo con un TON, ventilador mantenido por un TOF, intermitente con dos TON. Miniejercicio del módulo de formación."
+	},
+	"ladder-counters": {
+		"label": "Conteo",
+		"description": "Conteo de piezas (CTU), zona de almacenamiento intermedio (CTUD), stock (CTD). Miniejercicio del módulo de formación."
+	},
+	"ladder-tank": {
+		"label": "Depósito",
+		"description": "Histéresis de nivel, alarma, contador de arranques con un contacto P. Miniejercicio del módulo de formación."
+	},
+	"ladder-scaling": {
+		"label": "Escalado",
+		"description": "Cálculo de un nivel a partir de un valor bruto: desbordamiento, truncamiento, cálculo en REAL. Miniejercicio del módulo de formación."
+	},
+	"ladder-subprograms": {
+		"label": "Subprogramas",
+		"description": "Llama al subprograma de conteo desde el Main y observa el efecto de una llamada condicional. Miniejercicio del módulo de formación."
+	},
+	"ladder-packing": {
+		"label": "Encajado de cajas",
+		"description": "Cinta, fallo, conteo y cambio de caja en subprogramas. Sin variables proporcionadas. Síntesis del módulo de formación."
+	},
+	"linear-sequence-naive-ladder": {
+		"label": "Secuencia lineal: método de manual",
+		"description": "GRAFCET lineal implementado con una autorretención por etapa: observa el solapamiento. Miniejercicio del módulo de formación."
+	},
+	"linear-sequence-ladder": {
+		"label": "Secuencia lineal en Ladder",
+		"description": "Implementa un GRAFCET lineal en Ladder, una red por transición. Miniejercicio del módulo de formación."
+	},
+	"drilling-ladder": {
+		"label": "Estación de taladrado en Ladder",
+		"description": "GRAFCET de taladrado en Ladder, temporizador y vigilancia del descenso. Síntesis del módulo de formación."
+	},
+	"or-divergence-ladder": {
+		"label": "Divergencia en O en Ladder",
+		"description": "Una divergencia en O implementada en Ladder. Miniejercicio del módulo de formación."
+	},
+	"and-divergence-ladder": {
+		"label": "Divergencia en Y en Ladder",
+		"description": "Una divergencia en Y implementada en Ladder. Miniejercicio del módulo de formación."
+	},
+	"traffic-light-ladder": {
+		"label": "Semáforo en Ladder",
+		"description": "Semáforo en Ladder con reinicio y paro al final del ciclo. Miniejercicio del módulo de formación."
+	},
+	"parking-ladder": {
+		"label": "Aparcamiento en Ladder",
+		"description": "Control de un aparcamiento en Ladder, señalización proporcionada, reinicio. Síntesis del módulo de formación."
+	},
+	"gate-per-transition-ladder": {
+		"label": "Portón con mando a distancia: una red por transición",
+		"description": "Portón de un solo botón implementado con una red por transición. Ejemplo del módulo de formación."
+	},
+	"gate-grafcet-ladder": {
+		"label": "Portón con mando a distancia: tres bloques",
+		"description": "Portón de un solo botón implementado en tres bloques. Ejemplo del módulo de formación."
+	}
+}

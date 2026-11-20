@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
+import type { Locale } from "@/i18n/config";
 import { getMessages } from "@/i18n/messages";
 import TEMPLATE_MNEMONICS_EN from "@/templates/template-mnemonics.en";
 import GLOSSARY_ENTRIES from "./glossary/glossary-entries";
@@ -27,7 +28,7 @@ function strings(value: unknown): string[] {
 	return [];
 }
 
-function figureSources(locale: "fr" | "en"): string[] {
+function figureSources(locale: Locale): string[] {
 	const fromTraining = strings(getMessages(locale).training).flatMap((text) =>
 		[...text.matchAll(/src=\\?"(\/[^"\\]+\.svg)\\?"/g)].map((m) => m[1]),
 	);
@@ -60,7 +61,7 @@ function frenchMnemonicsIn(node: string): string[] {
 }
 
 describe("figures de la formation et du glossaire", () => {
-	describe.each(["fr", "en"] as const)("%s", (locale) => {
+	describe.each(["fr", "en", "es"] as const)("%s", (locale) => {
 		const sources = figureSources(locale);
 
 		it("référence uniquement des fichiers existants", () => {
@@ -71,8 +72,8 @@ describe("figures de la formation et du glossaire", () => {
 		});
 
 		if (locale === "fr") {
-			it("ne référence jamais une variante -en", () => {
-				expect(sources.filter((src) => src.endsWith("-en.svg"))).toEqual([]);
+			it("ne référence jamais une variante traduite (-en, -es)", () => {
+				expect(sources.filter((src) => /-(en|es)\.svg$/.test(src))).toEqual([]);
 			});
 		} else {
 			it("n'affiche aucun mnémonique français dans le texte des figures", () => {
@@ -86,11 +87,13 @@ describe("figures de la formation et du glossaire", () => {
 				expect(offenders).toEqual([]);
 			});
 
-			it("référence la variante -en dès qu'elle existe", () => {
+			it(`référence la variante -${locale} dès qu'elle existe`, () => {
 				const french = sources.filter(
 					(src) =>
-						!src.endsWith("-en.svg") &&
-						existsSync(join(PUBLIC_DIR, src.replace(/\.svg$/, "-en.svg"))),
+						!src.endsWith(`-${locale}.svg`) &&
+						existsSync(
+							join(PUBLIC_DIR, src.replace(/(-en)?\.svg$/, `-${locale}.svg`)),
+						),
 				);
 				expect(french).toEqual([]);
 			});

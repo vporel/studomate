@@ -1,0 +1,7 @@
+{
+	"statement": "## Divergencia en Y en Ladder\n\nGRAFCET: S0 → `cycle_start` → S1 (`output1`) y S2 (`output2`) → `sensor1 AND sensor2` → S0.\n\nEntradas: `cycle_start` (pulsador), `sensor1` y `sensor2`. Salidas: `output1` y `output2`. Marcas proporcionadas: `X0` a `X2`. El proyecto proporciona los programas vacíos `Automatic_cycle` y `Outputs`, llamados por el Main en este orden.\n\n### Tarea\n\n1. Implementa el GRAFCET, una red por transición en `Automatic_cycle` y luego una red por salida en `Outputs`: `X0 -> X1 + X2` activa `X1` y `X2`; `X1 + X2 -> X0` requiere `X1`, `X2` y ambos sensores, y desactiva las dos etapas.\n2. Comprueba: tras `cycle_start`, las dos salidas están a verdadero; con `sensor1` solo, nada cambia; en cuanto `sensor1` y `sensor2` están ambos a verdadero, se vuelve a `X0`.",
+	"texts": {
+		"projectName": "Divergencia en Y en Ladder",
+		"solutionName": "Divergencia en Y en Ladder: solución"
+	}
+}

@@ -1,0 +1,28 @@
+{
+	"statement": "## Encajado de cajas\n\nNo se proporciona ninguna variable: establece y declara la tabla completa de entradas, salidas y marcas (nombre, función, tipo, naturaleza, comportamiento físico de las entradas).\n\n### Especificación\n\n1. Cinta con marcha/paro: una pulsación de Start la pone en marcha y una pulsación de Stop la detiene (prioridad de paro).\n2. El relé térmico está cableado normalmente cerrado: en funcionamiento normal su contacto está cerrado (variable verdadera) y un fallo la pone a falso (flanco descendente). Un fallo detiene la cinta y se memoriza; una vez desaparecido, hace falta una nueva pulsación de Start.\n3. Lámpara de fallo: intermitente (base de tiempos del sistema `_SYS_TB_500ms`) mientras el fallo no esté reconocido con el botón Ack, fija si está reconocido pero sigue presente, apagada una vez que ha desaparecido.\n4. Conteo de piezas en el flanco ascendente del sensor, preselección de 5; en la 5.ª pieza, la cinta se detiene 5 s (cambio de caja), luego se reinicia automáticamente y el contador se pone a cero.\n5. Estructura el programa en subprogramas llamados incondicionalmente por el Main.",
+	"texts": {
+		"projectName": "Encajado de cajas",
+		"solutionName": "Encajado de cajas: solución",
+		"faultAndStartProgram": "Fallo y arranque",
+		"countingProgram": "Conteo",
+		"boxChangeProgram": "Cambio de caja",
+		"piecesCounter": "piece_counter",
+		"boxTimer": "t_box",
+		"faultMemoryTitle": "Memoria de fallo",
+		"faultMemoryDescription": "El relé térmico está cableado normalmente cerrado: su disparo es un flanco descendente.",
+		"ackTitle": "Reconocimiento",
+		"ackDescription": "El reconocimiento detiene la intermitencia, aunque el fallo siga presente.",
+		"faultLampTitle": "Lámpara de fallo",
+		"faultLampDescription": "Intermitente mientras el fallo no esté reconocido, fija si está reconocido pero sigue presente. Una base de tiempos del sistema es una señal cuadrada, utilizable directamente para el parpadeo.",
+		"startTitle": "Arranque",
+		"startDescription": "Autorretención con prioridad de paro: un fallo la anula y hace falta una nueva pulsación de Start.",
+		"conveyorTitle": "Cinta",
+		"conveyorDescription": "Se detiene en la preselección del contador de piezas.",
+		"countingTitle": "Conteo de piezas",
+		"countingDescription": "El CTU cuenta en el flanco del sensor.",
+		"changeTimeTitle": "Tiempo de cambio",
+		"changeTimeDescription": "El TON mide el cambio de caja.",
+		"resetTitle": "Reinicio",
+		"resetDescription": "Reinicio automático: el contador vuelve a empezar desde cero."
+	}
+}

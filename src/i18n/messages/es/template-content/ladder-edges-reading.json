@@ -1,0 +1,14 @@
+{
+	"statement": "## Lectura de flancos\n\nUna sola entrada `selector` (un selector que mantiene su posición) gobierna tres salidas: `s_no` (contacto NO), `s_p` (contacto P), `s_n` (contacto N), cada una mediante una bobina S. `clear` pone a cero las tres.\n\n### Tarea\n\n1. En simulación paso a paso, pon `selector` a 1, avanza varios ciclos y luego vuélvelo a poner a 0.\n2. Anota ciclo a ciclo el estado de los tres **contactos** (color en el editor) y de las tres salidas: es un cronograma. Como las salidas quedan retenidas por S, pulsa `clear` entre dos pruebas.\n3. Explica por qué el contacto P y el contacto N solo conducen durante un único ciclo, mientras que `s_p` y `s_n` permanecen a verdadero una vez retenidos.",
+	"texts": {
+		"projectName": "Lectura de flancos",
+		"network1Title": "Red 1",
+		"network1Description": "Anota el estado de s_no ciclo a ciclo mientras selector pasa de 0 a 1 y vuelve a 0.",
+		"network2Title": "Red 2",
+		"network2Description": "Anota el estado de s_p ciclo a ciclo mientras selector pasa de 0 a 1 y vuelve a 0.",
+		"network3Title": "Red 3",
+		"network3Description": "Anota el estado de s_n ciclo a ciclo mientras selector pasa de 0 a 1 y vuelve a 0.",
+		"resetTitle": "Reinicio",
+		"resetDescription": "Al pulsar clear, las tres salidas vuelven a falso."
+	}
+}

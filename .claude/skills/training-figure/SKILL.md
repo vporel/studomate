@@ -1,30 +1,30 @@
 ---
 name: training-figure
-description: Create or revise an SVG illustration for a step of a Studomate training module (a0 to a4 under src/app/[locale]/training/), in FR and EN. Preliminary checks (audit list, existing or overlapping figures), the visual style guide derived from public/training/, pedagogical drawing rules, FR/EN pairing, wiring in both training.json files and verification.
+description: Create or revise an SVG illustration for a step of a Studomate training module (a0 to a5 under src/app/[locale]/training/), in FR, EN and ES. Preliminary checks (audit list, existing or overlapping figures), the visual style guide derived from public/training/, pedagogical drawing rules, per-locale variants, wiring in every training.json file and verification.
 ---
 
 # Skill: training figure
 
 This skill applies whenever a task asks to draw, add, redraw or fix an SVG illustration shown in a
-training step (modules a0 to a4), typically a `[SVG]` point of `_ai/audit-textes-formation.md`.
+training step (modules a0 to a5), typically a `[SVG]` point of `_ai/audit-textes-formation.md`.
 Writing or restructuring the step text itself belongs to the `training-step` skill.
 
 ## Before drawing
 
-1. **Locate the step**: module, step id (`src/app/[locale]/training/<module>/step-ids.ts`), body key
+1. **Locate the step**: module, step id (`src/training/step-ids/<module>.ts`), body key
    in `training.json` (`<step>Body`, an array of blocks) and the block the figure follows.
 2. **State the idea in one sentence**: what the learner must understand by looking at the figure.
    If the request does not let you write that sentence, or the content is ambiguous (which case,
    which values, which mnemonics, whether it may reveal an exercise solution), ask the developer.
 3. **Look for an existing or overlapping figure** before drawing a new one:
-   - `ls -R public/training/` and the `src="/training/...` references in both `training.json`;
+   - `ls -R public/training/` and the `src="/training/...` references in every `training.json`;
    - the `[SVG]` lists of `_ai/audit-textes-formation.md`. Requests overlap across modules
      (GRAFCET diagrams in a0, a1 and a4; AND/OR; timing diagrams in a1 and a3): reuse, extend or
      place an existing figure again rather than drawing a near-duplicate. Report the overlap and
      your choice.
 4. **Screenshots of the app UI** (editor, analysis panel, simulation) are not drawn: ask the
    developer for the capture.
-5. **Read the step text in both locales**: the figure must use the same mnemonics, values, step
+5. **Read the step text in every locale**: the figure must use the same mnemonics, values, step
    numbers and wording as the text of its locale, and must not answer a question the step asks
    the learner (exercise statements show the setting, never the solution).
 
@@ -34,8 +34,9 @@ Writing or restructuring the step text itself belongs to the `training-step` ski
   content, `public/training/` root for module-agnostic figures (a0 concepts, shared chronograms).
 - Name: kebab-case, English words, descriptive (`or-divergence-chronogram.svg`). Older root and a0
   files have French names (`automatisme-chaine.svg`): don't rename them, don't imitate them.
-- FR file `name.svg`, EN file `name-en.svg`, same folder. A figure with no translatable text (only
-  symbols, pin names like `IN`/`Q`/`CV`, numbers) is a single file shared by both locales
+- FR file `name.svg`, EN file `name-en.svg`, ES file `name-es.svg`, same folder. A figure with no
+  translatable text (only symbols, pin names like `IN`/`Q`/`CV`, numbers) is a single file shared
+  by every locale
   (`edges-chronogram.svg`, `ladder/counter-ctu-block.svg`).
 
 ## Visual style
@@ -157,32 +158,35 @@ hues: a new colour needs a meaning not covered above, and you say so in your rep
   not state, change the text too (`training-step` skill) or drop it from the figure.
 - Colour is never the only carrier of meaning: pair it with a label, a mark or a shape.
 - Prose punctuation: a colon rather than an em dash. FR follows French typography (`Feu : ...`,
-  space before `?`), EN does not (`Light: ...`).
+  space before `?`), EN and ES do not (`Light: ...`, `Semáforo: ...`).
 
-## FR and EN
+## FR, EN and ES
 
-- Draw the FR file first, then copy it to `-en.svg` and change only `<text>` contents (and
-  optional comments). Geometry, viewBox and attributes stay identical.
+- Draw the FR file first, then copy it to `-en.svg` and `-es.svg` and change only `<text>`
+  contents (and optional comments). Geometry, viewBox and attributes stay identical.
 - Translate every visible word, including mnemonics when the EN step text uses translated ones
   (`voiture_detectee` / `car_detected`); keep them when the EN text keeps them (`dcy`, `fin1`,
-  `sortie1` in the a1 templates). Check the EN step text.
-- `VRAI`/`FAUX` become `TRUE`/`FALSE`, `ET`/`OU`/`NON` become `AND`/`OR`/`NOT`.
-- EN text is often longer: check that no label overflows a box or collides with a neighbour; widen
-  the shared geometry in both files if needed.
-- Compare the pair: `diff <(grep -v '<text' name.svg) <(grep -v '<text' name-en.svg)` shows
-  only comment lines.
+  `sortie1` in the a1 templates). Check the EN step text. ES projects use the English mnemonics:
+  the `-es` file keeps exactly the mnemonics of the `-en` file and translates the rest.
+- `VRAI`/`FAUX` become `TRUE`/`FALSE` and `ET`/`OU`/`NON` become `AND`/`OR`/`NOT`, in EN and in ES
+  (ES projects use the EN dialect); ES prose labels say *verdadero*/*falso*.
+- EN and above all ES text is often longer: check that no label overflows a box or collides with
+  a neighbour; widen the shared geometry in every file if needed.
+- Compare each variant: `diff <(grep -v '<text' name.svg) <(grep -v '<text' name-es.svg)` (same
+  for `-en`) shows only comment lines.
 
 ## Wiring
 
 - Insert the figure as its own block of the step's body array, right after the paragraph it
-  illustrates, in both `src/i18n/messages/fr/training.json` and `en/training.json`, at the same
-  index:
+  illustrates, in `src/i18n/messages/fr/training.json`, `en/training.json` and
+  `es/training.json`, at the same index:
 
 ```json
 "<div style=\"text-align:center\"><figure><img src=\"/training/grafcet/name.svg\" width=\"440\" alt=\"...\" /></figure></div>",
 ```
 
-- `src`: FR body points to `name.svg`, EN body to `name-en.svg` (or both to the single neutral file).
+- `src`: FR body points to `name.svg`, EN body to `name-en.svg`, ES body to `name-es.svg` (or all
+  to the single neutral file).
 - `width`: about 0.7 to 0.85 of the viewBox width, 560 at most (in use: 560 for 700 to 800 wide,
   440 for 520 wide, 300 to 380 for smaller ones). Check that text renders at about 10 px.
 - `alt`: what the figure teaches, in the locale of the body, as a full description a reader can
@@ -195,18 +199,19 @@ hues: a new colour needs a meaning not covered above, and you say so in your rep
 ## Verification
 
 ```bash
-xmllint --noout public/training/<path>/name.svg public/training/<path>/name-en.svg
+xmllint --noout public/training/<path>/name.svg public/training/<path>/name-en.svg public/training/<path>/name-es.svg
 # every referenced training image exists
-for l in fr en; do grep -o 'src=\\"/training/[^\\]*' src/i18n/messages/$l/training.json | sed 's/src=\\"//' | while read p; do [ -f "public$p" ] || echo "$l missing: $p"; done; done
-# FR and EN reference the same figures, in the same order
-diff <(grep -o 'src=\\"/training/[^\\]*' src/i18n/messages/fr/training.json | sed 's/-en\.svg/.svg/') <(grep -o 'src=\\"/training/[^\\]*' src/i18n/messages/en/training.json | sed 's/-en\.svg/.svg/')
-# no FR body points to an EN file (match -en.svg, not "-entree" or "-end")
-grep -o 'src=\\"/training/[^\\]*-en\.svg' src/i18n/messages/fr/training.json
+for l in fr en es; do grep -o 'src=\\"/training/[^\\]*' src/i18n/messages/$l/training.json | sed 's/src=\\"//' | while read p; do [ -f "public$p" ] || echo "$l missing: $p"; done; done
+# every locale references the same figures, in the same order
+for l in en es; do diff <(grep -o 'src=\\"/training/[^\\]*' src/i18n/messages/fr/training.json) <(grep -o 'src=\\"/training/[^\\]*' src/i18n/messages/$l/training.json | sed "s/-$l\.svg/.svg/"); done
+# no FR body points to a translated file (match -en.svg/-es.svg, not "-entree" or "-end")
+grep -oE 'src=\\"/training/[^\\]*-(en|es)\.svg' src/i18n/messages/fr/training.json
 ```
 
-- No test checks training figures; these commands are the check. Run the training tests
-  (`npx jest "src/app/\[locale\]/training"`) only if `steps.ts` or `step-ids.ts` changed.
-- Both `training.json` files still parse (`node -e "require('./src/i18n/messages/fr/training.json')"`).
+- `src/app/[locale]/training/training-figures.test.ts` checks that every referenced figure exists,
+  that FR never points to a translated variant and that EN and ES use their variant when it
+  exists: run it with the commands above.
+- Every `training.json` file still parses (`node -e "require('./src/i18n/messages/fr/training.json')"`).
 - Don't open the browser to check the rendering: the developer does it.
 
 ## Checklist
@@ -214,8 +219,8 @@ grep -o 'src=\\"/training/[^\\]*-en\.svg' src/i18n/messages/fr/training.json
 - [ ] Overlap with existing figures and other audit requests checked; reuse chosen when possible.
 - [ ] One idea, short labels, same mnemonics and values as the step text, no solution given away.
 - [ ] Root element, palette, sizes, strokes and symbols as above; tabs; no external reference.
-- [ ] FR and `-en` files with identical geometry, every visible word translated, no overflow.
-- [ ] Figure block at the same index in both bodies, `src` per locale, `width`, descriptive `alt`.
+- [ ] FR, `-en` and `-es` files with identical geometry, every visible word translated, no overflow.
+- [ ] Figure block at the same index in every body, `src` per locale, `width`, descriptive `alt`.
 - [ ] `xmllint`, existence and parity commands pass.
 - [ ] Report: files created or changed, overlaps found, any new colour or deviation from this guide,
       and the audit point it resolves (the point is removed through the `process-audit` flow).

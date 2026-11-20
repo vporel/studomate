@@ -132,6 +132,16 @@ describe("ProjectLifecycleManager", () => {
 			expect(store.getState().ui.newProjectModalVisible).toBe(false);
 		});
 
+		it("nomme le projet vierge dans la langue de l'interface", async () => {
+			const store = createProjectStore(
+				createAppProjectStoreEnvironment({ getLocale: () => "es" }),
+			);
+
+			await lifecycle(store).newProjectFromTemplate(null);
+
+			expect(store.getState().project?.name).toBe("Nuevo proyecto");
+		});
+
 		it("injecte l'énoncé du template dans le projet, exercice comme solution", async () => {
 			const store = createProjectStore(createAppProjectStoreEnvironment());
 

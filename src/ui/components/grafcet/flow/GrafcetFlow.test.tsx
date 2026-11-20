@@ -1,7 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { act, fireEvent, render } from "@testing-library/react";
+import { act, fireEvent } from "@testing-library/react";
+import { renderWithI18n as render } from "@tests/utils/i18n";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ProjectMode } from "@/ui/stores/project/project-mode.enum";

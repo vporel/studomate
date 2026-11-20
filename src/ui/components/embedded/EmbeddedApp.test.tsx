@@ -24,9 +24,10 @@ jest.mock("../3d-scene/InlineScene", () => ({
 	default: () => <div data-testid="inline-scene" />,
 }));
 
+let mockLocale = "fr";
 jest.mock("next-intl", () => ({
 	...jest.requireActual("next-intl"),
-	useLocale: () => "fr",
+	useLocale: () => mockLocale,
 }));
 
 function renderApp(props: Partial<EmbeddedAppProps> = {}) {
@@ -50,7 +51,10 @@ describe("EmbeddedApp", () => {
 		jest.mocked(handleEditingShortcut).mockClear();
 		jest.mocked(handleEditingShortcut).mockReturnValue(false);
 	});
-	afterEach(() => jest.useRealTimers());
+	afterEach(() => {
+		jest.useRealTimers();
+		mockLocale = "fr";
+	});
 
 	it("shows the grafcet of the view", () => {
 		const { container } = renderApp();
@@ -139,6 +143,26 @@ describe("EmbeddedApp", () => {
 		);
 		expect(container.querySelector("#page-g2")).toHaveStyle("display: flex");
 		expect(container.querySelector("#page-g1")).toHaveStyle("display: none");
+	});
+
+	it("titles the tabs in the interface language", () => {
+		mockLocale = "es";
+		render(
+			<EmbeddedApp
+				project={ProjectFactory.createWithGrafcets([
+					GrafcetFactory.createSimpleCycle("g1"),
+				])}
+				views={[
+					{ type: "grafcet", id: "g1" },
+					{ type: "variables", pageId: "input-variables" },
+				]}
+			/>,
+			{ wrapper: i18nWrapper("es") },
+		);
+
+		expect(screen.getAllByRole("tab")[1]).toHaveTextContent(
+			"Variables de entrada",
+		);
 	});
 
 	it("lets a tab shrink below the width of its content", () => {

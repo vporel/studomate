@@ -440,7 +440,7 @@ export const createProjectStore = (env: ProjectStoreEnvironment) => {
 			//=============== HMI ===============
 			hmiStoresValues: {},
 			hmiStoresManagers: {},
-			hmiManager: new HmiManager(set, get, env.analytics),
+			hmiManager: new HmiManager(set, get, env.analytics, env.getLocale),
 			hmiSimulationActivePageId: null,
 
 			//=============== PAGES ===============

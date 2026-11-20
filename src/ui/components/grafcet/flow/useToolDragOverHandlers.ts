@@ -1,10 +1,16 @@
 "use client";
 
 import { createRandomId } from "@/ids";
+import { useT } from "@/ui/i18n/useT";
 import { useReactFlow } from "@xyflow/react";
 import { useCallback } from "react";
 import { useGrafcetStore } from "../context/GrafcetContext";
 import { useGrafcetToolbarDnD } from "../toolbar/GrafcetToolbarDnDContext";
+import newElementData from "../toolbar/new-element-data";
+import {
+	type GrafcetElementsTranslator,
+	grafcetElementTypeLabel,
+} from "./describe-grafcet-element";
 import {
 	GrafcetNodeType,
 	GRAFCET_ELEMENTS_CONFIG,
@@ -17,6 +23,9 @@ export default function useToolDragOverHandlers(): [
 	const { draggedItem } = useGrafcetToolbarDnD();
 	const { screenToFlowPosition } = useReactFlow();
 	const workflowManager = useGrafcetStore((state) => state.workflowManager);
+	const t = useT(
+		"grafcetEditor.elements",
+	) as unknown as GrafcetElementsTranslator;
 
 	const handleToolDragOver = useCallback((e: React.DragEvent) => {
 		e.preventDefault();
@@ -36,15 +45,17 @@ export default function useToolDragOverHandlers(): [
 				id: createRandomId(),
 				type,
 				position,
-				data: elementClass.generateDefaultData(
-					type === "step" ? draggedItem.extraData : undefined,
+				data: newElementData(
+					draggedItem,
+					elementClass,
+					grafcetElementTypeLabel("comment", t),
 				),
 				width: elementClass.DEFAULT_DIMENSIONS.width,
 				height: elementClass.DEFAULT_DIMENSIONS.height,
 			} as GrafcetNodeType;
 			workflowManager.addDroppedNode(newNode);
 		},
-		[draggedItem, screenToFlowPosition, workflowManager],
+		[draggedItem, screenToFlowPosition, workflowManager, t],
 	);
 
 	return [handleToolDragOver, handleToolDrop];

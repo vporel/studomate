@@ -1,0 +1,6 @@
+{
+	"statement": "## Portón con mando a distancia: una red por transición\n\nEl mismo GRAFCET del portón, implementado con una red por transición (`X0 -> X1` a `X5 -> X1`), en el orden del GRAFCET, en el programa `Automatic_cycle`, y luego las salidas `open` y `close` en `Outputs`.\n\n### A observar\n\n1. Con el portón cerrado (`limit_closed` a verdadero), una pulsación de `remote` debería abrirlo: observa `open` y las etapas `X0` a `X5` en la tabla de seguimiento.\n2. ¿Por qué `X0` vuelve a estar activa?",
+	"texts": {
+		"projectName": "Portón con mando a distancia: una red por transición"
+	}
+}

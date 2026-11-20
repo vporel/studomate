@@ -125,5 +125,15 @@
 		"rectangle": "Rectangle: a rectangular shape. Options: fill colour, stroke colour and width, corner radius.",
 		"ellipse": "Ellipse: an oval or circular shape. Options: fill colour, stroke colour and width. The \"Link width and height\" box (Dimensions section) locks the current ratio.",
 		"line": "Line: a solid-colour segment. Options: colour, width and orientation (horizontal / vertical)."
+	},
+	"defaultLabels": {
+		"push-button": "PB",
+		"toggle-switch": "Switch",
+		"indicator": "Light",
+		"numeric-display": "Display",
+		"gauge": "Gauge",
+		"numeric-input": "Input",
+		"slider": "Slider",
+		"text": "Text"
 	}
 }

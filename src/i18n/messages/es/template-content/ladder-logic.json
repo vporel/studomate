@@ -1,0 +1,9 @@
+{
+	"statement": "## Iluminación conmutada\n\nEntradas: `sw1`, `sw2`, `enable` (tres interruptores mantenidos, a 0 en reposo). Salida: `lamp`.\n\n### Tarea\n\nEn el programa Main se desea el siguiente comportamiento:\n\n- La lámpara cambia de estado cuando se acciona cualquiera de los dos interruptores (conmutación).\n- La lámpara solo se enciende si `enable` está activo.\n\n1. Completa la tabla de verdad de la lámpara (con `enable` activo).\n2. Escribe la red que gobierna `lamp`.\n3. Comprueba las cuatro combinaciones en simulación, con `enable` activo y luego inactivo.",
+	"texts": {
+		"projectName": "Iluminación conmutada",
+		"solutionName": "Iluminación conmutada: solución",
+		"lightingTitle": "Iluminación",
+		"lightingDescription": "La lámpara se enciende cuando exactamente uno de los dos interruptores está activado, si enable está activo."
+	}
+}

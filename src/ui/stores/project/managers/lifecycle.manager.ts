@@ -1,6 +1,4 @@
-import Project, {
-	DEFAULT_PROJECT_NAME,
-} from "@/schemas/project/project.schema";
+import Project from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
 import type { Locale } from "@/i18n/config";
 import { PROJECT_TEMPLATES } from "@/templates/index";
@@ -25,6 +23,7 @@ import {
 	getInitialPagesData,
 	restorePagesSession,
 } from "../pages-session-restore";
+import defaultContent from "../default-content";
 import resolveDefaultDialect from "../default-dialect";
 import resolveSaveLocationIfNeeded from "../save-location";
 import {
@@ -166,7 +165,11 @@ export default class ProjectLifecycleManager {
 	}
 
 	private async createBlankProject(): Promise<Project> {
-		const project = new Project(createRandomId(), DEFAULT_PROJECT_NAME, "");
+		const project = new Project(
+			createRandomId(),
+			defaultContent(this.env.getLocale()).projectName,
+			"",
+		);
 		const dialect = await resolveDefaultDialect(this.setStoreState, this.env);
 		if (dialect) project.setDialect(dialect);
 		return project;

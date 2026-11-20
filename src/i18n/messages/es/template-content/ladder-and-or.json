@@ -1,0 +1,8 @@
+{
+	"statement": "## Contactos en serie y en paralelo\n\nEntradas: `a`, `b` (dos selectores que mantienen su posición, a 0 en reposo). Salidas: `s_and`, `s_or`.\n\n### Tarea\n\n1. Abre el programa Main: dos redes, una debajo de la otra.\n2. Inicia la simulación y luego cambia `a` y `b` por las cuatro combinaciones.\n3. Compara `s_and` y `s_or` con la tabla de verdad de la teoría.",
+	"texts": {
+		"projectName": "Contactos en serie y en paralelo",
+		"seriesTitle": "Contactos en serie",
+		"parallelTitle": "Contactos en paralelo"
+	}
+}

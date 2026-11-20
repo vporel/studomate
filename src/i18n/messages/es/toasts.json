@@ -1,0 +1,96 @@
+{
+	"updateAvailable": "Nueva versión disponible: haz clic aquí para recargar.",
+	"updateBlockedByUnsavedChanges": "Guarda tu proyecto antes de recargar: perderías tus cambios.",
+	"analysisComplete": "Análisis completado: {elements, plural, one {# elemento analizado} other {# elementos analizados}}, {errors, plural, =0 {no hay errores} one {# error} other {# errores}} y {warnings, plural, =0 {no hay advertencias} one {# advertencia} other {# advertencias}}.",
+	"simulationStarting": "Compilación completada, iniciando la simulación…",
+	"simulationCouldNotStart": "No se puede iniciar la simulación: {count, plural, one {# error} other {# errores}} durante {step, select, preCompilation {la precompilación} other {la compilación}}.",
+	"simulationCrashed": "Simulación detenida. Error durante la ejecución del ciclo del PLC.",
+	"scene3dOpenBlocked": "No se pudo abrir la escena 3D: el navegador bloqueó la ventana. Haz clic aquí para abrirla.",
+	"simulationCrashedWithReason": "Simulación detenida. {reason}",
+	"save": {
+		"storageFull": "No se puede guardar: el almacenamiento del navegador está lleno. Exporta el proyecto a un archivo para no perder tu trabajo.",
+		"storageUnavailable": "No se puede guardar: el almacenamiento del navegador no está disponible (¿navegación privada?). Exporta el proyecto a un archivo.",
+		"cloudUnreachable": "No se puede guardar en la nube: comprueba tu conexión y que hayas iniciado sesión. Exporta el proyecto a un archivo para no perder tu trabajo.",
+		"conflict": "Este proyecto se modificó en otro lugar mientras tanto. Recarga la versión en línea o guarda tus cambios con otro nombre.",
+		"generic": "No se puede guardar. Exporta el proyecto a un archivo para no perder tu trabajo."
+	},
+	"draftCorrupted": "El borrador está dañado y no se pudo abrir.",
+	"cloudReloadFailed": "No se pudo recargar la versión en línea del proyecto.",
+	"projectReloadFailed": "No se pudo cargar el proyecto guardado.",
+	"shareLinkOpenFailed": "No se pudo abrir el proyecto compartido: comprueba tu conexión y que el enlace sea válido.",
+	"shareLinkFailed": "No se pudo crear el enlace para compartir.",
+	"moveToCloudConflict": "Ya existe un proyecto en la nube con este identificador, probablemente enviado desde otro dispositivo.",
+	"moveToCloudFailed": "No se pudo enviar el proyecto a la nube. Comprueba tu conexión.",
+	"shareRevokeFailed": "No se pudo revocar el uso compartido.",
+	"shareLoginPrompt": "Inicia sesión para compartir este proyecto.",
+	"pasteWrongScope": "No se puede pegar aquí: el portapapeles contiene elementos de otro tipo de página.",
+	"hardwareLinked": "Enlace en línea establecido con la placa Arduino.",
+	"hardwareLinkLost": "Se perdió el enlace con la placa. Sus salidas volvieron al estado de seguridad.",
+	"hardwareLinkFailed": {
+		"handshake-timeout": "La placa no responde: el firmware de Studomate no está instalado en ella.",
+		"protocol-mismatch": "El firmware de la placa no es compatible con esta versión de Studomate.",
+		"config-rejected": "La placa rechazó la configuración de los pines.",
+		"transport": "No se puede comunicar con la placa. Comprueba el cable USB y que ningún otro programa o pestaña (Studomate incluido) esté usando el puerto.",
+		"firmware-outdated": "El firmware de la placa es demasiado antiguo para esta versión de Studomate."
+	},
+	"hardwareProgramUploaded": "Programa cargado en la placa. Ahora lo ejecuta por sí sola: puedes desconectar el cable USB.",
+	"hardwareProgramBlocked": {
+		"IMAGE_TOO_LARGE": "El programa es demasiado grande para la placa: {size} bytes para {limit} disponibles.",
+		"IMAGE_TOO_LARGE_WITH_PROGRAM": "El programa es demasiado grande para la placa: {size} bytes para {limit} disponibles. El programa más grande es \"{program}\" ({programSize} bytes).",
+		"VARIABLE_MEMORY_EXCEEDED": "Las variables necesitan {size} bytes de memoria, la placa ofrece {limit}.",
+		"STACK_TOO_DEEP": "Una expresión es demasiado profunda para la placa (profundidad {depth}, máximo {limit}). Divídela.",
+		"CALL_DEPTH_EXCEEDED": "Los programas se llaman entre sí con demasiada profundidad para la placa (profundidad {depth}, máximo {limit}).",
+		"JUMP_NESTING_EXCEEDED": "Las condiciones están anidadas con demasiada profundidad para la placa (máximo {limit} niveles)."
+	},
+	"hardwareProgramFailed": {
+		"analysis": "Corrige los errores indicados por el análisis antes de cargar el programa en la placa.",
+		"compilation": "El proyecto no compila: no se puede cargar el programa en la placa.",
+		"unsupported": "El proyecto usa una función que la placa no puede ejecutar.",
+		"exchange-rejected": "La placa rechazó el programa.",
+		"exchange-timeout": "La placa dejó de responder mientras se cargaba el programa. Inténtalo de nuevo.",
+		"exchange-mismatch": "La placa no almacenó el programa que se cargó. Inténtalo de nuevo.",
+		"transport": "No se puede comunicar con la placa. Comprueba el cable USB."
+	},
+	"hardwareProgramCommandFailed": {
+		"exchange-rejected": "La placa no pudo iniciar su programa: no contiene ningún programa válido o le falta memoria para él.",
+		"exchange-timeout": "La placa no respondió. Inténtalo de nuevo.",
+		"exchange-mismatch": "La placa no respondió como se esperaba. Inténtalo de nuevo.",
+		"transport": "No se puede comunicar con la placa. Comprueba el cable USB."
+	},
+	"hardwareOnlineFailed": {
+		"analysis": "Corrige los errores indicados por el análisis antes de observar la placa.",
+		"compilation": "El proyecto no compila: su programa no se puede comparar con el de la placa.",
+		"unsupported": "El proyecto usa una función que la placa no puede ejecutar.",
+		"no-program": "La placa no contiene ningún programa: cárgalo primero.",
+		"program-differs": "El programa de la placa no es el del proyecto: vuelve a cargarlo antes de observar la placa.",
+		"exchange-rejected": "La placa se negó a iniciar su programa.",
+		"exchange-timeout": "La placa no respondió. Inténtalo de nuevo.",
+		"exchange-mismatch": "La placa no respondió como se esperaba. Inténtalo de nuevo.",
+		"transport": "No se puede comunicar con la placa. Comprueba el cable USB."
+	},
+	"hardwareOnlineLost": {
+		"program-differs": "La placa ahora ejecuta un programa distinto al del proyecto: se abandonó la observación de la placa.",
+		"board-stopped": "Se detuvo el programa de la placa: se abandonó la observación de la placa."
+	},
+	"hardwareBoardFault": {
+		"1": "El programa de la placa se detuvo por una división por cero. Se cortaron las salidas.",
+		"2": "El programa de la placa se detuvo: los programas se llaman entre sí con demasiada profundidad. Se cortaron las salidas.",
+		"3": "El watchdog reinició la placa y esta no volvió a iniciar su programa.",
+		"4": "La placa contiene una imagen de programa no válida.",
+		"other": "El programa de la placa se detuvo por un fallo (código {fault}). Se cortaron las salidas."
+	},
+	"hardwareVariableWriteFailed": {
+		"exchange-rejected": "La placa rechazó el valor: su programa no conoce la variable.",
+		"exchange-timeout": "La placa no respondió: puede que el valor no se haya escrito.",
+		"exchange-mismatch": "La placa no respondió como se esperaba.",
+		"transport": "No se puede comunicar con la placa. Comprueba el cable USB."
+	},
+	"hardwareFlashFailed": {
+		"sync-failed": "No se puede instalar el firmware: la placa no responde. Comprueba que ningún otro programa esté usando el puerto. Solo se admite el Arduino Uno R3 original.",
+		"protocol-error": "No se puede instalar el firmware: respuesta inesperada de la placa. Solo se admite el Arduino Uno R3 original.",
+		"unsupported-board": "No se puede instalar el firmware: esta placa no es un Arduino Uno R3.",
+		"verify-failed": "Falló la instalación del firmware: la verificación encontró diferencias. Inténtalo de nuevo.",
+		"transport": "No se puede instalar el firmware: se interrumpió la comunicación con la placa.",
+		"firmware-unavailable": "No se puede instalar el firmware: no se encontró el archivo de firmware."
+	}
+}

@@ -1,0 +1,68 @@
+{
+	"toolbar": {
+		"zoomIn": "Acercar",
+		"zoomOut": "Alejar"
+	},
+	"menu": {
+		"addStep": "Añadir una etapa",
+		"addAction": "Añadir una acción",
+		"addTransition": "Añadir una transición",
+		"forceActive": "Forzar activa",
+		"forceInactive": "Forzar inactiva",
+		"releaseForce": "Liberar el forzado",
+		"selectAll": "Seleccionar todo",
+		"selectEdges": "Seleccionar los enlaces",
+		"paste": "Pegar",
+		"export": "Exportar",
+		"copy": "Copiar",
+		"cut": "Cortar",
+		"delete": "Eliminar",
+		"selectPivot": "Seleccionar el pivote",
+		"selectBranch": "Seleccionar una rama",
+		"deleteBranch": "Eliminar una rama",
+		"branch": "Rama {n}",
+		"actionType": "Tipo",
+		"actionMode": "Modo de ejecución"
+	},
+	"actionTypes": {
+		"text": "Texto",
+		"boolean_variable": "Variable booleana",
+		"numeric_variable": "Variable numérica",
+		"string_variable": "Variable de texto"
+	},
+	"actionModes": {
+		"continuous": "Continua",
+		"rising_edge": "Flanco ascendente",
+		"falling_edge": "Flanco descendente",
+		"set": "Activación (SET)",
+		"reset": "Desactivación (RESET)"
+	},
+	"elements": {
+		"types": {
+			"step": "Etapa",
+			"transition": "Transición",
+			"action": "Acción",
+			"step-referral-source": "Remisión de origen",
+			"step-referral-target": "Remisión de destino",
+			"junction-and-start": "Divergencia en Y",
+			"junction-and-end": "Convergencia en Y",
+			"junction-or-start": "Divergencia en O",
+			"junction-or-end": "Convergencia en O",
+			"comment": "Comentario"
+		},
+		"aria": {
+			"step": "Etapa {number}",
+			"initialStep": "Etapa inicial {number}",
+			"unnumberedStep": "Etapa (sin número)",
+			"transition": "Transición: {expression}",
+			"emptyTransition": "Transición (vacía)",
+			"action": "Acción: {expression}",
+			"emptyAction": "Acción (vacía)",
+			"comment": "Comentario: {text}",
+			"referralTo": "Remisión a la etapa {number}",
+			"referralToUnset": "Remisión a una etapa",
+			"referralFrom": "Remisión desde la etapa {number}",
+			"referralFromUnset": "Remisión desde una etapa"
+		}
+	}
+}

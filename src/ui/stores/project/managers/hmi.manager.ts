@@ -1,12 +1,19 @@
 import { deepObjectsComparison } from "@/lib/object";
 import { canEdit } from "../editability";
 import Project from "@/schemas/project/project.schema";
-import HmiPage, { HMI_PAGE_NAME_LABEL } from "@/schemas/hmi/hmi-page.schema";
+import type { Locale } from "@/i18n/config";
+import HmiPage from "@/schemas/hmi/hmi-page.schema";
 import {
 	HmiStoreManagers,
 	HmiStoreValues,
 	ProjectStoreState,
 } from "../project.store";
+import type {
+	ProjectStoreGetFunction,
+	ProjectStoreSetFunction,
+} from "../project.store.types";
+import type { ProjectStoreAnalytics } from "../environment/project-store-environment";
+import defaultContent from "../default-content";
 import AbstractDocumentsManager from "./abstract-documents.manager";
 
 /** Id fixe de l'unique onglet "Simulation HMI" (voir `HmiSimulationPageView`) — pas lié à une
@@ -19,6 +26,15 @@ export default class HmiManager extends AbstractDocumentsManager<
 	HmiStoreManagers
 > {
 	protected readonly documentType = "hmi" as const;
+
+	constructor(
+		setStoreState: ProjectStoreSetFunction,
+		getStoreState: ProjectStoreGetFunction,
+		analytics: ProjectStoreAnalytics,
+		private readonly getLocale: () => Locale,
+	) {
+		super(setStoreState, getStoreState, analytics);
+	}
 
 	protected getDocument(project: Project, id: string): HmiPage | undefined {
 		return project.getHmiPage(id);
@@ -58,13 +74,16 @@ export default class HmiManager extends AbstractDocumentsManager<
 		return managers.getHmiPage();
 	}
 
-	/** @param name Absent : auto-généré au format "Page HMI_N", unique parmi les pages du projet
-	 * (voir `Project.nextHmiPageName`). */
+	/** @param name When absent, generated as "<default name>_N" in the interface language
+	 * ("Page HMI_1", "HMI page_1"), unique among the project's pages (see
+	 * `Project.nextHmiPageName`). */
 	newHmiPage(name?: string): HmiPage | null {
 		const project = this.getStoreState().project;
 		if (!project) return null;
 		if (!canEdit(this.getStoreState())) return null;
-		const resolvedName = name ?? project.nextHmiPageName(HMI_PAGE_NAME_LABEL);
+		const resolvedName =
+			name ??
+			project.nextHmiPageName(defaultContent(this.getLocale()).hmiPageName);
 		const newProject = project.copy();
 		const page = newProject.createHmiPage(resolvedName);
 		this.analytics.trackEvent("hmi-page-created");

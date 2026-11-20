@@ -1,0 +1,163 @@
+{
+	"common": {
+		"cancel": "Cancelar",
+		"save": "Guardar",
+		"close": "Cerrar",
+		"login": "Iniciar sesión"
+	},
+	"list": {
+		"tabLocal": "Local",
+		"tabCloud": "Nube",
+		"empty": "Ningún proyecto guardado",
+		"safariAppStorage": "Esta aplicación instalada tiene su propio almacenamiento, separado de Safari: los proyectos guardados en Safari no aparecen aquí. Para traerlos, expórtalos desde Safari (Archivo, luego Exportar, como JSON) e impórtalos aquí con “Abrir desde un archivo...”.",
+		"lastModified": "Última modificación: {date} a las {time}",
+		"skippedProjects": "{count, plural, one {No se pudo abrir # proyecto} other {No se pudieron abrir # proyectos}} y no {count, plural, one {aparece} other {aparecen}} en la lista.",
+		"skippedProjectsNewerVersion": "{count, plural, one {No se pudo abrir # proyecto} other {No se pudieron abrir # proyectos}}: guardados por una versión más reciente de la aplicación. Ábrelos desde una versión actualizada.",
+		"cloudUnavailable": "No se pudieron cargar tus proyectos en la nube. Comprueba tu conexión.",
+		"sendToCloud": "Enviar a la nube",
+		"sendToCloudAria": "enviar a la nube",
+		"bringLocal": "Traer de vuelta a local",
+		"bringLocalAria": "traer de vuelta a local",
+		"delete": "Eliminar",
+		"confirmDelete": "¿Seguro que quieres eliminar este proyecto?",
+		"moveToCloudConflict": "Ya existe un proyecto en la nube con este identificador, probablemente enviado desde otro dispositivo. Recarga la lista.",
+		"moveToCloudFailed": "No se pudo enviar el proyecto a la nube. Comprueba tu conexión.",
+		"moveToLocalFailed": "No se pudo traer el proyecto de vuelta a local. Comprueba el espacio disponible."
+	},
+	"open": {
+		"title": "Abrir un proyecto",
+		"fromFile": "Abrir desde un archivo...",
+		"fileDialogName": "Archivos JSON",
+		"errors": {
+			"notJson": "Este archivo no es un archivo de proyecto legible: su contenido está mal formado.",
+			"notAProject": "Este archivo no contiene un proyecto de Studomate.",
+			"newerVersion": "Este proyecto fue guardado por una versión más reciente de Studomate. Actualiza la aplicación para abrirlo.",
+			"readFailed": "No se pudo leer el archivo.",
+			"saveFailed": "No se pudo guardar el proyecto en el navegador. Comprueba el espacio disponible."
+		}
+	},
+	"new": {
+		"title": "Nuevo proyecto",
+		"chooseStartingPoint": "Elige un punto de partida para tu proyecto.",
+		"emptyProject": "Proyecto vacío",
+		"emptyProjectDescription": "Empieza con un proyecto sin variables ni HMI.",
+		"templates": "Plantillas",
+		"solutionAvailable": "Hay una solución disponible.",
+		"openSolution": "Abrir la solución",
+		"create": "Crear"
+	},
+	"export": {
+		"title": "Exportar",
+		"formatPdf": "PDF",
+		"formatJson": "Archivo de proyecto (JSON)",
+		"scopeFull": "Proyecto completo",
+		"scopeActive": "Solo la página activa",
+		"scopeActiveNamed": "Solo la página activa ({name})",
+		"variablesPdfHeading": "{project} - {page} - exportado el {date}",
+		"openProgramHint": "Abre un grafcet, un ladder o una página de variables para exportarlo por separado.",
+		"includeCover": "Portada",
+		"includeVariables": "Tablas de variables",
+		"grafcets": "GRAFCET",
+		"ladders": "Ladders",
+		"filename": "Nombre del archivo",
+		"progressRendering": "Generando ({current}/{total}): {label}",
+		"progressAssembling": "Ensamblando el PDF…",
+		"exporting": "Exportando…",
+		"sectionTitleGrafcet": "GRAFCET - {name}",
+		"sectionTitleLadder": "Ladder - {name}",
+		"preparing": "Preparando…",
+		"errorCapture": "Falló la generación de “{name}”.",
+		"errorAssembling": "Falló la generación del PDF.",
+		"coverAuthor": "Autor: {author}",
+		"coverExportedOn": "Exportado el {date}",
+		"coverStats": "{grafcets} grafcet(s), {ladders} ladder(s), {variables} variable(s)",
+		"coverStatementHeading": "Enunciado"
+	},
+	"saveAs": {
+		"title": "Guardar como",
+		"name": "Nombre del proyecto"
+	},
+	"share": {
+		"title": "Compartir el proyecto",
+		"sharedAlert": "El proyecto está compartido. Cualquiera con el enlace puede verlo y simularlo.",
+		"linkLabel": "Enlace para compartir",
+		"copy": "Copiar",
+		"copyLinkAria": "Copiar el enlace",
+		"copied": "Enlace copiado al portapapeles.",
+		"revokeHint": "Al revocar el enlace, el uso compartido deja de estar disponible de inmediato.",
+		"revoke": "Revocar",
+		"noActiveLink": "Este proyecto no tiene ningún enlace para compartir activo.",
+		"close": "Cerrar"
+	},
+	"shareRequiresCloud": {
+		"title": "Enviar el proyecto a la nube",
+		"body": "Este proyecto está almacenado localmente en este dispositivo. Para compartirlo, primero hay que enviarlo a la nube. Solo podrá editarse desde tu cuenta.",
+		"confirm": "Enviar y compartir"
+	},
+	"storageLocation": {
+		"onThisDevice": "En este dispositivo",
+		"inTheCloud": "En la nube",
+		"loginRequired": "Se requiere iniciar sesión.",
+		"loginToSaveCloud": "Inicia sesión para guardar en la nube."
+	},
+	"saveLocation": {
+		"title": "¿Dónde guardar este proyecto?",
+		"body": "Este proyecto aún no está guardado. Elige dónde almacenarlo."
+	},
+	"unsavedChanges": {
+		"title": "Cambios sin guardar",
+		"defaultMessage": "¿Quieres guardar los cambios antes de salir del proyecto?",
+		"continueWithoutSaving": "Continuar sin guardar",
+		"close": "Cerrar",
+		"exportMessage": "Tienes cambios sin guardar. ¿Quieres guardarlos antes de exportar?"
+	},
+	"cloudConflict": {
+		"title": "Proyecto modificado en otro lugar",
+		"body1": "Este proyecto se guardó desde otro dispositivo después de abrirse aquí. Si guardas ahora, se sobrescribirían esos cambios.",
+		"body2": "¿Quieres tomar la versión en línea (tus cambios locales se perderán) o guardar tu trabajo con otro nombre?",
+		"reload": "Tomar la versión en línea",
+		"saveAs": "Guardar como..."
+	},
+	"draftConflict": {
+		"title": "Versión sin guardar encontrada",
+		"body1": "Este proyecto tiene una versión sin guardar más reciente que el último guardado.",
+		"body2": "¿Quieres continuar desde el borrador o desde la última versión guardada?",
+		"keepSaved": "Versión guardada",
+		"keepDraft": "Continuar el borrador"
+	},
+	"draftRecovery": {
+		"confirmDeleteTitle": "Confirmar la eliminación",
+		"confirmDeleteAll": "¿Eliminar todos los borradores? Esta acción no se puede deshacer.",
+		"deleteAll": "Eliminar todos",
+		"confirmDeleteOne": "¿Eliminar el borrador de {name}? Esta acción no se puede deshacer.",
+		"delete": "Eliminar",
+		"title": "Borradores sin guardar",
+		"intro": "Se encontraron cambios sin guardar. ¿Quieres recuperarlos?",
+		"savedAgo": "Guardado {ago}",
+		"open": "Abrir",
+		"discardOne": "Descartar",
+		"cancelAll": "Descartar todos",
+		"pass": "Omitir"
+	},
+	"analysisResult": {
+		"title": "Resultados del análisis",
+		"close": "Cerrar",
+		"errors": "Errores",
+		"warnings": "Advertencias",
+		"unknownName": "Nombre desconocido",
+		"contactLabel": "Contacto {variable}",
+		"coilLabel": "Bobina {variable}",
+		"blockLabel": "Bloque",
+		"noErrors": "Ningún error durante el análisis.",
+		"noWarnings": "Ninguna advertencia.",
+		"projectErrors": "Errores del proyecto",
+		"projectWarnings": "Advertencias del proyecto",
+		"programErrors": "Errores de {kind}",
+		"programWarnings": "Advertencias de {kind}",
+		"elementErrors": "Errores en elementos de {kind}",
+		"elementWarnings": "Advertencias en elementos de {kind}",
+		"programHeading": "{kind}: {name}",
+		"grafcetKind": "Grafcet",
+		"ladderKind": "Ladder"
+	}
+}

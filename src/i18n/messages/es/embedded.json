@@ -1,0 +1,27 @@
+{
+	"loading": "Cargando…",
+	"region": "Editor de Studomate",
+	"tabs": {
+		"unavailable": "Vista no disponible",
+		"scene3d": "Escena 3D"
+	},
+	"unavailable": {
+		"grafcet": "El grafcet \"{id}\" no existe en este proyecto.",
+		"ladder": "El ladder \"{id}\" no existe en este proyecto.",
+		"hmi": "La página \"{id}\" no existe en este proyecto.",
+		"scene3d": "Este proyecto no tiene escena 3D.",
+		"unknown": "Esta vista no está disponible."
+	},
+	"app": {
+		"open": "Abrir en la aplicación"
+	},
+	"fullscreen": {
+		"enter": "Pantalla completa",
+		"exit": "Salir de pantalla completa"
+	},
+	"dialect": {
+		"label": "Dialecto",
+		"FR": "Francés",
+		"EN": "Inglés"
+	}
+}

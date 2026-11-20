@@ -36,5 +36,33 @@
 		"falling_edge": "Front descendant",
 		"set": "Set",
 		"reset": "Reset"
+	},
+	"elements": {
+		"types": {
+			"step": "Étape",
+			"transition": "Transition",
+			"action": "Action",
+			"step-referral-source": "Tenant",
+			"step-referral-target": "Aboutissant",
+			"junction-and-start": "Divergence en ET",
+			"junction-and-end": "Convergence en ET",
+			"junction-or-start": "Divergence en OU",
+			"junction-or-end": "Convergence en OU",
+			"comment": "Commentaire"
+		},
+		"aria": {
+			"step": "Étape {number}",
+			"initialStep": "Étape initiale {number}",
+			"unnumberedStep": "Étape (non numérotée)",
+			"transition": "Transition : {expression}",
+			"emptyTransition": "Transition (vide)",
+			"action": "Action : {expression}",
+			"emptyAction": "Action (vide)",
+			"comment": "Commentaire : {text}",
+			"referralTo": "Renvoi vers l'étape {number}",
+			"referralToUnset": "Renvoi vers une étape",
+			"referralFrom": "Renvoi depuis l'étape {number}",
+			"referralFromUnset": "Renvoi depuis une étape"
+		}
 	}
 }

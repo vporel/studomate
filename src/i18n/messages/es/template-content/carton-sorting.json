@@ -1,0 +1,9 @@
+{
+	"statement": "## Estación de clasificación de cajas\n\nLas cajas llegan una a una por la cinta `Cmd_T1` hasta una estación de detección.\nEl sensor `cpt_psce_c` señala la presencia de una caja y `cpt_c_hte` indica que es alta.\nTres cilindros de doble efecto `P1`, `P2`, `P3` (mandos `Cmd_Px_out` / `Cmd_Px_in`,\nfinales de carrera `cpt_px_out` / `cpt_px_in`) desvían la caja. `P1` la empuja desde\n`T1` hacia el canal, y luego `Cmd_T2T3` la lleva por el canal: se detiene en\n`P2` (sensor `cpt_psce_p2`) si es baja y en `P3` (sensor `cpt_psce_p3`)\nsi es alta. El contador `C` totaliza las cajas clasificadas.\n\n### Trabajo a realizar\n\n1. Con `dcy`, pon en marcha las cintas (`Cmd_T2T3` retenido, `Cmd_T1` mientras una caja esté en movimiento).\n2. Caja **baja**: empújala con `P1`, espera a que llegue a `P2` y evacúala hacia `T2` con `P2`.\n3. Caja **alta**: empújala con `P1`, espera a que llegue a `P3` y evacúala hacia `T3` con `P3`.\n4. Incrementa `C` por cada caja clasificada; tras 2 cajas, reinicia todo el ciclo.\n5. Comprueba la clasificación en simulación en la escena 3D (botón «Colocar caja», selector de altura de la caja).",
+	"texts": {
+		"projectName": "Estación de clasificación de cajas",
+		"counterComment": "conteo de cajas clasificadas",
+		"solutionName": "Estación de clasificación de cajas: solución",
+		"controlGrafcet": "Control"
+	}
+}

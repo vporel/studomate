@@ -2,7 +2,7 @@ import createMiddleware from "next-intl/middleware";
 import { routing } from "./i18n/routing";
 
 /**
- * Résout la locale des **pages publiques** (préfixe `/en/…`, slugs traduits) et réécrit vers le
+ * Résout la locale des **pages publiques** (préfixe `/en/…` ou `/es/…`, slugs traduits) et réécrit vers le
  * segment interne `[locale]`. `localeDetection: false` : la racine `/` sert toujours le français,
  * l'utilisateur bascule via le sélecteur du header (pas de redirection sur `Accept-Language`,
  * pas de cookie).

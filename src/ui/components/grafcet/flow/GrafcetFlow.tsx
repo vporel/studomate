@@ -46,6 +46,7 @@ import {
 } from "./grafcet-nodes-definitions";
 import useContextMenuOpeningHandlers from "./useContextMenuOpeningHandlers";
 import useToolDragOverHandlers from "./useToolDragOverHandlers";
+import useLabelledGrafcetNodes from "./useLabelledGrafcetNodes";
 
 import "@xyflow/react/dist/style.css";
 import "@/ui/lib/react-flow/flow-page.css";
@@ -121,7 +122,9 @@ export function GrafcetFlowContent({
 	} = useContextMenuOpeningHandlers();
 	const { store } = useGrafcetContext();
 	const grafcetId = useGrafcetStore((state) => state.grafcet.id);
-	const nodes = useGrafcetStore(useShallow((state) => state.nodes));
+	const nodes = useLabelledGrafcetNodes(
+		useGrafcetStore(useShallow((state) => state.nodes)),
+	);
 	const edges = useGrafcetStore(useShallow((state) => state.edges));
 	const viewManager = useGrafcetStore((state) => state.viewManager);
 	const workflowManager = useGrafcetStore((state) => state.workflowManager);

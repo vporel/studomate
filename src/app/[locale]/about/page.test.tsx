@@ -1,4 +1,5 @@
 /** @jest-environment jsdom */
+import { LOCALES, type Locale } from "@/i18n/config";
 import routes from "@/app/routes";
 import { APP_REPO_URL } from "@/app-info";
 import { getMessages } from "@/i18n/messages";
@@ -19,7 +20,7 @@ jest.mock("next-intl/server", () => ({
 		locale,
 		namespace,
 	}: {
-		locale: "fr" | "en";
+		locale: Locale;
 		namespace: string;
 	}) =>
 		Promise.resolve(
@@ -48,7 +49,7 @@ jest.mock("@/ui/components/public-pages/PublicLinkButton", () => ({
 	}) => <a href={href}>{children}</a>,
 }));
 
-const renderAbout = async (locale: "fr" | "en") => {
+const renderAbout = async (locale: Locale) => {
 	const ui = await About({ params: Promise.resolve({ locale }) });
 	return render(
 		<NextIntlClientProvider locale={locale} messages={getMessages(locale)}>
@@ -58,7 +59,7 @@ const renderAbout = async (locale: "fr" | "en") => {
 };
 
 describe("About page", () => {
-	it.each(["fr", "en"] as const)(
+	it.each(LOCALES)(
 		"renders one card per item of each section (%s)",
 		async (locale) => {
 			await renderAbout(locale);
@@ -167,7 +168,7 @@ describe("About page", () => {
 		).toBe("/contact");
 	});
 
-	it.each(["fr", "en"] as const)(
+	it.each(LOCALES)(
 		"has an h1 followed by h2 sections without skipped heading levels (%s)",
 		async (locale) => {
 			const { container } = await renderAbout(locale);

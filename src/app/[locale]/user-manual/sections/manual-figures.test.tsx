@@ -6,6 +6,7 @@ import { join } from "path";
 import { screen } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import en from "@/i18n/messages/en/manual.json";
+import es from "@/i18n/messages/es/manual.json";
 import fr from "@/i18n/messages/fr/manual.json";
 import GrafcetSection from "./GrafcetSection";
 import HardwareSection from "./HardwareSection";
@@ -28,6 +29,15 @@ const FIGURES = [
 			}),
 		alt: en.grafcet.symbolsFigureAlt,
 		file: "grafcet/grafcet-symbols-en.svg",
+	},
+	{
+		name: "symboles du GRAFCET (es)",
+		ui: () =>
+			renderWithI18n(<GrafcetSection selected="grafcet-steps" />, {
+				locale: "es",
+			}),
+		alt: es.grafcet.symbolsFigureAlt,
+		file: "grafcet/grafcet-symbols-es.svg",
 	},
 	{
 		name: "étape initiale, transition et action",
@@ -79,7 +89,8 @@ const FIGURES = [
 	},
 	{
 		name: "cycle automate (fr)",
-		ui: () => renderWithI18n(<SimulationSection selected="simulation-running" />),
+		ui: () =>
+			renderWithI18n(<SimulationSection selected="simulation-running" />),
 		alt: fr.simulation.cycleOrderFigureAlt,
 		file: "simulation/scan-cycle-fr.svg",
 	},
@@ -91,6 +102,15 @@ const FIGURES = [
 			}),
 		alt: en.simulation.cycleOrderFigureAlt,
 		file: "simulation/scan-cycle-en.svg",
+	},
+	{
+		name: "cycle automate (es)",
+		ui: () =>
+			renderWithI18n(<SimulationSection selected="simulation-running" />, {
+				locale: "es",
+			}),
+		alt: es.simulation.cycleOrderFigureAlt,
+		file: "simulation/scan-cycle-es.svg",
 	},
 	{
 		name: "câblage d'un bouton sur l'Arduino",
@@ -107,15 +127,21 @@ const FIGURES = [
 ];
 
 describe("figures du manuel", () => {
-	it.each(FIGURES)("affiche la figure « $name » avec son texte alternatif", ({ ui, alt, file }) => {
-		ui();
-		const img = screen.getByRole("img", { name: alt });
-		expect(img).toHaveAttribute("src", `/user-manual/${file}`);
-	});
+	it.each(FIGURES)(
+		"affiche la figure « $name » avec son texte alternatif",
+		({ ui, alt, file }) => {
+			ui();
+			const img = screen.getByRole("img", { name: alt });
+			expect(img).toHaveAttribute("src", `/user-manual/${file}`);
+		},
+	);
 
-	it.each(FIGURES)("le fichier de la figure « $name » existe dans public/", ({ file }) => {
-		expect(
-			existsSync(join(process.cwd(), "public/user-manual", file)),
-		).toBe(true);
-	});
+	it.each(FIGURES)(
+		"le fichier de la figure « $name » existe dans public/",
+		({ file }) => {
+			expect(existsSync(join(process.cwd(), "public/user-manual", file))).toBe(
+				true,
+			);
+		},
+	);
 });

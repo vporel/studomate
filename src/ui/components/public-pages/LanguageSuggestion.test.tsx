@@ -7,7 +7,7 @@ jest.mock("next-intl/server", () => ({
 		locale,
 		namespace,
 	}: {
-		locale: "fr" | "en";
+		locale: "fr" | "en" | "es";
 		namespace: string;
 	}) =>
 		Promise.resolve(
@@ -20,21 +20,18 @@ jest.mock("next-intl/server", () => ({
 }));
 
 describe("LanguageSuggestion", () => {
-	it("offers English, worded in English, on a French page", async () => {
+	it("holds the texts of every other language, worded in their own language", async () => {
 		const element = await LanguageSuggestion({ locale: "fr" });
 
-		expect(element.props).toMatchObject({
-			targetLocale: "en",
-			action: "View in English",
-		});
+		expect(element.props.suggestions.en.action).toBe("View in English");
+		expect(element.props.suggestions.es.action).toBe("Ver en español");
+		expect(element.props.suggestions.fr).toBeUndefined();
 	});
 
-	it("offers French, worded in French, on an English page", async () => {
+	it("leaves out the page's own language", async () => {
 		const element = await LanguageSuggestion({ locale: "en" });
 
-		expect(element.props).toMatchObject({
-			targetLocale: "fr",
-			action: "Voir en français",
-		});
+		expect(Object.keys(element.props.suggestions).sort()).toEqual(["es", "fr"]);
+		expect(element.props.suggestions.fr.action).toBe("Voir en français");
 	});
 });

@@ -1,0 +1,8 @@
+{
+	"statement": "## Divergencia en Y\n\nEntradas: `cycle_start`, `sensor1`, `sensor2`. Salidas: `output1`, `output2`.\n\n### Trabajo a realizar\n\n1. Con `cycle_start`, activa `output1` y `output2` **simultáneamente**.\n2. Espera a que `sensor1` **y** `sensor2` estén ambos activos antes de volver al estado inicial\n   (desactivación de las dos salidas).",
+	"texts": {
+		"projectName": "Divergencia en Y",
+		"solutionName": "Divergencia en Y: solución",
+		"grafcetName": "Divergencia en Y"
+	}
+}

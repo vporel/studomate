@@ -70,6 +70,14 @@ Dependencies flow top to bottom in this list: the domain never depends on the UI
 has a `dialect` (FR/EN) that travels with it — this is not a UI preference, it's a property of
 the expressions it contains.
 
+The interface languages are `LOCALES` (`src/i18n/config.ts`: `fr`, `en`, `es`), distinct from the
+two dialects. Only French has its own expression keywords: every other locale suggests the EN
+dialect and the English template mnemonics (`defaultDialectForLocale`, `localizeProject`). Never
+branch on `locale === "en"` to mean "not French": iterate over `LOCALES`, or test
+`locale === "fr"`. A figure whose text is translated has one variant per non-French locale
+(`name-en.svg`, `name-es.svg`) next to the French `name.svg`; a figure without translatable text
+has none.
+
 `src/bridge/` only contains mappers where the UI is one of the two ends (domain/analysis ↔
 UI). A mapper between two internal layers stays in the layer concerned — `PlcVariablesMapper`
 (environment ↔ PLC) lives in `src/simulator/`, and `SchemaVariablesMapper` (schema →
@@ -274,7 +282,7 @@ Always check `package.json` before quoting a version: this table goes stale at t
   above all to text meant to be read: UI strings and i18n files, manuals, docs, training
   content. Do not sprinkle em dashes as a default separator. Exception: the site-name suffix of
   page titles stays an em dash (`À propos — Studomate`, `About — Studomate`); keep it as is.
-- **User manual content**: every addition to the manual (`manual.json`, FR and EN) is weighed
+- **User manual content**: every addition to the manual (`manual.json`, in every locale) is weighed
   for its relevance at that exact place before it is written, including when a code change
   seems to "complete" an existing section. Information that helps the user find something,
   understand what they see, or avoid a surprise belongs there, even when it describes something
@@ -302,12 +310,12 @@ particular attention to SEO, and the end-of-task report says what was checked:
 
 - **Metadata**: every page goes through `pageMetadata` / `createGenerateMetadata`
   (`src/app/metadata.ts`), which sets title, description, `canonical`, `hreflang` and Open
-  Graph. Title and description are specific to the page, in both locales, and stay within
+  Graph. Title and description are specific to the page, in every locale, and stay within
   reasonable lengths (title around 60 characters before the site suffix, description around
   150–160).
 - **Indexing**: a new route is reachable from the sitemap (`src/app/sitemap.ts`) and allowed
   by `robots.ts`; a removed or renamed route doesn't leave dead internal links behind.
-- **Locale parity**: FR and EN carry the same content, translated slugs come from
+- **Locale parity**: every locale (FR, EN, ES) carries the same content, translated slugs come from
   `routing.pathnames`, and internal links go through the localized `Link` / `PublicLink`.
 - **Structure**: one `h1` per page, headings in order without skipped levels, meaningful link
   text, an `alt` on every informative image (`alt=""` only for decorative ones).
@@ -420,7 +428,10 @@ the `localStorage` layout up to date (`hasProjects()` does not migrate), records
 compares `WHATS_NEW_VERSION` with the stored one: no stored version, it is written silently, unless
 local projects already exist (`LocalStorageProjectRepository.hasProjects()`), in which case the
 carousel is shown; same version, nothing happens; different version, it is updated and the
-`WhatsNewModal` carousel is shown. A downgrade is not handled specially.
+`WhatsNewModal` carousel is shown. A downgrade is not handled specially. A fresh browser (no
+version key, no project) is detected **before** the layout migration and only gets both versions
+written silently: the `v1-to-v2` layout migration stamps frozen older versions, which would
+otherwise pass for news on the very first visit.
 
 The modal's visibility lives in `whatsNewStore` (`src/ui/stores/whats-new/`): the version shown in
 the startup footer and the Help menu's "Nouveautés" entry reopen it at any time.

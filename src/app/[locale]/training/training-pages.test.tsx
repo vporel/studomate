@@ -9,7 +9,7 @@ jest.mock("next-intl/server", () => ({
 		locale,
 		namespace,
 	}: {
-		locale: "fr" | "en";
+		locale: "fr" | "en" | "es";
 		namespace: string;
 	}) =>
 		Promise.resolve(
@@ -41,7 +41,7 @@ describe("training module pages", () => {
 			const stepIds = buildModuleSteps("a1", "fr").map((s) => s.id);
 			const params = a1.generateStepStaticParams();
 
-			expect(params).toHaveLength((stepIds.length - 1) * 2);
+			expect(params).toHaveLength((stepIds.length - 1) * 3);
 			expect(params).toContainEqual({
 				locale: "en",
 				step: trainingStepSlug("en", "a1", stepIds[1]),
@@ -75,6 +75,7 @@ describe("training module pages", () => {
 			expect(metadata.alternates?.languages).toEqual({
 				fr: "https://studomate.com/formations/a1/theorie-temporisation",
 				en: "https://studomate.com/en/training/a1/theory-timer",
+				es: "https://studomate.com/es/formacion/a1/teoria-temporizacion",
 				"x-default":
 					"https://studomate.com/formations/a1/theorie-temporisation",
 			});

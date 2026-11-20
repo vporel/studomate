@@ -6,6 +6,7 @@ import PublicLink from "@/ui/components/public-pages/PublicLink";
 import { Container, Divider, Link as MuiLink, Typography } from "@mui/material";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import LegalArticle, { renderStrong } from "./LegalArticle";
+import LegalTranslationNotice from "./LegalTranslationNotice";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -23,11 +24,10 @@ export default async function LegalNotice({ params }: Props) {
 
 	return (
 		<Container maxWidth="md" sx={{ my: 4 }}>
-			<PageTitle>
-				{t("title")}
-			</PageTitle>
+			<PageTitle>{t("title")}</PageTitle>
 			<Typography>{t("lastUpdated")}</Typography>
 			<Divider sx={{ my: 2 }} />
+			<LegalTranslationNotice locale={locale} href="/legal" />
 
 			<LegalArticle title={t("editorTitle")}>
 				<Typography textAlign="justify">
@@ -45,7 +45,12 @@ export default async function LegalNotice({ params }: Props) {
 			<LegalArticle title={t("liabilityTitle")}>
 				{t("liabilityBody")}
 			</LegalArticle>
-			<LegalArticle title={t("dataTitle")}>{t("dataBody")}</LegalArticle>
+			<LegalArticle title={t("dataTitle")}>
+				<Typography textAlign="justify">
+					{t("dataBody")}{" "}
+					<PublicLink href="/privacy">{t("dataLink")}</PublicLink>
+				</Typography>
+			</LegalArticle>
 
 			<Typography variant="h3" component="h2" gutterBottom mt={3}>
 				{t("contactTitle")}

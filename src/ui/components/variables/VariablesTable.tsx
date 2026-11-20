@@ -17,7 +17,7 @@ import {
 	GridValidRowModel,
 } from "@mui/x-data-grid";
 import { GridApiCommunity } from "@mui/x-data-grid/internals";
-import { enUS, frFR } from "@mui/x-data-grid/locales";
+import { enUS, esES, frFR } from "@mui/x-data-grid/locales";
 import {
 	MouseEvent,
 	useCallback,
@@ -77,8 +77,8 @@ const VariablesTable = ({
 		position: { x: number; y: number };
 	}>({ visible: false, target: null, position: { x: 0, y: 0 } });
 	const { locale } = useLocaleContext();
-	const gridLocaleText = (locale === "fr" ? frFR : enUS).components.MuiDataGrid
-		.defaultProps.localeText;
+	const gridLocaleText = { fr: frFR, en: enUS, es: esES }[locale].components
+		.MuiDataGrid.defaultProps.localeText;
 
 	const zoneVariables = useMemo(
 		() =>

@@ -1,0 +1,10 @@
+{
+	"statement": "## Semáforo en Ladder\n\nGRAFCET: S0 verde 5 s → S1 ámbar 2 s → S2 rojo 5 s → S0.\n\nEntradas: `stop` (pulsador cableado normalmente cerrado), `start` (interruptor). Salidas: `green`, `amber` y `red`. Marcas proporcionadas: `X0` a `X2`. El proyecto proporciona los programas vacíos `Automatic_cycle` y `Outputs`, llamados por el Main en este orden.\n\n### Tarea\n\n1. Programa básico: implementa el GRAFCET, una red por transición, con tres `TON` (por ejemplo `t_green`, `t_amber` y `t_red`), en bucle.\n2. Paro inmediato: `stop` reinicia el GRAFCET (etapas borradas, etapa inicial reactivada), en `Automatic_cycle`, después de las redes de transición.\n3. Paro al final del ciclo: `start` se añade a la receptividad que cierra el bucle (`t_red.Q AND start`); el semáforo termina su ciclo y permanece en rojo mientras `start` sea falso.",
+	"texts": {
+		"projectName": "Semáforo en Ladder",
+		"solutionName": "Semáforo en Ladder: solución",
+		"greenTimerName": "t_green",
+		"amberTimerName": "t_amber",
+		"redTimerName": "t_red"
+	}
+}

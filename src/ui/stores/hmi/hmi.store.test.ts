@@ -22,6 +22,28 @@ describe("hmi.store", () => {
 			expect(state.hasCommandsToUndo).toBe(true);
 			expect(state.hasCommandsToRedo).toBe(false);
 		});
+
+		it("nomme le widget à partir de la base fournie et applique les données données", () => {
+			const store = buildStore();
+
+			const first = store
+				.getState()
+				.addWidget(
+					"push-button",
+					0,
+					0,
+					undefined,
+					{ label: "PB" },
+					"Push button",
+				);
+			const second = store
+				.getState()
+				.addWidget("push-button", 0, 0, undefined, undefined, "Push button");
+
+			expect(first.name).toBe("Push button_1");
+			expect(first.data).toMatchObject({ label: "PB" });
+			expect(second.name).toBe("Push button_2");
+		});
 	});
 
 	describe("sélection", () => {

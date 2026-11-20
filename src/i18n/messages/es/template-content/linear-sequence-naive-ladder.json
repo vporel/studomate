@@ -1,0 +1,11 @@
+{
+	"statement": "## Secuencia lineal: método de manual\n\nGRAFCET: S0 (inicial) → `cycle_start` → S1 (`output1`) → `end1` → S2 (`output2`) → `end2` → S3 → TRUE → S0. El Main lo implementa con una autorretención por etapa: cada etapa la activa la etapa anterior y la desactiva la etapa siguiente.\n\nEntradas: `cycle_start` (pulsador), `end1` y `end2` (finales de carrera). Salidas: `output1` y `output2`. Marcas de etapa: `X0` a `X3`.\n\nEl GRAFCET está dibujado en el proyecto (programa «Secuencia» en el explorador): míralo para compararlo con el Main. Su analizador está desactivado, solo se simula el Ladder.\n\n### Tarea\n\n1. Inicia la simulación en modo paso a paso («Avanzar un ciclo») y añade `X0` a `X3`, `cycle_start`, `end1`, `output1` y `output2` a la tabla de seguimiento.\n2. Activa `cycle_start` y luego `end1`: ¿cuántas etapas están activas tras el franqueo y durante cuántos ciclos?\n3. Vuelve a la etapa `X0` y pon `cycle_start` y `end1` a verdadero al mismo tiempo: ¿qué ocurre?\n4. Explica lo que sucede. No hay que escribir ningún programa.",
+	"texts": {
+		"projectName": "Secuencia lineal: método de manual",
+		"stepTitle": "Etapa {step}",
+		"stepDescription": "Autorretención: activada por la etapa anterior, desactivada por la etapa siguiente.",
+		"initialStepDescription": "Etapa inicial: activada en el primer ciclo o al final de la secuencia.",
+		"output1Title": "Salida output1",
+		"output2Title": "Salida output2"
+	}
+}

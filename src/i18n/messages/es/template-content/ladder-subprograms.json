@@ -1,0 +1,16 @@
+{
+	"statement": "## Llamada a un subprograma\n\nEl Main gobierna la puesta en marcha de una cinta; el ladder «Conteo» (un `CTU` con preselección de 3 y su indicador) existe, pero ningún bloque lo llama.\n\n| Variable | Función | Tipo |\n| --- | --- | --- |\n| `start`, `stop` | arrancan y detienen la cinta | pulsadores (verdaderos mientras se pulsan) |\n| `part_sensor` | detecta cada pieza | sensor |\n| `clear` | pone el conteo a cero | pulsador |\n| `conveyor` | motor de la cinta | salida |\n| `batch_indicator` | encendido cuando se han contado 3 piezas | salida |\n\n### Tarea\n\n1. Lee el ladder «Conteo», ejecuta el análisis (aviso: ladder nunca llamado) y luego la simulación: `batch_indicator` no se enciende.\n2. En el Main, añade una red y arrastra «Conteo» hasta ella desde la sección «Programas» del explorador. Conecta el bloque de llamada a la barra, sin ninguna condición.\n3. Comprueba: tras tres pasos de `part_sensor`, `batch_indicator` se enciende; `clear` lo apaga.\n4. Experimento: coloca un contacto NO de `conveyor` delante del bloque de llamada. Con la cinta parada, deja `part_sensor` a verdadero y luego pon en marcha la cinta: `cpt` cuenta una pieza que nunca se había contado. Explica por qué.",
+	"texts": {
+		"projectName": "Subprogramas",
+		"solutionName": "Subprogramas: solución",
+		"countingProgramName": "Conteo",
+		"countPartsTitle": "Conteo de piezas",
+		"countPartsDescription": "El CTU cuenta los flancos ascendentes de part_sensor y se pone a cero con clear.",
+		"batchIndicatorTitle": "Indicador de lote",
+		"batchIndicatorDescription": "Encendido cuando el lote está completo.",
+		"conveyorRunTitle": "Marcha de la cinta",
+		"conveyorRunDescription": "Autorretención con prioridad de paro.",
+		"callCountingTitle": "Llamada a Conteo",
+		"callCountingDescription": "Llamada incondicional: el subprograma se ejecuta en cada ciclo."
+	}
+}

@@ -1,0 +1,7 @@
+{
+	"statement": "## Divergencia en O en Ladder\n\nGRAFCET: S0 → `cycle_start1` → S1 (`output1`) → `end1` → S0; S0 → `cycle_start2` → S2 (`output2`) → `end2` → S0.\n\nEntradas: `cycle_start1` y `cycle_start2` (pulsadores), `end1` y `end2` (finales de carrera). Salidas: `output1` y `output2`. Marcas proporcionadas: `X0` a `X2`. El proyecto proporciona los programas vacíos `Automatic_cycle` y `Outputs`, llamados por el Main en este orden.\n\n### Tarea\n\n1. Implementa el GRAFCET: una red por transición en `Automatic_cycle` y una red por salida en `Outputs`.\n2. Simula `cycle_start1` solo y luego `cycle_start2` solo: solo se franquea una rama.\n3. Pon `cycle_start1` y `cycle_start2` a verdadero al mismo tiempo: solo se franquea la rama cuya red está escrita primero, porque la segunda red lee `X0` ya desactivada. Hacer las receptividades excluyentes (`cycle_start1 AND NOT cycle_start2`, `cycle_start2 AND NOT cycle_start1`) es una ampliación opcional.",
+	"texts": {
+		"projectName": "Divergencia en O en Ladder",
+		"solutionName": "Divergencia en O en Ladder: solución"
+	}
+}

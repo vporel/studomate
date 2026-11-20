@@ -69,18 +69,16 @@ describe("WhatsNew", () => {
 		expect(localStorage.getItem(WHATS_NEW_KEY)).toBe(WHATS_NEW_VERSION);
 	});
 
-	it("does not show the modal to an existing browser whose layout still has to be migrated", async () => {
+	it("shows the news to an existing browser migrated from layout v1, which was stamped with an older news version", async () => {
 		localStorage.setItem(LAYOUT_KEY, "1");
 		localStorage.setItem(APP_KEY, "v1.7.1");
 		localStorage.setItem(
 			"studomate_projects_data",
 			JSON.stringify({ p1: { name: "A" } }),
 		);
-		const { queryByTestId } = render(<WhatsNew />);
-		await waitFor(() =>
-			expect(localStorage.getItem(WHATS_NEW_KEY)).toBe(WHATS_NEW_VERSION),
-		);
+		const { findByTestId } = render(<WhatsNew />);
+		expect(await findByTestId("modal")).toBeTruthy();
+		expect(localStorage.getItem(WHATS_NEW_KEY)).toBe(WHATS_NEW_VERSION);
 		expect(localStorage.getItem(APP_KEY)).toBe(APP_VERSION);
-		expect(queryByTestId("modal")).toBeNull();
 	});
 });

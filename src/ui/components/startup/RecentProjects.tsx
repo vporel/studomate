@@ -17,7 +17,7 @@ import {
 	Typography,
 } from "@mui/material";
 import { formatDistanceToNow } from "date-fns";
-import { enUS, fr } from "date-fns/locale";
+import { enUS, es, fr } from "date-fns/locale";
 import { useShallow } from "zustand/shallow";
 import { projectContents } from "./project-contents";
 import ProjectContentsLine from "./ProjectContentsLine";
@@ -115,7 +115,7 @@ export default function RecentProjects({
 								{t("modifiedAgo", {
 									ago: formatDistanceToNow(project.lastModificationDate, {
 										addSuffix: true,
-										locale: locale === "en" ? enUS : fr,
+										locale: { fr, en: enUS, es }[locale],
 									}),
 								})}
 							</Typography>

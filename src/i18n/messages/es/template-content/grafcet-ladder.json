@@ -1,0 +1,25 @@
+{
+	"texts": {
+		"initialStepTitle": "Activación de la etapa inicial",
+		"initialStepDescription": "Si no hay ninguna etapa activa, se activan las etapas iniciales.",
+		"transitionDescription": "Si la etapa anterior está activa y la receptividad es verdadera, se desactiva la etapa anterior y se activa la etapa siguiente.",
+		"crossingTitle": "Condición de franqueo {name}",
+		"crossingDescription": "Todas las condiciones se calculan antes de cualquier evolución (regla 4).",
+		"deactivationTitle": "Desactivación por {name}",
+		"deactivationDescription": "Se desactivan las etapas anteriores de la transición franqueada.",
+		"activationTitle": "Activación por {name}",
+		"activationDescription": "Se activan las etapas siguientes de la transición franqueada: la activación prevalece (regla 5).",
+		"resetDeactivationTitle": "Reinicio: desactivación",
+		"resetDeactivationDescription": "Se desactivan todas las etapas.",
+		"resetInitialTitle": "Reinicio: etapa inicial",
+		"resetInitialDescription": "Se reactivan las etapas iniciales.",
+		"outputTitle": "Salida {output}",
+		"outputDescription": "Acción continua: verdadera mientras esté activa alguna de las etapas que la gobiernan.",
+		"faultsProgramName": "Faults",
+		"cycleProgramName": "Automatic_cycle",
+		"outputsProgramName": "Outputs",
+		"faultsCallDescription": "Activa y reconoce primero los fallos: los bits de fallo están disponibles para el resto del escaneo.",
+		"cycleCallDescription": "Evolución del GRAFCET: inicialización, una red por transición, reinicio opcional.",
+		"outputsCallDescription": "Acciones del GRAFCET: una red por salida, ejecutadas una vez que las etapas han evolucionado."
+	}
+}

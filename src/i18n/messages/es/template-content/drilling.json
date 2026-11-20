@@ -1,0 +1,11 @@
+{
+	"statement": "## Estación de taladrado\n\nUn taladro automático mecaniza una pieza en un ciclo. Entrada: `cycle_start` (botón de inicio de ciclo).\nSalidas: `down`, `up` (movimiento de la mesa) y `spindle` (giro del taladro).\nLos finales de carrera `h` (taladro arriba) y `b` (taladro abajo), así como el recorrido `position` del taladro,\nlos proporciona la escena 3D (menú Ver → Escena 3D): el taladro baja, gira y perfora la pieza.\n\n### Trabajo a realizar\n\n1. En reposo, la mesa está en posición alta y el husillo parado.\n2. Al pulsar `cycle_start`: pon el husillo en rotación y baja hasta `b`.\n3. Sigue taladrando durante 3 s en la posición baja, luego sube hasta `h` y detén el husillo.\n4. El ciclo solo se reinicia con una nueva pulsación de `cycle_start`.\n5. Valida en simulación con la escena 3D y la animación de la HMI.",
+	"texts": {
+		"projectName": "Estación de taladrado",
+		"solutionName": "Estación de taladrado: solución",
+		"controlGrafcet": "Control",
+		"operativePartProgram": "Parte operativa",
+		"operativeSectionTitle": "Modelo de la parte operativa",
+		"operativeSectionDescription": "Simula el movimiento del taladro y los finales de carrera en lugar de una parte operativa real. No lo modifiques: no es el programa de control que debes escribir."
+	}
+}

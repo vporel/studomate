@@ -190,4 +190,18 @@ describe("FeedbackBox", () => {
 			expect.objectContaining({ locale: "en" }),
 		);
 	});
+
+	it("sends the Spanish locale when the interface is in Spanish", async () => {
+		mockSendFeedback.mockResolvedValue(true);
+		renderWithI18n(<FeedbackBox />, { locale: "es" });
+		open("menu");
+
+		fireEvent.click(screen.getByLabelText("5 estrellas de 5"));
+		fireEvent.click(screen.getByRole("button", { name: "Enviar" }));
+
+		await waitFor(() => expect(mockSendFeedback).toHaveBeenCalled());
+		expect(mockSendFeedback).toHaveBeenCalledWith(
+			expect.objectContaining({ locale: "es" }),
+		);
+	});
 });

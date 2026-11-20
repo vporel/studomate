@@ -35,10 +35,18 @@ function setBrowserLanguages(languages: string[]) {
 const renderBanner = () =>
 	renderWithI18n(
 		<LanguageSuggestionBanner
-			targetLocale="en"
-			message="This page is also available in English."
-			action="View in English"
-			dismiss="Close"
+			suggestions={{
+				en: {
+					message: "This page is also available in English.",
+					action: "View in English",
+					dismiss: "Close",
+				},
+				es: {
+					message: "Esta página también está disponible en español.",
+					action: "Ver en español",
+					dismiss: "Cerrar",
+				},
+			}}
 		/>,
 	);
 
@@ -59,6 +67,25 @@ describe("LanguageSuggestionBanner", () => {
 		expect(
 			screen.getByRole("link", { name: "View in English" }),
 		).toHaveAttribute("href", "/en/about");
+	});
+
+	it("proposes the page in Spanish, worded in Spanish, to a Spanish browser", () => {
+		setBrowserLanguages(["es-MX", "en"]);
+		renderBanner();
+
+		expect(
+			screen.getByText("Esta página también está disponible en español."),
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole("link", { name: "Ver en español" }),
+		).toHaveAttribute("href", "/es/acerca-de");
+	});
+
+	it("proposes nothing when the browser language is the page's own", () => {
+		setBrowserLanguages(["fr-FR"]);
+		renderBanner();
+
+		expect(screen.queryByRole("region")).not.toBeInTheDocument();
 	});
 
 	it("points to the translated slug of the page", () => {

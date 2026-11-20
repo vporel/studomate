@@ -1,0 +1,15 @@
+{
+	"statement": "## Telerruptor\n\nEntrada: `pb` (pulsador). Salida: `lamp`. Marca: `pulse`. El ejercicio parte de una solución ingenua de dos redes (un contacto P en `pb`, una bobina S y luego una bobina R en `lamp`), con la que la lámpara no se enciende nunca.\n\n### Tarea\n\n1. Simula la solución ingenua: observa que la lámpara no se enciende nunca.\n2. Explica por qué, recorriendo en papel un ciclo red por red.\n3. Corrige el programa: la lámpara debe cambiar de estado una sola vez por pulsación, aunque el botón se mantenga durante varios ciclos.",
+	"texts": {
+		"projectName": "Telerruptor",
+		"solutionName": "Telerruptor: solución",
+		"turnOnTitle": "Encendido",
+		"turnOnDescription": "Flanco de pb y lámpara apagada: encender.",
+		"turnOffTitle": "Apagado",
+		"turnOffDescription": "Flanco de pb y lámpara encendida: apagar.",
+		"pulseTitle": "Impulso",
+		"pulseDescription": "Un único contacto P memoriza el flanco en pulse.",
+		"toggleTitle": "Conmutación",
+		"toggleDescription": "La lámpara cambia de estado con cada impulso."
+	}
+}

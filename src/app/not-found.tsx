@@ -1,22 +1,30 @@
 "use client";
 
+import { DEFAULT_LOCALE, LOCALES, type Locale } from "@/i18n/config";
 import { getPathname } from "@/i18n/navigation";
 import { Box, Button, Container, Typography } from "@mui/material";
 import { notFound as en } from "@/i18n/messages/en/public.json";
+import { notFound as es } from "@/i18n/messages/es/public.json";
 import { notFound as fr } from "@/i18n/messages/fr/public.json";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 
-const MESSAGES = { fr, en };
+const MESSAGES: Record<Locale, typeof fr> = { fr, en, es };
+
+const LOCALE_PREFIX = new RegExp(
+	`^/(${LOCALES.filter((l) => l !== DEFAULT_LOCALE).join("|")})(/|$)`,
+);
 
 /**
- * Not-found page rendered outside any locale layout: the language is read from the `/en` URL
- * prefix and applied to `<html lang>` once mounted.
+ * Not-found page rendered outside any locale layout: the language is read from the URL's locale
+ * prefix (`/en`, `/es`; none for French) and applied to `<html lang>` once mounted.
  */
 export default function NotFound() {
 	const pathname = usePathname();
-	const locale = /^\/en(\/|$)/.test(pathname) ? "en" : "fr";
+	const locale =
+		(pathname.match(LOCALE_PREFIX)?.[1] as Locale | undefined) ??
+		DEFAULT_LOCALE;
 	const messages = MESSAGES[locale];
 
 	useEffect(() => {

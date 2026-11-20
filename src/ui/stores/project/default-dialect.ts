@@ -1,3 +1,4 @@
+import defaultDialectForLocale from "@/i18n/default-dialect-for-locale";
 import { Dialect } from "@/expression-language/dialect.enum";
 import {
 	getDefaultDialect,
@@ -50,5 +51,5 @@ export default async function resolveDefaultDialect(
 
 /** Dialecte proposé d'office dans la popup : celui de la langue de l'interface. */
 function suggestedDialect(env: ProjectStoreEnvironment): Dialect {
-	return env.getLocale() === "en" ? Dialect.EN : Dialect.FR;
+	return defaultDialectForLocale(env.getLocale());
 }

@@ -1,0 +1,66 @@
+{
+	"bar": {
+		"ariaLabel": "Menú principal"
+	},
+	"file": {
+		"title": "Archivo",
+		"newProject": "Nuevo proyecto",
+		"openProject": "Abrir proyecto",
+		"save": "Guardar",
+		"saveAs": "Guardar como",
+		"export": "Exportar",
+		"closeProject": "Cerrar proyecto",
+		"preferences": "Preferencias"
+	},
+	"edit": {
+		"title": "Edición",
+		"undo": "Deshacer",
+		"redo": "Rehacer",
+		"copy": "Copiar",
+		"cut": "Cortar",
+		"paste": "Pegar"
+	},
+	"view": {
+		"title": "Ver",
+		"explorer": "Explorador",
+		"crossReferences": "Referencias cruzadas",
+		"analysisResults": "Resultados del análisis",
+		"scene3d": "Escena 3D",
+		"scene3dMode": {
+			"side-panel": "Panel lateral",
+			"floating-box": "Ventana flotante",
+			"page": "Página",
+			"browser-tab": "Pestaña del navegador"
+		}
+	},
+	"project": {
+		"title": "Proyecto",
+		"newGrafcet": "Nuevo grafcet",
+		"newLadder": "Nuevo ladder",
+		"newHmiPage": "Nueva página HMI",
+		"exerciseStatement": "Enunciado del ejercicio",
+		"share": "Compartir",
+		"manageSharing": "Gestionar el uso compartido",
+		"properties": "Propiedades",
+		"hardwareConfiguration": "Configuración del hardware",
+		"scene3dConfiguration": "Configuración de la escena 3D"
+	},
+	"target": {
+		"title": "Destino",
+		"upload": "Cargar el programa",
+		"link": "Enlace en línea",
+		"unlink": "Cerrar el enlace",
+		"start": "Iniciar el programa",
+		"stop": "Detener el programa"
+	},
+	"help": {
+		"title": "Ayuda",
+		"userManual": "Manual de usuario",
+		"training": "Formación",
+		"keyboardShortcuts": "Atajos de teclado",
+		"replayTour": "Repetir la visita guiada",
+		"whatsNew": "Novedades",
+		"giveFeedback": "Dar tu opinión",
+		"reportIssue": "Informar de un problema"
+	}
+}

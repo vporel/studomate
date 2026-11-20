@@ -1,0 +1,11 @@
+{
+	"statement": "## Ascensor de 3 plantas\n\nUn ascensor atiende tres plantas (0, 1, 2). Llamadas: `call_0..2` (rellanos) y `cabin_0..2` (consola).\nSalidas: `up`, `down` (movimiento) y `door` (apertura). Los sensores de posición de planta\n`floor_0..2` y `door_open`, así como la altura de la cabina `position`, los proporciona la escena 3D\n(menú Ver → Escena 3D): allí se animan la cabina y su puerta, y la puerta permanece abierta al menos 2 s.\n\n### Trabajo a realizar\n\n1. Ante una llamada, lleva la cabina a la planta solicitada en el sentido correcto.\n2. Al llegar, detén la cabina y abre la puerta durante 3 s, y luego ciérrala.\n3. Ignora una nueva llamada mientras haya un movimiento en curso (se atiende una llamada a la vez).\n4. Valida en simulación con el indicador de planta y la animación de la cabina.",
+	"texts": {
+		"projectName": "Ascensor",
+		"solutionName": "Ascensor: solución",
+		"controlGrafcet": "Control",
+		"displayProgram": "Indicador",
+		"displaySectionTitle": "Indicador",
+		"displaySectionDescription": "Salida para la consola: número de la planta actual."
+	}
+}

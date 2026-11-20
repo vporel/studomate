@@ -61,6 +61,36 @@ import enGlossary from "./en/glossary.json";
 import enEmbedded from "./en/embedded.json";
 import enFeedback from "./en/feedback.json";
 import enWhatsNew from "./en/whatsNew.json";
+import esCommon from "./es/common.json";
+import esPreferences from "./es/preferences.json";
+import esAnalysisIssues from "./es/analysisIssues.json";
+import esExpressionErrors from "./es/expressionErrors.json";
+import esTemplates from "./es/templates.json";
+import esTemplateContent from "./es/template-content";
+import esMenu from "./es/menu.json";
+import esAuth from "./es/auth.json";
+import esExplorer from "./es/explorer.json";
+import esPages from "./es/pages.json";
+import esGrafcetEditor from "./es/grafcetEditor.json";
+import esLadderEditor from "./es/ladderEditor.json";
+import esHmiEditor from "./es/hmiEditor.json";
+import esToasts from "./es/toasts.json";
+import esProjects from "./es/projects.json";
+import esShortcuts from "./es/shortcuts.json";
+import esChrome from "./es/chrome.json";
+import esPublic from "./es/public.json";
+import esManual from "./es/manual.json";
+import esTraining from "./es/training.json";
+import esVariableValidation from "./es/variableValidation.json";
+import esCrossReference from "./es/crossReference.json";
+import esVariableSelectorMenu from "./es/variableSelectorMenu.json";
+import esProfile from "./es/profile.json";
+import esTour from "./es/tour.json";
+import esScene3d from "./es/scene3d.json";
+import esGlossary from "./es/glossary.json";
+import esEmbedded from "./es/embedded.json";
+import esFeedback from "./es/feedback.json";
+import esWhatsNew from "./es/whatsNew.json";
 
 export type Messages = {
 	common: typeof frCommon;
@@ -159,6 +189,38 @@ const MESSAGES: Record<Locale, Messages> = {
 		embedded: enEmbedded,
 		feedback: enFeedback,
 		whatsNew: enWhatsNew,
+	},
+	es: {
+		common: esCommon,
+		preferences: esPreferences,
+		analysisIssues: esAnalysisIssues,
+		expressionErrors: esExpressionErrors,
+		templates: esTemplates,
+		templateContent: esTemplateContent,
+		menu: esMenu,
+		auth: esAuth,
+		explorer: esExplorer,
+		pages: esPages,
+		grafcetEditor: esGrafcetEditor,
+		ladderEditor: esLadderEditor,
+		hmiEditor: esHmiEditor,
+		toasts: esToasts,
+		projects: esProjects,
+		shortcuts: esShortcuts,
+		chrome: esChrome,
+		public: esPublic,
+		manual: esManual,
+		training: esTraining,
+		variableValidation: esVariableValidation,
+		crossReference: esCrossReference,
+		variableSelectorMenu: esVariableSelectorMenu,
+		profile: esProfile,
+		tour: esTour,
+		scene3d: esScene3d,
+		glossary: esGlossary,
+		embedded: esEmbedded,
+		feedback: esFeedback,
+		whatsNew: esWhatsNew,
 	},
 };
 

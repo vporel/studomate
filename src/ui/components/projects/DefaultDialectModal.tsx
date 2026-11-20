@@ -1,6 +1,7 @@
 "use client";
 
 import { Dialect } from "@/expression-language/dialect.enum";
+import defaultDialectForLocale from "@/i18n/default-dialect-for-locale";
 import { useLocaleContext } from "@/ui/i18n/LocaleProvider";
 import { useT } from "@/ui/i18n/useT";
 import CustomModal from "@/ui/components/mui/CustomModal";
@@ -19,7 +20,7 @@ export default function DefaultDialectModal() {
 	);
 	const t = useT("preferences.defaultDialect.firstProject");
 	const { locale } = useLocaleContext();
-	const suggested = locale === "en" ? Dialect.EN : Dialect.FR;
+	const suggested = defaultDialectForLocale(locale);
 	const [selected, setSelected] = useState<Dialect>(suggested);
 
 	useEffect(() => {

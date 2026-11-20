@@ -6,6 +6,15 @@ import {
 import { GLOSSARY_SECTIONS } from "./glossary-entries";
 
 describe("glossaryFigureSrc", () => {
+	it("pointe vers la variante -es d'une figure traduisible en espagnol", () => {
+		expect(glossaryFigureSrc("grafcet", "step", true, "es")).toBe(
+			"/glossary/grafcet/step-es.svg",
+		);
+		expect(glossaryFigureSrc("ladder", "coil", false, "es")).toBe(
+			"/glossary/ladder/coil.svg",
+		);
+	});
+
 	it("pointe vers la variante -en d'une figure traduisible en anglais seulement", () => {
 		expect(glossaryFigureSrc("grafcet", "step", true, "fr")).toBe(
 			"/glossary/grafcet/step.svg",

@@ -9,6 +9,7 @@ import {
 } from "@/bridge/analysis-issues.mapper";
 import { useProjectStore } from "../ProjectContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
+import type { Locale } from "@/i18n/config";
 import AnalysisResult from "./AnalysisResult";
 
 jest.mock("../ProjectContext");
@@ -19,7 +20,9 @@ function setup({
 	analysisWarnings = emptyAnalysisIssues(),
 	setAnalysisResultVisible = jest.fn(),
 	openPage = jest.fn(),
+	locale = "fr",
 }: {
+	locale?: Locale;
 	analysisResultVisible?: boolean;
 	analysisErrors?: AnalysisIssues;
 	analysisWarnings?: AnalysisIssues;
@@ -35,7 +38,11 @@ function setup({
 			project: {
 				getGrafcet: (id: string) =>
 					id === "g1"
-						? { name: "Grafcet 1", getElementById: () => null }
+						? {
+								name: "Grafcet 1",
+								getElementById: (elementId: string) =>
+									elementId === "a1" ? { type: "action" } : null,
+							}
 						: null,
 				getLadder: () => null,
 			},
@@ -45,11 +52,31 @@ function setup({
 		}),
 	);
 
-	return renderWithI18n(<AnalysisResult />);
+	return renderWithI18n(<AnalysisResult />, { locale });
 }
 
 describe("AnalysisResult", () => {
 	afterEach(() => jest.clearAllMocks());
+
+	it.each([
+		["fr", "[Action] Variable inconnue"],
+		["en", "[Action] Variable inconnue"],
+		["es", "[Acción] Variable inconnue"],
+	] as const)(
+		"préfixe une erreur d'élément grafcet par son type, dans la langue de l'interface (%s)",
+		(locale, expected) => {
+			setup({
+				locale,
+				analysisErrors: {
+					...emptyAnalysisIssues(),
+					grafcets: {
+						g1: { overall: [], elements: { a1: ["Variable inconnue"] } },
+					},
+				},
+			});
+			expect(screen.getByText(expected)).toBeInTheDocument();
+		},
+	);
 
 	it("ne rend rien quand le panneau n'est pas visible", () => {
 		const { container } = setup({ analysisResultVisible: false });

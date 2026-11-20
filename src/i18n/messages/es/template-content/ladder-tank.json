@@ -1,0 +1,16 @@
+{
+	"statement": "## Depósito\n\n| Variable | Función | Tipo |\n| --- | --- | --- |\n| `level` | nivel del depósito, de 0 a 100 % | entrada analógica (control deslizante) |\n| `pump` | bomba de llenado | salida |\n| `alarm` | alarma de nivel muy alto | salida |\n| `start_count` | número de arranques de la bomba | marca (entero) |\n\n### Tarea\n\n1. La bomba arranca por debajo del 20 % y se detiene por encima del 80 % (histéresis: la bomba mantiene su estado entre los dos umbrales, por lo que hace falta una marca).\n2. Alarma por encima del 95 %.\n3. El Main ya contiene una red que incrementa `start_count` bajo un contacto NO: ajusta `level` con el control deslizante y observa en simulación que el contador aumenta en cada ciclo mientras la bomba funciona; luego corrígelo con un contacto P.",
+	"texts": {
+		"projectName": "Depósito",
+		"solutionName": "Depósito: solución",
+		"pumpStartTitle": "Arranque de la bomba",
+		"pumpStartDescription": "Nivel bajo: retener la orden de marcha.",
+		"pumpStopTitle": "Paro de la bomba",
+		"pumpStopDescription": "Nivel alto: paro.",
+		"alarmTitle": "Alarma",
+		"alarmDescription": "Nivel muy alto.",
+		"startCountTitle": "Contador de arranques",
+		"startCountDescription": "Cuenta los arranques de la bomba.",
+		"solutionStartCountDescription": "Un contacto P incrementa solo una vez por arranque."
+	}
+}

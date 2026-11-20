@@ -12,7 +12,7 @@ export type GlossarySection = (typeof GLOSSARY_SECTIONS)[number];
 export type GlossaryFigure = {
 	/** File name without extension, in `public/glossary/<section>/`. */
 	name: string;
-	/** A translatable figure has a `<name>-en.svg` variant for the English locale. */
+	/** A translatable figure has a `<name>-en.svg` and a `<name>-es.svg` variant for the English and Spanish locales. */
 	translatable: boolean;
 	width: number;
 };

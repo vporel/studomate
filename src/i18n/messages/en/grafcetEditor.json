@@ -36,5 +36,33 @@
 		"falling_edge": "Falling edge",
 		"set": "Set",
 		"reset": "Reset"
+	},
+	"elements": {
+		"types": {
+			"step": "Step",
+			"transition": "Transition",
+			"action": "Action",
+			"step-referral-source": "Source referral",
+			"step-referral-target": "Target referral",
+			"junction-and-start": "AND divergence",
+			"junction-and-end": "AND convergence",
+			"junction-or-start": "OR divergence",
+			"junction-or-end": "OR convergence",
+			"comment": "Comment"
+		},
+		"aria": {
+			"step": "Step {number}",
+			"initialStep": "Initial step {number}",
+			"unnumberedStep": "Step (unnumbered)",
+			"transition": "Transition: {expression}",
+			"emptyTransition": "Transition (empty)",
+			"action": "Action: {expression}",
+			"emptyAction": "Action (empty)",
+			"comment": "Comment: {text}",
+			"referralTo": "Referral to step {number}",
+			"referralToUnset": "Referral to a step",
+			"referralFrom": "Referral from step {number}",
+			"referralFromUnset": "Referral from a step"
+		}
 	}
 }

@@ -158,8 +158,8 @@
 				"text": "Références croisées des variables, modèles de projet et export PDF vectoriel."
 			},
 			{
-				"title": "Français et anglais",
-				"text": "Interface, manuel et expressions disponibles dans les deux langues."
+				"title": "Français, anglais et espagnol",
+				"text": "Interface, manuel et formation disponibles dans les trois langues."
 			}
 		],
 		"valueTitle": "Valeur pédagogique",
@@ -344,7 +344,7 @@
 	},
 	"legal": {
 		"title": "Mentions légales",
-		"lastUpdated": "Dernière mise à jour : 13/10/2024",
+		"lastUpdated": "Dernière mise à jour : 20/11/2026",
 		"editorTitle": "1. Éditeur du site",
 		"editorBody": "Le présent site est édité par <strong>Studomate</strong>, projet pédagogique dédié à la simulation en automatisme pour l'enseignement.",
 		"editorResponsible": "Responsable de la publication :",
@@ -353,7 +353,8 @@
 		"liabilityTitle": "3. Responsabilité",
 		"liabilityBody": "L'équipe Studomate met tout en œuvre pour assurer la fiabilité et la mise à jour des informations et simulations proposées. Cependant, aucune garantie n'est donnée quant à l'exactitude des résultats des simulations, ni à l'absence d'erreurs. L'utilisation de l'outil se fait sous la seule responsabilité de l'utilisateur.",
 		"dataTitle": "4. Données personnelles",
-		"dataBody": "Aucune donnée personnelle n'est collectée sans le consentement de l'utilisateur. Les projets créés sont enregistrés localement sur le navigateur (localStorage). Aucune donnée n'est transmise à des tiers.",
+		"dataBody": "Par défaut, les projets restent dans le navigateur de l'utilisateur et ne sont envoyés à aucun serveur. Certaines données sont traitées par des sous-traitants, notamment pour la mesure d'audience, sans cookie, et pour les comptes et la sauvegarde cloud, facultatifs. Aucune donnée n'est vendue ni utilisée à des fins publicitaires. Le détail des données traitées et des droits de l'utilisateur figure dans la",
+		"dataLink": "politique de confidentialité.",
 		"contactTitle": "5. Contact",
 		"contactBody": "Pour toute question ou signalement :",
 		"contactLink": "Contactez-nous."
@@ -414,6 +415,10 @@
 		"contactTitle": "8. Contact",
 		"contactBody": "Pour toute question concernant la confidentialité ou la gestion des données :",
 		"contactLink": "Contactez-nous."
+	},
+	"legalTranslationNotice": {
+		"text": "Cette page est une traduction : seule la version française fait foi.",
+		"link": "Lire la version française"
 	},
 	"notFound": {
 		"title": "Page introuvable",
@@ -549,7 +554,7 @@
 				},
 				"theory-actions": {
 					"title": "Types et modes d'exécution des actions GRAFCET : formation",
-					"description": "Actions sur variables booléennes ou numériques et modes d'exécution des actions d'un GRAFCET."
+					"description": "Actions d'un GRAFCET sur variables booléennes ou numériques et leurs modes d'exécution : continue, sur front montant ou descendant, Set et Reset."
 				},
 				"observe-actions": {
 					"title": "Action sur front montant d'un GRAFCET : simulation",
@@ -573,7 +578,7 @@
 				},
 				"theory-or-divergence": {
 					"title": "Divergence et convergence en OU d'un GRAFCET : formation",
-					"description": "Choisir entre plusieurs séquences : divergence et convergence en OU d'un GRAFCET, avec exemples."
+					"description": "Choisir entre plusieurs séquences dans un GRAFCET : divergence et convergence en OU, branches, réceptivités exclusives et exemples commentés."
 				},
 				"exercise-or-divergence": {
 					"title": "Divergence en OU d'un GRAFCET : exercice corrigé",

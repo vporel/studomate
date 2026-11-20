@@ -188,6 +188,23 @@ describe("HmiWidget.nextName", () => {
 		expect(HmiWidget.nextName("rectangle", [])).toBe("Rectangle_1");
 	});
 
+	it("part du libellé fourni plutôt que de celui du type", () => {
+		const widgets = [
+			HmiWidget.create(
+				"push-button",
+				0,
+				0,
+				undefined,
+				undefined,
+				0,
+				"Push button_1",
+			),
+		];
+		expect(HmiWidget.nextName("push-button", widgets, "Push button")).toBe(
+			"Push button_2",
+		);
+	});
+
 	it("avance au premier numéro libre", () => {
 		const widgets = [
 			HmiWidget.create(

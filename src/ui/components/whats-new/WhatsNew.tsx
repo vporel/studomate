@@ -1,6 +1,9 @@
 "use client";
 
-import { setStoredAppVersion } from "@/persistence/app-version.storage";
+import {
+	getStoredAppVersion,
+	setStoredAppVersion,
+} from "@/persistence/app-version.storage";
 import {
 	getStoredWhatsNewVersion,
 	setStoredWhatsNewVersion,
@@ -32,9 +35,14 @@ async function ensureLayout(): Promise<void> {
 }
 
 /**
- * Records the application version and the news version on the first visit and, when the recorded one differs from
- * `WHATS_NEW_VERSION` (or is missing in a browser that already holds projects), updates it and
- * presents the news; the store also lets menus reopen it. Needs an intl provider holding the `whatsNew` messages.
+ * Records the application version and the news version, and presents the news when the recorded
+ * news version differs from `WHATS_NEW_VERSION` (or is missing in a browser that already holds
+ * projects); the store also lets menus reopen it. Needs an intl provider holding the `whatsNew`
+ * messages.
+ *
+ * A fresh browser (no version recorded, no project) is detected before the `localStorage` layout
+ * migration runs: that migration stamps older versions, which would otherwise pass for news to
+ * present on the very first visit.
  */
 export default function WhatsNew() {
 	const visible = useWhatsNewStore((state) => state.visible);
@@ -42,9 +50,18 @@ export default function WhatsNew() {
 	useEffect(() => {
 		let cancelled = false;
 		void (async () => {
+			const freshBrowser =
+				getStoredAppVersion() === null &&
+				getStoredWhatsNewVersion() === null &&
+				!(await hasLocalProjects());
+			if (cancelled) return;
 			await ensureLayout();
 			if (cancelled) return;
 			setStoredAppVersion(APP_VERSION);
+			if (freshBrowser) {
+				setStoredWhatsNewVersion(WHATS_NEW_VERSION);
+				return;
+			}
 			const stored = getStoredWhatsNewVersion();
 			if (stored === WHATS_NEW_VERSION) return;
 			const check = checkAppVersion(

@@ -1,0 +1,12 @@
+{
+	"title": "Novedades de Studomate {version}",
+	"previous": "Anterior",
+	"next": "Siguiente",
+	"done": "Entendido",
+	"slides": {
+		"spanishLanguage": {
+			"title": "Studomate ahora habla español",
+			"body": "La interfaz de la aplicación, el manual de usuario, la formación y las páginas del sitio ya están disponibles en español. Elige el idioma en Archivo → Preferencias o con el selector de idioma de las páginas del sitio. Un proyecto creado en español usa las palabras clave de expresión de la IEC 61131-3 (AND, OR, NOT)."
+		}
+	}
+}

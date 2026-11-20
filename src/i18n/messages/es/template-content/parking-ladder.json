@@ -1,0 +1,16 @@
+{
+	"statement": "## Aparcamiento en Ladder\n\nGRAFCET de mando: S0 → `entry_request AND spaces < 4` → S1 (`barrier`, `spaces := spaces + 1`) → `car_present` → S2 (`barrier`) → NOT `car_present` → S0; S0 → `exit_request AND spaces > 0` → S3 (`barrier`, `spaces := spaces - 1`) → `car_present` → S4 (`barrier`) → NOT `car_present` → S0. La señalización (`full`) ya está implementada en el programa `Signalling`, llamado por el Main.\n\nEntradas: `entry_request`, `exit_request` y `car_present` (pulsadores), `stop` (cableado normalmente cerrado). Salidas: `barrier` y `full`. Marca entera: `spaces`. Marcas proporcionadas: `X0` a `X4`.\n\n### Tarea\n\n1. Crea los programas `Automatic_cycle` y `Outputs` y llámalos desde el Main, después de `Signalling`.\n2. En `Automatic_cycle`, implementa el mando: una red por transición y luego un reinicio del mando con `stop`.\n3. En `Outputs`, escribe la salida `barrier` y el incremento y decremento de `spaces` en el flanco de etapa (contacto P sobre la etapa).\n4. La barrera nunca se cierra mientras `car_present` esté a verdadero, ni siquiera tras una pulsación de `stop`.\n5. Reflexiona: ¿qué ocurre con `spaces` tras un paro? ¿Debe ponerse a cero y en qué caso?",
+	"texts": {
+		"projectName": "Aparcamiento en Ladder",
+		"solutionName": "Aparcamiento en Ladder: solución",
+		"signallingProgramName": "Signalling",
+		"signallingTitle": "Signalling",
+		"signallingDescription": "GRAFCET de señalización, proporcionado.",
+		"barrierTitle": "Barrera",
+		"barrierDescription": "Abierta durante todo el paso (etapas 1 a 4) y mientras el sensor detecte un coche.",
+		"vehicleEntryTitle": "Entrada de vehículo",
+		"vehicleEntryDescription": "Acción en el flanco de etapa: se suma una sola unidad por paso.",
+		"vehicleExitTitle": "Salida de vehículo",
+		"vehicleExitDescription": "Acción en el flanco de etapa: se resta una sola unidad por paso."
+	}
+}

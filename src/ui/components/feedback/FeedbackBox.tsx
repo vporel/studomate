@@ -39,7 +39,7 @@ function FeedbackForm({ source }: { source: FeedbackBoxSource }) {
 		const sent = await sendFeedback({
 			rating,
 			comment,
-			locale: locale === "en" ? "en" : "fr",
+			locale,
 		});
 		setSending(false);
 		if (!sent) {

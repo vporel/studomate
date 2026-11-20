@@ -1,0 +1,794 @@
+{
+	"header": {
+		"home": "Inicio",
+		"manual": "Manual",
+		"about": "Acerca de",
+		"training": "Formación",
+		"openApp": "Abrir la aplicación",
+		"menu": "Menú",
+		"back": "Volver"
+	},
+	"languageSuggestion": {
+		"message": "Esta página también está disponible en español.",
+		"action": "Ver en español",
+		"dismiss": "Cerrar"
+	},
+	"breadcrumb": {
+		"label": "Ruta de navegación"
+	},
+	"footer": {
+		"resources": "Recursos",
+		"manual": "Manual de usuario",
+		"about": "Acerca de",
+		"training": "Formación",
+		"glossary": "Glosario",
+		"teachers": "Para docentes",
+		"legalTitle": "Legal",
+		"legalMentions": "Aviso legal",
+		"terms": "Condiciones de uso",
+		"privacy": "Política de privacidad",
+		"license": "Licencia AGPL v3",
+		"contact": "Contacto",
+		"reportIssue": "Informar de un problema",
+		"copyright": "© {year} Studomate",
+		"createdBy": "Creado por",
+		"slogan": "Diseña, simula, automatiza"
+	},
+	"landing": {
+		"heroTitle": "Aprende GRAFCET y Ladder<br></br>simulándolos",
+		"heroTagline": "Diseña, simula y prueba tu lógica de automatización con HMI animadas, directamente en tu navegador.",
+		"heroBadges": "Gratuito y de código abierto · Sin instalación · Sin cuenta · Sin datos personales",
+		"heroSceneLabel": "Animación 3D de una estación de clasificación de cajas: una cinta transportadora trae cada caja y unos cilindros la clasifican según su altura.",
+		"followTraining": "Seguir el curso",
+		"showcaseGrafcetAlt": "El editor de Studomate simulando un GRAFCET",
+		"showcaseLadderAlt": "El editor de Studomate simulando un diagrama Ladder",
+		"showcaseHmiAlt": "El editor de HMI de Studomate",
+		"demoTitle": "Mira Studomate en acción",
+		"demoVideoLabel": "Demostración de cómo crear y simular un proyecto con Studomate",
+		"demoVideoPause": "Pausar la demostración",
+		"demoVideoPlay": "Reproducir la demostración",
+		"logicTitle": "Escribe la lógica",
+		"logicIntro": "GRAFCET y Ladder en el mismo proyecto, con las mismas variables compartidas.",
+		"machineTitle": "Controla la máquina",
+		"machineIntro": "Conecta tu programa a una HMI, a una escena 3D o a una placa Arduino real.",
+		"showcaseGrafcetTitle": "GRAFCET",
+		"showcaseGrafcetText": "Dibuja etapas, transiciones y ramas, y sigue el GRAFCET mientras se ejecuta: etapas activas, condiciones verdaderas, acciones en curso.",
+		"showcaseLadderTitle": "Ladder",
+		"showcaseLadderText": "Construye redes con contactos, bobinas, temporizadores y contadores, y observa cómo circula la corriente durante la simulación.",
+		"showcaseHmiTitle": "HMI",
+		"showcaseHmiText": "Crea páginas de supervisión animadas (luces, pulsadores, depósitos, objetos en movimiento) ligadas a las mismas variables que tus programas.",
+		"showcaseScene3dTitle": "Escenas 3D",
+		"showcaseScene3dText": "Conecta tu programa a una planta 3D virtual (cintas, cilindros, sensores) y observa cómo responde la máquina en tiempo real.",
+		"showcaseScene3dAlt": "Escena 3D de una estación de clasificación de cajas controlada por Studomate",
+		"showcaseArduinoTitle": "Arduino",
+		"showcaseArduinoText": "Carga tu programa en una placa Arduino Uno R3 real, o usa sus entradas y salidas durante la simulación, directamente desde Chrome o Edge.",
+		"showcaseArduinoAlt": "Placa Arduino Uno R3",
+		"whyTitle": "¿Por qué Studomate?",
+		"whyIntro": "Studomate existe para reducir casi a cero la fricción al aprender automatización.",
+		"reasonFrictionTitle": "Cero fricción",
+		"reasonFrictionText": "Sin instalación, sin licencia, sin PLC ni tarjetas de E/S que configurar. Te centras en la lógica, no en la herramienta.",
+		"reasonAllInOneTitle": "Todo en uno",
+		"reasonAllInOneText": "GRAFCET, Ladder y HMI animadas en el mismo entorno, con variables compartidas entre las tres. Ninguna herramienta gratuita combina las tres.",
+		"reasonShortLoopTitle": "Ciclo de corrección corto",
+		"reasonShortLoopText": "Los errores se señalan mientras editas, no solo al iniciar la simulación. Un derecho a equivocarse, rápido y visual.",
+		"audienceStudents": "Estudiantes (formación profesional, escuelas de ingeniería, universidades)",
+		"audienceTeachers": "Docentes y formadores de automatización / electricidad",
+		"audienceProfessionals": "Profesionales que se reciclan o repasan",
+		"featureSimulationTitle": "Simulación en tiempo real",
+		"featureSimulationText": "Ejecución paso a paso o continua, con visualización en directo de estados, transiciones y variables.",
+		"featureManualTitle": "Manual integrado",
+		"featureManualText": "Ayuda completa disponible desde la propia aplicación.",
+		"featureCloudTitle": "Cuentas y nube (opcional)",
+		"featureCloudText": "Proyectos guardados en local o en la nube, con uso compartido mediante enlace.",
+		"stepsTitle": "Empieza en 30 segundos",
+		"step1Title": "Abre la aplicación",
+		"step1Text": "Nada que instalar: todo funciona en el navegador.",
+		"step2Title": "Crea un proyecto o parte de un ejemplo",
+		"step2Text": "Empieza desde cero o abre una de las plantillas ya preparadas.",
+		"step3Title": "Analiza y luego simula",
+		"step3Text": "Comprueba la estructura, ejecuta la lógica y observa cómo reacciona el sistema.",
+		"trainingTitle": "Aprende automatización industrial con Studomate",
+		"trainingIntro": "Módulos guiados para dominar GRAFCET y después Ladder, con ejercicios que puedes simular en la aplicación.",
+		"trainingA0LinkLabel": "Fundamentos de automatización",
+		"trainingA0Topic": "Fundamentos",
+		"trainingA0Summary": "Automatización, variables, lógica básica y ciclo de escaneo.",
+		"trainingA1LinkLabel": "Fundamentos de GRAFCET",
+		"trainingA1Topic": "GRAFCET",
+		"trainingA1Summary": "Etapas, transiciones, acciones, ramas en O y en Y.",
+		"trainingA2LinkLabel": "Lógica Ladder y memoria",
+		"trainingA2Topic": "Ladder",
+		"trainingA2Summary": "Contactos, bobinas, autorretención, bobinas set/reset y flancos.",
+		"trainingA3LinkLabel": "Temporizadores, contadores y cálculo en Ladder",
+		"trainingA3Topic": "Ladder",
+		"trainingA3Summary": "Temporizadores, contadores, cálculos y subprogramas.",
+		"trainingA4LinkLabel": "Del GRAFCET a la lógica Ladder (parte 1)",
+		"trainingA4Topic": "GRAFCET → Ladder",
+		"trainingA4Summary": "Implementar un GRAFCET en Ladder: una red por transición, dos programas, acciones, tiempo y fallos.",
+		"trainingA5LinkLabel": "Del GRAFCET a la lógica Ladder (parte 2)",
+		"trainingA5Topic": "GRAFCET → Ladder (continuación)",
+		"trainingA5Summary": "Divergencias en O y en Y, parada de una secuencia, límites de una red por transición y método de los tres bloques.",
+		"trainingCta": "Ver toda la formación",
+		"templatesTitle": "Ejemplos para empezar",
+		"templatesIntro": "Abre un proyecto ya configurado y explóralo a tu ritmo.",
+		"templatePreviewAlt": "Vista previa del proyecto {label}",
+		"openInApp": "Abrir en la aplicación",
+		"durabilityTitle": "Tus proyectos son tuyos",
+		"durabilityNoLockInTitle": "Sin dependencia",
+		"durabilityNoLockInText": "Tus proyectos son archivos que exportas y conservas. El esquema está versionado: un proyecto exportado hoy seguirá abriéndose después de actualizar la herramienta.",
+		"durabilityIndependenceTitle": "No dependes de nadie",
+		"durabilityIndependenceText": "El código es libre bajo la licencia AGPL v3: si el proyecto se detiene, se puede bifurcar o alojar por cuenta propia.",
+		"privacyTitle": "Pensado para la privacidad",
+		"privacyText": "Sin correo obligatorio, sin datos personales almacenados, sin cookies de seguimiento. La autenticación usa un alias y las estadísticas de uso son anónimas.",
+		"sourceCodeText": "El código fuente es público: léelo, informa de un problema o contribuye.",
+		"viewOnGitHub": "Ver en GitHub",
+		"openApp": "Abrir la aplicación"
+	},
+	"about": {
+		"title": "Acerca de Studomate",
+		"missionTitle": "Misión",
+		"missionBody": "<strong>Studomate</strong> es una herramienta educativa de <strong>automatización</strong>: aprender, diseñar y simular GRAFCET, Ladder y HMI, directamente en el navegador.",
+		"missionBody2": "Existe para reducir casi a cero la fricción al aprender automatización: sin instalación, sin licencia, sin PLC que configurar.",
+		"differentiatorLabel": "Su diferencial: todo en el mismo entorno",
+		"differentiatorEditors": ["GRAFCET", "Ladder", "HMI animadas"],
+		"differentiatorItems": ["Variables compartidas", "Escena 3D"],
+		"offeringTitle": "Qué ofrece Studomate",
+		"offeringItems": [
+			{
+				"title": "Edición y simulación",
+				"text": "Lógica de automatización: secuencias, transiciones, E/S virtuales, temporizadores, contadores, valores analógicos."
+			},
+			{
+				"title": "Visualización clara",
+				"text": "Estados activos, transiciones evaluadas, salidas y efectos externos."
+			},
+			{
+				"title": "Modos de aprendizaje",
+				"text": "Ejecución paso a paso, ciclo completo y continua."
+			},
+			{
+				"title": "Escenas 3D",
+				"text": "Una planta virtual (clasificación de cartones, semáforos, taladrado, ascensor) cuyos sensores y actuadores están ligados a las variables del proyecto."
+			},
+			{
+				"title": "Configuración del hardware",
+				"text": "Asigna variables a los pines de una placa Arduino Uno R3, carga el programa, simula con E/S reales y observa la placa mientras funciona."
+			},
+			{
+				"title": "Herramientas de análisis",
+				"text": "Referencias cruzadas de variables, plantillas de proyecto y exportación a PDF vectorial."
+			},
+			{
+				"title": "Francés, inglés y español",
+				"text": "Interfaz, manual y formación disponibles en los tres idiomas."
+			}
+		],
+		"valueTitle": "Valor educativo",
+		"valueItems": [
+			{
+				"title": "Comprensión guiada",
+				"text": "De la secuencia lógica y de la causalidad."
+			},
+			{
+				"title": "Aprender probando",
+				"text": "Probar, corregir, recordar."
+			},
+			{
+				"title": "Uso mixto",
+				"text": "Demostraciones en clase, ejercicios para casa, correcciones colaborativas."
+			},
+			{
+				"title": "Ciclo de corrección corto",
+				"text": "Los errores se señalan durante la edición, no solo al iniciar la simulación."
+			}
+		],
+		"causalityLabel": "La cadena de causalidad, hecha visible",
+		"causalityItems": [
+			"Entradas",
+			"Transiciones",
+			"Etapas",
+			"Acciones",
+			"Salidas"
+		],
+		"ownershipTitle": "Tus proyectos son tuyos",
+		"ownershipItems": [
+			{
+				"title": "Primero en local",
+				"text": "Tus proyectos se guardan en tu navegador y se pueden exportar como archivos. El esquema está versionado y las migraciones son automáticas: un proyecto exportado hoy seguirá abriéndose tras las actualizaciones."
+			},
+			{
+				"title": "Nube opcional",
+				"text": "Una cuenta, con o sin correo electrónico, te permite respaldar tus proyectos en la nube y compartirlos mediante un enlace. Sin cuenta, nada sale de tu navegador."
+			},
+			{
+				"title": "Abierto y sin rastreadores",
+				"text": "El código es libre bajo la licencia AGPL v3. Studomate no usa cookies de seguimiento."
+			}
+		],
+		"audienceTitle": "A quién va dirigido",
+		"audienceItems": [
+			{
+				"title": "Estudiantes",
+				"text": "Formación profesional, escuelas de ingeniería, universidades."
+			},
+			{
+				"title": "Docentes y formadores",
+				"text": "De automatización y electricidad."
+			},
+			{
+				"title": "Profesionales",
+				"text": "Que se reciclan o repasan."
+			}
+		],
+		"teachersLink": "Studomate para docentes: preparar y repartir ejercicios de laboratorio",
+		"ctaTitle": "¿Listo para probarlo?",
+		"ctaBody": "Sin instalación ni cuenta: abre la aplicación y crea tu primer proyecto.",
+		"contactTitle": "Contacto y contribuciones",
+		"contactBody": "¿Ideas, comentarios o quieres contribuir?",
+		"contactLink": "Ponte en contacto"
+	},
+	"teachers": {
+		"title": "Enseñar GRAFCET y lógica Ladder con Studomate",
+		"intro": "Studomate es un simulador gratuito de GRAFCET, lógica Ladder y HMI que funciona en el navegador. Se usa para preparar, repartir y corregir prácticas de laboratorio de automatización, en ciclos de formación profesional y técnica (BTS CRSA, BTS ATI, BTS Électrotechnique, bac pro MELEC, STI2D, BUT GEII) y en escuelas de ingeniería.",
+		"sections": [
+			{
+				"title": "Preparar una práctica de laboratorio",
+				"items": [
+					"Parte de un proyecto ya preparado: semáforo, cruce, barrera de aparcamiento, ascensor, taladrado o clasificación de cartones. Cada uno viene en versión de ejercicio y en versión de solución.",
+					"Escribe el enunciado del ejercicio en Markdown en las propiedades del proyecto: viaja con el proyecto y se abre en una pestaña.",
+					"Guarda la solución en un proyecto aparte que no compartas."
+				]
+			},
+			{
+				"title": "Repartir el proyecto a los estudiantes",
+				"items": [
+					"Desde tu cuenta, comparte un enlace: cada estudiante que lo abre obtiene su propia copia, sin crear una cuenta. El enlace se puede revocar en cualquier momento.",
+					"O envía un archivo de proyecto, que los estudiantes abren en Studomate."
+				]
+			},
+			{
+				"title": "Nada que instalar para los estudiantes",
+				"items": [
+					"Studomate funciona en el navegador: nada que instalar en los equipos del laboratorio ni en casa de los estudiantes.",
+					"Sin cuenta, los proyectos permanecen en el navegador del estudiante. Una cuenta, con o sin dirección de correo, los guarda en la nube.",
+					"Sin cookies de seguimiento, y software libre bajo la licencia AGPL v3."
+				]
+			},
+			{
+				"title": "Recoger y corregir los trabajos",
+				"items": [
+					"Cada estudiante te devuelve un archivo de proyecto, o un enlace para compartir su copia.",
+					"El analizador señala los errores del proyecto (expresión no válida, variable desconocida...) antes de la simulación.",
+					"La exportación del proyecto a PDF genera una portada con el enunciado del ejercicio y después los GRAFCET, los diagramas Ladder y las tablas de variables: una base para el informe de la práctica."
+				]
+			},
+			{
+				"title": "Ir más lejos",
+				"items": [
+					"Conecta el programa a una escena 3D de clasificación de cartones, controlada por sus salidas.",
+					"Carga el programa en una placa Arduino Uno R3 real, o usa sus entradas y salidas durante la simulación (Chrome o Edge)."
+				]
+			}
+		],
+		"trainingTitle": "Un curso listo para usar",
+		"trainingBody": "La formación sigue una progresión de seis módulos, desde la lógica básica hasta la implementación de un GRAFCET en lógica Ladder. Cada módulo alterna teoría y ejercicios resueltos para simular, y el glosario define cada término.",
+		"glossaryLink": "Glosario de automatización",
+		"faqTitle": "Preguntas frecuentes",
+		"faq": [
+			{
+				"question": "¿Studomate sustituye a TIA Portal, Automgen o CODESYS?",
+				"answer": "No, y ese no es su objetivo. Studomate sirve para aprender y practicar: simula GRAFCET, lógica Ladder y páginas HMI en el navegador. No programa un PLC industrial (Siemens, Schneider…), aunque sí puede controlar una placa Arduino. En clase complementa el software del PLC del taller: los estudiantes diseñan y prueban su lógica en Studomate, en el laboratorio o en casa, y después la trasladan al equipo real. Las notaciones siguen las normas: IEC 60848 para GRAFCET, bloques IEC 61131-3 (TON, TOF, CTU…) para la lógica Ladder."
+			},
+			{
+				"question": "¿Pueden los estudiantes practicar en casa sin software de PLC?",
+				"answer": "Sí. Studomate es gratuito y funciona en el navegador sin instalación, en Windows, macOS o Linux. Un estudiante puede repetir una práctica de laboratorio o seguir el curso en su propio equipo, sin licencia y sin hardware."
+			},
+			{
+				"question": "¿Hay que instalar algo en los equipos del laboratorio?",
+				"answer": "No. Basta con un navegador reciente. Solo el uso de una placa Arduino requiere Chrome o Edge."
+			},
+			{
+				"question": "¿Los estudiantes necesitan crear una cuenta?",
+				"answer": "No. Sin cuenta, abren el proyecto compartido y trabajan en su navegador. Una cuenta, con o sin dirección de correo, les permite encontrar sus proyectos en otro dispositivo y compartir los suyos mediante un enlace."
+			},
+			{
+				"question": "¿Studomate es gratuito para usarlo en clase?",
+				"answer": "Sí, tanto en clase como en casa. El código es software libre bajo la licencia AGPL v3."
+			}
+		],
+		"ctaTitle": "¿Listo para preparar tu primera práctica de laboratorio?",
+		"ctaBody": "Abre la aplicación y parte de un proyecto ya preparado, o echa primero un vistazo a la formación.",
+		"ctaTraining": "Ver la formación"
+	},
+	"contact": {
+		"title": "Contacto",
+		"intro": "Studomate lo desarrolla {author}, que lee y responde cada mensaje. La respuesta llega por correo electrónico, a la dirección que indiques en el formulario.",
+		"beforeTitle": "Antes de escribir",
+		"beforeQuestion": "¿Una duda sobre el uso de Studomate? El <manual>manual de usuario</manual> y los <training>cursos de formación</training> suelen resolverla.",
+		"beforeContribution": "¿Una idea, o quieres contribuir? El código de Studomate es abierto: también puedes proponer un cambio en <github>GitHub</github>.",
+		"formTitle": "Escribe un mensaje",
+		"directEmail": "También puedes escribir directamente a <email></email>.",
+		"form": {
+			"topic": "Asunto",
+			"topics": {
+				"question": "Pregunta sobre el uso de Studomate",
+				"forgotten-password": "Contraseña olvidada, acceso a la cuenta",
+				"problem": "Informar de un problema",
+				"teaching": "Docente o centro educativo",
+				"contribution": "Idea o contribución",
+				"other": "Otro"
+			},
+			"email": "Tu correo electrónico",
+			"emailHelper": "Para poder responderte.",
+			"name": "Tu nombre (opcional)",
+			"message": "Mensaje",
+			"honeypot": "No rellenes este campo",
+			"userAgentNote": "El nombre y la versión de tu navegador se adjuntan al mensaje, para ayudarnos a reproducir el problema.",
+			"submit": "Enviar",
+			"sending": "Enviando…",
+			"sent": "Mensaje enviado. Recibirás una respuesta por correo electrónico.",
+			"writeAnother": "Escribir otro mensaje",
+			"emailInvalid": "Dirección de correo no válida.",
+			"messageTooShort": "El mensaje debe contener al menos {min} caracteres.",
+			"messageUnchanged": "Completa el mensaje antes de enviarlo.",
+			"pseudoMissing": "Indica tu nombre de usuario después de \"{label}\".",
+			"errors": {
+				"invalid": "No se pudo enviar el mensaje: revisa los campos del formulario.",
+				"rate-limited": "Se han enviado demasiados mensajes desde tu conexión. Inténtalo de nuevo en unos minutos, o escríbenos directamente a <email></email>.",
+				"failed": "No se pudo enviar el mensaje. Escríbenos directamente a <email></email>."
+			},
+			"templates": {
+				"forgotten-password": "Hola:\n\nHe olvidado la contraseña de mi cuenta creada con un nombre de usuario.\n\nMi nombre de usuario: ",
+				"problem": "Hola:\n\nProblema encontrado: \n\nPasos para reproducirlo:\n1. \n2. "
+			}
+		}
+	},
+	"legal": {
+		"title": "Aviso legal",
+		"lastUpdated": "Última actualización: 20/11/2026",
+		"editorTitle": "1. Editor del sitio",
+		"editorBody": "Este sitio es publicado por <strong>Studomate</strong>, un proyecto educativo dedicado a la simulación de automatización para la enseñanza.",
+		"editorResponsible": "Responsable de la publicación:",
+		"ipTitle": "2. Propiedad intelectual",
+		"ipBody": "Todo el contenido del sitio de Studomate (textos, interfaces, logotipos, elementos visuales, estructura del código, etc.) está protegido por derechos de autor. Queda prohibida cualquier reproducción, distribución o modificación sin autorización previa, salvo para un uso estrictamente personal y educativo.",
+		"liabilityTitle": "3. Responsabilidad",
+		"liabilityBody": "El equipo de Studomate hace todo lo posible por mantener la información y las simulaciones fiables y actualizadas. Sin embargo, no se ofrece ninguna garantía sobre la exactitud de los resultados de las simulaciones ni sobre la ausencia de errores. El uso de la herramienta es responsabilidad exclusiva del usuario.",
+		"dataTitle": "4. Datos personales",
+		"dataBody": "Por defecto, los proyectos permanecen en el navegador del usuario y no se envían a ningún servidor. Algunos datos son tratados por encargados del tratamiento, en particular para la medición de audiencia, sin cookies, y para las cuentas y la copia de seguridad en la nube, opcionales. Ningún dato se vende ni se utiliza con fines publicitarios. Los datos tratados y los derechos del usuario se detallan en la",
+		"dataLink": "política de privacidad.",
+		"contactTitle": "5. Contacto",
+		"contactBody": "Para cualquier pregunta o notificación:",
+		"contactLink": "Ponte en contacto."
+	},
+	"terms": {
+		"title": "Condiciones de uso",
+		"lastUpdated": "Última actualización: 13/10/2025",
+		"purposeTitle": "1. Objeto",
+		"purposeBody": "Estas condiciones regulan el acceso y el uso de <strong>Studomate</strong>, una aplicación educativa dedicada a aprender, diseñar y simular sistemas automatizados. La herramienta ofrece espacios interactivos para representar, simular y comprender los distintos lenguajes, diagramas y lógicas de la automatización industrial. Al acceder a Studomate, el usuario reconoce haber leído y aceptado estas condiciones.",
+		"usageTitle": "2. Uso permitido",
+		"usageBody": "Studomate está concebido para un uso educativo y profesional supervisado: enseñanza, formación, autoaprendizaje o demostración técnica. El usuario se compromete a:",
+		"usageItems": [
+			"utilizar la plataforma respetando la ley y los derechos de terceros;",
+			"no hacer un uso indebido de la aplicación con fines ilícitos, comerciales o malintencionados;",
+			"no modificar el código fuente ni intentar acceder a él sin autorización;",
+			"citar a Studomate en cualquier uso público que lo incorpore."
+		],
+		"accountsTitle": "3. Cuentas y datos",
+		"accountsBody": "La versión actual de Studomate no requiere registro. Los proyectos y las simulaciones se almacenan <strong>localmente</strong> en <strong>archivos</strong>. El usuario es responsable de la copia de seguridad de sus archivos. No se envía ningún dato personal a servidores externos sin consentimiento explícito.",
+		"ipTitle": "4. Propiedad intelectual",
+		"ipBody": "Todo el contenido técnico, gráfico y conceptual de Studomate (interfaz, motor, iconos, estructura) sigue siendo propiedad de sus autores. Queda prohibida cualquier reproducción, modificación o distribución sin autorización escrita. El usuario sigue siendo propietario de los proyectos y creaciones que desarrolla en la plataforma.",
+		"liabilityTitle": "5. Responsabilidad",
+		"liabilityBody": "Studomate tiene como objetivo facilitar la comprensión de los sistemas automatizados. Es una herramienta educativa, no un software industrial certificado. No se ofrece ninguna garantía sobre la exactitud absoluta de las simulaciones, la compatibilidad con equipos reales ni la conservación de los datos a largo plazo. El uso de la aplicación es responsabilidad exclusiva del usuario.",
+		"evolutionTitle": "6. Cambios en el servicio",
+		"evolutionBody": "Studomate evoluciona continuamente. Las funciones pueden modificarse, añadirse o suspenderse sin previo aviso, en particular durante las fases de prueba o mantenimiento. El equipo se esfuerza por mantener un servicio estable y transparente.",
+		"contactTitle": "7. Contacto",
+		"contactBody": "Para cualquier pregunta, sugerencia o notificación técnica:",
+		"contactLink": "Ponte en contacto."
+	},
+	"privacy": {
+		"title": "Política de privacidad",
+		"lastUpdated": "Última actualización: 31/08/2026",
+		"introTitle": "1. Introducción",
+		"introBody": "Esta política de privacidad describe cómo <strong>Studomate</strong> trata los datos personales y técnicos de los usuarios. Su objetivo es garantizar la transparencia y detallar las opciones de privacidad disponibles.",
+		"collectedTitle": "2. Datos recogidos",
+		"collectedBody": "Studomate no recoge automáticamente ningún dato personal identificable. Por defecto, los proyectos que crea un usuario se almacenan <strong>localmente</strong> en su navegador y no se envían a ningún servidor remoto. Los datos salen del dispositivo del usuario solo en dos casos, descritos a continuación: la medición de audiencia (§3) y, si decide crear una cuenta, las cuentas y la copia de seguridad en la nube (§4).",
+		"analyticsTitle": "3. Medición de audiencia",
+		"analyticsBody": "Studomate utiliza <strong>Umami</strong> (alojado en la Unión Europea) para medir el tráfico del sitio: número de visitas, páginas vistas, fuentes de tráfico, tipo de dispositivo y algunos eventos de uso anónimos (crear un proyecto, iniciar una simulación). Estas mediciones se realizan <strong>sin cookies</strong>, sin almacenar la dirección IP y sin ninguna forma de identificar o rastrear a un usuario de una visita a otra. No se vende ningún dato ni se usa con fines publicitarios.",
+		"accountsTitle": "4. Cuentas y copia de seguridad en la nube",
+		"accountsBody": "Crear una cuenta es <strong>opcional</strong>: sin cuenta, Studomate funciona íntegramente en local y no se envía ningún dato a nuestros servidores. Al crear una cuenta, el usuario puede respaldar sus proyectos en la nube y acceder a ellos desde otro dispositivo.",
+		"accountsItems": [
+			"<strong>Cuenta estándar:</strong> dirección de correo electrónico y contraseña.",
+			"<strong>Cuenta anónima:</strong> alias y contraseña, sin dirección de correo.",
+			"<strong>Datos almacenados:</strong> un identificador de cuenta, el correo o el alias, y solo los proyectos que el usuario decide guardar en la nube."
+		],
+		"accountsHosting": "Estos datos están alojados por nuestro encargado del tratamiento <strong>Supabase</strong>, en una infraestructura situada en la Unión Europea. Cada cuenta solo puede acceder a sus propios datos (aislamiento aplicado a nivel de la base de datos). No se vende ningún dato ni se usa con fines publicitarios.",
+		"securityTitle": "5. Seguridad y confidencialidad",
+		"securityBody": "Studomate se compromete a un alto nivel de protección de los datos y a no explotarlos nunca con fines comerciales o publicitarios. Los intercambios con la nube se cifran en tránsito (HTTPS) y el acceso a los proyectos guardados está restringido a la cuenta que los creó. Los usuarios siguen siendo responsables de la seguridad de los archivos que exportan localmente.",
+		"cookiesTitle": "6. Cookies y almacenamiento local",
+		"cookiesBody": "Studomate no utiliza cookies de seguimiento. Solo se almacenan localmente datos técnicos para que los proyectos funcionen correctamente (identificadores internos, estados de simulación, ajustes guardados).",
+		"rightsTitle": "7. Derechos del usuario",
+		"rightsBody": "De conformidad con el Reglamento General de Protección de Datos (RGPD), cualquier usuario puede:",
+		"rightsItems": [
+			"borrar los datos locales de su navegador en cualquier momento;",
+			"exportar o respaldar manualmente sus proyectos en cualquier momento;",
+			"solicitar la eliminación de su cuenta y de los proyectos asociados poniéndose en contacto con el equipo (§8)."
+		],
+		"contactTitle": "8. Contacto",
+		"contactBody": "Para cualquier pregunta sobre privacidad o tratamiento de datos:",
+		"contactLink": "Ponte en contacto."
+	},
+	"legalTranslationNotice": {
+		"text": "Esta página es una traducción: solo la versión francesa tiene validez jurídica.",
+		"link": "Leer la versión francesa"
+	},
+	"notFound": {
+		"title": "Página no encontrada",
+		"body": "La página que buscas no existe o se ha movido.",
+		"back": "Volver al inicio"
+	},
+	"metadata": {
+		"homeTitle": "Simulador PLC online gratis: GRAFCET y Ladder",
+		"homeDescription": "Simulador PLC online gratis: diseña y simula GRAFCET (SFC), diagramas de contactos (Ladder) y HMI animadas en tu navegador, sin instalar nada ni crear cuenta.",
+		"aboutTitle": "Acerca de",
+		"aboutDescription": "Studomate: una herramienta didáctica gratuita para aprender, diseñar y simular GRAFCET, Ladder y HMI en el navegador.",
+		"teachersTitle": "Simulador de GRAFCET y Ladder para docentes",
+		"teachersDescription": "Prepara y reparte prácticas de automatización: proyectos listos, compartir por enlace, sin instalar nada, ejercicios resueltos, exportación a PDF. Gratis.",
+		"contactTitle": "Contacto",
+		"contactDescription": "¿Una duda sobre Studomate, un problema, una contraseña olvidada o una idea? Escríbenos con el formulario y te responderemos por correo.",
+		"legalTitle": "Aviso legal",
+		"legalDescription": "Aviso legal del sitio Studomate.",
+		"termsTitle": "Condiciones de uso",
+		"termsDescription": "Condiciones de uso de Studomate.",
+		"privacyTitle": "Política de privacidad",
+		"privacyDescription": "Cómo trata Studomate los datos personales y técnicos de los usuarios.",
+		"manualTitle": "Manual de usuario",
+		"manualDescription": "Manual de usuario de Studomate: primeros pasos, GRAFCET, Ladder, HMI, simulación.",
+		"trainingTitle": "Curso gratuito de GRAFCET y Ladder",
+		"trainingDescription": "Curso gratuito de GRAFCET (SFC) y Ladder con ejercicios autocorregidos para simular online, de la lógica básica del PLC a implementar un GRAFCET en Ladder.",
+		"glossaryTitle": "Glosario de automatización: GRAFCET y Ladder",
+		"glossaryDescription": "Glosario de automatización: etapa, transición, contacto, bobina, TON, contador, flanco... cada término de GRAFCET y Ladder explicado con sencillez y esquemas.",
+		"trainingA0Title": "Módulo A0: Antes de empezar",
+		"trainingA0Description": "Módulo A0: qué es un sistema automatizado, variables y lógica básica, el ciclo de escaneo. Los requisitos previos al GRAFCET.",
+		"trainingA1Title": "Módulo A1: Fundamentos del GRAFCET",
+		"trainingA1Description": "Módulo A1: etapas, transiciones, receptividades, acciones, divergencias en O y en Y. Teoría y ejercicios autocorregidos.",
+		"trainingA2Title": "Módulo A2: Ladder, lógica y memoria",
+		"trainingA2Description": "Módulo A2: del esquema de relés al Ladder, contactos y bobinas, autorretención, bobinas S/R, flancos y orden de ejecución de las redes.",
+		"trainingA3Title": "Módulo A3: Ladder, tiempo y cálculo",
+		"trainingA3Description": "Módulo A3: temporizadores, contadores, cálculo y tipos numéricos, subprogramas: teoría y ejercicios autocorregidos.",
+		"trainingA4Title": "Módulo A4: Del GRAFCET al Ladder (parte 1)",
+		"trainingA4Description": "Módulo A4: implementar un GRAFCET en Ladder, de la etapa a las salidas: una red por transición, dos programas, acciones, temporizadores y fallos.",
+		"trainingA5Title": "Módulo A5: Del GRAFCET al Ladder (parte 2)",
+		"trainingA5Description": "Módulo A5: divergencias en O y en Y, parada de una secuencia, límites de una red por transición y el método de los tres bloques para un GRAFCET en Ladder.",
+		"manualSections": {
+			"getting-started": {
+				"title": "Primeros pasos con Studomate: manual",
+				"description": "Crea un proyecto, añade un GRAFCET o un diagrama Ladder, define variables y ejecuta una primera simulación en Studomate."
+			},
+			"projects": {
+				"title": "Proyectos de Studomate: manual de usuario",
+				"description": "Programas, variables, páginas HMI y dialecto: qué contiene un proyecto de Studomate y cómo guardarlo, abrirlo y exportarlo."
+			},
+			"accounts": {
+				"title": "Cuentas y compartir: manual de Studomate",
+				"description": "Copia en la nube, sincronización entre dispositivos y proyectos compartidos por enlace: cómo usar una cuenta de Studomate."
+			},
+			"explorer": {
+				"title": "Explorador de proyecto: manual de Studomate",
+				"description": "El explorador de Studomate: árbol del proyecto, programas, variables y páginas HMI, y los paneles de la interfaz."
+			},
+			"variables": {
+				"title": "Variables del PLC: manual de Studomate",
+				"description": "Áreas, mnemónicos, tipos y valores iniciales: declara y gestiona las variables de un proyecto GRAFCET, Ladder y HMI."
+			},
+			"grafcet": {
+				"title": "Editor GRAFCET: manual de Studomate",
+				"description": "Etapas, transiciones, acciones, uniones, referencias y enlaces: crea y edita un GRAFCET en el editor gráfico de Studomate."
+			},
+			"ladder": {
+				"title": "Editor Ladder: manual de Studomate",
+				"description": "Redes, contactos, bobinas, bloques y conexiones: crea y edita un programa Ladder en el editor gráfico de Studomate."
+			},
+			"toolbar": {
+				"title": "Barra de herramientas: manual de Studomate",
+				"description": "Acciones generales y herramientas de creación de la barra de herramientas de Studomate, según el tipo de programa abierto (GRAFCET o Ladder)."
+			},
+			"cross-references": {
+				"title": "Referencias cruzadas: manual de Studomate",
+				"description": "Consulta dónde se lee y se escribe cada variable en los GRAFCET, los programas Ladder y las páginas HMI de un proyecto de Studomate."
+			},
+			"hmi": {
+				"title": "Páginas HMI animadas: manual de Studomate",
+				"description": "Páginas, widgets, propiedades, animaciones y eventos: diseña una interfaz hombre-máquina interactiva y manéjala en simulación."
+			},
+			"simulation": {
+				"title": "Simulación del PLC: manual de Studomate",
+				"description": "Inicia y detén la simulación, sigue las variables con tablas de observación y maneja las páginas HMI en tiempo real."
+			},
+			"analysis": {
+				"title": "Análisis del proyecto: manual de Studomate",
+				"description": "El análisis estático comprueba la coherencia de un proyecto antes de simular: tipos de comprobaciones, errores bloqueantes y advertencias."
+			},
+			"hardware": {
+				"title": "Arduino Uno R3: manual de Studomate",
+				"description": "Carga un programa en una placa Arduino Uno R3, úsala como entradas y salidas de una simulación u observa su programa."
+			},
+			"scene3d": {
+				"title": "Escena de simulación 3D: manual de Studomate",
+				"description": "Enlaza una planta virtual en 3D (clasificación de cajas, ascensor, semáforos, taladrado) con un programa en simulación."
+			},
+			"limits": {
+				"title": "Límites de la herramienta: manual de Studomate",
+				"description": "Lo que Studomate no hace: límites del GRAFCET, de las expresiones, del hardware Arduino, de las escenas 3D y del almacenamiento de proyectos."
+			},
+			"troubleshooting": {
+				"title": "Resolución de problemas: manual de Studomate",
+				"description": "Qué hacer cuando la simulación no arranca, el GRAFCET se queda bloqueado o una entrada no responde: síntomas habituales y sus causas."
+			},
+			"shortcuts": {
+				"title": "Atajos de teclado: manual de Studomate",
+				"description": "Todos los atajos de teclado de Studomate para Windows, Linux y macOS: edición, simulación, navegación y exportación."
+			}
+		},
+		"trainingSteps": {
+			"a0": {
+				"logic-basics": {
+					"title": "Variables y lógica básica en automatización: formación",
+					"description": "Variables booleanas, estados verdadero y falso, AND, OR, NOT: la lógica básica que debes conocer antes de programar un PLC."
+				},
+				"scan-cycle": {
+					"title": "El PLC y su ciclo de escaneo: formación",
+					"description": "Cómo ejecuta un autómata programable su programa en bucle: el ciclo de escaneo, ilustrado con un semáforo."
+				},
+				"conclusion": {
+					"title": "Conclusión del módulo A0: fundamentos de automatización",
+					"description": "Resumen del módulo A0: sensores, actuadores, PLC, variables, lógica AND/OR/NOT y ciclo de escaneo, y lo que viene después con el GRAFCET."
+				}
+			},
+			"a1": {
+				"theory": {
+					"title": "Etapas, transiciones y receptividades del GRAFCET: formación",
+					"description": "Etapa activa o inactiva, transición, receptividad y acción: los elementos básicos de un GRAFCET, con ejemplos en Studomate."
+				},
+				"observe-linear": {
+					"title": "Observa un GRAFCET en simulación: etapas y transiciones",
+					"description": "Observa cómo evoluciona en simulación un GRAFCET de secuencia lineal: etapas activas, variables de etapa Xn y transiciones que se disparan, ciclo a ciclo."
+				},
+				"theory-actions": {
+					"title": "Tipos de acción y modos de ejecución del GRAFCET: formación",
+					"description": "Acciones de un GRAFCET sobre variables booleanas o numéricas y sus modos de ejecución: continua, por flanco ascendente o descendente, Set y Reset."
+				},
+				"observe-actions": {
+					"title": "Acción en flanco ascendente en un GRAFCET: simulación",
+					"description": "Observa en simulación la acción en flanco ascendente de un GRAFCET de aparcamiento: la diferencia entre una acción continua y otra que se ejecuta una sola vez."
+				},
+				"exercise-linear": {
+					"title": "Ejercicio de GRAFCET con solución: secuencia lineal",
+					"description": "Escribe el GRAFCET de un ciclo simple sin divergencias ni temporizadores y compruébalo en simulación: un ejercicio autocorregido que haces online."
+				},
+				"theory-timer": {
+					"title": "Receptividades temporizadas en GRAFCET: formación",
+					"description": "Haz que una receptividad dependa del tiempo transcurrido en una etapa, según la norma IEC 60848: notación y ejemplos."
+				},
+				"observe-timer": {
+					"title": "Receptividad temporizada en un GRAFCET: simulación",
+					"description": "Observa en simulación un GRAFCET de dos etapas gobernado por receptividades temporizadas: no hay ningún pulsador, solo el tiempo hace avanzar el ciclo."
+				},
+				"synthesis-traffic-light": {
+					"title": "GRAFCET de un semáforo: ejercicio con solución",
+					"description": "Escribe el GRAFCET de un semáforo (verde, ámbar, rojo) con etapas, acciones y temporizaciones y simúlalo: una práctica corregida que haces online."
+				},
+				"theory-or-divergence": {
+					"title": "Divergencia y convergencia en O del GRAFCET: formación",
+					"description": "Elegir entre varias secuencias en un GRAFCET: divergencia y convergencia en O, ramas, receptividades exclusivas y ejemplos comentados."
+				},
+				"exercise-or-divergence": {
+					"title": "Divergencia en O del GRAFCET: ejercicio con solución",
+					"description": "Escribe el GRAFCET de una elección entre dos secuencias según el pulsador accionado, con una divergencia y una convergencia en O: un ejercicio autocorregido."
+				},
+				"theory-and-divergence": {
+					"title": "Divergencia y convergencia en Y del GRAFCET: formación",
+					"description": "Inicia varias ramas en paralelo y vuelve a sincronizarlas: divergencia y convergencia en Y en un GRAFCET, con ejemplos."
+				},
+				"exercise-and-divergence": {
+					"title": "Divergencia en Y del GRAFCET: ejercicio con solución",
+					"description": "Escribe el GRAFCET de un inicio de ciclo que lanza dos acciones en paralelo y luego las sincroniza: una divergencia en Y en un ejercicio autocorregido."
+				},
+				"synthesis-parking": {
+					"title": "GRAFCET de un aparcamiento: ejercicio con solución",
+					"description": "Escribe el GRAFCET de un aparcamiento de 4 plazas con barreras de entrada y salida, contador de plazas e indicador de «completo»: una práctica de síntesis."
+				},
+				"synthesis-crossroads": {
+					"title": "GRAFCET de un cruce con semáforos: ejercicio con solución",
+					"description": "Escribe el GRAFCET de un cruce con dos ejes de semáforos (Norte-Sur y Este-Oeste) y temporizaciones: una práctica de síntesis corregida."
+				},
+				"reading-errors": {
+					"title": "Leer los errores de análisis del GRAFCET: formación",
+					"description": "Analiza un GRAFCET sin simularlo y entiende los errores y advertencias de Studomate para corregir tu programa."
+				}
+			},
+			"a2": {
+				"theory-contacts-coils": {
+					"title": "Contactos, bobinas y memorias internas en Ladder: formación",
+					"description": "Símbolos del Ladder: contactos NA y NC, cableado de pulsadores normalmente abiertos o cerrados, bobinas y memorias internas."
+				},
+				"exercise-reading": {
+					"title": "Leer un programa Ladder: ejercicio con solución",
+					"description": "Predice qué hace un programa Ladder de cuatro redes (contactos en serie y en paralelo) y compruébalo en simulación: un ejercicio corregido."
+				},
+				"exercise-logic": {
+					"title": "Conmutador de luz de dos puntos en Ladder: ejercicio",
+					"description": "Programa en Ladder un circuito de iluminación de dos puntos controlado por dos interruptores y pruébalo en simulación: un ejercicio autocorregido con solución."
+				},
+				"theory-self-holding": {
+					"title": "Circuito de autorretención en Ladder: formación",
+					"description": "Recuerda una pulsación breve de un pulsador: el circuito de autorretención (o de sellado) en Ladder, con un ejemplo de bomba."
+				},
+				"exercise-self-holding": {
+					"title": "Marcha/paro de bomba con autorretención en Ladder: ejercicio",
+					"description": "Arranca una bomba con un pulsador de marcha y párala con uno de paro: tu primer circuito de autorretención en Ladder, en un ejercicio autocorregido."
+				},
+				"exercise-interlock": {
+					"title": "Motor adelante/atrás en Ladder: ejercicio",
+					"description": "Maneja un motor hacia adelante y hacia atrás sin que ambos contactores estén activos a la vez: enclavamiento mutuo en Ladder, en un ejercicio corregido."
+				},
+				"theory-set-reset": {
+					"title": "Bobinas Set y Reset en Ladder: formación",
+					"description": "Bobinas S (set) y R (reset): recuerda un estado sin autorretención y entiende el orden de ejecución de las redes."
+				},
+				"exercise-memory": {
+					"title": "Fallo memorizado y rearme en Ladder: ejercicio",
+					"description": "Añade a una bomba protección contra sobrecalentamiento, con fallo memorizado y reconocimiento, usando bobinas Set y Reset en Ladder: un ejercicio corregido."
+				},
+				"theory-edges": {
+					"title": "Flancos ascendentes y descendentes en Ladder: formación",
+					"description": "Contactos de flanco P y N: activa una acción una sola vez por pulsación, con flancos ascendentes y descendentes."
+				},
+				"exercise-edges-reading": {
+					"title": "Contactos de flanco P y N en Ladder: ejercicio",
+					"description": "Compara, ciclo a ciclo, un contacto NA, un contacto P de flanco ascendente y uno N de flanco descendente que leen la misma entrada en un programa Ladder."
+				},
+				"exercise-toggle": {
+					"title": "Telerruptor (biestable) en Ladder: ejercicio",
+					"description": "Programa un telerruptor en Ladder: una pulsación enciende la lámpara y la siguiente la apaga. Flancos ascendentes y orden de ejecución de las redes."
+				},
+				"synthesis-gate": {
+					"title": "Portón automático en Ladder: ejercicio con solución",
+					"description": "Programa un portón corredero motorizado en Ladder: autorretención, prioridad de paro, enclavamiento, bobinas S/R y finales de carrera. Una práctica corregida."
+				},
+				"conclusion": {
+					"title": "Conclusión del módulo A2: lógica Ladder",
+					"description": "Resumen del módulo A2: lógica combinacional, memoria, autorretención, bobinas S/R y flancos en Ladder, y lo que viene después."
+				}
+			},
+			"a3": {
+				"exercise-timers-reading": {
+					"title": "Temporizadores TON, TOF y TP en Ladder: ejercicio",
+					"description": "Observa en simulación cómo reaccionan los temporizadores TON, TOF y TP de un programa Ladder a la misma secuencia de pulsaciones y entiende cada uno."
+				},
+				"exercise-timers": {
+					"title": "Arranque estrella-triángulo en Ladder: ejercicio",
+					"description": "Programa en Ladder el arranque estrella-triángulo de un motor trifásico, con un temporizador TON y contactores enclavados: un ejercicio con su solución."
+				},
+				"theory-counters": {
+					"title": "Contadores CTU, CTD y CTUD en Ladder: formación",
+					"description": "Cuenta piezas o ciclos con los contadores CTU, CTD y CTUD: cómo funcionan los bloques, con ejemplos en Studomate."
+				},
+				"exercise-counters": {
+					"title": "Contadores CTU, CTD y CTUD en Ladder: ejercicio",
+					"description": "Tres montajes de conteo en Ladder con los contadores CTU, CTD y CTUD: contar hacia arriba, hacia abajo y reiniciar, en un ejercicio autocorregido."
+				},
+				"theory-numeric": {
+					"title": "Tratamiento de valores numéricos en Ladder: formación",
+					"description": "Asignación, cálculos y comparaciones: trata un nivel, un contador o una consigna en un programa Ladder."
+				},
+				"exercise-tank": {
+					"title": "Llenado de un depósito en Ladder: ejercicio con solución",
+					"description": "Controla el llenado de un depósito en Ladder a partir de un sensor de nivel analógico, con comparaciones numéricas: un ejercicio autocorregido con su solución."
+				},
+				"theory-types": {
+					"title": "Tipos INT, DINT, REAL y conversiones en Ladder: formación",
+					"description": "Los tipos numéricos INT, DINT, REAL, WORD y DWORD, y las conversiones entre tipos en un programa Ladder."
+				},
+				"exercise-scaling": {
+					"title": "Escalado de un sensor analógico en Ladder: ejercicio",
+					"description": "Convierte el valor bruto de un sensor analógico en un porcentaje en un programa Ladder: cálculo con enteros (INT) y escalado, un ejercicio corregido."
+				},
+				"theory-structure": {
+					"title": "Estructurar un programa Ladder en subprogramas: formación",
+					"description": "Divide un programa Ladder en subprogramas: el programa Main llama a un subprograma por función de la máquina, para que cada parte siga siendo legible."
+				},
+				"exercise-subprograms": {
+					"title": "Llamar a un subprograma Ladder: ejercicio",
+					"description": "Una cinta transportadora cuyo Main aún no llama al subprograma de conteo: añade la llamada y compruébalo en simulación, en un ejercicio autocorregido."
+				},
+				"synthesis-packing": {
+					"title": "Empaquetado de piezas en cajas en Ladder: ejercicio",
+					"description": "Cuenta piezas en una cinta y empaquétalas en lotes de 5 en cajas, con un programa Ladder estructurado en subprogramas: una práctica corregida."
+				},
+				"conclusion": {
+					"title": "Conclusión del módulo A3: Studomate y la norma",
+					"description": "Resumen del módulo A3: temporizadores, contadores, valores numéricos y cómo estructurar un programa Ladder en subprogramas."
+				}
+			},
+			"a4": {
+				"exercise-grafcet-naive": {
+					"title": "GRAFCET en Ladder: defectos del método ingenuo",
+					"description": "Diagnostica en simulación una forma habitual pero defectuosa de implementar un GRAFCET en Ladder, el método de la etapa siguiente, y entiende sus defectos."
+				},
+				"theory-method-ladder": {
+					"title": "Del GRAFCET al Ladder: una red por transición",
+					"description": "Implementa un GRAFCET en Ladder: una red por transición (reset aguas arriba, set aguas abajo), orden de las redes y activación de la etapa inicial."
+				},
+				"theory-two-programs": {
+					"title": "Dos programas Ladder para un GRAFCET: formación",
+					"description": "Organiza un GRAFCET implementado en Ladder en dos programas, Automatic_cycle y Outputs, llamados por el Main: un ejemplo completo y una lista de comprobación."
+				},
+				"exercise-grafcet-linear": {
+					"title": "Secuencia GRAFCET lineal en Ladder: ejercicio",
+					"description": "Implementa en Ladder el GRAFCET de una secuencia lineal, con una red por transición y los programas Automatic_cycle y Outputs."
+				},
+				"theory-actions-ladder": {
+					"title": "Acciones continuas y memorizadas en Ladder: formación",
+					"description": "Implementa en Ladder las acciones continuas, memorizadas y condicionales de un GRAFCET: una red por salida, en el programa Outputs."
+				},
+				"theory-edge-actions-ladder": {
+					"title": "Acciones de flanco y numéricas en Ladder: formación",
+					"description": "Implementa en Ladder las acciones de flanco de un GRAFCET con contactos P y N, y las asignaciones numéricas, con un ejemplo de conteo de coches."
+				},
+				"theory-receptivity-timer": {
+					"title": "Receptividad temporizada en Ladder: formación",
+					"description": "Coloca el TON de una receptividad temporizada en la red de la transición, y retrasa o limita una salida con una etapa y una transición temporizada."
+				},
+				"theory-movement-supervision": {
+					"title": "Supervisar un movimiento en Ladder: formación",
+					"description": "Supervisa un movimiento con un TON y una transición de repliegue, memoriza el fallo en el programa Faults y reconócelo sin borrarlo si la causa persiste."
+				},
+				"synthesis-drilling": {
+					"title": "Estación de taladrado, del GRAFCET al Ladder: ejercicio",
+					"description": "Escribe en Ladder la parte de control de una estación de taladrado a partir de su GRAFCET, con una parte operativa simulada: una práctica de síntesis."
+				},
+				"conclusion": {
+					"title": "Conclusión del módulo A4: GRAFCET en Ladder, parte 1",
+					"description": "Resumen del módulo A4: etapas como memorias, red por transición, programas Automatic_cycle y Outputs, acciones, tiempo y fallos de un GRAFCET en Ladder."
+				}
+			},
+			"a5": {
+				"exercise-grafcet-or-divergence": {
+					"title": "Divergencia en O de un GRAFCET en Ladder: ejercicio",
+					"description": "Implementa en Ladder un GRAFCET con divergencia y convergencia en O: una elección entre dos secuencias según el pulsador accionado."
+				},
+				"theory-and-divergence-ladder": {
+					"title": "Divergencia y convergencia en Y en Ladder: formación",
+					"description": "Implementa en Ladder la divergencia y la convergencia en Y de un GRAFCET: una sola red para la divergencia y una sola para la convergencia."
+				},
+				"exercise-grafcet-and-divergence": {
+					"title": "Divergencia en Y de un GRAFCET en Ladder: ejercicio",
+					"description": "Implementa en Ladder un GRAFCET con divergencia y convergencia en Y: dos acciones lanzadas en paralelo y luego sincronizadas de nuevo."
+				},
+				"theory-grafcet-reset": {
+					"title": "Detener una secuencia GRAFCET en Ladder: formación",
+					"description": "Las dos formas de detener una secuencia en Ladder: parada inmediata por reinicialización y parada al final del ciclo, y dónde colocar la red de reset."
+				},
+				"exercise-grafcet-reset": {
+					"title": "Semáforo con paradas en Ladder: ejercicio",
+					"description": "Implementa en Ladder el GRAFCET de un semáforo y añádele una parada inmediata y una parada al final del ciclo: un ejercicio autocorregido."
+				},
+				"synthesis-parking": {
+					"title": "Aparcamiento, del GRAFCET al Ladder: ejercicio",
+					"description": "Implementa en Ladder el GRAFCET de un aparcamiento de 4 plazas con barrera, contador de plazas e indicador de «completo»: una práctica de síntesis corregida."
+				},
+				"theory-going-further": {
+					"title": "Límites de una red por transición: formación",
+					"description": "Cuándo una red por transición llega a su límite (una pulsación leída por varias transiciones), con un ejemplo de portón con mando de un solo botón."
+				},
+				"theory-three-blocks": {
+					"title": "El método de los tres bloques en Ladder: formación",
+					"description": "El método de los tres bloques para implementar un GRAFCET en Ladder: condiciones de franqueo, todos los reset y luego todos los set, y por último las salidas."
+				},
+				"conclusion": {
+					"title": "Conclusión del módulo A5: GRAFCET en Ladder, parte 2",
+					"description": "Resumen del módulo A5: divergencias en O y en Y, parada de una secuencia, los programas del aparcamiento y los límites de una red por transición."
+				}
+			}
+		}
+	}
+}

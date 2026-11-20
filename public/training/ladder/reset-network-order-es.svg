@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 246" font-family="sans-serif">
+	<rect x="70" y="12" width="300" height="58" fill="#fff" stroke="#263238" stroke-width="1.5" rx="6" />
+	<text x="84" y="36" font-size="13" text-anchor="start" fill="#263238" font-weight="bold">1. Redes de transición</text>
+	<text x="84" y="56" font-size="11" text-anchor="start" fill="#455a64">Automatic_cycle: una red por transición</text>
+	<rect x="70" y="88" width="300" height="58" fill="#fff" stroke="#d84315" stroke-width="2" rx="6" />
+	<text x="84" y="112" font-size="13" text-anchor="start" fill="#d84315" font-weight="bold">2. Reinicio (paro)</text>
+	<text x="84" y="132" font-size="11" text-anchor="start" fill="#455a64">en Automatic_cycle, tras las transiciones</text>
+	<rect x="70" y="164" width="300" height="58" fill="#fff" stroke="#263238" stroke-width="1.5" rx="6" />
+	<text x="84" y="188" font-size="13" text-anchor="start" fill="#263238" font-weight="bold">3. Salidas</text>
+	<text x="84" y="208" font-size="11" text-anchor="start" fill="#455a64">Programa Outputs: una red por salida</text>
+	<text x="36" y="238" font-size="11" text-anchor="start" fill="#607d8b">orden de ejecución: Main llama a Automatic_cycle y luego a Outputs</text>
+	<text x="392" y="64" font-size="12" text-anchor="start" fill="#d84315" font-weight="bold">La última red que escribe</text>
+	<text x="392" y="82" font-size="12" text-anchor="start" fill="#d84315" font-weight="bold">una marca gana.</text>
+	<text x="392" y="106" font-size="11" text-anchor="start" fill="#455a64">Tras las transiciones,</text>
+	<text x="392" y="122" font-size="11" text-anchor="start" fill="#455a64">el reinicio tiene la</text>
+	<text x="392" y="138" font-size="11" text-anchor="start" fill="#455a64">última palabra: aunque</text>
+	<text x="392" y="154" font-size="11" text-anchor="start" fill="#455a64">una transición se haya franqueado,</text>
+	<text x="392" y="170" font-size="11" text-anchor="start" fill="#455a64">las etapas vuelven a la etapa 0.</text>
+</svg>

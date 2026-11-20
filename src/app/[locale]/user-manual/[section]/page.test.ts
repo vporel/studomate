@@ -25,11 +25,14 @@ describe("manual section page", () => {
 
 	it("pré-génère chaque section hors introduction dans chaque langue, avec son slug traduit", () => {
 		const params = generateStaticParams();
-		expect(params).toHaveLength((MANUAL_SECTIONS.length - 1) * 2);
+		expect(params).toHaveLength((MANUAL_SECTIONS.length - 1) * 3);
 		expect(params).toContainEqual({ locale: "en", section: "grafcet" });
 		expect(params).toContainEqual({ locale: "fr", section: "scene-3d" });
 		expect(params).toContainEqual({ locale: "fr", section: "depannage" });
-		expect(params).not.toContainEqual({ locale: "fr", section: "troubleshooting" });
+		expect(params).not.toContainEqual({
+			locale: "fr",
+			section: "troubleshooting",
+		});
 		expect(params).not.toContainEqual({ locale: "fr", section: "intro" });
 	});
 
@@ -48,6 +51,7 @@ describe("manual section page", () => {
 		expect(metadata.alternates?.languages).toEqual({
 			fr: "https://studomate.com/manuel-utilisateur/grafcet",
 			en: "https://studomate.com/en/user-manual/grafcet",
+			es: "https://studomate.com/es/manual-de-usuario/grafcet",
 			"x-default": "https://studomate.com/manuel-utilisateur/grafcet",
 		});
 	});
@@ -69,6 +73,7 @@ describe("manual section page", () => {
 		expect(metadata.alternates?.languages).toEqual({
 			fr: "https://studomate.com/manuel-utilisateur/depannage",
 			en: "https://studomate.com/en/user-manual/troubleshooting",
+			es: "https://studomate.com/es/manual-de-usuario/solucion-de-problemas",
 			"x-default": "https://studomate.com/manuel-utilisateur/depannage",
 		});
 	});
@@ -92,18 +97,21 @@ describe("manual section page", () => {
 	});
 
 	it("fournit un fil d'Ariane Manuel > section avec le titre de la section", async () => {
-		mockGetTranslations.mockResolvedValue(
-			(key: string) => `msg:${key}`,
-		);
+		mockGetTranslations.mockResolvedValue((key: string) => `msg:${key}`);
 		const page = (await UserManualSection({
 			params: Promise.resolve({ locale: "fr", section: "depannage" }),
 		})) as {
-			props: { children: { props: { breadcrumb: { props: Record<string, unknown> } } } };
+			props: {
+				children: { props: { breadcrumb: { props: Record<string, unknown> } } };
+			};
 		};
 
-		const { ancestors, current, locale } = page.props.children.props.breadcrumb.props;
+		const { ancestors, current, locale } =
+			page.props.children.props.breadcrumb.props;
 		expect(locale).toBe("fr");
-		expect(ancestors).toEqual([{ label: "msg:pageTitle", href: "/user-manual" }]);
+		expect(ancestors).toEqual([
+			{ label: "msg:pageTitle", href: "/user-manual" },
+		]);
 		expect(current).toMatchObject({ label: "msg:troubleshooting" });
 	});
 
@@ -117,11 +125,16 @@ describe("manual section page", () => {
 	});
 
 	it("a un titre et une description dans les deux langues pour chaque section hors introduction", () => {
-		for (const locale of ["fr", "en"] as const) {
+		for (const locale of ["fr", "en", "es"] as const) {
 			const sections = (
 				getMessages(locale) as {
 					public: {
-						metadata: { manualSections: Record<string, { title: string; description: string }> };
+						metadata: {
+							manualSections: Record<
+								string,
+								{ title: string; description: string }
+							>;
+						};
 					};
 				}
 			).public.metadata.manualSections;

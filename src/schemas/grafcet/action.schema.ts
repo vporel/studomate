@@ -32,13 +32,6 @@ export enum ActionType {
 	STRING_VARIABLE = "string_variable", //String variable
 }
 
-export const ACTION_TYPES_LABELS: Record<ActionType, string> = {
-	[ActionType.TEXT]: "Texte",
-	[ActionType.BOOLEAN_VARIABLE]: "Variable booléene",
-	[ActionType.NUMERIC_VARIABLE]: "Variable numérique",
-	[ActionType.STRING_VARIABLE]: "Variable chaîne de caractères",
-};
-
 export enum ActionExecutionMode {
 	CONTINUOUS = "continuous", //The action is executed as long as the step is active
 	RISING_EDGE = "rising_edge", //The action is executed only at the moment the step becomes active
@@ -46,15 +39,6 @@ export enum ActionExecutionMode {
 	SET = "set", //Set a boolean variable to true
 	RESET = "reset", //Set a boolean variable to false
 }
-
-export const ACTION_EXECUTION_MODE_LABELS: Record<ActionExecutionMode, string> =
-	{
-		[ActionExecutionMode.CONTINUOUS]: "Continue",
-		[ActionExecutionMode.RISING_EDGE]: "Front montant",
-		[ActionExecutionMode.FALLING_EDGE]: "Front descendant",
-		[ActionExecutionMode.SET]: "Set",
-		[ActionExecutionMode.RESET]: "Reset",
-	};
 
 /**
  * Defines which execution modes are compatible with each action type. For example, SET and RESET modes are only compatible with BOOLEAN actions.

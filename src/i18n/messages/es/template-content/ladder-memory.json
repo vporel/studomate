@@ -1,0 +1,13 @@
+{
+	"statement": "## Bomba: fallo memorizado\n\nEl Main contiene la autorretención de la bomba, ya escrita: la tarea consiste en añadir las redes de fallo. Nuevas entradas: `temperature_ok` (sensor cableado normalmente cerrado, un interruptor mantenido: 1 en reposo, 0 en caso de sobrecalentamiento), `ack` (pulsador). Nueva salida: `fault_indicator`.\n\n### Tarea\n\n1. Un sobrecalentamiento (`temperature_ok` pasa a 0) detiene la bomba y enciende `fault_indicator`.\n2. El indicador permanece encendido aunque la temperatura vuelva a la normalidad (fallo memorizado).\n3. Una pulsación de `ack` apaga el indicador, una vez que el fallo ha desaparecido.\n4. Tras el reconocimiento, la bomba no se reinicia por sí sola: hace falta una nueva pulsación de `start`.\n\nEscenario de prueba: temperatura normal y pulsación de `start` (bomba a 1), sobrecalentamiento (bomba a 0, indicador a 1), vuelta a la normalidad (indicador todavía a 1), pulsación de `ack` (indicador a 0, bomba a 0), pulsación de `start` (bomba a 1).",
+	"texts": {
+		"projectName": "Bomba: fallo memorizado",
+		"solutionName": "Bomba: fallo memorizado: solución",
+		"faultMemoryTitle": "Memorización del fallo",
+		"faultMemoryDescription": "El sensor de temperatura está cableado normalmente cerrado: un contacto NC detecta el sobrecalentamiento.",
+		"ackTitle": "Reconocimiento",
+		"ackDescription": "El reconocimiento solo tiene efecto si el fallo ha desaparecido.",
+		"pumpTitle": "Mando de la bomba",
+		"pumpDescription": "La bomba permanece bloqueada mientras el fallo esté memorizado y solo se reinicia con una nueva pulsación de Start."
+	}
+}

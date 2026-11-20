@@ -127,12 +127,99 @@ const EN_STEP_SLUGS: {
 	a5: {},
 };
 
+/** Spanish slugs of every training step (ASCII, no accents). */
+const ES_STEP_SLUGS: {
+	[M in TrainingModuleId]: Record<StepIdOf<StepIds[M]>, string>;
+} = {
+	a0: {
+		automatisme: "automatismo",
+		"logic-basics": "logica-basica",
+		"scan-cycle": "ciclo-de-escaneo",
+		conclusion: "conclusion",
+	},
+	a1: {
+		"grafcet-definition": "definicion-grafcet",
+		theory: "etapas-transiciones-receptividades",
+		"observe-linear": "observar-secuencia-lineal",
+		"theory-actions": "teoria-acciones",
+		"observe-actions": "observar-acciones",
+		"exercise-linear": "ejercicio-secuencia-lineal",
+		"theory-timer": "teoria-temporizacion",
+		"observe-timer": "observar-temporizacion",
+		"synthesis-traffic-light": "sintesis-semaforo",
+		"theory-or-divergence": "teoria-divergencia-en-o",
+		"exercise-or-divergence": "ejercicio-divergencia-en-o",
+		"theory-and-divergence": "teoria-divergencia-en-y",
+		"exercise-and-divergence": "ejercicio-divergencia-en-y",
+		"synthesis-parking": "sintesis-aparcamiento",
+		"synthesis-crossroads": "sintesis-cruce",
+		"reading-errors": "lectura-de-errores",
+	},
+	a2: {
+		"ladder-basics": "fundamentos-del-ladder",
+		"theory-contacts-coils": "teoria-contactos-bobinas",
+		"exercise-reading": "ejercicio-lectura",
+		"exercise-logic": "ejercicio-logica",
+		"theory-self-holding": "teoria-autorretencion",
+		"exercise-self-holding": "ejercicio-autorretencion",
+		"exercise-interlock": "ejercicio-enclavamiento",
+		"theory-set-reset": "teoria-set-reset",
+		"exercise-memory": "ejercicio-memoria",
+		"theory-edges": "teoria-flancos",
+		"exercise-edges-reading": "ejercicio-lectura-flancos",
+		"exercise-toggle": "ejercicio-biestable",
+		"synthesis-gate": "sintesis-porton",
+		conclusion: "conclusion",
+	},
+	a3: {
+		"theory-timers": "teoria-temporizadores",
+		"exercise-timers-reading": "ejercicio-lectura-temporizadores",
+		"exercise-timers": "ejercicio-temporizadores",
+		"theory-counters": "teoria-contadores",
+		"exercise-counters": "ejercicio-contadores",
+		"theory-numeric": "teoria-magnitudes-numericas",
+		"exercise-tank": "ejercicio-deposito",
+		"theory-types": "teoria-tipos-int-dint-real",
+		"exercise-scaling": "ejercicio-escalado",
+		"theory-structure": "teoria-subprogramas",
+		"exercise-subprograms": "ejercicio-subprogramas",
+		"synthesis-packing": "sintesis-envasado",
+		conclusion: "conclusion",
+	},
+	a4: {
+		"theory-steps-ladder": "teoria-etapas-ladder",
+		"exercise-grafcet-naive": "ejercicio-grafcet-ingenuo",
+		"theory-method-ladder": "teoria-metodo-ladder",
+		"theory-two-programs": "teoria-dos-programas",
+		"exercise-grafcet-linear": "ejercicio-grafcet-lineal",
+		"theory-actions-ladder": "teoria-acciones-ladder",
+		"theory-edge-actions-ladder": "teoria-acciones-por-flanco-ladder",
+		"theory-receptivity-timer": "teoria-temporizacion-receptividad",
+		"theory-movement-supervision": "teoria-supervision-movimiento",
+		"synthesis-drilling": "sintesis-taladrado",
+		conclusion: "conclusion",
+	},
+	a5: {
+		"theory-or-divergence-ladder": "teoria-divergencia-en-o-ladder",
+		"exercise-grafcet-or-divergence": "ejercicio-grafcet-divergencia-en-o",
+		"theory-and-divergence-ladder": "teoria-divergencia-en-y-ladder",
+		"exercise-grafcet-and-divergence": "ejercicio-grafcet-divergencia-en-y",
+		"theory-grafcet-reset": "teoria-grafcet-reinicializacion",
+		"exercise-grafcet-reset": "ejercicio-grafcet-reinicializacion",
+		"synthesis-parking": "sintesis-aparcamiento",
+		"theory-going-further": "teoria-limites-red-por-transicion",
+		"theory-three-blocks": "teoria-metodo-tres-bloques",
+		conclusion: "conclusion",
+	},
+};
+
 const SLUGS: Record<
 	Locale,
 	Record<TrainingModuleId, Record<string, string>>
 > = {
 	fr: FR_STEP_SLUGS,
 	en: EN_STEP_SLUGS,
+	es: ES_STEP_SLUGS,
 };
 
 /** Slug of a training step in `locale`; the id itself when the step has none. */

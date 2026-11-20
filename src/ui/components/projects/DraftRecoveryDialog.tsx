@@ -20,7 +20,7 @@ import {
 	Typography,
 } from "@mui/material";
 import { formatDistanceToNow } from "date-fns";
-import { enUS, fr } from "date-fns/locale";
+import { enUS, es, fr } from "date-fns/locale";
 import { useLocaleContext } from "@/ui/i18n/LocaleProvider";
 import { useT } from "@/ui/i18n/useT";
 import { useCallback, useEffect, useState } from "react";
@@ -140,7 +140,7 @@ export default function DraftRecoveryDialog({ onOpen }: Props) {
 									secondary={t("savedAgo", {
 										ago: formatDistanceToNow(draft.savedAt, {
 											addSuffix: true,
-											locale: locale === "en" ? enUS : fr,
+											locale: { fr, en: enUS, es }[locale],
 										}),
 									})}
 									sx={{ flex: 1, minWidth: 0 }}

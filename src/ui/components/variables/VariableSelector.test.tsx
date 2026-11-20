@@ -84,6 +84,7 @@ function setup({
 			suppressStatus={suppressStatus}
 			validate={validate}
 		/>,
+		{ wrapper: i18nWrapper() },
 	);
 
 	return { onCommit };
@@ -122,6 +123,7 @@ describe("VariableSelector — validation différée", () => {
 		);
 		const { unmount } = render(
 			<VariableSelector value="" onCommit={onCommit} />,
+			{ wrapper: i18nWrapper() },
 		);
 		fireEvent.change(screen.getByRole("combobox"), {
 			target: { value: "Capteur" },
@@ -142,6 +144,7 @@ describe("VariableSelector — validation différée", () => {
 		);
 		const { unmount } = render(
 			<VariableSelector value="X1" onCommit={onCommit} />,
+			{ wrapper: i18nWrapper() },
 		);
 		unmount();
 		expect(onCommit).not.toHaveBeenCalled();

@@ -5,13 +5,15 @@
 	"languageSwitch": {
 		"label": "Langue",
 		"fr": "Français",
-		"en": "English"
+		"en": "English",
+		"es": "Español"
 	},
 	"language": {
 		"label": "Langue",
 		"description": "Langue de l'interface de l'application.",
 		"fr": "Français",
-		"en": "Anglais"
+		"en": "Anglais",
+		"es": "Espagnol"
 	},
 	"programExecution": {
 		"badge": "Non exécuté",
@@ -28,5 +30,9 @@
 		"notExecutedBody": "L'analyseur de ce programme a été désactivé : ses expressions ne sont pas validées et il n'est ni compilé, ni simulé. Aucune de ses étapes ne s'active et il ne pilote aucune sortie.",
 		"notExecutedEnable": "Pour le réactiver, arrêtez la simulation puis cliquez sur « Activer l'analyseur » dans la barre d'outils du programme.",
 		"close": "Compris"
+	},
+	"defaultContent": {
+		"projectName": "Nouveau projet",
+		"hmiPageName": "Page HMI"
 	}
 }

@@ -13,34 +13,40 @@ import { Button, IconButton, Paper, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import usePublicPageHref from "./usePublicPageHref";
 
-/**
- * Offers the current public page in `targetLocale`, in that language, when the browser asks for
- * it and the visitor never chose a language. Shown after mounting only, as a fixed overlay: the
- * server HTML and the layout are the same for every visitor, crawlers included.
- */
-export default function LanguageSuggestionBanner({
-	targetLocale,
-	message,
-	action,
-	dismiss,
-}: {
-	targetLocale: Locale;
+export type LanguageSuggestionTexts = {
 	message: string;
 	action: string;
 	dismiss: string;
+};
+
+/**
+ * Offers the current public page in the browser's language, worded in that language, when it
+ * differs from the page's and the visitor never chose a language. `suggestions` holds the texts of
+ * every language other than the page's. Shown after mounting only, as a fixed overlay: the server
+ * HTML and the layout are the same for every visitor, crawlers included.
+ */
+export default function LanguageSuggestionBanner({
+	suggestions,
+}: {
+	suggestions: Partial<Record<Locale, LanguageSuggestionTexts>>;
 }) {
 	const hrefFor = usePublicPageHref();
-	const [visible, setVisible] = useState(false);
+	const [targetLocale, setTargetLocale] = useState<Locale | null>(null);
 
 	useEffect(() => {
-		setVisible(
+		const browserLocale = detectBrowserLocale();
+		setTargetLocale(
 			getPreferredLocale() === null &&
 				!getLanguageSuggestionDismissed() &&
-				detectBrowserLocale() === targetLocale,
+				suggestions[browserLocale]
+				? browserLocale
+				: null,
 		);
-	}, [targetLocale]);
+	}, [suggestions]);
 
-	if (!visible) return null;
+	const texts = targetLocale ? suggestions[targetLocale] : undefined;
+	if (!targetLocale || !texts) return null;
+	const { message, action, dismiss } = texts;
 	return (
 		<Paper
 			elevation={6}
@@ -80,7 +86,7 @@ export default function LanguageSuggestionBanner({
 				title={dismiss}
 				onClick={() => {
 					setLanguageSuggestionDismissed();
-					setVisible(false);
+					setTargetLocale(null);
 				}}
 			>
 				<CloseIcon fontSize="small" />
