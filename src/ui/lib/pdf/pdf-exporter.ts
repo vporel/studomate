@@ -44,9 +44,27 @@ export interface PdfExportSection {
 	table?: PdfTableModel;
 }
 
+/** Numéro de page « n/N » à placer dans une zone du cadre : `{page_number}` et `{pages_count}` y sont remplacés
+ * à chaque page (la page de garde compte). */
+export const PDF_PAGE_NUMBER = "{page_number}/{pages_count}";
+
+/** Texte courant répété sur chaque page : trois zones (gauche, centre, droite) dans l'en-tête et
+ * dans le pied de page. */
+export interface PdfPageFrame {
+	headerLeft?: string;
+	headerCenter?: string;
+	headerRight?: string;
+	footerLeft?: string;
+	footerCenter?: string;
+	footerRight?: string;
+}
+
 export interface PdfExportDocument {
 	filename: string;
 	cover?: PdfCoverPage;
+	pageFrame?: PdfPageFrame;
+	/** Remplace `pageFrame` sur la première page (ex. la page de garde). */
+	firstPageFrame?: PdfPageFrame;
 	sections: PdfExportSection[];
 }
 

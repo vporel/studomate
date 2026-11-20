@@ -8,6 +8,7 @@ import {
 	PdfExportDocument,
 	PdfExporter,
 	PdfExportSection,
+	PdfPageFrame,
 } from "./pdf-exporter";
 import { drawPdfTable } from "./pdf-table";
 
@@ -28,6 +29,11 @@ const SECTION_DESC_FONT_PT = 9;
 const SECTION_DESC_LINE_MM = 4;
 /** Espace entre la description d'une section et son dessin, en mm. */
 const SECTION_DESC_GAP_MM = 2;
+/** Corps et niveau de gris (0-255) de l'en-tête et du pied de page. */
+const FRAME_FONT_PT = 9;
+const FRAME_GREY = 110;
+/** Distance entre le bord de la page et la ligne de base de l'en-tête / du pied de page, en mm. */
+const FRAME_EDGE_MM = 9;
 /** Niveau de gris (0-255) du trait séparant deux sections de ladder sur une même page. */
 const SECTION_SEPARATOR_GREY = 180;
 
@@ -71,7 +77,54 @@ export class JsPdfExporter implements PdfExporter {
 			}
 		}
 
+		if (document.pageFrame)
+			this.drawPageFrames(doc, document.pageFrame, document.firstPageFrame);
+
 		doc.save(`${document.filename}.pdf`);
+	}
+
+	private drawPageFrames(
+		doc: jsPDF,
+		pageFrame: PdfPageFrame,
+		firstPageFrame?: PdfPageFrame,
+	): void {
+		doc.setFont("helvetica", "normal");
+		doc.setFontSize(FRAME_FONT_PT);
+		doc.setTextColor(FRAME_GREY);
+		const total = doc.getNumberOfPages();
+		for (let page = 1; page <= total; page++) {
+			doc.setPage(page);
+			const frame = page === 1 && firstPageFrame ? firstPageFrame : pageFrame;
+			const width = doc.internal.pageSize.getWidth();
+			const height = doc.internal.pageSize.getHeight();
+			const headerY = FRAME_EDGE_MM;
+			const footerY = height - FRAME_EDGE_MM;
+			const zones: [
+				string | undefined,
+				number,
+				number,
+				"left" | "center" | "right",
+			][] = [
+				[frame.headerLeft, MARGIN_MM, headerY, "left"],
+				[frame.headerCenter, width / 2, headerY, "center"],
+				[frame.headerRight, width - MARGIN_MM, headerY, "right"],
+				[frame.footerLeft, MARGIN_MM, footerY, "left"],
+				[frame.footerCenter, width / 2, footerY, "center"],
+				[frame.footerRight, width - MARGIN_MM, footerY, "right"],
+			];
+			for (const [text, x, y, align] of zones) {
+				if (text)
+					doc.text(
+						text
+							.replaceAll("{page_number}", String(page))
+							.replaceAll("{pages_count}", String(total)),
+						x,
+						y,
+						{ align },
+					);
+			}
+		}
+		doc.setTextColor(0);
 	}
 
 	private async drawCover(doc: jsPDF, cover: PdfCoverPage): Promise<void> {

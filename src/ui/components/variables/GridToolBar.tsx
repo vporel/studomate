@@ -18,6 +18,7 @@ import Tooltip from "@mui/material/Tooltip";
 import { toast } from "react-toastify";
 import Variable from "@/schemas/variable/variable.schema";
 import type { VariablesTableColumns } from "@/ui/pdf/variables-table-pdf";
+import useSingleExportPageFrame from "@/ui/pdf/useSingleExportPageFrame";
 import trackPdfExported from "@/ui/pdf/track-pdf-exported";
 import {
 	ExportCsv,
@@ -87,8 +88,8 @@ export default function GridToolBar({
 }) {
 	const t = useT("pages.variablesGrid.toolbar");
 	const tColumns = useT("pages.variablesGrid.columns");
-	const tExport = useT("projects.export");
 	const projectName = useProjectStore((state) => state.project?.name ?? "");
+	const buildPageFrame = useSingleExportPageFrame();
 	const [exportMenuOpen, setExportMenuOpen] = React.useState(false);
 	const exportMenuTriggerRef = React.useRef<HTMLButtonElement>(null);
 	const variablesManager = useProjectStore((state) => state.variablesManager);
@@ -98,16 +99,12 @@ export default function GridToolBar({
 
 	const exportPdf = () => {
 		setExportMenuOpen(false);
-		const date = new Date().toLocaleDateString();
 		void import("@/ui/pdf/variables-table-pdf")
 			.then(({ exportVariablesTablePdf }) =>
 				exportVariablesTablePdf({
 					filename: `${projectName} - ${pageTitle}`,
-					title: tExport("variablesPdfHeading", {
-						page: pageTitle,
-						project: projectName,
-						date,
-					}),
+					title: pageTitle,
+					pageFrame: buildPageFrame(),
 					variables: zoneVariables,
 					columns: pdfColumns,
 					labels: {

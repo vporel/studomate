@@ -120,6 +120,11 @@ export default abstract class AbstractProgramsManager<
 				? { ...state.ui, analyserDisabledNoticeVisible: true }
 				: state.ui,
 		}));
+		if (excluded) {
+			this.analytics.trackEvent("analyser-disabled", {
+				type: this.programType,
+			});
+		}
 		// A mounted store pushes its own copy back to the project on its next change.
 		this.syncMountedStoresFromProject();
 	}

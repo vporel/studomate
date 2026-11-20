@@ -96,6 +96,23 @@ describe("usePdfExport", () => {
 		expect(mockExport.mock.calls[0][0].cover).toEqual(cover);
 	});
 
+	it("transmet le cadre de page et celui de la première page", async () => {
+		const { result } = renderUsePdfExport();
+		const pageFrame = { headerLeft: "P" };
+		const firstPageFrame = { footerRight: "{page_number}/{pages_count}" };
+
+		await act(async () => {
+			await result.current.startExport([makeGrafcet("g1", "G1")], "f", {
+				pageFrame,
+				firstPageFrame,
+			});
+		});
+
+		const doc = mockExport.mock.calls[0][0];
+		expect(doc.pageFrame).toEqual(pageFrame);
+		expect(doc.firstPageFrame).toEqual(firstPageFrame);
+	});
+
 	it("passe en erreur si le rendu d'un programme échoue", async () => {
 		mockRenderProgramScenes.mockImplementationOnce(() => {
 			throw new Error("boom");

@@ -8,9 +8,9 @@ import useBooleanState from "@/ui/lib/hooks/useBooleanState";
 import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { XYPosition } from "@xyflow/react";
 import { useCallback, useMemo, useState } from "react";
-import { toast } from "react-toastify";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import trackPdfExported from "@/ui/pdf/track-pdf-exported";
+import useExportProgramPdf from "@/ui/pdf/useExportProgramPdf";
+import type { PdfExportProgramConfig } from "@/ui/pdf/usePdfExport";
 import { useT } from "@/ui/i18n/useT";
 import useCanEdit from "@/ui/components/projects/useCanEdit";
 import useProjectClipboard from "@/ui/components/projects/useProjectClipboard";
@@ -62,6 +62,10 @@ const GrafcetContextMenu = ({
 	const canPaste = useProjectClipboard((s) => s.entry?.scope === "grafcet");
 	const grafcet = useGrafcetStore((state) => state.grafcet);
 	const grafcetId = grafcet.id;
+	const exportConfig = useMemo<PdfExportProgramConfig>(
+		() => ({ type: "grafcet", program: grafcet }),
+		[grafcet],
+	);
 	const inSimulation = useProjectStore(
 		(state) => state.mode === ProjectMode.SIMULATION,
 	);
@@ -69,23 +73,7 @@ const GrafcetContextMenu = ({
 	const pdfExport = useProjectStore((state) => state.capabilities.pdfExport);
 	const simulationManager = useProjectStore((state) => state.simulationManager);
 	const forcedVariables = useProjectStore((state) => state.forcedVariables);
-	const projectName = useProjectStore(
-		(state) => state.project?.name ?? "export",
-	);
-
-	const tExport = useT("projects.export");
-	const onExport = useCallback(() => {
-		void import("@/ui/pdf/program-pdf")
-			.then(({ exportProgramPdf }) =>
-				exportProgramPdf({
-					config: { type: "grafcet", program: grafcet },
-					filename: `${projectName} - ${grafcet.name}`,
-					sectionTitle: tExport("sectionTitleGrafcet", { name: grafcet.name }),
-				}),
-			)
-			.then(() => trackPdfExported({ programs: 1, withVariablesTable: false }))
-			.catch(() => toast.error(tExport("errorAssembling")));
-	}, [grafcet, projectName, tExport]);
+	const onExport = useExportProgramPdf(exportConfig);
 
 	const tMenuRaw = useT("grafcetEditor.menu");
 	const tActionTypesRaw = useT("grafcetEditor.actionTypes");

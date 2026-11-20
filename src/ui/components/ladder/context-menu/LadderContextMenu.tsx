@@ -7,12 +7,11 @@ import useBooleanState from "@/ui/lib/hooks/useBooleanState";
 import { OnDelete } from "@xyflow/react";
 import { XYPosition } from "@xyflow/react";
 import { useCallback, useMemo, useState } from "react";
-import { toast } from "react-toastify";
 import useCanEdit from "@/ui/components/projects/useCanEdit";
 import useProjectClipboard from "@/ui/components/projects/useProjectClipboard";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import useLadderRenderContext from "@/ui/pdf/useLadderRenderContext";
-import trackPdfExported from "@/ui/pdf/track-pdf-exported";
+import useExportProgramPdf from "@/ui/pdf/useExportProgramPdf";
+import type { PdfExportProgramConfig } from "@/ui/pdf/usePdfExport";
 import { useT } from "@/ui/i18n/useT";
 import { useLadderContext } from "../context/LadderContext";
 import { useLadderStore } from "../context/LadderContext";
@@ -48,22 +47,11 @@ const LadderContextMenu = ({
 	);
 	const canEdit = useCanEdit();
 	const pdfExport = useProjectStore((s) => s.capabilities.pdfExport);
-	const projectName = useProjectStore((s) => s.project?.name ?? "export");
-	const ladderContext = useLadderRenderContext();
-	const tExport = useT("projects.export");
-	const onExport = useCallback(() => {
-		void import("@/ui/pdf/program-pdf")
-			.then(({ exportProgramPdf }) =>
-				exportProgramPdf({
-					config: { type: "ladder", program: ladder },
-					filename: `${projectName} - ${ladder.name}`,
-					sectionTitle: tExport("sectionTitleLadder", { name: ladder.name }),
-					ladderContext,
-				}),
-			)
-			.then(() => trackPdfExported({ programs: 1, withVariablesTable: false }))
-			.catch(() => toast.error(tExport("errorAssembling")));
-	}, [ladder, projectName, ladderContext, tExport]);
+	const exportConfig = useMemo<PdfExportProgramConfig>(
+		() => ({ type: "ladder", program: ladder }),
+		[ladder],
+	);
+	const onExport = useExportProgramPdf(exportConfig);
 	const setCrossReferenceFilter = useProjectStore(
 		(s) => s.setCrossReferenceFilter,
 	);

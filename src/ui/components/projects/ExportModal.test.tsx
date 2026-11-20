@@ -72,6 +72,27 @@ describe("ExportModal", () => {
 		const [programs, , options] = startExport.mock.calls[0];
 		expect(programs.length).toBeGreaterThan(0);
 		expect(options.cover).toMatchObject({ projectName: "Mon projet" });
+		expect(options.pageFrame).toEqual({
+			headerLeft: "Mon projet",
+			footerLeft: undefined,
+			footerRight: "{page_number}/{pages_count}",
+		});
+		expect(options.firstPageFrame).toEqual({
+			footerRight: "{page_number}/{pages_count}",
+		});
+	});
+
+	it("met l'auteur en pied de page à gauche dès la 2e page de l'export complet", () => {
+		const project = new Project("p1", "Mon projet", "");
+		project.author = "Alice";
+		setup({ project });
+
+		fireEvent.click(screen.getByRole("button", { name: "Exporter" }));
+
+		expect(startExport.mock.calls[0][2].pageFrame).toMatchObject({
+			headerLeft: "Mon projet",
+			footerLeft: "Auteur : Alice",
+		});
 	});
 
 	it("inclut les tables de variables (une par groupe) par défaut", () => {
@@ -134,6 +155,16 @@ describe("ExportModal", () => {
 		expect(startExport.mock.calls[0][2].cover).toBeUndefined();
 	});
 
+	it("applique le cadre complet dès la 1re page sans page de garde", () => {
+		setup();
+		fireEvent.click(screen.getByRole("checkbox", { name: "Page de garde" }));
+		fireEvent.click(screen.getByRole("button", { name: "Exporter" }));
+
+		const options = startExport.mock.calls[0][2];
+		expect(options.firstPageFrame).toBeUndefined();
+		expect(options.pageFrame.headerLeft).toBe("Mon projet");
+	});
+
 	it("exporte la page de variables active seule (une section, sans page de garde)", () => {
 		const project = new Project("p1", "Mon projet", "");
 		project.variables.push(
@@ -157,6 +188,8 @@ describe("ExportModal", () => {
 		const [programs, , options] = startExport.mock.calls[0];
 		expect(programs).toEqual([]);
 		expect(options.cover).toBeUndefined();
+		expect(options.pageFrame).toMatchObject({ headerLeft: "Mon projet" });
+		expect(options.variableSections[0].title).not.toContain("Mon projet");
 		expect(options.variableSections).toHaveLength(1);
 		expect(
 			options.variableSections[0].table.rows.map((r: string[]) => r[0]),
@@ -179,5 +212,10 @@ describe("ExportModal", () => {
 		expect(programs).toHaveLength(1);
 		expect(programs[0].program.id).toBe(mainId(project));
 		expect(options.cover).toBeUndefined();
+		expect(options.pageFrame).toMatchObject({
+			headerLeft: "Mon projet",
+			footerLeft: expect.stringMatching(/^Exporté le /),
+			footerRight: "{page_number}/{pages_count}",
+		});
 	});
 });

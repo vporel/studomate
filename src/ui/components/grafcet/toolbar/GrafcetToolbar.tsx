@@ -3,10 +3,12 @@
 import useCanEdit from "@/ui/components/projects/useCanEdit";
 import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import AnalyserToolbarItem from "@/ui/components/programs/AnalyserToolbarItem";
+import ExportProgramPdfTool from "@/ui/components/programs/ExportProgramPdfTool";
+import type { PdfExportProgramConfig } from "@/ui/pdf/usePdfExport";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
 import { Divider } from "@mui/material";
-import React from "react";
+import React, { useMemo } from "react";
 import { useGrafcetStore } from "../context/GrafcetContext";
 import ActionTool from "./ActionTool";
 import CommentTool from "./CommentTool";
@@ -21,7 +23,12 @@ import StepTool from "./StepTool";
 import TransitionTool from "./TransitionTool";
 
 const GrafcetToolbar = ({ style }: { style?: React.CSSProperties }) => {
-	const grafcetId = useGrafcetStore((state) => state.grafcet.id);
+	const grafcet = useGrafcetStore((state) => state.grafcet);
+	const grafcetId = grafcet.id;
+	const exportConfig = useMemo<PdfExportProgramConfig>(
+		() => ({ type: "grafcet", program: grafcet }),
+		[grafcet],
+	);
 	const excludedFromExecution = useGrafcetStore(
 		(state) => state.grafcet.excludedFromExecution,
 	);
@@ -84,6 +91,7 @@ const GrafcetToolbar = ({ style }: { style?: React.CSSProperties }) => {
 						}
 					/>
 				)}
+				<ExportProgramPdfTool config={exportConfig} />
 				<GrafcetZoomTools />
 			</FlexBox>
 		</FlexBox>

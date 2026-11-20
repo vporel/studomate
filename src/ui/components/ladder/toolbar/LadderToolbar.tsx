@@ -13,8 +13,10 @@ import AddIcon from "@mui/icons-material/Add";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { Box, Button, Divider, IconButton } from "@mui/material";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import AnalyserToolbarItem from "@/ui/components/programs/AnalyserToolbarItem";
+import ExportProgramPdfTool from "@/ui/components/programs/ExportProgramPdfTool";
+import type { PdfExportProgramConfig } from "@/ui/pdf/usePdfExport";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useT } from "@/ui/i18n/useT";
 import {
@@ -77,7 +79,12 @@ const LadderToolbar = ({
 	const exclusionToggleAvailable = useProjectStore(
 		(state) => state.capabilities.programExecutionExclusionToggle,
 	);
-	const ladderId = useLadderStore((state) => state.ladder.id);
+	const ladder = useLadderStore((state) => state.ladder);
+	const ladderId = ladder.id;
+	const exportConfig = useMemo<PdfExportProgramConfig>(
+		() => ({ type: "ladder", program: ladder }),
+		[ladder],
+	);
 	const excludedFromExecution = useLadderStore(
 		(state) => state.ladder.excludedFromExecution,
 	);
@@ -262,6 +269,7 @@ const LadderToolbar = ({
 						}
 					/>
 				)}
+				<ExportProgramPdfTool config={exportConfig} />
 				<ZoomControls
 					zoom={zoom}
 					zoomInLabel={t("zoomIn")}

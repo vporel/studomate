@@ -5,6 +5,7 @@ import { JsPdfExporter } from "./jspdf.pdf-exporter";
 import {
 	PdfCoverPage,
 	PdfExportDocument,
+	PDF_PAGE_NUMBER,
 	PdfExportSection,
 } from "./pdf-exporter";
 
@@ -53,6 +54,10 @@ const mockSetFontSize = jest.fn();
 const mockSplitTextToSize = jest.fn((t: string) => [t]);
 const mockSetDrawColor = jest.fn();
 const mockLine = jest.fn();
+const mockSetPage = jest.fn();
+const mockSetTextColor = jest.fn();
+let mockPageCount = 1;
+let mockPageSize = { width: 210, height: 297 };
 
 jest.mock("jspdf", () => ({
 	__esModule: true,
@@ -65,6 +70,15 @@ jest.mock("jspdf", () => ({
 		splitTextToSize: mockSplitTextToSize,
 		setDrawColor: mockSetDrawColor,
 		line: mockLine,
+		setPage: mockSetPage,
+		setTextColor: mockSetTextColor,
+		getNumberOfPages: () => mockPageCount,
+		internal: {
+			pageSize: {
+				getWidth: () => mockPageSize.width,
+				getHeight: () => mockPageSize.height,
+			},
+		},
 	})),
 }));
 
@@ -79,7 +93,11 @@ jest.mock("./pdf-table", () => ({
 }));
 
 describe("JsPdfExporter", () => {
-	beforeEach(() => jest.clearAllMocks());
+	beforeEach(() => {
+		jest.clearAllMocks();
+		mockPageCount = 1;
+		mockPageSize = { width: 210, height: 297 };
+	});
 
 	it("enregistre le PDF avec le bon nom de fichier", async () => {
 		await new JsPdfExporter().export(makeDoc({ filename: "mon-projet" }));
@@ -271,5 +289,136 @@ describe("JsPdfExporter", () => {
 		expect(tall.height * scale).toBeLessThanOrEqual(
 			availableSectionHeight + 0.01,
 		);
+	});
+
+	describe("en-tête et pied de page", () => {
+		const pageFrame = {
+			headerLeft: "Mon projet",
+			footerLeft: "Auteur : Alice",
+			footerRight: "Exporté le 01/09/2026",
+		};
+
+		it("n'écrit rien sans cadre de page", async () => {
+			await new JsPdfExporter().export(makeDoc());
+			expect(mockSetPage).not.toHaveBeenCalled();
+			expect(mockText).not.toHaveBeenCalledWith(
+				"Exporté le 01/09/2026",
+				expect.anything(),
+				expect.anything(),
+				expect.anything(),
+			);
+		});
+
+		it("place le projet en haut à gauche, l'auteur en bas à gauche et la date en bas à droite", async () => {
+			await new JsPdfExporter().export(makeDoc({ pageFrame }));
+
+			expect(mockText).toHaveBeenCalledWith("Mon projet", 15, 9, {
+				align: "left",
+			});
+			expect(mockText).toHaveBeenCalledWith("Auteur : Alice", 15, 288, {
+				align: "left",
+			});
+			expect(mockText).toHaveBeenCalledWith("Exporté le 01/09/2026", 195, 288, {
+				align: "right",
+			});
+		});
+
+		it("se répète sur chaque page, à la taille de la page", async () => {
+			mockPageCount = 2;
+			mockPageSize = { width: 297, height: 210 };
+
+			await new JsPdfExporter().export(makeDoc({ pageFrame }));
+
+			expect(mockSetPage).toHaveBeenCalledWith(1);
+			expect(mockSetPage).toHaveBeenCalledWith(2);
+			const headerCalls = mockText.mock.calls.filter(
+				([text]) => text === "Mon projet",
+			);
+			expect(headerCalls).toHaveLength(2);
+			expect(mockText).toHaveBeenCalledWith("Auteur : Alice", 15, 201, {
+				align: "left",
+			});
+			expect(mockText).toHaveBeenCalledWith("Exporté le 01/09/2026", 282, 201, {
+				align: "right",
+			});
+		});
+
+		it("centre les zones centrales et aligne à droite l'en-tête droit", async () => {
+			await new JsPdfExporter().export(
+				makeDoc({
+					pageFrame: {
+						headerCenter: "Centre haut",
+						headerRight: "Droite haut",
+						footerCenter: "Centre bas",
+					},
+				}),
+			);
+
+			expect(mockText).toHaveBeenCalledWith("Centre haut", 105, 9, {
+				align: "center",
+			});
+			expect(mockText).toHaveBeenCalledWith("Droite haut", 195, 9, {
+				align: "right",
+			});
+			expect(mockText).toHaveBeenCalledWith("Centre bas", 105, 288, {
+				align: "center",
+			});
+		});
+
+		it("remplace {page_number} et {pages_count} sur chaque page, y compris une page unique", async () => {
+			await new JsPdfExporter().export(
+				makeDoc({ pageFrame: { footerRight: PDF_PAGE_NUMBER } }),
+			);
+			expect(mockText).toHaveBeenCalledWith("1/1", 195, 288, {
+				align: "right",
+			});
+
+			mockText.mockClear();
+			mockPageCount = 3;
+			await new JsPdfExporter().export(
+				makeDoc({ pageFrame: { footerRight: PDF_PAGE_NUMBER } }),
+			);
+			const numbers = mockText.mock.calls
+				.map(([text]) => text)
+				.filter((text) => /^\d+\/\d+$/.test(text));
+			expect(numbers).toEqual(["1/3", "2/3", "3/3"]);
+		});
+
+		it("utilise firstPageFrame à la place du cadre sur la première page seulement", async () => {
+			mockPageCount = 2;
+
+			await new JsPdfExporter().export(
+				makeDoc({
+					pageFrame: { headerLeft: "Mon projet", footerRight: "{page_number}" },
+					firstPageFrame: { footerRight: "{page_number}" },
+				}),
+			);
+
+			const headers = mockText.mock.calls.filter(
+				([text]) => text === "Mon projet",
+			);
+			expect(headers).toHaveLength(1);
+			expect(mockSetPage).toHaveBeenNthCalledWith(1, 1);
+			const numbers = mockText.mock.calls
+				.map(([text]) => text)
+				.filter((text) => /^\d+$/.test(text));
+			expect(numbers).toEqual(["1", "2"]);
+		});
+
+		it("omet les zones absentes", async () => {
+			await new JsPdfExporter().export(
+				makeDoc({ pageFrame: { footerRight: "Exporté le 01/09/2026" } }),
+			);
+
+			const texts = mockText.mock.calls.map(([text]) => text);
+			expect(texts).not.toContain("Mon projet");
+			expect(texts).not.toContain("Auteur : Alice");
+			expect(texts).toContain("Exporté le 01/09/2026");
+		});
+
+		it("rend la couleur du texte au noir ensuite", async () => {
+			await new JsPdfExporter().export(makeDoc({ pageFrame }));
+			expect(mockSetTextColor).toHaveBeenLastCalledWith(0);
+		});
 	});
 });

@@ -3,7 +3,7 @@
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import CustomModal from "@/ui/components/mui/CustomModal";
-import { PdfCoverPage } from "@/ui/lib/pdf/pdf-exporter";
+import { PDF_PAGE_NUMBER, PdfCoverPage } from "@/ui/lib/pdf/pdf-exporter";
 import {
 	buildProjectVariablesSections,
 	buildVariableGroupSection,
@@ -25,6 +25,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/shallow";
 import useLadderRenderContext from "@/ui/pdf/useLadderRenderContext";
+import useSingleExportPageFrame from "@/ui/pdf/useSingleExportPageFrame";
 import { PdfExportProgramConfig, usePdfExport } from "@/ui/pdf/usePdfExport";
 import { usePageTitle } from "../pages/usePageTitle";
 import {
@@ -110,6 +111,7 @@ export default function ExportModal() {
 	}, [project, activeScope, activeScopeType, pageTitle]);
 
 	const ladderContext = useLadderRenderContext();
+	const buildPageFrame = useSingleExportPageFrame();
 	const [format, setFormat] = useState<ExportFormat>("pdf");
 	const [scope, setScope] = useState<PdfScope>("full");
 	const [includeCover, setIncludeCover] = useState(true);
@@ -195,19 +197,18 @@ export default function ExportModal() {
 			if (!activeExport || !project) return;
 			const name = filename || activeExport.name;
 			if (activeExport.kind === "program") {
-				void startExport([activeExport.config], name, { ladderContext });
+				void startExport([activeExport.config], name, {
+					ladderContext,
+					pageFrame: buildPageFrame(),
+				});
 			} else {
-				const date = new Date().toLocaleDateString();
 				void startExport([], name, {
+					pageFrame: buildPageFrame(),
 					variableSections: [
 						buildVariableGroupSection(
 							getVariablesPageDefinition(activeExport.pageId).group,
 							project.variables,
-							t("variablesPdfHeading", {
-								project: project.name,
-								page: activeExport.name,
-								date,
-							}),
+							activeExport.name,
 							columnLabels,
 						),
 					],
@@ -235,8 +236,17 @@ export default function ExportModal() {
 						},
 					})
 				: [];
+		const cover = buildCover();
 		void startExport(programs, filename || "export", {
-			cover: buildCover(),
+			cover,
+			pageFrame: {
+				headerLeft: project?.name,
+				footerLeft: project?.author
+					? t("coverAuthor", { author: project.author })
+					: undefined,
+				footerRight: PDF_PAGE_NUMBER,
+			},
+			firstPageFrame: cover ? { footerRight: PDF_PAGE_NUMBER } : undefined,
 			ladderContext,
 			variableSections,
 		});
@@ -245,6 +255,7 @@ export default function ExportModal() {
 		scope,
 		project,
 		activeExport,
+		buildPageFrame,
 		grafcets,
 		ladders,
 		selectedIds,
@@ -253,8 +264,8 @@ export default function ExportModal() {
 		filename,
 		startExport,
 		buildCover,
-		onClose,
 		t,
+		onClose,
 		columnLabels,
 		tPageTitles,
 	]);
