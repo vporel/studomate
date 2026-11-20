@@ -1,11 +1,11 @@
 "use client";
 
-import { JsPdfExporter } from "@/ui/lib/pdf/jspdf.pdf-exporter";
+import { JsPdfExporter } from "@/ui/pdf/jspdf.pdf-exporter";
 import {
 	PdfCoverPage,
 	PdfExportSection,
 	PdfPageFrame,
-} from "@/ui/lib/pdf/pdf-exporter";
+} from "@/ui/pdf/pdf-exporter";
 import { buildProgramSection, ProgramExportConfig } from "@/ui/pdf/program-pdf";
 import { LadderRenderContext } from "@/ui/pdf/drawing/ladder-render-context";
 import trackPdfExported from "./track-pdf-exported";
@@ -23,7 +23,7 @@ export type PdfExportState =
 export interface PdfExportOptions {
 	cover?: PdfCoverPage;
 	pageFrame?: PdfPageFrame;
-	firstPageFrame?: PdfPageFrame;
+	coverPageFrame?: PdfPageFrame;
 	ladderContext?: LadderRenderContext;
 	/** Tables de variables : placées après la page de garde et avant les programmes. */
 	variableSections?: PdfExportSection[];
@@ -75,7 +75,7 @@ export function usePdfExport(): UsePdfExportResult {
 			const {
 				cover,
 				pageFrame,
-				firstPageFrame,
+				coverPageFrame,
 				ladderContext,
 				variableSections = [],
 			} = options;
@@ -117,7 +117,7 @@ export function usePdfExport(): UsePdfExportResult {
 					filename,
 					cover,
 					pageFrame,
-					firstPageFrame,
+					coverPageFrame,
 					sections,
 				});
 			} catch {

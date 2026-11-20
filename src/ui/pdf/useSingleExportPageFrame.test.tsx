@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import { PDF_PAGE_NUMBER } from "@/ui/pdf/pdf-exporter";
 import { renderHook } from "@testing-library/react";
 import { i18nWrapper } from "@tests/utils/i18n";
 import { selectorImplementation } from "@tests/utils/store-mocks";
@@ -28,7 +29,7 @@ describe("useSingleExportPageFrame", () => {
 		expect(result.current()).toEqual({
 			headerLeft: "Elevator",
 			footerLeft: `Auteur : Alice \u2014 Exporté le ${new Date(2026, 10, 20).toLocaleDateString()}`,
-			footerRight: "{page_number}/{pages_count}",
+			footerRight: PDF_PAGE_NUMBER,
 		});
 	});
 
@@ -39,7 +40,7 @@ describe("useSingleExportPageFrame", () => {
 		expect(result.current().footerLeft).toBe(
 			`Exporté le ${new Date(2026, 10, 20).toLocaleDateString()}`,
 		);
-		expect(result.current().footerRight).toBe("{page_number}/{pages_count}");
+		expect(result.current().footerRight).toBe(PDF_PAGE_NUMBER);
 	});
 
 	it("reads the date when called, not when rendered", () => {

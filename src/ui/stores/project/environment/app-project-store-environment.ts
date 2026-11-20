@@ -41,7 +41,7 @@ export default function createAppProjectStoreEnvironment(
 	return {
 		getLocale: resolveUiLocale,
 		capabilities: {
-			pdfExport: true,
+			export: true,
 			crossReference: true,
 			programExecutionExclusionToggle: true,
 		},

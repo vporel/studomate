@@ -46,12 +46,12 @@ const LadderContextMenu = ({
 			(s.entry.data as { kind?: string })?.kind === "elements",
 	);
 	const canEdit = useCanEdit();
-	const pdfExport = useProjectStore((s) => s.capabilities.pdfExport);
-	const exportConfig = useMemo<PdfExportProgramConfig>(
-		() => ({ type: "ladder", program: ladder }),
+	const canExport = useProjectStore((s) => s.capabilities.export);
+	const getExportConfig = useCallback(
+		(): PdfExportProgramConfig => ({ type: "ladder", program: ladder }),
 		[ladder],
 	);
-	const onExport = useExportProgramPdf(exportConfig);
+	const onExport = useExportProgramPdf(getExportConfig);
 	const setCrossReferenceFilter = useProjectStore(
 		(s) => s.setCrossReferenceFilter,
 	);
@@ -89,7 +89,7 @@ const LadderContextMenu = ({
 				screenPosition,
 				canPaste,
 				t,
-				pdfExport ? onExport : null,
+				canExport ? onExport : null,
 				ladder.getAllElements().length === 0,
 			);
 		}
@@ -116,7 +116,7 @@ const LadderContextMenu = ({
 		sectionId,
 		handleDelete,
 		onExport,
-		pdfExport,
+		canExport,
 		openCrossReferences,
 		t,
 	]);
@@ -129,13 +129,13 @@ const LadderContextMenu = ({
 				hide();
 				return;
 			}
-			if (props.element.type === "pane" && !canEdit && !pdfExport) return;
+			if (props.element.type === "pane" && !canEdit && !canExport) return;
 			setElement(props.element);
 			setPosition(props.position);
 			setScreenPosition(props.screenPosition);
 			show();
 		},
-		[hide, show, sectionId, canEdit, pdfExport],
+		[hide, show, sectionId, canEdit, canExport],
 	);
 	useContextMenuBus(contextMenuEvents, showMenu, hide);
 

@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import { PDF_PAGE_NUMBER } from "@/ui/pdf/pdf-exporter";
 import { act, renderHook } from "@testing-library/react";
 import { i18nWrapper } from "@tests/utils/i18n";
 import { usePdfExport, PdfExportProgramConfig } from "./usePdfExport";
@@ -9,7 +10,7 @@ const renderUsePdfExport = () =>
 	renderHook(() => usePdfExport(), { wrapper: i18nWrapper() });
 
 const mockExport = jest.fn().mockResolvedValue(undefined);
-jest.mock("@/ui/lib/pdf/jspdf.pdf-exporter", () => ({
+jest.mock("@/ui/pdf/jspdf.pdf-exporter", () => ({
 	JsPdfExporter: jest.fn().mockImplementation(() => ({ export: mockExport })),
 }));
 
@@ -99,18 +100,18 @@ describe("usePdfExport", () => {
 	it("transmet le cadre de page et celui de la première page", async () => {
 		const { result } = renderUsePdfExport();
 		const pageFrame = { headerLeft: "P" };
-		const firstPageFrame = { footerRight: "{page_number}/{pages_count}" };
+		const coverPageFrame = { footerRight: PDF_PAGE_NUMBER } as const;
 
 		await act(async () => {
 			await result.current.startExport([makeGrafcet("g1", "G1")], "f", {
 				pageFrame,
-				firstPageFrame,
+				coverPageFrame,
 			});
 		});
 
 		const doc = mockExport.mock.calls[0][0];
 		expect(doc.pageFrame).toEqual(pageFrame);
-		expect(doc.firstPageFrame).toEqual(firstPageFrame);
+		expect(doc.coverPageFrame).toEqual(coverPageFrame);
 	});
 
 	it("passe en erreur si le rendu d'un programme échoue", async () => {

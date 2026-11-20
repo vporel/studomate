@@ -87,8 +87,20 @@ jest.mock("@/ui/lib/drawing/backends/jspdf-backend", () => ({
 	renderSceneToJsPdf: (...args: unknown[]) => mockRenderSceneToJsPdf(...args),
 }));
 
+const mockRenderMarkdown = jest.fn();
+jest.mock("@/ui/lib/pdf/markdown-to-pdf", () => {
+	const actual = jest.requireActual("@/ui/lib/pdf/markdown-to-pdf");
+	return {
+		__esModule: true,
+		default: (...args: unknown[]) => {
+			mockRenderMarkdown(...args);
+			return actual.default(...args);
+		},
+	};
+});
+
 const mockDrawPdfTable = jest.fn();
-jest.mock("./pdf-table", () => ({
+jest.mock("@/ui/lib/pdf/pdf-table", () => ({
 	drawPdfTable: (...args: unknown[]) => mockDrawPdfTable(...args),
 }));
 
@@ -243,6 +255,36 @@ describe("JsPdfExporter", () => {
 		expect(callWithDesc[2].y).toBeGreaterThan(15 + 12 + 7);
 	});
 
+	it("cuts a ladder section description too long for the page and keeps its drawing visible", async () => {
+		const lines = Array.from({ length: 200 }, (_, i) => `Ligne ${i}`);
+		mockSplitTextToSize.mockReturnValueOnce(lines);
+		const scene = { ops: [], width: 300, height: 100 };
+		await new JsPdfExporter().export(
+			makeDoc({
+				sections: [
+					{
+						title: "Ladder - L",
+						orientation: "landscape",
+						ladderSections: [
+							{ heading: "Section 1", description: "long", scene },
+						],
+					},
+				],
+			}),
+		);
+
+		const printedLines = mockText.mock.calls.find(
+			([text]) => Array.isArray(text) && text[0] === "Ligne 0",
+		)?.[0] as string[];
+		expect(printedLines.length).toBeLessThan(lines.length);
+		expect(printedLines.at(-1)?.endsWith("…")).toBe(true);
+		const [[, , placement]] = mockRenderSceneToJsPdf.mock.calls;
+		expect(placement.scale).toBeGreaterThan(0);
+		expect(placement.y + scene.height * placement.scale).toBeLessThanOrEqual(
+			210 - 15 + 0.01,
+		);
+	});
+
 	it("imprime le titre d'une section tableau puis délègue le tracé du tableau", async () => {
 		const table = {
 			columns: [{ header: "Mnémonique", width: 50 }],
@@ -365,7 +407,7 @@ describe("JsPdfExporter", () => {
 			});
 		});
 
-		it("remplace {page_number} et {pages_count} sur chaque page, y compris une page unique", async () => {
+		it("writes the page number n/N on every page, a single page included", async () => {
 			await new JsPdfExporter().export(
 				makeDoc({ pageFrame: { footerRight: PDF_PAGE_NUMBER } }),
 			);
@@ -384,25 +426,68 @@ describe("JsPdfExporter", () => {
 			expect(numbers).toEqual(["1/3", "2/3", "3/3"]);
 		});
 
-		it("utilise firstPageFrame à la place du cadre sur la première page seulement", async () => {
-			mockPageCount = 2;
+		it("uses coverPageFrame instead of the frame on the cover page", async () => {
+			mockAddPage.mockImplementationOnce(() => {
+				mockPageCount = 2;
+			});
 
 			await new JsPdfExporter().export(
 				makeDoc({
-					pageFrame: { headerLeft: "Mon projet", footerRight: "{page_number}" },
-					firstPageFrame: { footerRight: "{page_number}" },
+					cover: { ...cover, statement: undefined },
+					pageFrame: { headerLeft: "Mon projet", footerRight: PDF_PAGE_NUMBER },
+					coverPageFrame: { footerRight: PDF_PAGE_NUMBER },
 				}),
 			);
 
+			expect(mockSetPage).toHaveBeenNthCalledWith(1, 1);
 			const headers = mockText.mock.calls.filter(
-				([text]) => text === "Mon projet",
+				([text, , y]) => text === "Mon projet" && y === 9,
 			);
 			expect(headers).toHaveLength(1);
-			expect(mockSetPage).toHaveBeenNthCalledWith(1, 1);
 			const numbers = mockText.mock.calls
 				.map(([text]) => text)
-				.filter((text) => /^\d+$/.test(text));
-			expect(numbers).toEqual(["1", "2"]);
+				.filter((text) => /^\d+\/\d+$/.test(text));
+			expect(numbers).toEqual(["1/2", "2/2"]);
+		});
+
+		it("uses coverPageFrame on every page of a cover that runs over several pages", async () => {
+			mockRenderMarkdown.mockImplementationOnce(() => {
+				mockPageCount = 2;
+			});
+
+			await new JsPdfExporter().export(
+				makeDoc({
+					cover,
+					sections: [],
+					pageFrame: { headerLeft: "En-tête courant" },
+					coverPageFrame: { footerRight: PDF_PAGE_NUMBER },
+				}),
+			);
+
+			const pagesWithHeader = mockText.mock.calls.filter(
+				([text]) => text === "En-tête courant",
+			);
+			expect(pagesWithHeader).toHaveLength(0);
+			expect(mockText).toHaveBeenCalledWith("2/2", 195, 288, {
+				align: "right",
+			});
+		});
+
+		it("draws the user's text verbatim, page number placeholders included", async () => {
+			mockPageCount = 3;
+
+			await new JsPdfExporter().export(
+				makeDoc({ pageFrame: { headerLeft: "Lab {page_number}" } }),
+			);
+
+			const headers = mockText.mock.calls
+				.map(([text]) => text)
+				.filter((text) => typeof text === "string" && text.startsWith("Lab"));
+			expect(headers).toEqual([
+				"Lab {page_number}",
+				"Lab {page_number}",
+				"Lab {page_number}",
+			]);
 		});
 
 		it("omet les zones absentes", async () => {

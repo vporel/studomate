@@ -54,10 +54,9 @@ describe("createDndContext", () => {
 				<b.Provider>{children}</b.Provider>
 			</a.Provider>
 		);
-		const { result } = renderHook(
-			() => ({ a: a.useDnD(), b: b.useDnD() }),
-			{ wrapper },
-		);
+		const { result } = renderHook(() => ({ a: a.useDnD(), b: b.useDnD() }), {
+			wrapper,
+		});
 
 		act(() => result.current.a.setDraggedItem("x"));
 

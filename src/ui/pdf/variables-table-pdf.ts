@@ -1,6 +1,6 @@
 import Variable, { VariableZone } from "@/schemas/variable/variable.schema";
-import { JsPdfExporter } from "@/ui/lib/pdf/jspdf.pdf-exporter";
-import { PdfExportSection, PdfPageFrame } from "@/ui/lib/pdf/pdf-exporter";
+import { JsPdfExporter } from "@/ui/pdf/jspdf.pdf-exporter";
+import { PdfExportSection, PdfPageFrame } from "@/ui/pdf/pdf-exporter";
 import { PdfTableModel } from "@/ui/lib/pdf/pdf-table";
 import {
 	VARIABLES_PAGES,

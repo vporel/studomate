@@ -281,7 +281,10 @@ Always check `package.json` before quoting a version: this table goes stale at t
   séquence linéaire"). For an aside, prefer parentheses, commas or a new sentence. This applies
   above all to text meant to be read: UI strings and i18n files, manuals, docs, training
   content. Do not sprinkle em dashes as a default separator. Exception: the site-name suffix of
-  page titles stays an em dash (`À propos — Studomate`, `About — Studomate`); keep it as is.
+  page titles stays an em dash (`À propos — Studomate`, `About — Studomate`); keep it as is. The
+  rule covers prose, not layout: an em dash used as a visual separator between independent fields
+  (a PDF header or footer line such as "Auteur : X — Exporté le …") is not punctuation in a
+  sentence and stays.
 - **User manual content**: every addition to the manual (`manual.json`, in every locale) is weighed
   for its relevance at that exact place before it is written, including when a code change
   seems to "complete" an existing section. Information that helps the user find something,

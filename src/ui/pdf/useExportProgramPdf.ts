@@ -10,11 +10,11 @@ import useLadderRenderContext from "./useLadderRenderContext";
 import useSingleExportPageFrame from "./useSingleExportPageFrame";
 
 /**
- * Downloads a single program as a PDF (no cover page), named "<project> - <program>".
- * Failures are reported with a toast.
+ * Downloads a single program as a PDF (no cover page), named "<project> - <program>". The program
+ * is read from `getConfig` when the export starts. Failures are reported with a toast.
  */
 export default function useExportProgramPdf(
-	config: PdfExportProgramConfig,
+	getConfig: () => PdfExportProgramConfig,
 ): () => void {
 	const projectName = useProjectStore((s) => s.project?.name ?? "export");
 	const ladderContext = useLadderRenderContext();
@@ -22,6 +22,7 @@ export default function useExportProgramPdf(
 	const buildPageFrame = useSingleExportPageFrame();
 
 	return useCallback(() => {
+		const config = getConfig();
 		const { name } = config.program;
 		void import("@/ui/pdf/program-pdf")
 			.then(({ exportProgramPdf }) =>
@@ -40,5 +41,5 @@ export default function useExportProgramPdf(
 			)
 			.then(() => trackPdfExported({ programs: 1, withVariablesTable: false }))
 			.catch(() => toast.error(t("errorAssembling")));
-	}, [config, projectName, ladderContext, t, buildPageFrame]);
+	}, [getConfig, projectName, ladderContext, t, buildPageFrame]);
 }

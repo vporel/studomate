@@ -1,7 +1,7 @@
 import { buildProgramSection, exportProgramPdf } from "./program-pdf";
 
 const mockExport = jest.fn().mockResolvedValue(undefined);
-jest.mock("@/ui/lib/pdf/jspdf.pdf-exporter", () => ({
+jest.mock("@/ui/pdf/jspdf.pdf-exporter", () => ({
 	JsPdfExporter: jest.fn().mockImplementation(() => ({ export: mockExport })),
 }));
 

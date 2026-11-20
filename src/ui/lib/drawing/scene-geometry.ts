@@ -1,4 +1,4 @@
-import { DrawOp, Scene } from "./draw-op";
+import { DrawOp, PATH_NUMBER_PATTERN, Scene } from "./draw-op";
 import { estimateTextWidth } from "./text-layout";
 
 export type Bbox = { minX: number; minY: number; maxX: number; maxY: number };
@@ -68,7 +68,7 @@ export function bboxOfOps(ops: DrawOp[]): Bbox {
 export function translateOps(ops: DrawOp[], dx: number, dy: number): DrawOp[] {
 	const shiftPath = (d: string): string =>
 		d.replace(
-			/([MLC])\s*((?:-?\d*\.?\d+[\s,]*)+)/gi,
+			new RegExp(`([MLC])\\s*((?:${PATH_NUMBER_PATTERN}[\\s,]*)+)`, "gi"),
 			(_m, cmd: string, coords: string) => {
 				const nums = coords
 					.trim()
@@ -105,6 +105,71 @@ export function translateOps(ops: DrawOp[], dx: number, dy: number): DrawOp[] {
 	});
 }
 
+/** New list of ops scaled by `factor` around the origin (coordinates, stroke widths, font sizes,
+ * dashes). The ops are treated as immutable. */
+export function scaleOps(ops: DrawOp[], factor: number): DrawOp[] {
+	const scaleDash = (dash?: [number, number]): [number, number] | undefined =>
+		dash && [dash[0] * factor, dash[1] * factor];
+	const scaleWidth = (w?: number) => (w === undefined ? w : w * factor);
+	const scalePath = (d: string): string =>
+		d.replace(new RegExp(PATH_NUMBER_PATTERN, "gi"), (n) =>
+			String(Number(n) * factor),
+		);
+	return ops.map((op): DrawOp => {
+		switch (op.op) {
+			case "rect":
+				return {
+					...op,
+					x: op.x * factor,
+					y: op.y * factor,
+					w: op.w * factor,
+					h: op.h * factor,
+					rx: op.rx === undefined ? op.rx : op.rx * factor,
+					strokeWidth: scaleWidth(op.strokeWidth),
+					dash: scaleDash(op.dash),
+				};
+			case "line":
+				return {
+					...op,
+					x1: op.x1 * factor,
+					y1: op.y1 * factor,
+					x2: op.x2 * factor,
+					y2: op.y2 * factor,
+					strokeWidth: scaleWidth(op.strokeWidth),
+					dash: scaleDash(op.dash),
+				};
+			case "polyline":
+				return {
+					...op,
+					points: op.points.map(([x, y]) => [x * factor, y * factor]),
+					strokeWidth: scaleWidth(op.strokeWidth),
+					dash: scaleDash(op.dash),
+				};
+			case "circle":
+				return {
+					...op,
+					cx: op.cx * factor,
+					cy: op.cy * factor,
+					r: op.r * factor,
+					strokeWidth: scaleWidth(op.strokeWidth),
+				};
+			case "path":
+				return {
+					...op,
+					d: scalePath(op.d),
+					strokeWidth: scaleWidth(op.strokeWidth),
+				};
+			case "text":
+				return {
+					...op,
+					x: op.x * factor,
+					y: op.y * factor,
+					fontSize: op.fontSize * factor,
+				};
+		}
+	});
+}
+
 /**
  * Assemble une scène recadrée : bbox des ops + marge, tout décalé pour que le coin haut-gauche
  * de la bbox élargie soit à l'origine.
@@ -121,9 +186,9 @@ export function frameScene(ops: DrawOp[], margin: number): Scene {
 }
 
 /**
- * Assemble une scène à la taille d'une page (le grafcet garde sa position et son échelle
- * d'origine, pas de zoom au contenu). La scène est agrandie et le contenu décalé seulement si
- * un élément déborde du cadre `[margin, page - margin]`.
+ * Builds a page-sized scene (the content keeps its original position and scale, no zoom to fit).
+ * The scene is enlarged and the content shifted only when an element overflows the
+ * `[margin, page - margin]` frame.
  */
 export function framePage(
 	ops: DrawOp[],

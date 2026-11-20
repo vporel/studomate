@@ -1,23 +1,26 @@
 "use client";
 
-import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import { useProjectContext } from "@/ui/components/projects/ProjectContext";
 import { useT } from "@/ui/i18n/useT";
 import { LadderRenderContext } from "@/ui/pdf/drawing/ladder-render-context";
 import { useMemo } from "react";
 
 /**
- * Contexte de rendu ladder pour l'export PDF : les libellés que le schéma seul ne porte pas
- * (nom du programme cible d'un renvoi, libellé statique d'un bloc affectation/calcul/conversion,
- * intitulé d'un réseau).
+ * Ladder rendering context for PDF and image export: the labels the schema alone doesn't carry
+ * (name of a jump's target program, static label of an assign/arithmetic/convert block, network
+ * heading). Program names are read from the project when the export draws, so this hook doesn't
+ * re-render its caller on every project edit.
  */
 export default function useLadderRenderContext(): LadderRenderContext {
-	const project = useProjectStore((state) => state.project);
+	const projectStore = useProjectContext();
 	const tBlock = useT("ladderEditor.block");
 	const tSectionHeader = useT("ladderEditor.sectionHeader");
 	return useMemo(
 		() => ({
-			programName: (id) =>
-				project?.ladders[id]?.name ?? project?.grafcets[id]?.name,
+			programName: (id) => {
+				const project = projectStore?.getState().project;
+				return project?.ladders[id]?.name ?? project?.grafcets[id]?.name;
+			},
 			blockStaticLabel: (blockType) =>
 				blockType === "assign"
 					? tBlock("assignStaticLabel")
@@ -31,6 +34,6 @@ export default function useLadderRenderContext(): LadderRenderContext {
 					? tSectionHeader("pdfHeadingWithTitle", { number, title })
 					: tSectionHeader("pdfHeading", { number }),
 		}),
-		[project, tBlock, tSectionHeader],
+		[projectStore, tBlock, tSectionHeader],
 	);
 }

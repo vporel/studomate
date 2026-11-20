@@ -180,18 +180,20 @@
 		"addProgramOutro": "El menú Proyecto también agrupa \"Enunciado del ejercicio\" (cuando el proyecto lo tiene), \"Compartir\" / \"Gestionar el uso compartido\" (consulta la sección Cuentas y uso compartido) y \"Propiedades\".",
 		"exportTitle": "Exportar un proyecto",
 		"exportSubtitle": "Archivo → Exportar (Ctrl+E)",
-		"exportIntro": "Se abre una ventana que ofrece dos formatos:",
+		"exportIntro": "Se abre una ventana que ofrece tres formatos:",
 		"exportFormats": [
 			"Archivo de proyecto (JSON): una copia de seguridad externa de todo el proyecto, reimportable mediante Archivo → Abrir proyecto → \"Abrir desde un archivo...\".",
-			"PDF: un documento visual de los grafcets, los ladders y, opcionalmente, las tablas de variables (las páginas HMI no se incluyen)."
+			"PDF: un documento visual de los grafcets, los ladders y, opcionalmente, las tablas de variables (las páginas HMI no se incluyen).",
+			"Exportar imagen (PNG o SVG): una imagen por cada grafcet y ladder, sin portada ni tablas de variables."
 		],
 		"exportScopeIntro": "Para el PDF, dos alcances:",
 		"exportScopes": [
 			"Proyecto completo: una portada (nombre del proyecto, autor, fecha, estadísticas, enunciado si lo hay) y luego una página por cada grafcet/ladder marcado, cada una con su título. La portada se puede desmarcar. La casilla \"Tablas de variables\" (marcada de forma predeterminada) añade las tablas de variables, agrupadas por zona, después de los programas.",
 			"Solo la página activa: una única página titulada para el grafcet, el ladder o la página de variables abierto en ese momento (sin portada). No está disponible si no hay ningún programa abierto."
 		],
+		"exportImageBody": "Para la exportación de imagen, elija PNG o SVG y luego \"Varios programas\" (marque los que desea exportar) o \"Solo el programa activo\". Un grafcet da una imagen a su tamaño real. Un ladder se divide en imágenes del tamaño de una página A4 horizontal, con los sufijos _1, _2… cuando hacen falta varias. Varios programas, o un ladder repartido en varias imágenes, se agrupan en un archivo ZIP.",
 		"exportOutro": "El archivo se descarga automáticamente al final.",
-		"exportContextMenu": "Atajo: al hacer clic derecho en el fondo del lienzo de un grafcet o un ladder, aparece \"Exportar\", que genera directamente el PDF de ese único programa, sin pasar por esta ventana y sin portada.",
+		"exportContextMenu": "Atajos: el botón de exportación de la barra de herramientas de un grafcet o un ladder ofrece \"Exportar a PDF\", \"Exportar a PNG\" y \"Exportar a SVG\" para ese único programa. Al hacer clic derecho en el fondo del lienzo también aparece \"Exportar\", que genera directamente el PDF, sin portada.",
 		"closeTitle": "Cerrar un proyecto",
 		"closeBody": "Archivo → Cerrar proyecto (Ctrl+F4 en Windows/Linux, Cmd+W en macOS). Si hay cambios sin guardar, se te pedirá confirmación."
 	},

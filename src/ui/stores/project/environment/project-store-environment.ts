@@ -17,8 +17,8 @@ import type { SimulationMode } from "../simulation-mode.enum";
 
 /** What the interface around the project can offer. */
 export type ProjectCapabilities = {
-	/** A program or a table can be exported as a PDF file. */
-	pdfExport: boolean;
+	/** A program or a table can be exported (PDF, image, CSV). */
+	export: boolean;
 	/** The cross-reference panel exists to show where a variable is used. */
 	crossReference: boolean;
 	/** A board can be linked. */

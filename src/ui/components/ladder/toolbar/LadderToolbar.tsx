@@ -13,9 +13,9 @@ import AddIcon from "@mui/icons-material/Add";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { Box, Button, Divider, IconButton } from "@mui/material";
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import AnalyserToolbarItem from "@/ui/components/programs/AnalyserToolbarItem";
-import ExportProgramPdfTool from "@/ui/components/programs/ExportProgramPdfTool";
+import ExportProgramTool from "@/ui/components/programs/ExportProgramTool";
 import type { PdfExportProgramConfig } from "@/ui/pdf/usePdfExport";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useT } from "@/ui/i18n/useT";
@@ -23,7 +23,7 @@ import {
 	LADDER_FLOW_MAX_ZOOM,
 	LADDER_FLOW_MIN_ZOOM,
 } from "@/ui/stores/ladder/managers/view.manager";
-import { useLadderStore } from "../context/LadderContext";
+import { useLadderStore, useLadderStoreApi } from "../context/LadderContext";
 import CoilSymbol from "../nodes/CoilSymbol";
 import ContactSymbol from "../nodes/ContactSymbol";
 import { SYSTEM_BLOCK_CATALOG } from "@/ui/components/ladder/system-blocks/system-block-catalog";
@@ -79,11 +79,14 @@ const LadderToolbar = ({
 	const exclusionToggleAvailable = useProjectStore(
 		(state) => state.capabilities.programExecutionExclusionToggle,
 	);
-	const ladder = useLadderStore((state) => state.ladder);
-	const ladderId = ladder.id;
-	const exportConfig = useMemo<PdfExportProgramConfig>(
-		() => ({ type: "ladder", program: ladder }),
-		[ladder],
+	const ladderStore = useLadderStoreApi();
+	const ladderId = useLadderStore((state) => state.ladder.id);
+	const getExportConfig = useCallback(
+		(): PdfExportProgramConfig => ({
+			type: "ladder",
+			program: ladderStore.getState().ladder,
+		}),
+		[ladderStore],
 	);
 	const excludedFromExecution = useLadderStore(
 		(state) => state.ladder.excludedFromExecution,
@@ -269,7 +272,7 @@ const LadderToolbar = ({
 						}
 					/>
 				)}
-				<ExportProgramPdfTool config={exportConfig} />
+				<ExportProgramTool getConfig={getExportConfig} />
 				<ZoomControls
 					zoom={zoom}
 					zoomInLabel={t("zoomIn")}

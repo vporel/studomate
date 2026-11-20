@@ -94,7 +94,7 @@ export default function GridToolBar({
 	const exportMenuTriggerRef = React.useRef<HTMLButtonElement>(null);
 	const variablesManager = useProjectStore((state) => state.variablesManager);
 	const canEdit = useCanEdit();
-	const pdfExport = useProjectStore((state) => state.capabilities.pdfExport);
+	const canExport = useProjectStore((state) => state.capabilities.export);
 	const apiRef = useGridApiContext();
 
 	const exportPdf = () => {
@@ -218,7 +218,7 @@ export default function GridToolBar({
 					},
 				}}
 			>
-				{pdfExport && <MenuItem onClick={exportPdf}>{t("exportPdf")}</MenuItem>}
+				{canExport && <MenuItem onClick={exportPdf}>{t("exportPdf")}</MenuItem>}
 				<ExportCsv
 					render={<MenuItem />}
 					onClick={() => setExportMenuOpen(false)}

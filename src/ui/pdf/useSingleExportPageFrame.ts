@@ -2,7 +2,7 @@
 
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useT } from "@/ui/i18n/useT";
-import { PDF_PAGE_NUMBER, type PdfPageFrame } from "@/ui/lib/pdf/pdf-exporter";
+import { PDF_PAGE_NUMBER, type PdfPageFrame } from "@/ui/pdf/pdf-exporter";
 import { useCallback } from "react";
 
 /**

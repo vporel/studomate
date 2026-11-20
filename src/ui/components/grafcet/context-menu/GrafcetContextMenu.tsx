@@ -62,18 +62,18 @@ const GrafcetContextMenu = ({
 	const canPaste = useProjectClipboard((s) => s.entry?.scope === "grafcet");
 	const grafcet = useGrafcetStore((state) => state.grafcet);
 	const grafcetId = grafcet.id;
-	const exportConfig = useMemo<PdfExportProgramConfig>(
-		() => ({ type: "grafcet", program: grafcet }),
+	const getExportConfig = useCallback(
+		(): PdfExportProgramConfig => ({ type: "grafcet", program: grafcet }),
 		[grafcet],
 	);
 	const inSimulation = useProjectStore(
 		(state) => state.mode === ProjectMode.SIMULATION,
 	);
 	const canEdit = useCanEdit();
-	const pdfExport = useProjectStore((state) => state.capabilities.pdfExport);
+	const canExport = useProjectStore((state) => state.capabilities.export);
 	const simulationManager = useProjectStore((state) => state.simulationManager);
 	const forcedVariables = useProjectStore((state) => state.forcedVariables);
-	const onExport = useExportProgramPdf(exportConfig);
+	const onExport = useExportProgramPdf(getExportConfig);
 
 	const tMenuRaw = useT("grafcetEditor.menu");
 	const tActionTypesRaw = useT("grafcetEditor.actionTypes");
@@ -102,7 +102,7 @@ const GrafcetContextMenu = ({
 					screenPosition,
 					canPaste,
 					tMenu,
-					pdfExport ? onExport : null,
+					canExport ? onExport : null,
 				),
 			);
 		} else {
@@ -175,7 +175,7 @@ const GrafcetContextMenu = ({
 		screenPosition,
 		contextMenuEvents,
 		onExport,
-		pdfExport,
+		canExport,
 		inSimulation,
 		grafcet,
 		grafcetId,
@@ -192,7 +192,7 @@ const GrafcetContextMenu = ({
 		(props: GrafcetContextMenuProps) => {
 			const offersSomething =
 				props.element.type === "pane"
-					? canEdit || pdfExport
+					? canEdit || canExport
 					: canEdit || inSimulation;
 			if (!offersSomething) return;
 			setElement(props.element);
@@ -200,7 +200,7 @@ const GrafcetContextMenu = ({
 			setScreenPosition(props.screenPosition);
 			show();
 		},
-		[show, canEdit, pdfExport, inSimulation],
+		[show, canEdit, canExport, inSimulation],
 	);
 	useContextMenuBus(contextMenuEvents, showMenu, hide);
 

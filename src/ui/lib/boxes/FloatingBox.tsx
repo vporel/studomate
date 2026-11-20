@@ -19,10 +19,7 @@ export type FloatingBoxSize = { width: number; height: number };
 
 /** The corner of its parent a box is positioned from. */
 export type FloatingBoxAnchor =
-	| "top-left"
-	| "top-right"
-	| "bottom-left"
-	| "bottom-right";
+	"top-left" | "top-right" | "bottom-left" | "bottom-right";
 
 type ResizeDirection = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
 

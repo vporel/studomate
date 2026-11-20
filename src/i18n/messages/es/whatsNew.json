@@ -7,6 +7,10 @@
 		"spanishLanguage": {
 			"title": "Studomate ahora habla español",
 			"body": "La interfaz de la aplicación, el manual de usuario, la formación y las páginas del sitio ya están disponibles en español. Elige el idioma en Archivo → Preferencias o con el selector de idioma de las páginas del sitio. Un proyecto creado en español usa las palabras clave de expresión de la IEC 61131-3 (AND, OR, NOT)."
+		},
+		"imageExport": {
+			"title": "Exporte sus programas como imagen",
+			"body": "Los grafcets y los ladders ahora se pueden exportar a PNG o SVG, además de a PDF. El botón \"Exportar\" de la barra de herramientas ofrece el formato que prefiera, y la pestaña \"Exportar imagen\" de la ventana de exportación permite exportar varios programas a la vez. Un ladder grande se divide en imágenes A4 horizontales, agrupadas con las demás en un archivo ZIP."
 		}
 	}
 }

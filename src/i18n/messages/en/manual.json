@@ -180,18 +180,20 @@
 		"addProgramOutro": "The Project menu also groups \"Exercise statement\" (when the project has one), \"Share\" / \"Manage sharing\" (see the Accounts & sharing section) and \"Properties\".",
 		"exportTitle": "Export a project",
 		"exportSubtitle": "File → Export (Ctrl+E)",
-		"exportIntro": "A window opens offering two formats:",
+		"exportIntro": "A window opens offering three formats:",
 		"exportFormats": [
 			"Project file (JSON): an external backup of the whole project, re-importable via File → Open project → \"Open from a file…\".",
-			"PDF: a visual document of the grafcets, the ladders and, optionally, the variable tables (HMI pages are not included)."
+			"PDF: a visual document of the grafcets, the ladders and, optionally, the variable tables (HMI pages are not included).",
+			"Image export (PNG or SVG): one image per grafcet and per ladder, with no cover page or variable tables."
 		],
 		"exportScopeIntro": "For PDF, two scopes:",
 		"exportScopes": [
 			"Whole project: a cover page (project name, author, date, statistics, statement if any) then one page per checked grafcet/ladder, each page titled. The cover page can be unchecked. The \"Variable tables\" box (checked by default) adds the variable tables, grouped by zone, after the programs.",
 			"Active page only: a single titled page for the currently open grafcet, ladder or variables page (no cover page). Unavailable if no program is open."
 		],
+		"exportImageBody": "For image export, choose PNG or SVG, then \"Several programs\" (check the ones to export) or \"Active program only\". A grafcet gives one image at its actual size. A ladder is split into images the size of an A4 landscape page, suffixed _1, _2… whenever several are needed. Several programs, or a ladder spread over several images, are bundled into a ZIP archive.",
 		"exportOutro": "The file is downloaded automatically at the end.",
-		"exportContextMenu": "Shortcut: right-clicking the background of a grafcet or ladder canvas offers \"Export\", which generates the PDF of that single program directly, bypassing this window and with no cover page.",
+		"exportContextMenu": "Shortcuts: the export button in a grafcet or ladder toolbar offers \"Export as PDF\", \"Export as PNG\" and \"Export as SVG\" for that single program. Right-clicking the canvas background also offers \"Export\", which generates the PDF directly, with no cover page.",
 		"closeTitle": "Close a project",
 		"closeBody": "File → Close project (Ctrl+F4 on Windows/Linux, Cmd+W on macOS). If there are unsaved changes, you'll be asked to confirm."
 	},

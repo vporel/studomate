@@ -1,5 +1,5 @@
 import { Scene } from "@/ui/lib/drawing/draw-op";
-import { PdfTableModel } from "./pdf-table";
+import { PdfTableModel } from "@/ui/lib/pdf/pdf-table";
 
 export type PdfExportOrientation = "portrait" | "landscape";
 
@@ -44,27 +44,29 @@ export interface PdfExportSection {
 	table?: PdfTableModel;
 }
 
-/** Numéro de page « n/N » à placer dans une zone du cadre : `{page_number}` et `{pages_count}` y sont remplacés
- * à chaque page (la page de garde compte). */
-export const PDF_PAGE_NUMBER = "{page_number}/{pages_count}";
+/** Page number "n/N" to place in a frame zone, computed on each page (the cover pages count). Any
+ * other zone text is drawn verbatim. */
+export const PDF_PAGE_NUMBER = Symbol("pdfPageNumber");
 
-/** Texte courant répété sur chaque page : trois zones (gauche, centre, droite) dans l'en-tête et
- * dans le pied de page. */
+export type PdfFrameText = string | typeof PDF_PAGE_NUMBER;
+
+/** Running text repeated on every page: three zones (left, center, right) in the header and in
+ * the footer. */
 export interface PdfPageFrame {
-	headerLeft?: string;
-	headerCenter?: string;
-	headerRight?: string;
-	footerLeft?: string;
-	footerCenter?: string;
-	footerRight?: string;
+	headerLeft?: PdfFrameText;
+	headerCenter?: PdfFrameText;
+	headerRight?: PdfFrameText;
+	footerLeft?: PdfFrameText;
+	footerCenter?: PdfFrameText;
+	footerRight?: PdfFrameText;
 }
 
 export interface PdfExportDocument {
 	filename: string;
 	cover?: PdfCoverPage;
 	pageFrame?: PdfPageFrame;
-	/** Remplace `pageFrame` sur la première page (ex. la page de garde). */
-	firstPageFrame?: PdfPageFrame;
+	/** Replaces `pageFrame` on every page of the cover (a long statement can run over several). */
+	coverPageFrame?: PdfPageFrame;
 	sections: PdfExportSection[];
 }
 

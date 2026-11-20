@@ -7,6 +7,7 @@ import WHATS_NEW_SLIDE_IDS, {
 	type WhatsNewSlideId,
 } from "@/whats-new/whats-new-slides";
 import CloseIcon from "@mui/icons-material/Close";
+import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
 import TranslateIcon from "@mui/icons-material/Translate";
 import {
 	Box,
@@ -22,6 +23,7 @@ import { useState } from "react";
 
 const SLIDE_ICONS: Record<WhatsNewSlideId, typeof TranslateIcon> = {
 	spanishLanguage: TranslateIcon,
+	imageExport: ImageOutlinedIcon,
 };
 
 export default function WhatsNewModal({ onClose }: { onClose: () => void }) {

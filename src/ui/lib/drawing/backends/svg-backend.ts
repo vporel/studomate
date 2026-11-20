@@ -78,7 +78,10 @@ function opToSvg(op: DrawOp): string {
  */
 export function sceneToSvg(
 	scene: Scene,
-	{ scale = 1, background = true }: { scale?: number; background?: boolean } = {},
+	{
+		scale = 1,
+		background = true,
+	}: { scale?: number; background?: boolean } = {},
 ): string {
 	const body = scene.ops.map(opToSvg).join("\n\t");
 	return [

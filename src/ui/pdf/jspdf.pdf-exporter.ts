@@ -1,16 +1,22 @@
 import { renderSceneToJsPdf } from "@/ui/lib/drawing/backends/jspdf-backend";
-import { LADDER_ZOOM } from "@/ui/pdf/drawing/ladder-scene";
+import layoutLadderFlow, {
+	maxDescriptionLines,
+	truncateDescriptionLines,
+} from "./drawing/ladder-flow-layout";
+import { LADDER_ZOOM } from "./drawing/ladder-scene";
 import { mmToPx } from "@/ui/lib/screen-units";
 import type { jsPDF } from "jspdf";
-import renderMarkdownToPdf from "./markdown-to-pdf";
+import renderMarkdownToPdf from "@/ui/lib/pdf/markdown-to-pdf";
 import {
 	PdfCoverPage,
 	PdfExportDocument,
 	PdfExporter,
 	PdfExportSection,
+	PdfFrameText,
 	PdfPageFrame,
+	PDF_PAGE_NUMBER,
 } from "./pdf-exporter";
-import { drawPdfTable } from "./pdf-table";
+import { drawPdfTable } from "@/ui/lib/pdf/pdf-table";
 
 /** Largeur et hauteur d'une page A4 en mm. */
 const A4_WIDTH_MM = 210;
@@ -29,10 +35,10 @@ const SECTION_DESC_FONT_PT = 9;
 const SECTION_DESC_LINE_MM = 4;
 /** Espace entre la description d'une section et son dessin, en mm. */
 const SECTION_DESC_GAP_MM = 2;
-/** Corps et niveau de gris (0-255) de l'en-tête et du pied de page. */
+/** Font size and grey level (0-255) of the header and footer. */
 const FRAME_FONT_PT = 9;
 const FRAME_GREY = 110;
-/** Distance entre le bord de la page et la ligne de base de l'en-tête / du pied de page, en mm. */
+/** Distance between the page edge and the baseline of the header / footer, in mm. */
 const FRAME_EDGE_MM = 9;
 /** Niveau de gris (0-255) du trait séparant deux sections de ladder sur une même page. */
 const SECTION_SEPARATOR_GREY = 180;
@@ -59,9 +65,11 @@ export class JsPdfExporter implements PdfExporter {
 			firstPage = false;
 		};
 
+		let coverPages = 0;
 		if (document.cover) {
 			startPage("portrait");
 			await this.drawCover(doc, document.cover);
+			coverPages = doc.getNumberOfPages();
 		}
 
 		for (const section of document.sections) {
@@ -78,7 +86,10 @@ export class JsPdfExporter implements PdfExporter {
 		}
 
 		if (document.pageFrame)
-			this.drawPageFrames(doc, document.pageFrame, document.firstPageFrame);
+			this.drawPageFrames(doc, document.pageFrame, {
+				frame: document.coverPageFrame,
+				pages: coverPages,
+			});
 
 		doc.save(`${document.filename}.pdf`);
 	}
@@ -86,7 +97,7 @@ export class JsPdfExporter implements PdfExporter {
 	private drawPageFrames(
 		doc: jsPDF,
 		pageFrame: PdfPageFrame,
-		firstPageFrame?: PdfPageFrame,
+		cover: { frame?: PdfPageFrame; pages: number },
 	): void {
 		doc.setFont("helvetica", "normal");
 		doc.setFontSize(FRAME_FONT_PT);
@@ -94,13 +105,14 @@ export class JsPdfExporter implements PdfExporter {
 		const total = doc.getNumberOfPages();
 		for (let page = 1; page <= total; page++) {
 			doc.setPage(page);
-			const frame = page === 1 && firstPageFrame ? firstPageFrame : pageFrame;
+			const frame =
+				page <= cover.pages && cover.frame ? cover.frame : pageFrame;
 			const width = doc.internal.pageSize.getWidth();
 			const height = doc.internal.pageSize.getHeight();
 			const headerY = FRAME_EDGE_MM;
 			const footerY = height - FRAME_EDGE_MM;
 			const zones: [
-				string | undefined,
+				PdfFrameText | undefined,
 				number,
 				number,
 				"left" | "center" | "right",
@@ -115,9 +127,7 @@ export class JsPdfExporter implements PdfExporter {
 			for (const [text, x, y, align] of zones) {
 				if (text)
 					doc.text(
-						text
-							.replaceAll("{page_number}", String(page))
-							.replaceAll("{pages_count}", String(total)),
+						text === PDF_PAGE_NUMBER ? `${page}/${total}` : text,
 						x,
 						y,
 						{ align },
@@ -225,29 +235,31 @@ export class JsPdfExporter implements PdfExporter {
 	}
 
 	/**
-	 * Ladder : les sections coulent sur les pages à une **échelle commune** et sont **calées à
-	 * gauche** — la barre d'alimentation garde donc la même abscisse d'une page à l'autre.
-	 * Nouvelle page dès qu'une section ne tient plus.
-	 *
-	 * L'échelle est celle qui fait tenir la section la plus large sur la largeur de page
-	 * (plafonnée par `LADDER_ZOOM`), **puis abaissée si besoin** pour que la section la plus
-	 * haute tienne sur une page entière : sinon une section trop haute placée en haut de page
-	 * serait dessinée sous le bord et ses dernières sections seraient perdues.
+	 * Ladder: the sections flow over the pages following `layoutLadderFlow` (common scale,
+	 * left-aligned, a new page as soon as a section no longer fits).
 	 */
 	private drawLadderFlow(doc: jsPDF, section: PdfExportSection): void {
 		const pageWidth = A4_HEIGHT_MM;
 		const pageHeight = A4_WIDTH_MM;
 		const availableWidth = pageWidth - 2 * MARGIN_MM;
-		const bottom = pageHeight - MARGIN_MM;
 		const sections = section.ladderSections!;
 
-		// Lignes de description enroulées et hauteur du bloc d'en-tête (intitulé + description),
-		// par section — l'échelle commune et les sauts de page doivent en tenir compte.
 		doc.setFont("helvetica", "normal");
 		doc.setFontSize(SECTION_DESC_FONT_PT);
+		const maxLines = maxDescriptionLines({
+			pageHeight,
+			margin: MARGIN_MM,
+			firstPageTop: MARGIN_MM + TITLE_BAND_MM,
+			headingHeight: SECTION_HEADING_MM,
+			lineHeight: SECTION_DESC_LINE_MM,
+			descriptionGap: SECTION_DESC_GAP_MM,
+		});
 		const headings = sections.map(({ description }) => {
-			const lines: string[] = description
-				? (doc.splitTextToSize(description, availableWidth) as string[])
+			const lines = description
+				? truncateDescriptionLines(
+						doc.splitTextToSize(description, availableWidth) as string[],
+						maxLines,
+					)
 				: [];
 			const blockHeight =
 				SECTION_HEADING_MM +
@@ -257,36 +269,40 @@ export class JsPdfExporter implements PdfExporter {
 			return { lines, blockHeight };
 		});
 
-		const maxSceneWidth = Math.max(1, ...sections.map((s) => s.scene.width));
-		const minSceneWidth = mmToPx(A4_HEIGHT_MM) / LADDER_ZOOM;
-		const widthScale = availableWidth / Math.max(maxSceneWidth, minSceneWidth);
-
-		const maxSceneHeight = Math.max(1, ...sections.map((s) => s.scene.height));
-		const maxHeadingHeight = Math.max(...headings.map((h) => h.blockHeight));
-		const availableSectionHeight = bottom - MARGIN_MM - maxHeadingHeight;
-		const heightScale = availableSectionHeight / maxSceneHeight;
-
-		const scale = Math.min(widthScale, heightScale);
+		const { scale, placements } = layoutLadderFlow({
+			blocks: sections.map(({ scene }, i) => ({
+				headerHeight: headings[i].blockHeight,
+				sceneWidth: scene.width,
+				sceneHeight: scene.height,
+			})),
+			pageWidth,
+			pageHeight,
+			margin: MARGIN_MM,
+			firstPageTop: MARGIN_MM + TITLE_BAND_MM,
+			gap: SECTION_GAP_MM,
+			minSceneWidth: mmToPx(A4_HEIGHT_MM) / LADDER_ZOOM,
+		});
 
 		this.pageTitle(doc, section.title, pageWidth);
-		let y = MARGIN_MM + TITLE_BAND_MM;
 
+		let currentPage = 0;
 		sections.forEach(({ heading, scene }, i) => {
-			const { lines, blockHeight: headingHeight } = headings[i];
-			const blockHeight = scene.height * scale;
-			const needed = headingHeight + blockHeight;
-			const atPageTop = y <= MARGIN_MM + TITLE_BAND_MM + 0.01;
-			let startedNewPage = false;
-			if (!atPageTop && y + needed > bottom) {
+			const { lines } = headings[i];
+			const placement = placements[i];
+			if (placement.page !== currentPage) {
 				doc.addPage("a4", "landscape");
-				y = MARGIN_MM;
-				startedNewPage = true;
+				currentPage = placement.page;
 			}
+			let y = placement.y;
 
-			if (i > 0 && !startedNewPage) {
-				const sepY = y - SECTION_GAP_MM / 2;
+			if (placement.separatorY !== null) {
 				doc.setDrawColor(SECTION_SEPARATOR_GREY);
-				doc.line(MARGIN_MM, sepY, pageWidth - MARGIN_MM, sepY);
+				doc.line(
+					MARGIN_MM,
+					placement.separatorY,
+					pageWidth - MARGIN_MM,
+					placement.separatorY,
+				);
 				doc.setDrawColor(0);
 			}
 
@@ -303,7 +319,6 @@ export class JsPdfExporter implements PdfExporter {
 			}
 
 			renderSceneToJsPdf(doc, scene, { x: MARGIN_MM, y, scale });
-			y += blockHeight + SECTION_GAP_MM;
 		});
 	}
 }

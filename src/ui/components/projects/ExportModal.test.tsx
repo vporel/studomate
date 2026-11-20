@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import { PDF_PAGE_NUMBER } from "@/ui/pdf/pdf-exporter";
 import { Dialect } from "@/expression-language/dialect.enum";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { fireEvent, screen } from "@testing-library/react";
@@ -75,10 +76,10 @@ describe("ExportModal", () => {
 		expect(options.pageFrame).toEqual({
 			headerLeft: "Mon projet",
 			footerLeft: undefined,
-			footerRight: "{page_number}/{pages_count}",
+			footerRight: PDF_PAGE_NUMBER,
 		});
-		expect(options.firstPageFrame).toEqual({
-			footerRight: "{page_number}/{pages_count}",
+		expect(options.coverPageFrame).toEqual({
+			footerRight: PDF_PAGE_NUMBER,
 		});
 	});
 
@@ -161,7 +162,7 @@ describe("ExportModal", () => {
 		fireEvent.click(screen.getByRole("button", { name: "Exporter" }));
 
 		const options = startExport.mock.calls[0][2];
-		expect(options.firstPageFrame).toBeUndefined();
+		expect(options.coverPageFrame).toBeUndefined();
 		expect(options.pageFrame.headerLeft).toBe("Mon projet");
 	});
 
@@ -215,7 +216,7 @@ describe("ExportModal", () => {
 		expect(options.pageFrame).toMatchObject({
 			headerLeft: "Mon projet",
 			footerLeft: expect.stringMatching(/^Exporté le /),
-			footerRight: "{page_number}/{pages_count}",
+			footerRight: PDF_PAGE_NUMBER,
 		});
 	});
 });

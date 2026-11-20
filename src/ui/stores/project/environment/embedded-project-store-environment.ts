@@ -67,7 +67,7 @@ export default function createEmbeddedProjectStoreEnvironment({
 	return {
 		getLocale: () => locale,
 		capabilities: {
-			pdfExport: false,
+			export: false,
 			crossReference: false,
 			programExecutionExclusionToggle: false,
 		},

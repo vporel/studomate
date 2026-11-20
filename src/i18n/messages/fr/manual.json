@@ -180,18 +180,20 @@
 		"addProgramOutro": "Le menu Projet regroupe aussi « Énoncé de l'exercice » (si le projet en a un), « Partager » / « Gérer le partage » (voir la section Comptes & partage) et « Propriétés ».",
 		"exportTitle": "Exporter un projet",
 		"exportSubtitle": "Fichier → Exporter (Ctrl+E)",
-		"exportIntro": "Une fenêtre s'ouvre vous proposant deux formats :",
+		"exportIntro": "Une fenêtre s'ouvre vous proposant trois formats :",
 		"exportFormats": [
 			"Fichier projet (JSON) : sauvegarde externe du projet entier, réimportable via Fichier → Ouvrir projet → « Ouvrir depuis un fichier… ».",
-			"PDF : un document visuel des grafcets, des ladders et, en option, des tables de variables (les pages HMI n'y figurent pas)."
+			"PDF : un document visuel des grafcets, des ladders et, en option, des tables de variables (les pages HMI n'y figurent pas).",
+			"Export image (PNG ou SVG) : une image par grafcet et par ladder, sans page de garde ni tables de variables."
 		],
 		"exportScopeIntro": "Pour le PDF, deux portées :",
 		"exportScopes": [
 			"Projet complet : une page de garde (nom du projet, auteur, date, statistiques, énoncé s'il y en a un) puis une page par grafcet/ladder coché, chaque page titrée. La page de garde peut être décochée. La case « Tables de variables » (cochée par défaut) ajoute les tables de variables, regroupées par zone, après les programmes.",
 			"Page active uniquement : une seule page, titrée, pour le grafcet, le ladder ou la page de variables actuellement ouvert (sans page de garde). Indisponible si aucun programme n'est ouvert."
 		],
+		"exportImageBody": "Pour l'export image, choisissez PNG ou SVG, puis « Plusieurs programmes » (cochez ceux à exporter) ou « Programme actif uniquement ». Un grafcet donne une image à sa taille réelle. Un ladder est découpé en images au format d'une page A4 paysage, suffixées _1, _2… dès qu'il en faut plusieurs. Plusieurs programmes, ou un ladder sur plusieurs images, sont regroupés dans une archive ZIP.",
 		"exportOutro": "Le fichier est téléchargé automatiquement à la fin.",
-		"exportContextMenu": "Raccourci : un clic droit sur le fond du canvas d'un grafcet ou d'un ladder propose « Exporter », qui génère directement le PDF de ce seul programme, sans passer par cette fenêtre et sans page de garde.",
+		"exportContextMenu": "Raccourcis : le bouton d'export de la barre d'outils d'un grafcet ou d'un ladder propose « Exporter en PDF », « Exporter en PNG » et « Exporter en SVG » pour ce seul programme. Un clic droit sur le fond du canvas propose aussi « Exporter », qui génère directement le PDF, sans page de garde.",
 		"closeTitle": "Fermer un projet",
 		"closeBody": "Fichier → Fermer le projet (Ctrl+F4 sur Windows/Linux, Cmd+W sur macOS). Si des modifications non sauvegardées existent, une confirmation est demandée."
 	},

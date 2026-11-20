@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import { PDF_PAGE_NUMBER } from "@/ui/pdf/pdf-exporter";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { i18nWrapper } from "@tests/utils/i18n";
 import { selectorImplementation } from "@tests/utils/store-mocks";
@@ -34,14 +35,14 @@ function setup(config: PdfExportProgramConfig, projectName = "Projet") {
 			project: { name: projectName, author: "Alice" },
 		}),
 	);
-	return renderHook(() => useExportProgramPdf(config), {
+	return renderHook(() => useExportProgramPdf(() => config), {
 		wrapper: i18nWrapper(),
 	});
 }
 
 const pageFrame = {
 	headerLeft: "Projet",
-	footerRight: "{page_number}/{pages_count}",
+	footerRight: PDF_PAGE_NUMBER,
 	footerLeft: expect.stringMatching(/^Auteur : Alice \u2014 Exporté le /),
 };
 
@@ -102,5 +103,21 @@ describe("useExportProgramPdf", () => {
 
 		await waitFor(() => expect(toast.error).toHaveBeenCalled());
 		expect(trackPdfExported).not.toHaveBeenCalled();
+	});
+
+	it("reads the program when the export starts", async () => {
+		let current = grafcetConfig;
+		(useProjectStore as unknown as jest.Mock).mockImplementation(
+			selectorImplementation({ project: { name: "Projet" } }),
+		);
+		const { result } = renderHook(() => useExportProgramPdf(() => current), {
+			wrapper: i18nWrapper(),
+		});
+		current = ladderConfig;
+
+		act(() => result.current());
+
+		await waitFor(() => expect(exportProgramPdf).toHaveBeenCalled());
+		expect(exportProgramPdf.mock.calls[0][0].config).toBe(ladderConfig);
 	});
 });
