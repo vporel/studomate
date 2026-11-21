@@ -1,5 +1,9 @@
 import { Dialect } from "@/expression-language/dialect.enum";
 import { Lexer } from "@/expression-language/lexer/lexer";
+import BlocksBuilder from "@/expression-language/ast/builders/blocks.builder";
+import ControlsBuilder from "@/expression-language/ast/builders/controls.builder";
+import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
+import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
 import Parser from "@/expression-language/parser/parser";
 import {
 	getNumericRange,
@@ -29,7 +33,9 @@ describe("NumericTypeAnalyserVisitor", () => {
 		]),
 	);
 	const typeOf = (expression: string) =>
-		analyser.visit(new Parser(new Lexer(Dialect.FR).tokenize(expression)).parse());
+		analyser.visit(
+			new Parser(new Lexer(Dialect.FR).tokenize(expression)).parse(),
+		);
 
 	it("type d'une variable : son type déclaré, ANY_NUM sans type déclaré", () => {
 		expect(typeOf("d")).toEqual({ type: "DINT" });
@@ -56,5 +62,64 @@ describe("NumericTypeAnalyserVisitor", () => {
 
 	it("une conversion a pour type sa cible", () => {
 		expect(typeOf("DINT_TO_INT(d)")).toEqual({ type: "INT" });
+	});
+
+	it("une comparaison, une opération logique et un texte sont sans type numérique", () => {
+		expect(typeOf("i = 1")).toEqual({ type: "ANY_NUM" });
+		expect(typeOf("VRAI ET FAUX")).toEqual({ type: "ANY_NUM" });
+		expect(typeOf('"abc"')).toEqual({ type: "ANY_NUM" });
+	});
+
+	it("un moins unaire garde le type et nie la valeur d'une constante", () => {
+		expect(typeOf("-i")).toEqual({ type: "INT" });
+		expect(typeOf("-(2 + 3)")).toEqual({ type: "ANY_INT", value: -5 });
+	});
+
+	it("une affectation a le type de sa partie droite", () => {
+		expect(typeOf("d := 5")).toEqual({ type: "ANY_INT", value: 5 });
+		expect(typeOf("d := i")).toEqual({ type: "INT" });
+	});
+
+	it("un SI, une tempo et un compteur sont sans type numérique", () => {
+		const id = (name: string) => IdentifiersBuilder.buildIdentifierNode(name);
+		expect(
+			analyser.visit(
+				ControlsBuilder.buildIfControlNode(
+					LiteralsBuilder.buildBooleanNode(true),
+					[],
+					null,
+				),
+			),
+		).toEqual({ type: "ANY_NUM" });
+		expect(
+			analyser.visit(
+				BlocksBuilder.buildTimerNode(
+					"TON",
+					id("a"),
+					id("b"),
+					id("c"),
+					id("d"),
+					id("e"),
+				),
+			),
+		).toEqual({ type: "ANY_NUM" });
+		expect(
+			analyser.visit(
+				BlocksBuilder.buildTimerStringDeclarationNode("t", id("a"), 1000),
+			),
+		).toEqual({ type: "ANY_NUM" });
+		expect(
+			analyser.visit(
+				BlocksBuilder.buildCounterNode(
+					"CTU",
+					id("a"),
+					id("b"),
+					id("c"),
+					id("d"),
+					id("e"),
+					id("f"),
+				),
+			),
+		).toEqual({ type: "ANY_NUM" });
 	});
 });

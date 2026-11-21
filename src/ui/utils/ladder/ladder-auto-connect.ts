@@ -30,6 +30,15 @@ export function computeAutoConnectionsForElements(
 	// Pour éviter de chercher dans le vide ou de créer des doublons de rails
 	const addedRails = new Map<number, LadderElement>();
 
+	const addUnique = (connection: Connection) => {
+		const exists = connectionsToAdd.some(
+			(c) =>
+				c.source.id === connection.source.id &&
+				c.target.id === connection.target.id,
+		);
+		if (!exists) connectionsToAdd.push(connection);
+	};
+
 	const getElement = (id: string) =>
 		elementsToPlace.find((e) => e.id === id) ||
 		newRailsToAdd.find((e) => e.id === id) ||
@@ -80,19 +89,19 @@ export function computeAutoConnectionsForElements(
 			if (crossings.through) {
 				const throughSource = section.getElement(crossings.through.source.id);
 				const throughTarget = section.getElement(crossings.through.target.id);
-				if (throughSource) connectionsToAdd.push(connectionTo(throughSource));
-				if (throughTarget) connectionsToAdd.push(connectionFrom(throughTarget));
+				if (throughSource) addUnique(connectionTo(throughSource));
+				if (throughTarget) addUnique(connectionFrom(throughTarget));
 				connectionsToRemove.push(crossings.through);
 			} else {
 				const leftSource =
 					crossings.left && section.getElement(crossings.left.source.id);
-				if (leftSource) connectionsToAdd.push(connectionTo(leftSource));
+				if (leftSource) addUnique(connectionTo(leftSource));
 
 				const rightTarget =
 					crossings.right &&
 					newElement.type !== "coil" &&
 					section.getElement(crossings.right.target.id);
-				if (rightTarget) connectionsToAdd.push(connectionFrom(rightTarget));
+				if (rightTarget) addUnique(connectionFrom(rightTarget));
 			}
 		} else {
 			// 1. Voisin de gauche
@@ -131,7 +140,7 @@ export function computeAutoConnectionsForElements(
 			}
 
 			if (leftSource) {
-				connectionsToAdd.push(connectionTo(leftSource));
+				addUnique(connectionTo(leftSource));
 			}
 
 			// 2. Voisin de droite
@@ -146,7 +155,7 @@ export function computeAutoConnectionsForElements(
 					);
 
 				if (rightNeighbor) {
-					connectionsToAdd.push(connectionFrom(rightNeighbor));
+					addUnique(connectionFrom(rightNeighbor));
 				}
 			}
 		}

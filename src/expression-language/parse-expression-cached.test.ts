@@ -23,6 +23,13 @@ describe("parseExpressionCached", () => {
 		expect(b).toBe(a);
 	});
 
+	it("ne partage pas l'entrée de deux expressions qui ne diffèrent que par leurs espaces internes", () => {
+		const a = parseExpressionCached("a ET b", Dialect.FR);
+		const b = parseExpressionCached("a  ET  b", Dialect.FR);
+
+		expect(b).not.toBe(a);
+	});
+
 	it("sépare les entrées par dialecte", () => {
 		const fr = parseExpressionCached("a ET b", Dialect.FR);
 		const en = parseExpressionCached("a AND b", Dialect.EN);

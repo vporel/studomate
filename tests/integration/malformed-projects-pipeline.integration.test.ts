@@ -1,7 +1,12 @@
 import { ActionExecutionMode } from "@/schemas/grafcet/action.schema";
+import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
-import { createCoilElement, createContactElement, createRailTerminalElement } from "@/schemas/ladder/element.schema";
+import {
+	createCoilElement,
+	createContactElement,
+	createRailTerminalElement,
+} from "@/schemas/ladder/element.schema";
 import { wireInSeries, wireLadderIntoMain } from "@tests/utils/ladder-factory";
 import Project from "@/schemas/project/project.schema";
 import { GrafcetFactory } from "@tests/utils/grafcet-factory";
@@ -41,19 +46,46 @@ describe("Projets malformés — analyse rouge, pas de crash aval", () => {
 	it("grafcet sans étape initiale", () => {
 		const grafcet = cycle();
 		grafcet.steps["g-step-0"].data.initial = false;
-		expectCaughtByAnalyser(ProjectFactory.createWithGrafcets([grafcet]), "GRAFCET_NO_INITIAL_STEP");
+		expectCaughtByAnalyser(
+			ProjectFactory.createWithGrafcets([grafcet]),
+			"GRAFCET_NO_INITIAL_STEP",
+		);
 	});
 
 	it("grafcet à étapes initiales multiples", () => {
 		const grafcet = cycle();
 		grafcet.steps["g-step-1"].data.initial = true;
-		expectCaughtByAnalyser(ProjectFactory.createWithGrafcets([grafcet]), "GRAFCET_MULTIPLE_INITIAL_STEPS");
+		expectCaughtByAnalyser(
+			ProjectFactory.createWithGrafcets([grafcet]),
+			"GRAFCET_MULTIPLE_INITIAL_STEPS",
+		);
 	});
 
 	it("numéros d'étape dupliqués dans un grafcet", () => {
 		const grafcet = cycle();
 		grafcet.steps["g-step-1"].data.number = 0;
-		expectCaughtByAnalyser(ProjectFactory.createWithGrafcets([grafcet]), "STEP_NUMBER_DUPLICATE");
+		expectCaughtByAnalyser(
+			ProjectFactory.createWithGrafcets([grafcet]),
+			"STEP_NUMBER_DUPLICATE",
+		);
+	});
+
+	it("étape sans numéro", () => {
+		const grafcet = cycle();
+		grafcet.steps["g-step-1"].data.number = "";
+		expectCaughtByAnalyser(
+			ProjectFactory.createWithGrafcets([grafcet]),
+			"STEP_NUMBER_MISSING",
+		);
+	});
+
+	it("étape au numéro non entier positif", () => {
+		const grafcet = cycle();
+		grafcet.steps["g-step-1"].data.number = -3;
+		expectCaughtByAnalyser(
+			ProjectFactory.createWithGrafcets([grafcet]),
+			"STEP_NUMBER_NOT_POSITIVE_INTEGER",
+		);
 	});
 
 	it("étape en impasse (transition aval retirée)", () => {
@@ -61,12 +93,20 @@ describe("Projets malformés — analyse rouge, pas de crash aval", () => {
 		grafcet.connections = grafcet.connections.filter(
 			(c) => !(c.source.id === "g-step-1" && c.target.id === "g-trans-1"),
 		);
-		expectCaughtByAnalyser(ProjectFactory.createWithGrafcets([grafcet]), "STEP_NO_SUCCESSOR");
+		expectCaughtByAnalyser(
+			ProjectFactory.createWithGrafcets([grafcet]),
+			"STEP_NO_SUCCESSOR",
+		);
 	});
 
 	it("étape inatteignable (aucun chemin depuis l'étape initiale)", () => {
 		const grafcet = cycle();
-		const orphan = new StepBuilder().id("g-step-2").number(2).initial(false).position(400, 400).build();
+		const orphan = new StepBuilder()
+			.id("g-step-2")
+			.number(2)
+			.initial(false)
+			.position(400, 400)
+			.build();
 		grafcet.steps["g-step-2"] = orphan;
 		expectCaughtByAnalyser(ProjectFactory.createWithGrafcets([grafcet]), [
 			"GRAFCET_UNREACHABLE_STEPS",
@@ -74,9 +114,77 @@ describe("Projets malformés — analyse rouge, pas de crash aval", () => {
 		]);
 	});
 
+	describe("jonction OU de divergence malformée", () => {
+		const orCycle = () =>
+			GrafcetFactory.createOrDivergenceCycle("g", "VRAI", "VRAI");
+
+		function probe(mutate: (grafcet: Grafcet) => void) {
+			const grafcet = orCycle();
+			mutate(grafcet);
+			let pipeline: ReturnType<typeof compilePipelineDetailed>;
+			expect(() => {
+				pipeline = compilePipelineDetailed(
+					ProjectFactory.createWithGrafcets([grafcet]),
+				);
+			}).not.toThrow();
+			return pipeline!.analysis.issues
+				.filter((i) => i.severity === "error")
+				.map((i) => i.code);
+		}
+
+		it("branche reliée à une étape", () => {
+			const codes = probe((grafcet) => {
+				const connection = grafcet.connections.find(
+					(c) => c.source.id === "g-jor-start",
+				)!;
+				connection.target = {
+					id: "g-step-1",
+					type: "step",
+					handle: "target:predecessor",
+				};
+			});
+			expect(codes).toContain("GRAFCET_CONNECTION_INVALID_TYPE");
+			expect(codes).toContain("JUNCTION_OR_START_BRANCH_NOT_TRANSITION");
+		});
+
+		it("pivot alimenté par une transition", () => {
+			const codes = probe((grafcet) => {
+				const connection = grafcet.connections.find(
+					(c) => c.target.id === "g-jor-start",
+				)!;
+				connection.source = {
+					id: "g-trans-1",
+					type: "transition",
+					handle: "source:successor",
+				};
+			});
+			expect(codes).toContain("GRAFCET_CONNECTION_INVALID_TYPE");
+		});
+
+		it("pivot alimenté par deux étapes", () => {
+			const codes = probe((grafcet) => {
+				const existing = grafcet.connections.find(
+					(c) => c.target.id === "g-jor-start",
+				)!;
+				grafcet.connections.push(
+					new ConnectionBuilder()
+						.id("extra")
+						.source("step", "g-step-1", "source:successor")
+						.target("junction-or-start", "g-jor-start", existing.target.handle)
+						.build(),
+				);
+			});
+			expect(codes).toContain("STEP_MULTIPLE_SUCCESSORS");
+		});
+	});
+
 	it("action numérique sur une variable booléenne", () => {
 		const bool = VariableFactory.createMemoryBool("B");
-		const grafcet = GrafcetFactory.createNumericActionCycle("g", "B := 1", ActionExecutionMode.CONTINUOUS);
+		const grafcet = GrafcetFactory.createNumericActionCycle(
+			"g",
+			"B := 1",
+			ActionExecutionMode.CONTINUOUS,
+		);
 		expectCaughtByAnalyser(ProjectFactory.create([bool], [grafcet]), [
 			"ACTION_NUMERIC_TYPE_MISMATCH",
 			"ACTION_INVALID_EXPRESSION",
@@ -85,8 +193,18 @@ describe("Projets malformés — analyse rouge, pas de crash aval", () => {
 
 	it("action qui écrit une variable d'entrée", () => {
 		const input = VariableFactory.createLogicInput("I0");
-		const grafcet = GrafcetFactory.createCycleWithBooleanActions("g", "I0", "", "VRAI", "VRAI", ActionExecutionMode.SET);
-		expectCaughtByAnalyser(ProjectFactory.create([input], [grafcet]), "ACTION_VARIABLE_IS_INPUT");
+		const grafcet = GrafcetFactory.createCycleWithBooleanActions(
+			"g",
+			"I0",
+			"",
+			"VRAI",
+			"VRAI",
+			ActionExecutionMode.SET,
+		);
+		expectCaughtByAnalyser(
+			ProjectFactory.create([input], [grafcet]),
+			"ACTION_VARIABLE_IS_INPUT",
+		);
 	});
 
 	it("bobine Ladder pilotant une variable d'entrée", () => {
@@ -117,11 +235,17 @@ describe("Projets malformés — analyse rouge, pas de crash aval", () => {
 	});
 
 	it("action qui affecte une variable système `_SYS_` en lecture seule", () => {
-		const grafcet = GrafcetFactory.createNumericActionCycle("g", "_SYS_TB_200ms := VRAI", ActionExecutionMode.CONTINUOUS);
+		const grafcet = GrafcetFactory.createNumericActionCycle(
+			"g",
+			"_SYS_TB_200ms := VRAI",
+			ActionExecutionMode.CONTINUOUS,
+		);
 		let pipeline: ReturnType<typeof compilePipelineDetailed>;
 		expect(() => {
 			pipeline = compilePipelineDetailed(ProjectFactory.create([], [grafcet]));
 		}).not.toThrow();
-		expect(pipeline!.analysis.issues.filter((i) => i.severity === "error").length).toBeGreaterThan(0);
+		expect(
+			pipeline!.analysis.issues.filter((i) => i.severity === "error").length,
+		).toBeGreaterThan(0);
 	});
 });

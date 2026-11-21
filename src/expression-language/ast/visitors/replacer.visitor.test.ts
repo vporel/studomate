@@ -561,4 +561,103 @@ describe("ReplacerVisitor", () => {
 			expect(node.expr).toMatchObject({ value: "x" });
 		});
 	});
+
+	describe("string nodes", () => {
+		it("replaces a string literal matching the predicate", () => {
+			const node = LiteralsBuilder.buildStringNode("a");
+			const replacement = LiteralsBuilder.buildStringNode("b");
+			const visitor = new ReplacerVisitor([
+				{ predicate: (n) => n.type === "STRING_LITERAL", replacement },
+			]);
+
+			expect(visitor.visit(node)).toBe(replacement);
+		});
+
+		it("keeps a string literal when no predicate matches", () => {
+			const node = LiteralsBuilder.buildStringNode("a");
+			expect(new ReplacerVisitor([]).visit(node)).toBe(node);
+		});
+	});
+
+	describe("counter blocks", () => {
+		const id = (name: string) => IdentifiersBuilder.buildIdentifierNode(name);
+		const renameXToY = new ReplacerVisitor([
+			{
+				predicate: (n) =>
+					n.type === "IDENTIFIER" && (n as IdentifierNode).value === "x",
+				replacement: IdentifiersBuilder.buildIdentifierNode("y"),
+			},
+		]);
+
+		it("replaces inside every operand of a counter and its down part", () => {
+			const counter = BlocksBuilder.buildCounterNode(
+				"CTUD",
+				id("x"),
+				id("x"),
+				id("x"),
+				id("x"),
+				id("x"),
+				id("x"),
+				{ input: id("x"), lastInput: id("x"), load: id("x"), output: id("x") },
+			);
+
+			const result = renameXToY.visit(counter) as any;
+
+			for (const key of [
+				"input",
+				"lastInput",
+				"control",
+				"presetValue",
+				"currentValue",
+				"output",
+			]) {
+				expect(result[key].value).toBe("y");
+			}
+			for (const key of ["input", "lastInput", "load", "output"]) {
+				expect(result.down[key].value).toBe("y");
+			}
+			expect(counter.down!.input).toMatchObject({ value: "x" });
+		});
+
+		it("does not add a down part to a counter that has none", () => {
+			const counter = BlocksBuilder.buildCounterNode(
+				"CTU",
+				id("x"),
+				id("b"),
+				id("b"),
+				id("n"),
+				id("m"),
+				id("o"),
+			);
+
+			const result = renameXToY.visit(counter) as any;
+
+			expect(result.input.value).toBe("y");
+			expect("down" in result).toBe(false);
+		});
+	});
+
+	describe("timer string declarations", () => {
+		it("replaces inside the input and keeps name and preset time", () => {
+			const node = BlocksBuilder.buildTimerStringDeclarationNode(
+				"t1",
+				IdentifiersBuilder.buildIdentifierNode("x"),
+				1500,
+			);
+			const visitor = new ReplacerVisitor([
+				{
+					predicate: (n) =>
+						n.type === "IDENTIFIER" && (n as IdentifierNode).value === "x",
+					replacement: IdentifiersBuilder.buildIdentifierNode("y"),
+				},
+			]);
+
+			expect(visitor.visit(node)).toMatchObject({
+				type: "TIMER_STRING_DECLARATION",
+				name: "t1",
+				presetTime: 1500,
+				input: { value: "y" },
+			});
+		});
+	});
 });

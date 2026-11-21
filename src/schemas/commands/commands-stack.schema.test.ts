@@ -151,6 +151,32 @@ describe("CommandsStack", () => {
 		});
 	});
 
+	describe("undo of a command whose cancel throws", () => {
+		class FailingCancelCommand extends AbstractCommand<Counter, number> {
+			getType(): string {
+				return "failing-cancel";
+			}
+
+			execute(object: Counter): [Counter, boolean] {
+				return [{ value: object.value + this.payload }, true];
+			}
+
+			cancel(): Counter {
+				throw new Error("cancel failed");
+			}
+		}
+
+		it("propagates the error, leaving the batch out of the undo stack and in the redo stack", () => {
+			const stack = new CommandsStack<Counter>();
+			stack.execute([new FailingCancelCommand(5)], { value: 0 });
+
+			expect(() => stack.undo({ value: 5 })).toThrow("cancel failed");
+
+			expect(stack.commandsToUndo).toHaveLength(0);
+			expect(stack.commandsToRedo).toHaveLength(1);
+		});
+	});
+
 	describe("redo", () => {
 		it("re-executes the batch in original order", () => {
 			const stack = new CommandsStack<Counter>();

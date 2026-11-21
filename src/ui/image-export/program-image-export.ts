@@ -41,15 +41,14 @@ export function buildImageRequests(
 ): ProgramImageRequest[] {
 	if (programs.length === 1)
 		return [{ config: programs[0], baseName: toSafeFileName(filename) }];
-	const used = new Map<string, number>();
+	const taken = new Set<string>();
 	return programs.map((config) => {
 		const base = toSafeFileName(`${projectName} - ${config.program.name}`);
-		const count = (used.get(base) ?? 0) + 1;
-		used.set(base, count);
-		return {
-			config,
-			baseName: count === 1 ? base : `${base} (${count})`,
-		};
+		let baseName = base;
+		for (let count = 2; taken.has(baseName.toLowerCase()); count++)
+			baseName = `${base} (${count})`;
+		taken.add(baseName.toLowerCase());
+		return { config, baseName };
 	});
 }
 

@@ -4,7 +4,9 @@ import { estimateTextWidth } from "./text-layout";
 export type Bbox = { minX: number; minY: number; maxX: number; maxY: number };
 
 const extendPath = (b: Bbox, d: string) => {
-	const nums = (d.match(/-?\d*\.?\d+/g) ?? []).map(Number);
+	const nums = (d.match(new RegExp(PATH_NUMBER_PATTERN, "gi")) ?? []).map(
+		Number,
+	);
 	for (let i = 0; i + 1 < nums.length; i += 2) {
 		b.minX = Math.min(b.minX, nums[i]);
 		b.maxX = Math.max(b.maxX, nums[i]);

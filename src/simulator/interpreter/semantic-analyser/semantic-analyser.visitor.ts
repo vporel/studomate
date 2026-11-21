@@ -187,7 +187,11 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 		const right = this.numericTypeAnalyser.visit(node.right);
 		for (const operand of [left, right]) {
 			if (isBitStringType(operand.type))
-				throw new BitStringArithmeticException(node.operator, operand.type, node);
+				throw new BitStringArithmeticException(
+					node.operator,
+					operand.type,
+					node,
+				);
 		}
 		if (arithmeticResultType(node.operator, left, right) === null)
 			this.throwIncompatibleOperands(node, left, right);
@@ -212,7 +216,9 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 		);
 	}
 
-	protected visitConversionExpressionNode(node: ConversionExpressionNode): void {
+	protected visitConversionExpressionNode(
+		node: ConversionExpressionNode,
+	): void {
 		this.visit(node.expr);
 		const nativeType = this.typeAnalyser.visit(node.expr);
 		if (nativeType !== "number") {
@@ -354,11 +360,17 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 		this.visit(node.right);
 
 		if (leftType === "number") {
-			const target: NumericType = this.numericTypeAnalyser.visit(node.left).type;
+			const target: NumericType = this.numericTypeAnalyser.visit(
+				node.left,
+			).type;
 			const value = this.numericTypeAnalyser.visit(node.right);
 			if (!isImplicitlyAssignable(value, target)) {
 				if (value.value !== undefined && isConstantOutOfRange(value, target))
-					throw new ConstantOutOfRangeException(value.value, target, node.right);
+					throw new ConstantOutOfRangeException(
+						value.value,
+						target,
+						node.right,
+					);
 				throw new ExplicitConversionRequiredException(value.type, target, node);
 			}
 		}
@@ -424,6 +436,13 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 		}
 		this.checkNotBitString("PT", node.presetTime, node);
 		this.checkNotBitString("ET", node.elapsedTime, node);
+		[
+			node.input,
+			node.lastInput,
+			node.presetTime,
+			node.elapsedTime,
+			node.output,
+		].forEach((operand) => this.visit(operand));
 	}
 
 	/** Timer and counter values are signed quantities (TIME and INT in IEC 61131-3): the
@@ -435,7 +454,12 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 	): void {
 		const type = this.numericTypeAnalyser.visit(operandNode).type;
 		if (isBitStringType(type)) {
-			throw new BitStringBlockOperandException(operand, type, blockNode, operandNode);
+			throw new BitStringBlockOperandException(
+				operand,
+				type,
+				blockNode,
+				operandNode,
+			);
 		}
 	}
 
@@ -449,6 +473,7 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 				node,
 			);
 		}
+		this.visit(node.input);
 	}
 
 	protected visitCounterBlockNode(node: CounterNode): void {
@@ -505,6 +530,14 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 		}
 		this.checkNotBitString("PV", node.presetValue, node);
 		this.checkNotBitString("CV", node.currentValue, node);
+		[
+			node.input,
+			node.lastInput,
+			node.control,
+			node.presetValue,
+			node.currentValue,
+			node.output,
+		].forEach((operand) => this.visit(operand));
 		if (node.down) this.analyseCounterDownPart(node, node.down);
 	}
 
@@ -546,5 +579,8 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 				node,
 			);
 		}
+		[down.input, down.lastInput, down.load, down.output].forEach((operand) =>
+			this.visit(operand),
+		);
 	}
 }

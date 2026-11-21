@@ -119,6 +119,16 @@ export default class LadderCopyCutPasteManager extends AbstractCopyCutPasteManag
 		this.copyElements(elements, connections);
 	}
 
+	cutSelectedElements(): void {
+		const { selectedSectionIds, workflowManager } = this.getStoreState();
+		if (selectedSectionIds.length > 0) {
+			this.copySections(selectedSectionIds);
+			workflowManager.deleteSections(selectedSectionIds);
+			return;
+		}
+		super.cutSelectedElements();
+	}
+
 	protected isSelectionEmpty(): boolean {
 		const state = this.getStoreState();
 		const hasSelectedNode = Object.values(state.nodesBySectionId).some(
@@ -328,7 +338,15 @@ export default class LadderCopyCutPasteManager extends AbstractCopyCutPasteManag
 			true,
 		);
 
-		const finalConnections = [...newConnections, ...autoConnections];
+		const copiedPairs = new Set(
+			newConnections.map((c) => `${c.source.id}>${c.target.id}`),
+		);
+		const finalConnections = [
+			...newConnections,
+			...autoConnections.filter(
+				(c) => !copiedPairs.has(`${c.source.id}>${c.target.id}`),
+			),
+		];
 
 		// Exécution des commandes
 		const commands: AbstractLadderCommand<any>[] = [

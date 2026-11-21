@@ -2,6 +2,10 @@ import EnvVariable from "../environment/env-variable";
 import { Environment } from "../environment/environment";
 import { Dialect } from "@/expression-language/dialect.enum";
 import { Lexer } from "@/expression-language/lexer/lexer";
+import BlocksBuilder from "@/expression-language/ast/builders/blocks.builder";
+import ControlsBuilder from "@/expression-language/ast/builders/controls.builder";
+import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
+import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
 import Parser from "@/expression-language/parser/parser";
 import TypeAnalyserVisitor from "./type-analyser.visitor";
 
@@ -114,6 +118,47 @@ describe("TypeAnalyserVisitor", () => {
 		it("returns correct type for nested expressions", () => {
 			expect(parseAndAnalyze("(x + 5) * 2")).toBe("number");
 			expect(parseAndAnalyze("(x > 5) ET (flag)")).toBe("boolean");
+		});
+	});
+
+	describe("blocks and controls", () => {
+		const id = (name: string) => IdentifiersBuilder.buildIdentifierNode(name);
+
+		it("returns void for an if control", () => {
+			const node = ControlsBuilder.buildIfControlNode(
+				LiteralsBuilder.buildBooleanNode(true),
+				[],
+				null,
+			);
+			expect(typeAnalyser.visit(node)).toBe("void");
+		});
+
+		it("returns boolean for a timer string declaration", () => {
+			expect(
+				typeAnalyser.visit(
+					BlocksBuilder.buildTimerStringDeclarationNode("t", id("flag"), 1000),
+				),
+			).toBe("boolean");
+		});
+
+		it("returns boolean for a counter block", () => {
+			expect(
+				typeAnalyser.visit(
+					BlocksBuilder.buildCounterNode(
+						"CTU",
+						id("flag"),
+						id("flag"),
+						id("flag"),
+						id("x"),
+						id("x"),
+						id("flag"),
+					),
+				),
+			).toBe("boolean");
+		});
+
+		it("returns number for a conversion expression", () => {
+			expect(parseAndAnalyze("DINT_TO_INT(x)")).toBe("number");
 		});
 	});
 });

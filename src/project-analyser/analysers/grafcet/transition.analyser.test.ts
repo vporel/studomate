@@ -87,6 +87,28 @@ describe("TransitionAnalyser", () => {
 			expect(numericIssue?.severity).toBe("error");
 		});
 
+		it("detects a non-constant numeric expression", () => {
+			const transition = new TransitionBuilder()
+				.id("trans-1")
+				.expression("1 + 2")
+				.build();
+
+			const issues = analyser.analyseIsolated(transition, {
+				dialect: Dialect.FR,
+			});
+
+			const notBoolean = issues.find(
+				(i) => i.code === "TRANSITION_EXPRESSION_NOT_BOOLEAN",
+			);
+			expect(notBoolean).toBeDefined();
+			expect(notBoolean?.severity).toBe("error");
+			expect(
+				issues.find(
+					(i) => i.code === "TRANSITION_NUMERIC_CONSTANT_NOT_ALLOWED",
+				),
+			).toBeUndefined();
+		});
+
 		it("accepts boolean constants", () => {
 			const transition1 = new TransitionBuilder()
 				.id("trans-1")

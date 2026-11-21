@@ -1,4 +1,8 @@
-import ProjectAnalyserIssue from "./project.analyser.issue";
+import { LOCALES } from "@/i18n/config";
+import { getMessages } from "@/i18n/messages";
+import ProjectAnalyserIssue, {
+	PROJECT_ANALYSER_ISSUE_CODES,
+} from "./project.analyser.issue";
 
 describe("ProjectAnalyserIssue", () => {
 	describe("constructor", () => {
@@ -122,5 +126,31 @@ describe("ProjectAnalyserIssue", () => {
 			expect(issue.params).toEqual({});
 			expect(issue.cause).toBeUndefined();
 		});
+	});
+
+	describe("translations", () => {
+		it("has no duplicate code", () => {
+			expect(new Set(PROJECT_ANALYSER_ISSUE_CODES).size).toBe(
+				PROJECT_ANALYSER_ISSUE_CODES.length,
+			);
+		});
+
+		it.each(LOCALES)(
+			"%s has a non-empty message for every code and none for an unknown code",
+			(locale) => {
+				const messages = getMessages(locale).analysisIssues as Record<
+					string,
+					string
+				>;
+				const missing = PROJECT_ANALYSER_ISSUE_CODES.filter(
+					(code) => !messages[code]?.trim(),
+				);
+				const extra = Object.keys(messages).filter(
+					(key) =>
+						!(PROJECT_ANALYSER_ISSUE_CODES as readonly string[]).includes(key),
+				);
+				expect({ missing, extra }).toEqual({ missing: [], extra: [] });
+			},
+		);
 	});
 });

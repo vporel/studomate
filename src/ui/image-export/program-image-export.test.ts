@@ -90,6 +90,39 @@ describe("buildImageRequests", () => {
 		]);
 	});
 
+	it("keeps names unique when a program is literally named like a generated suffix", () => {
+		const requests = buildImageRequests(
+			[program("Main"), program("Main"), program("Main (2)")],
+			{ projectName: "P", filename: "x" },
+		);
+
+		const names = requests.map((r) => r.baseName);
+		expect(new Set(names).size).toBe(names.length);
+	});
+
+	it("keeps names unique when two programs differ only by case", () => {
+		const requests = buildImageRequests([program("main"), program("Main")], {
+			projectName: "P",
+			filename: "x",
+		});
+
+		const names = requests.map((r) => r.baseName.toLowerCase());
+		expect(new Set(names).size).toBe(names.length);
+	});
+
+	it("gives three distinct, stable names to Main, Main and Main (2)", () => {
+		const requests = buildImageRequests(
+			[program("Main"), program("Main"), program("Main (2)")],
+			{ projectName: "P", filename: "x" },
+		);
+
+		expect(requests.map((r) => r.baseName)).toEqual([
+			"P - Main",
+			"P - Main (2)",
+			"P - Main (2) (2)",
+		]);
+	});
+
 	it("sanitizes program names", () => {
 		const [request] = buildImageRequests([program("a"), program("b/c")], {
 			projectName: "P",

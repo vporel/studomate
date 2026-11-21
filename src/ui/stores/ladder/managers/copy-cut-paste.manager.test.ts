@@ -334,6 +334,55 @@ describe("LadderCopyCutPasteManager (ladder)", () => {
 			expect(pastedElementIds).toContain(pastedConnection.source.id);
 			expect(pastedElementIds).toContain(pastedConnection.target.id);
 		});
+
+		it("ne crée qu'une seule connexion entre deux éléments adjacents collés et garde les points copiés", () => {
+			const contact = createContactElement("Capteur", "NO", 0, 0);
+			const coil = createCoilElement("Sortie", "normal", 0, 1);
+			const connection = new Connection(
+				"c1",
+				{ id: contact.id, type: "contact", handle: "source" },
+				{ id: coil.id, type: "coil", handle: "target" },
+				{ points: [[0, 0]] },
+			);
+			const section = new Section(
+				"s1",
+				"Section",
+				"",
+				[contact, coil],
+				[connection],
+			);
+			const ladder = new Ladder("l1", "TestLadder", [section]);
+			const store = createLadderStore(
+				ladder,
+				new CommandsStack<Ladder>(100),
+				clipboard,
+			);
+			stubElementsFromPoint("s1");
+			const flowPosition = {
+				x: POWER_RAIL_OFFSET + 5 * GRID_CELL_WIDTH,
+				y: 5 * GRID_CELL_HEIGHT,
+			};
+			store
+				.getState()
+				.viewManager.registerInstance("s1", fakeRfInstance(flowPosition));
+
+			store
+				.getState()
+				.copyCutPasteManager.copyElements([contact, coil], [connection]);
+			store.getState().copyCutPasteManager.pasteElements({ x: 10, y: 10 });
+
+			const pastedSection = store.getState().ladder.getSection("s1")!;
+			const pastedIds = pastedSection.elements
+				.filter((e) => e.id !== contact.id && e.id !== coil.id)
+				.map((e) => e.id);
+			const betweenPasted = pastedSection.connections.filter(
+				(c) =>
+					pastedIds.includes(c.source.id) && pastedIds.includes(c.target.id),
+			);
+			expect(betweenPasted).toHaveLength(1);
+			expect(betweenPasted[0].data.points).not.toEqual([[0, 0]]);
+			expect(betweenPasted[0].data.points).toHaveLength(1);
+		});
 	});
 
 	describe("presse-papiers partagé entre pages", () => {
@@ -786,6 +835,82 @@ describe("LadderCopyCutPasteManager (ladder)", () => {
 					.ladder.getSection("s1")!
 					.elements.some((e) => e.type === "contact"),
 			).toBe(true);
+		});
+
+		describe("sections sélectionnées", () => {
+			function buildSectionsStore() {
+				const contact = createContactElement("Capteur", "NO", 0, 0);
+				const s1 = new Section("s1", "Départ moteur", "", [contact]);
+				const s2 = new Section("s2", "Arrêt", "", []);
+				const s3 = new Section("s3", "Sécurité", "", []);
+				const store = createLadderStore(
+					new Ladder("l1", "TestLadder", [s1, s2, s3]),
+					new CommandsStack<Ladder>(100),
+					clipboard,
+				);
+				return { store, contactId: contact.id };
+			}
+			const sectionIds = (store: ReturnType<typeof createLadderStore>) =>
+				store.getState().ladder.sections.map((s) => s.id);
+
+			it("copie puis retire les sections sélectionnées, qui se recollent ensuite", () => {
+				const { store } = buildSectionsStore();
+				store.getState().setSelectedSectionIds(["s2"]);
+
+				store.getState().copyCutPasteManager.cutSelectedElements();
+
+				expect(sectionIds(store)).toEqual(["s1", "s3"]);
+				store.getState().setSelectedSectionIds([]);
+				store.getState().setActiveSectionId("s3");
+				store.getState().copyCutPasteManager.pasteElements();
+				const titles = store.getState().ladder.sections.map((s) => s.title);
+				expect(titles).toEqual(["Départ moteur", "Sécurité", "Arrêt"]);
+			});
+
+			it("coupe l'ensemble des sections sélectionnées dans l'ordre du ladder", () => {
+				const { store } = buildSectionsStore();
+				store.getState().setSelectedSectionIds(["s3", "s2"]);
+
+				store.getState().copyCutPasteManager.cutSelectedElements();
+
+				expect(sectionIds(store)).toEqual(["s1"]);
+				store.getState().setSelectedSectionIds([]);
+				store.getState().copyCutPasteManager.pasteElements();
+				const titles = store.getState().ladder.sections.map((s) => s.title);
+				expect(titles).toEqual(["Départ moteur", "Arrêt", "Sécurité"]);
+			});
+
+			it("laisse les nœuds sélectionnés intacts quand des sections sont sélectionnées aussi", () => {
+				const { store, contactId } = buildSectionsStore();
+				selectNode(store, "s1", contactId);
+				store.getState().setSelectedSectionIds(["s2"]);
+
+				store.getState().copyCutPasteManager.cutSelectedElements();
+
+				expect(sectionIds(store)).toEqual(["s1", "s3"]);
+				expect(store.getState().ladder.getSection("s1")!.elements).toHaveLength(
+					1,
+				);
+			});
+
+			it("garde la première section quand toutes sont coupées, comme la suppression", () => {
+				const { store } = buildSectionsStore();
+				store.getState().setSelectedSectionIds(["s1", "s2", "s3"]);
+
+				store.getState().copyCutPasteManager.cutSelectedElements();
+
+				expect(sectionIds(store)).toEqual(["s1"]);
+			});
+
+			it("annule le retrait des sections coupées", () => {
+				const { store } = buildSectionsStore();
+				store.getState().setSelectedSectionIds(["s2"]);
+				store.getState().copyCutPasteManager.cutSelectedElements();
+
+				store.getState().commandsStackManager.undoOperation();
+
+				expect(sectionIds(store)).toEqual(["s1", "s2", "s3"]);
+			});
 		});
 
 		it("ne fait rien quand rien n'est sélectionné", () => {
