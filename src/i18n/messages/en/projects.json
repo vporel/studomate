@@ -150,7 +150,6 @@
 		"pass": "Skip"
 	},
 	"analysisResult": {
-		"title": "Analysis results",
 		"close": "Close",
 		"errors": "Errors",
 		"warnings": "Warnings",

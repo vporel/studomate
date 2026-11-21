@@ -466,6 +466,21 @@ describe("EmbeddedApp", () => {
 			).toBeInTheDocument();
 		});
 
+		it("hides the analysis status while the panel shows it", () => {
+			renderApp({ controls: ["analysis"] });
+			const status = () =>
+				screen.queryByRole("button", { name: /Résultats de l'analyse/ });
+
+			fireEvent.click(status()!);
+			expect(status()).not.toBeInTheDocument();
+			expect(
+				screen.getByRole("tab", { name: /Résultats de l'analyse/ }),
+			).toBeInTheDocument();
+
+			fireEvent.click(screen.getByLabelText("close-analysis-errors"));
+			expect(status()).toBeInTheDocument();
+		});
+
 		it("closes with its button", () => {
 			renderApp({ controls: ["analysis"] });
 			fireEvent.click(
@@ -1246,7 +1261,9 @@ describe("EmbeddedApp", () => {
 
 			fireEvent.click(errorOfSecondGrafcet());
 
-			expect(screen.queryByRole("tab")).not.toBeInTheDocument();
+			expect(
+				screen.queryByRole("tab", { name: "Grafcet 2" }),
+			).not.toBeInTheDocument();
 			expect(document.querySelector("#page-g2")).not.toBeInTheDocument();
 		});
 	});

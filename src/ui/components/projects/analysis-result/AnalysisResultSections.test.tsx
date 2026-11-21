@@ -58,8 +58,8 @@ describe("AnalysisResultSections", () => {
 	it("shows both empty states when there is no issue", () => {
 		setup();
 
-		expect(screen.getByText(">> Erreurs")).toBeVisible();
-		expect(screen.getByText(">> Avertissements")).toBeVisible();
+		expect(screen.getByText("Erreurs")).toBeVisible();
+		expect(screen.getByText("Avertissements")).toBeVisible();
 		expect(screen.getByText("Aucune erreur lors de l'analyse.")).toBeVisible();
 		expect(screen.getByText("Aucun avertissement.")).toBeVisible();
 	});

@@ -125,7 +125,7 @@
 			"Barre d'outils (haut) : accès rapide aux actions courantes et outils de création Grafcet ou Ladder",
 			"Explorateur (gauche) : arborescence des variables, grafcets, ladders et interfaces HMI du projet",
 			"Zone principale (centre) : onglets des pages ouvertes (grafcets, ladders, variables, propriétés).",
-			"Barre inférieure (bas) : boutons qui ouvrent les panneaux « Résultats de l'analyse » et « Références croisées » ; en simulation, aussi « Tables de visualisation » et, si le projet a des pages HMI, « Simulation HMI » (ouvre l'onglet de la simulation HMI)"
+			"Barre inférieure (bas) : boutons « Références croisées » et « Résultats de l'analyse », qui ouvrent le panneau à onglets placé sous les éditeurs (ils disparaissent de la barre tant que ce panneau est ouvert, ses onglets prenant le relais) ; en simulation, aussi « Tables de visualisation » et, si le projet a des pages HMI, « Simulation HMI » (ouvre l'onglet de la simulation HMI)"
 		],
 		"helpMenuTitle": "Menu Aide",
 		"helpMenuBody": "Le menu Aide contient : Manuel utilisateur (ouvre ce manuel dans un nouvel onglet), Formations (ouvre le parcours d'apprentissage dans un nouvel onglet), Raccourcis clavier (ouvre la liste des raccourcis), Revoir la visite guidée (relance la présentation de l'interface) et Signaler un problème (ouvre la page Contact dans un nouvel onglet, sur le sujet « Signaler un problème »).",
@@ -607,7 +607,7 @@
 		"title": "Références croisées",
 		"p1": "Les références croisées indiquent, pour n'importe quelle variable du projet, tous les endroits où elle est lue et tous les endroits où elle est écrite (grafcets, ladders et interfaces HMI confondus).",
 		"openTitle": "Ouvrir le panneau",
-		"openBody": "Cliquez sur le bouton « Références croisées » dans la barre inférieure, ou utilisez le menu Affichage → Références croisées. L'entrée de menu bascule l'affichage du panneau.",
+		"openBody": "Cliquez sur le bouton « Références croisées » dans la barre inférieure, ou utilisez le menu Affichage → Références croisées. L'entrée de menu bascule l'affichage du panneau. Il s'ouvre sous les éditeurs, dans un panneau à onglets partagé avec les résultats de l'analyse : un clic sur l'autre onglet passe de l'un à l'autre, et la croix ferme le panneau.",
 		"panelTitle": "Contenu du panneau",
 		"panelIntro": "Le panneau liste les variables du projet avec un champ de filtre. Pour la variable sélectionnée, il affiche deux listes :",
 		"panelItems": [
@@ -739,7 +739,7 @@
 			"À l'entrée en simulation, l'onglet « Simulation HMI » s'ouvre automatiquement si le projet contient des pages HMI ; sans page HMI, c'est la scène 3D qui s'ouvre si le projet en a une (voir la section Scène 3D). Cette ouverture automatique se désactive dans Fichier → Préférences."
 		],
 		"watchTitle": "Tables de visualisation et de modification des variables",
-		"watchIntro": "Le panneau inférieur affiche les tables de visualisation et de modification des variables avec quatre onglets :",
+		"watchIntro": "Le panneau latéral droit affiche les tables de visualisation et de modification des variables avec quatre onglets :",
 		"watchItems": [
 			"Entrées : valeurs actuelles des variables d'entrée",
 			"Sorties : valeurs actuelles des variables de sortie",
@@ -810,7 +810,10 @@
 			"Flèches : Déplacer les widgets sélectionnés d'un pas de grille (canvas HMI actif, mode conception)"
 		],
 		"explorerTitle": "Explorateur",
-		"explorerItems": ["F2 : Renommer le grafcet, le ladder ou la page HMI sélectionné", "Suppr : Supprimer le grafcet, le ladder ou la page HMI sélectionné (confirmation demandée, non déclenché par Retour arrière)"],
+		"explorerItems": [
+			"F2 : Renommer le grafcet, le ladder ou la page HMI sélectionné",
+			"Suppr : Supprimer le grafcet, le ladder ou la page HMI sélectionné (confirmation demandée, non déclenché par Retour arrière)"
+		],
 		"inlineTitle": "Édition sur place",
 		"inlineItems": [
 			"Entrée : Valider la modification",
@@ -883,7 +886,7 @@
 			"« Créer les variables manquantes » crée les variables des points non liés avec le nom suggéré par la scène (ou réutilise une variable compatible portant déjà ce nom) et les lie, en une seule opération annulable."
 		],
 		"openTitle": "Afficher la scène",
-		"openBody": "Dès qu'une scène est choisie, l'entrée « Scène 3D » du menu Affichage, le bouton « Scène 3D » de la barre d'état (à gauche de « Références croisées ») et celui de la barre d'outils montrent la scène, avant ou pendant la simulation. Elle s'affiche selon quatre modes, au choix dans le sous-menu « Scène 3D » du menu Affichage (cliquer sur le mode où la scène est affichée la ferme), le dernier choisi étant mémorisé par le navigateur :",
+		"openBody": "Dès qu'une scène est choisie, l'entrée « Scène 3D » du menu Affichage, le bouton « Scène 3D » de la barre d'état et celui de la barre d'outils montrent la scène, avant ou pendant la simulation. Elle s'affiche selon quatre modes, au choix dans le sous-menu « Scène 3D » du menu Affichage (cliquer sur le mode où la scène est affichée la ferme), le dernier choisi étant mémorisé par le navigateur :",
 		"openItems": [
 			"panneau latéral (mode par défaut) : la scène s'affiche dans une colonne à droite des éditeurs, qui se rétrécissent pour lui laisser la place : rien n'est masqué, et on suit le grafcet et la partie opérative en même temps, par exemple en projection. On règle la largeur de la colonne en faisant glisser son bord gauche. En simulation, les tables d'observation s'affichent sous la scène dans la même colonne, et le séparateur entre les deux règle leur hauteur. Le navigateur mémorise ces réglages ;",
 			"cadre flottant : la scène s'affiche dans un cadre au-dessus de l'éditeur, qu'on déplace par sa barre de titre et qu'on redimensionne par ses bords et ses coins, comme une fenêtre. Il reste visible quand on change de page ;",

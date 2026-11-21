@@ -38,6 +38,7 @@ import ProjectSharingManager from "./managers/sharing.manager";
 import SimulationManager from "./managers/simulation/simulation.manager";
 import VariablesManager from "./managers/variables.manager";
 import { getInitialPagesData } from "./pages-session-restore";
+import { setBottomPanelTabOpen } from "./bottom-panel";
 import { ProjectMode } from "./project-mode.enum";
 import {
 	ProjectStoreState,
@@ -353,26 +354,13 @@ export const createProjectStore = (env: ProjectStoreEnvironment) => {
 			analysisHasWarnings: false,
 			analysisErrors: emptyAnalysisIssues(),
 			analysisWarnings: emptyAnalysisIssues(),
-			// Panneaux latéraux mutuellement exclusifs : ouvrir l'un ferme l'autre.
 			setAnalysisResultVisible: (visible) =>
 				set((state) => ({
-					ui: {
-						...state.ui,
-						analysisResultVisible: visible,
-						crossReferenceResultVisible: visible
-							? false
-							: state.ui.crossReferenceResultVisible,
-					},
+					ui: setBottomPanelTabOpen(state.ui, "analysis", visible),
 				})),
 			setCrossReferenceResultVisible: (visible) =>
 				set((state) => ({
-					ui: {
-						...state.ui,
-						crossReferenceResultVisible: visible,
-						analysisResultVisible: visible
-							? false
-							: state.ui.analysisResultVisible,
-					},
+					ui: setBottomPanelTabOpen(state.ui, "crossReference", visible),
 				})),
 			crossReferenceFilter: "",
 			setCrossReferenceFilter: (filter) =>

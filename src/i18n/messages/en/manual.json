@@ -125,7 +125,7 @@
 			"Toolbar (top): quick access to common actions and GRAFCET or Ladder creation tools",
 			"Explorer (left): tree of the project's variables, grafcets, ladders and HMI screens",
 			"Main area (centre): tabs for the open pages (grafcets, ladders, variables, properties).",
-			"Bottom bar (bottom): buttons that open the \"Analysis results\" and \"Cross-references\" panels; during simulation, also \"Watch tables\" and, if the project has HMI pages, \"HMI simulation\" (opens the HMI simulation tab)"
+			"Bottom bar (bottom): \"Cross-references\" and \"Analysis results\" buttons, which open the tabbed panel below the editors (they leave the bar while that panel is open, its tabs taking over); during simulation, also \"Watch tables\" and, if the project has HMI pages, \"HMI simulation\" (opens the HMI simulation tab)"
 		],
 		"helpMenuTitle": "Help menu",
 		"helpMenuBody": "The Help menu contains: User manual (opens this manual in a new tab), Training (opens the learning path in a new tab), Keyboard shortcuts (opens the shortcut list), Replay the guided tour (restarts the interface walkthrough) and Report an issue (opens the Contact page in a new tab, on the \"Report an issue\" topic).",
@@ -607,7 +607,7 @@
 		"title": "Cross-references",
 		"p1": "Cross-references show, for any variable in the project, every place where it is read and every place where it is written (across grafcets, ladders and HMI screens alike).",
 		"openTitle": "Open the panel",
-		"openBody": "Click the \"Cross-references\" button in the bottom bar, or use the View → Cross-references menu. The menu entry toggles the panel.",
+		"openBody": "Click the \"Cross-references\" button in the bottom bar, or use the View → Cross-references menu. The menu entry toggles the panel. It opens below the editors, in a tabbed panel shared with the analysis results: clicking the other tab switches between them, and the cross closes the panel.",
 		"panelTitle": "Panel contents",
 		"panelIntro": "The panel lists the project's variables with a filter field. For the selected variable, it shows two lists:",
 		"panelItems": [
@@ -739,7 +739,7 @@
 			"When simulation starts, the \"HMI simulation\" tab opens automatically if the project contains HMI pages; without an HMI page, the 3D scene opens instead if the project has a scene (see the 3D scene section). This automatic opening can be turned off in File → Preferences."
 		],
 		"watchTitle": "Watch and modify tables for variables",
-		"watchIntro": "The bottom panel shows the watch-and-modify tables for variables, with four tabs:",
+		"watchIntro": "The right-hand side panel shows the watch-and-modify tables for variables, with four tabs:",
 		"watchItems": [
 			"Inputs: current values of the input variables",
 			"Outputs: current values of the output variables",
@@ -810,7 +810,10 @@
 			"Arrow keys: Move the selected widgets by one grid step (active HMI canvas, design mode)"
 		],
 		"explorerTitle": "Explorer",
-		"explorerItems": ["F2: Rename the selected grafcet, ladder or HMI page", "Delete: Delete the selected grafcet, ladder or HMI page (confirmation requested, not triggered by Backspace)"],
+		"explorerItems": [
+			"F2: Rename the selected grafcet, ladder or HMI page",
+			"Delete: Delete the selected grafcet, ladder or HMI page (confirmation requested, not triggered by Backspace)"
+		],
 		"inlineTitle": "Inline editing",
 		"inlineItems": ["Enter: Confirm the change", "Esc: Cancel the change"]
 	},
@@ -880,7 +883,7 @@
 			"\"Create missing variables\" creates the variables of the unbound points with the name suggested by the scene (or reuses a compatible variable already carrying that name) and binds them, as a single undoable operation."
 		],
 		"openTitle": "Showing the scene",
-		"openBody": "Once a scene is chosen, the \"3D scene\" entry of the View menu, the \"3D scene\" button of the status bar (left of \"Cross-references\") and the one of the toolbar show the scene, before or during the simulation. It is shown in one of four modes, chosen in the \"3D scene\" submenu of the View menu (clicking the mode the scene is shown in closes it), the last one chosen being remembered by the browser:",
+		"openBody": "Once a scene is chosen, the \"3D scene\" entry of the View menu, the \"3D scene\" button of the status bar and the one of the toolbar show the scene, before or during the simulation. It is shown in one of four modes, chosen in the \"3D scene\" submenu of the View menu (clicking the mode the scene is shown in closes it), the last one chosen being remembered by the browser:",
 		"openItems": [
 			"side panel (default mode): the scene is shown in a column on the right of the editors, which shrink to make room for it: nothing is hidden, and you follow the grafcet and the operative part at the same time, for example when projecting. Drag the left edge of the column to set its width. During the simulation, the watch tables are shown under the scene in the same column, and the divider between them sets their height. The browser remembers these settings;",
 			"floating box: the scene is shown in a box over the editor, which you move by its title bar and resize by its edges and corners, like a window. It stays visible when you change page;",

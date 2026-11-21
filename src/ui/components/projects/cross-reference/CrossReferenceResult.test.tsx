@@ -55,8 +55,7 @@ function buildProject(): Project {
  * Le filtre vit dans le store : on le simule ici avec une variable locale que
  * `setCrossReferenceFilter` met à jour, en re-rendant le composant.
  */
-function setup(visible = true, initialFilter = "", project = buildProject()) {
-	const setCrossReferenceResultVisible = jest.fn();
+function setup(initialFilter = "", project = buildProject()) {
 	let filter = initialFilter;
 	const setCrossReferenceFilter = jest.fn((value: string) => {
 		filter = value;
@@ -66,8 +65,6 @@ function setup(visible = true, initialFilter = "", project = buildProject()) {
 	const apply = () =>
 		(useProjectStore as unknown as jest.Mock).mockImplementation(
 			selectorImplementation({
-				ui: { crossReferenceResultVisible: visible },
-				setCrossReferenceResultVisible,
 				crossReferenceFilter: filter,
 				setCrossReferenceFilter,
 				project,
@@ -76,17 +73,12 @@ function setup(visible = true, initialFilter = "", project = buildProject()) {
 		);
 	apply();
 	const view = renderWithI18n(<CrossReferenceResult />);
-	return { view, setCrossReferenceResultVisible, setCrossReferenceFilter };
+	return { view, setCrossReferenceFilter };
 }
 
 describe("CrossReferenceResult", () => {
 	beforeEach(() => {
 		goto.mockClear();
-	});
-
-	it("ne rend rien tant que le panneau est masqué", () => {
-		setup(false);
-		expect(screen.queryByText("Références croisées")).not.toBeInTheDocument();
 	});
 
 	it("liste les variables avec leurs groupes lecteurs / écrivains", () => {
@@ -116,7 +108,7 @@ describe("CrossReferenceResult", () => {
 	});
 
 	it("préremplit le champ avec le filtre persisté du store", () => {
-		setup(true, "Moteur");
+		setup("Moteur");
 		expect(screen.getByDisplayValue("Moteur")).toBeInTheDocument();
 		expect(screen.queryByText("Dcy")).not.toBeInTheDocument();
 	});
@@ -133,20 +125,14 @@ describe("CrossReferenceResult", () => {
 			}),
 		);
 
-		setup(true, "ma_var2", project);
+		setup("ma_var2", project);
 		expect(
 			screen.getByText("« ma_var2 » n'est ni lue ni écrite dans ce projet."),
 		).toBeInTheDocument();
 
-		setup(true, "zzz_inexistante", project);
+		setup("zzz_inexistante", project);
 		expect(
 			screen.getByText("Aucune variable ne correspond au filtre."),
 		).toBeInTheDocument();
-	});
-
-	it("ferme le panneau via le bouton de fermeture", () => {
-		const { setCrossReferenceResultVisible } = setup();
-		fireEvent.click(screen.getByLabelText("close-cross-references"));
-		expect(setCrossReferenceResultVisible).toHaveBeenCalledWith(false);
 	});
 });

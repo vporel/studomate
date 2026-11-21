@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Divider } from "@mui/material";
+import { Box } from "@mui/material";
 import { useCallback } from "react";
 import { useProjectStore } from "../ProjectContext";
 import { useT } from "@/ui/i18n/useT";
@@ -77,7 +77,15 @@ export default function AnalysisResultSections({
 			Object.keys(analysisWarnings.ladders).length > 0);
 
 	return (
-		<Box sx={{ overflow: "auto", flex: 1 }}>
+		<Box
+			sx={{
+				overflow: "auto",
+				flex: 1,
+				display: "flex",
+				flexDirection: "column",
+				gap: 1.5,
+			}}
+		>
 			<SeveritySection
 				title={t("errors")}
 				severity="error"
@@ -89,8 +97,6 @@ export default function AnalysisResultSections({
 				getLadderElementLabel={getLadderElementLabel}
 				onGotoProgram={onGotoProgram}
 			/>
-
-			<Divider sx={{ my: 1 }} />
 
 			<SeveritySection
 				title={t("warnings")}

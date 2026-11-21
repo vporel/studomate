@@ -1,7 +1,5 @@
 {
 	"footerButton": "Cross-references",
-	"panelTitle": "Cross-references",
-	"close": "Close",
 	"filterPlaceholder": "Filter variables…",
 	"noVariables": "No variable references in this project.",
 	"noMatch": "No variable matches the filter.",

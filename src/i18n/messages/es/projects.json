@@ -150,7 +150,6 @@
 		"pass": "Omitir"
 	},
 	"analysisResult": {
-		"title": "Resultados del análisis",
 		"close": "Cerrar",
 		"errors": "Errores",
 		"warnings": "Advertencias",

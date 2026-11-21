@@ -10,16 +10,25 @@ import RightActions from "./RightActions";
 jest.mock("@/ui/components/projects/ProjectContext");
 
 const toggle = jest.fn();
+const setAnalysisResultVisible = jest.fn();
+const setCrossReferenceResultVisible = jest.fn();
 
-function setup(scene3d: object | null) {
+function setup(
+	scene3d: object | null,
+	active: "analysis" | "crossReference" | null = null,
+) {
 	(useProjectStore as jest.Mock).mockImplementation(
 		selectorImplementation({
 			project: { scene3d, hmiPages: {} },
 			mode: "design",
 			analysisHasErrors: false,
 			analysisHasWarnings: false,
-			setAnalysisResultVisible: jest.fn(),
-			setCrossReferenceResultVisible: jest.fn(),
+			ui: {
+				analysisResultVisible: active === "analysis",
+				crossReferenceResultVisible: active === "crossReference",
+			},
+			setAnalysisResultVisible,
+			setCrossReferenceResultVisible,
 			setWatchTablesVisible: jest.fn(),
 			hmiManager: { openHmiSimulationPageIfAny: jest.fn() },
 			scene3dDisplayManager: { toggle },
@@ -38,19 +47,49 @@ describe("RightActions", () => {
 		).not.toBeInTheDocument();
 	});
 
-	it("shows the 3D scene button just before the cross-references one when a scene is configured", () => {
+	it("puts the cross-references and analysis buttons first, before the 3D scene one", () => {
 		setup({ sceneId: "parking", sceneVersion: 1, bindings: {} });
 		const labels = screen
 			.getAllByRole("button")
 			.map((button) => button.textContent);
-		expect(labels.indexOf("Scène 3D")).toBe(
-			labels.indexOf("Références croisées") - 1,
-		);
+		expect(labels).toEqual([
+			"Références croisées",
+			"Résultats de l'analyse (OK)",
+			"Scène 3D",
+		]);
 	});
 
 	it("toggles the scene when clicked", () => {
 		setup({ sceneId: "parking", sceneVersion: 1, bindings: {} });
 		fireEvent.click(screen.getByRole("button", { name: "Scène 3D" }));
 		expect(toggle).toHaveBeenCalledTimes(1);
+	});
+
+	describe("bottom panel buttons", () => {
+		it("opens the cross-references", () => {
+			setup(null);
+			fireEvent.click(
+				screen.getByRole("button", { name: "Références croisées" }),
+			);
+			expect(setCrossReferenceResultVisible).toHaveBeenCalledWith(true);
+		});
+
+		it("opens the analysis", () => {
+			setup(null);
+			fireEvent.click(
+				screen.getByRole("button", { name: /Résultats de l'analyse/ }),
+			);
+			expect(setAnalysisResultVisible).toHaveBeenCalledWith(true);
+		});
+
+		it.each(["analysis", "crossReference"] as const)(
+			"are both hidden while the bottom panel shows %s, the other buttons staying",
+			(active) => {
+				setup({ sceneId: "parking", sceneVersion: 1, bindings: {} }, active);
+				expect(
+					screen.getAllByRole("button").map((button) => button.textContent),
+				).toEqual(["Scène 3D"]);
+			},
+		);
 	});
 });

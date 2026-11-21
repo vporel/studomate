@@ -125,7 +125,7 @@
 			"Barra de herramientas (arriba): acceso rápido a las acciones habituales y a las herramientas de creación de GRAFCET o Ladder",
 			"Explorador (izquierda): árbol de las variables, grafcets, ladders y pantallas HMI del proyecto",
 			"Zona principal (centro): pestañas de las páginas abiertas (grafcets, ladders, variables, propiedades).",
-			"Barra inferior (abajo): botones que abren los paneles \"Resultados del análisis\" y \"Referencias cruzadas\"; durante la simulación, también \"Tablas de observación\" y, si el proyecto tiene páginas HMI, \"Simulación HMI\" (abre la pestaña de simulación HMI)"
+			"Barra inferior (abajo): botones \"Referencias cruzadas\" y \"Resultados del análisis\", que abren el panel con pestañas situado bajo los editores (desaparecen de la barra mientras ese panel está abierto, sus pestañas toman el relevo); durante la simulación, también \"Tablas de observación\" y, si el proyecto tiene páginas HMI, \"Simulación HMI\" (abre la pestaña de simulación HMI)"
 		],
 		"helpMenuTitle": "Menú Ayuda",
 		"helpMenuBody": "El menú Ayuda contiene: Manual de usuario (abre este manual en una pestaña nueva), Formación (abre el itinerario de aprendizaje en una pestaña nueva), Atajos de teclado (abre la lista de atajos), Repetir la visita guiada (reinicia el recorrido por la interfaz) e Informar de un problema (abre la página de Contacto en una pestaña nueva, con el tema \"Informar de un problema\").",
@@ -607,7 +607,7 @@
 		"title": "Referencias cruzadas",
 		"p1": "Las referencias cruzadas muestran, para cualquier variable del proyecto, todos los lugares donde se lee y todos los lugares donde se escribe (en grafcets, ladders y pantallas HMI por igual).",
 		"openTitle": "Abrir el panel",
-		"openBody": "Haz clic en el botón \"Referencias cruzadas\" de la barra inferior, o usa el menú Ver → Referencias cruzadas. La entrada del menú muestra u oculta el panel.",
+		"openBody": "Haz clic en el botón \"Referencias cruzadas\" de la barra inferior, o usa el menú Ver → Referencias cruzadas. La entrada del menú muestra u oculta el panel. Se abre bajo los editores, en un panel con pestañas compartido con los resultados del análisis: un clic en la otra pestaña pasa de uno a otro, y la cruz cierra el panel.",
 		"panelTitle": "Contenido del panel",
 		"panelIntro": "El panel lista las variables del proyecto con un campo de filtro. Para la variable seleccionada, muestra dos listas:",
 		"panelItems": [
@@ -739,7 +739,7 @@
 			"Al iniciar la simulación, la pestaña \"Simulación HMI\" se abre automáticamente si el proyecto contiene páginas HMI; sin ninguna página HMI, se abre en su lugar la escena 3D si el proyecto tiene una (consulta la sección Escena 3D). Esta apertura automática se puede desactivar en Archivo → Preferencias."
 		],
 		"watchTitle": "Tablas de observación y modificación de variables",
-		"watchIntro": "El panel inferior muestra las tablas de observación y modificación de variables, con cuatro pestañas:",
+		"watchIntro": "El panel lateral derecho muestra las tablas de observación y modificación de variables, con cuatro pestañas:",
 		"watchItems": [
 			"Entradas: valores actuales de las variables de entrada",
 			"Salidas: valores actuales de las variables de salida",
@@ -810,7 +810,10 @@
 			"Teclas de flecha: Mover los widgets seleccionados un paso de cuadrícula (lienzo HMI activo, modo diseño)"
 		],
 		"explorerTitle": "Explorador",
-		"explorerItems": ["F2: Renombrar el grafcet, ladder o página HMI seleccionado", "Supr: Eliminar el grafcet, ladder o página HMI seleccionado (se pide confirmación, no se activa con Retroceso)"],
+		"explorerItems": [
+			"F2: Renombrar el grafcet, ladder o página HMI seleccionado",
+			"Supr: Eliminar el grafcet, ladder o página HMI seleccionado (se pide confirmación, no se activa con Retroceso)"
+		],
 		"inlineTitle": "Edición en línea",
 		"inlineItems": ["Intro: Confirmar el cambio", "Esc: Cancelar el cambio"]
 	},
@@ -880,7 +883,7 @@
 			"\"Crear las variables que faltan\" crea las variables de los puntos sin vincular con el nombre que sugiere la escena (o reutiliza una variable compatible que ya tenga ese nombre) y las vincula, en una única operación que se puede deshacer."
 		],
 		"openTitle": "Mostrar la escena",
-		"openBody": "Una vez elegida una escena, la entrada \"Escena 3D\" del menú Ver, el botón \"Escena 3D\" de la barra de estado (a la izquierda de \"Referencias cruzadas\") y el de la barra de herramientas muestran la escena, antes o durante la simulación. Se muestra en uno de cuatro modos, que se eligen en el submenú \"Escena 3D\" del menú Ver (hacer clic en el modo en que se muestra la escena la cierra); el navegador recuerda el último elegido:",
+		"openBody": "Una vez elegida una escena, la entrada \"Escena 3D\" del menú Ver, el botón \"Escena 3D\" de la barra de estado y el de la barra de herramientas muestran la escena, antes o durante la simulación. Se muestra en uno de cuatro modos, que se eligen en el submenú \"Escena 3D\" del menú Ver (hacer clic en el modo en que se muestra la escena la cierra); el navegador recuerda el último elegido:",
 		"openItems": [
 			"panel lateral (modo por defecto): la escena se muestra en una columna a la derecha de los editores, que se reducen para dejarle sitio: no se oculta nada y puedes seguir el grafcet y la parte operativa a la vez, por ejemplo al proyectar. Arrastra el borde izquierdo de la columna para fijar su anchura. Durante la simulación, las tablas de observación se muestran bajo la escena en la misma columna, y el divisor entre ambas fija su altura. El navegador recuerda estos ajustes;",
 			"ventana flotante: la escena se muestra en una ventana sobre el editor, que mueves por su barra de título y redimensionas por sus bordes y esquinas, como una ventana. Permanece visible al cambiar de página;",

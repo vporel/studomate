@@ -26,6 +26,7 @@ import BoardMirror from "./board-mirror";
 import Scene3dSimulationBridge, {
 	type Scene3dStateSnapshot,
 } from "../3d-scene/scene3d-simulation.bridge";
+import { setBottomPanelTabOpen } from "@/ui/stores/project/bottom-panel";
 import type { SimulationKind } from "@/ui/stores/project/simulation-kind";
 
 export default class SimulationManager {
@@ -128,11 +129,11 @@ export default class SimulationManager {
 				warnings,
 				this.env.getLocale(),
 			),
-			ui: {
-				...state.ui,
-				analysisResultVisible:
-					errors.length > 0 || (showOnWarningsOnly && warnings.length > 0),
-			},
+			ui: setBottomPanelTabOpen(
+				state.ui,
+				"analysis",
+				errors.length > 0 || (showOnWarningsOnly && warnings.length > 0),
+			),
 		}));
 
 		return { ok: errors.length === 0, projectAnalysisResult };

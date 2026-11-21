@@ -16,15 +16,20 @@ const SplitPane = ({
 	const containerRef = useRef<HTMLDivElement | null>(null);
 	const [sizes, setSizes] = useState<number[]>([]);
 	const isHorizontal = split === "vertical";
+	const rememberDraggedSize = useInitialSizesCalculator(
+		containerRef,
+		children,
+		isHorizontal,
+		setSizes,
+	);
 	const onResize = useResizeHandler(
 		containerRef,
 		isHorizontal,
 		sizes,
 		setSizes,
 		children,
+		rememberDraggedSize,
 	);
-
-	useInitialSizesCalculator(containerRef, children, isHorizontal, setSizes);
 
 	return (
 		<Box
@@ -80,7 +85,11 @@ const SplitPane = ({
 							<Box
 								onMouseDown={(e) => onResize(index, e)}
 								sx={{
-									display: visible === false ? "none" : "block",
+									display:
+										visible === false ||
+										children[index + 1].props.visible === false
+											? "none"
+											: "block",
 									cursor: isHorizontal ? "col-resize" : "row-resize",
 									background: "lightgray",
 									width: isHorizontal ? "1px" : "100%",

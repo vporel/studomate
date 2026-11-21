@@ -1,7 +1,5 @@
 {
 	"footerButton": "Références croisées",
-	"panelTitle": "Références croisées",
-	"close": "Fermer",
 	"filterPlaceholder": "Filtrer les variables…",
 	"noVariables": "Aucune référence de variable dans ce projet.",
 	"noMatch": "Aucune variable ne correspond au filtre.",

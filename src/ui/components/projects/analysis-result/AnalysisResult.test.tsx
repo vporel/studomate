@@ -15,24 +15,18 @@ import AnalysisResult from "./AnalysisResult";
 jest.mock("../ProjectContext");
 
 function setup({
-	analysisResultVisible = true,
 	analysisErrors = emptyAnalysisIssues(),
 	analysisWarnings = emptyAnalysisIssues(),
-	setAnalysisResultVisible = jest.fn(),
 	openPage = jest.fn(),
 	locale = "fr",
 }: {
 	locale?: Locale;
-	analysisResultVisible?: boolean;
 	analysisErrors?: AnalysisIssues;
 	analysisWarnings?: AnalysisIssues;
-	setAnalysisResultVisible?: jest.Mock;
 	openPage?: jest.Mock;
 } = {}) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
-			ui: { analysisResultVisible },
-			setAnalysisResultVisible,
 			analysisErrors,
 			analysisWarnings,
 			project: {
@@ -77,11 +71,6 @@ describe("AnalysisResult", () => {
 			expect(screen.getByText(expected)).toBeInTheDocument();
 		},
 	);
-
-	it("ne rend rien quand le panneau n'est pas visible", () => {
-		const { container } = setup({ analysisResultVisible: false });
-		expect(container).toBeEmptyDOMElement();
-	});
 
 	it("affiche 'aucune erreur' et 'aucun avertissement' pour un projet sans issue", () => {
 		setup();
@@ -133,14 +122,5 @@ describe("AnalysisResult", () => {
 			id: "g1",
 			title: "Grafcet 1",
 		});
-	});
-
-	it("ferme le panneau au clic sur le bouton de fermeture", () => {
-		const setAnalysisResultVisible = jest.fn();
-		setup({ setAnalysisResultVisible });
-
-		fireEvent.click(screen.getByLabelText("close-analysis-errors"));
-
-		expect(setAnalysisResultVisible).toHaveBeenCalledWith(false);
 	});
 });

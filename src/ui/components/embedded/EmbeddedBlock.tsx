@@ -7,7 +7,9 @@ import { setLastMousePosition } from "@/ui/lib/mouse-position";
 import handleEditingShortcut from "../projects/editing-shortcuts";
 import { useProjectContext, useProjectStore } from "../projects/ProjectContext";
 import type { EmbeddedAppProps, EmbeddedControl } from "./embedded-app.types";
-import EmbeddedAnalysisPanel from "./EmbeddedAnalysisPanel";
+import EmbeddedAnalysisPanel, {
+	useEmbeddedAnalysisPanelVisible,
+} from "./EmbeddedAnalysisPanel";
 import EmbeddedPages from "./EmbeddedPages";
 import getVisibleTabIds from "./visible-tab-ids";
 import EmbeddedStatusBar, {
@@ -24,6 +26,8 @@ import SplitPane from "@/ui/lib/split-pane/SplitPane";
 import useEmbeddedFullscreen from "./useEmbeddedFullscreen";
 
 const FULLSCREEN_MARGIN_PX = 40;
+const EMBEDDED_MIN_PAGES_HEIGHT_PX = 120;
+const EMBEDDED_MIN_ANALYSIS_HEIGHT_PX = 80;
 /** Above the application bar (1100), below the modals (1300) and what MUI portals into the body. */
 const FULLSCREEN_Z_INDEX = 1200;
 
@@ -42,6 +46,7 @@ export default function EmbeddedBlock({
 	const { fullscreen, exit, toggle } = useEmbeddedFullscreen();
 	const store = useProjectContext();
 	const watchPanelVisible = useWatchPanelVisible();
+	const analysisPanelVisible = useEmbeddedAnalysisPanelVisible();
 	const tabsCount = useProjectStore(
 		(state) => getVisibleTabIds(state.pagesOrder, state.pagesData).length,
 	);
@@ -119,28 +124,43 @@ export default function EmbeddedBlock({
 							overflow: "hidden",
 						}}
 					>
-						<SplitPane split="vertical">
-							<Pane style={{ overflow: "hidden" }}>
-								<Box
-									sx={{
-										display: "flex",
-										height: "100%",
-										"& > *": { minWidth: 0 },
-									}}
-								>
-									<EmbeddedPages />
-								</Box>
+						<SplitPane split="horizontal">
+							<Pane
+								minSize={EMBEDDED_MIN_PAGES_HEIGHT_PX}
+								style={{ overflow: "hidden" }}
+							>
+								<SplitPane split="vertical">
+									<Pane style={{ overflow: "hidden" }}>
+										<Box
+											sx={{
+												display: "flex",
+												height: "100%",
+												"& > *": { minWidth: 0 },
+											}}
+										>
+											<EmbeddedPages />
+										</Box>
+									</Pane>
+									<Pane
+										initialSize={WATCH_PANEL_WIDTH_PX}
+										minSize={200}
+										maxSize="50%"
+										visible={watchPanelVisible}
+									>
+										<EmbeddedWatchPanel />
+									</Pane>
+								</SplitPane>
 							</Pane>
 							<Pane
-								initialSize={WATCH_PANEL_WIDTH_PX}
-								minSize={200}
-								maxSize="50%"
-								visible={watchPanelVisible}
+								initialSize="45%"
+								minSize={EMBEDDED_MIN_ANALYSIS_HEIGHT_PX}
+								maxSize="70%"
+								visible={analysisPanelVisible}
+								style={{ overflow: "hidden" }}
 							>
-								<EmbeddedWatchPanel />
+								<EmbeddedAnalysisPanel />
 							</Pane>
 						</SplitPane>
-						<EmbeddedAnalysisPanel />
 					</Box>
 					{hasStatusBar && <EmbeddedStatusBar controls={controls} />}
 				</Box>
