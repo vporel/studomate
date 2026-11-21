@@ -105,6 +105,13 @@ describe("LocalStorageProjectRepository", () => {
 			).toBeNull();
 		});
 
+		it("retourne null quand l'entrée du projet est un tableau", async () => {
+			store.set(LAYOUT_VERSION_KEY, "1");
+			store.set(projectKey("p1"), JSON.stringify([{ id: "p1" }]));
+
+			expect(await new LocalStorageProjectRepository().get("p1")).toBeNull();
+		});
+
 		it("renvoie le projet demandé sans toucher aux autres entrées, même illisibles", async () => {
 			store.set(
 				STORAGE_KEY,

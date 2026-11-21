@@ -28,6 +28,16 @@ describe("pages-session.storage", () => {
 		});
 	});
 
+	it("ignore un contenu stocké sous forme de tableau", () => {
+		store.set(
+			"studomate_session_pages",
+			JSON.stringify([{ pagesOrder: ["a"] }]),
+		);
+
+		expect(getPagesSession("0")).toBeNull();
+		expect(getPagesSession("p1")).toBeNull();
+	});
+
 	it("stocke tout dans une seule clé", () => {
 		setPagesSession("p1", { pagesOrder: ["a"], activePageId: "a" });
 		setPagesSession("p2", { pagesOrder: ["b"], activePageId: "b" });

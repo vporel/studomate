@@ -1,3 +1,5 @@
+import { isRecord } from "@/lib/object";
+
 /** Something the user did that is worth asking their opinion after. */
 export type FeedbackMilestone =
 	"program-created" | "simulation-ended" | "pdf-exported";
@@ -40,9 +42,8 @@ const count = (value: unknown): number =>
 export function normalizeFeedbackPromptState(
 	raw: unknown,
 ): FeedbackPromptState {
-	if (typeof raw !== "object" || raw === null)
-		return EMPTY_FEEDBACK_PROMPT_STATE;
-	const r = raw as Record<string, unknown>;
+	if (!isRecord(raw)) return EMPTY_FEEDBACK_PROMPT_STATE;
+	const r = raw;
 	return {
 		hasContent: r.hasContent === true,
 		hasSimulatedOrExported: r.hasSimulatedOrExported === true,

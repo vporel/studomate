@@ -1,6 +1,6 @@
 "use client";
 
-import shouldStartAppTour from "@/ui/components/product-tour/app-tour/app-tour-eligibility";
+import { shouldStartAppTour } from "@/ui/components/product-tour/engine/tour-eligibility";
 import useAutoStartTour from "@/ui/components/product-tour/engine/useAutoStartTour";
 import useStartAppTour from "./useStartAppTour";
 

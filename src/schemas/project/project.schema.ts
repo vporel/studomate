@@ -133,6 +133,14 @@ export default class Project {
 		);
 	}
 
+	/** Executed programs that analysis and compilation take into account: an empty program that is
+	 * skipped when empty is left out. */
+	getAnalysedPrograms(): Program[] {
+		return this.getExecutedPrograms().filter(
+			(program) => !(program.isEmpty() && program.isSkippedWhenEmpty()),
+		);
+	}
+
 	getExecutedLadders(): Ladder[] {
 		return Object.values(this.ladders).filter(
 			(ladder) => !ladder.excludedFromExecution,
@@ -173,7 +181,7 @@ export default class Project {
 	/** Ne supprime jamais le Main : un projet en porte toujours exactement un. */
 	deleteProgram(programId: string) {
 		const program = this.programs[programId];
-		if (program instanceof Ladder && program.isMain()) return;
+		if (program && this.isMainProgram(program)) return;
 		delete this.programs[programId];
 		this.touch();
 	}
@@ -274,11 +282,14 @@ export default class Project {
 
 	//=============== MAIN ===============
 
+	private isMainProgram(program: Program): program is Ladder {
+		return program instanceof Ladder && program.isMain();
+	}
+
 	/** Le programme Main du projet — invariant garanti par le constructeur/`deleteProgram`. */
 	get main(): Ladder {
 		const found = Object.values(this.programs).find(
-			(program): program is Ladder =>
-				program.type === "ladder" && (program as Ladder).isMain(),
+			(program): program is Ladder => this.isMainProgram(program),
 		);
 		if (!found)
 			throw new Error("Project has no Main program — invariant violated.");
@@ -286,8 +297,8 @@ export default class Project {
 	}
 
 	createMain(name: string = DEFAULT_MAIN_NAME): Ladder {
-		const existing = Object.values(this.programs).some(
-			(program) => program.type === "ladder" && (program as Ladder).isMain(),
+		const existing = Object.values(this.programs).some((program) =>
+			this.isMainProgram(program),
 		);
 		if (existing) throw new Error("A project can only have one Main program.");
 		const main = new Ladder(createRandomId(), name, undefined, "main");
@@ -331,6 +342,12 @@ export default class Project {
 	 * système `_SYS_*` n'ont pas d'instance dans le projet et ne sont donc jamais trouvées. */
 	findVariableByMnemonic(mnemonic: string): Variable | undefined {
 		return this.variables.find((variable) => variable.mnemonic === mnemonic);
+	}
+
+	/** A constant is never bound to an HMI widget: a binding persisted on one is ignored, for
+	 * reading and for writing. An unknown mnemonic counts as bindable. */
+	isMnemonicBindable(mnemonic: string): boolean {
+		return !this.findVariableByMnemonic(mnemonic)?.isReadOnly();
 	}
 
 	/** Un nom de bloc partage son espace de noms avec les mnémoniques de variable : il doit être

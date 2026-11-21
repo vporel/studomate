@@ -31,8 +31,8 @@ import { CELL_SUBDIVISIONS } from "@/ui/utils/ladder/ladder-connection-path";
 import type { ClipboardStore } from "@/ui/stores/shared/clipboard.store";
 import AbstractCopyCutPasteManager from "@/ui/stores/shared/abstract-copy-cut-paste.manager";
 
-/** Renvoie la copie d'un bloc timer/compteur nommé avec un nom suffixé absent de `takenNames`
- * (qu'elle y ajoute) ; tout autre élément est renvoyé inchangé. */
+/** Returns a copy of a named timer/counter block whose name is suffixed so that it is absent from
+ * `takenNames` (the new name is added to it); any other element is returned unchanged. */
 function withCopiedBlockName(
 	element: LadderElement,
 	takenNames: Set<string>,
@@ -49,9 +49,59 @@ function withCopiedBlockName(
 }
 
 /**
- * Le presse-papiers ladder porte soit un fragment (éléments + connexions internes à une
- * sélection), soit une ou plusieurs sections entières. Un seul presse-papiers vivant : copier
- * des sections écrase un fragment et inversement, et `pasteElements` route selon `kind`.
+ * Clones the elements and the connections whose two ends are among them, with new ids, shifted by
+ * `offset` (cells). Timer/counter blocks are renamed through `takenBlockNames`, which accumulates
+ * from one call to the next.
+ */
+function cloneWithNewIds(
+	elements: LadderElement[],
+	connections: Connection[],
+	takenBlockNames: Set<string>,
+	offset = { row: 0, col: 0 },
+): { elements: LadderElement[]; connections: Connection[] } {
+	const idMap = new Map<string, string>();
+	const newElements = elements.map((el) => {
+		const newId = createRandomId();
+		idMap.set(el.id, newId);
+		return {
+			...withCopiedBlockName(el, takenBlockNames),
+			id: newId,
+			position: {
+				row: el.position.row + offset.row,
+				col: el.position.col + offset.col,
+			},
+		} as LadderElement;
+	});
+
+	const newConnections: Connection[] = [];
+	for (const conn of connections) {
+		const sourceId = idMap.get(conn.source.id);
+		const targetId = idMap.get(conn.target.id);
+		if (!sourceId || !targetId) continue;
+		newConnections.push(
+			new Connection(
+				createRandomId(),
+				{ ...conn.source, id: sourceId },
+				{ ...conn.target, id: targetId },
+				{
+					points: conn.data.points.map(
+						(p) =>
+							[
+								p[0] + offset.row * CELL_SUBDIVISIONS,
+								p[1] + offset.col * CELL_SUBDIVISIONS,
+							] as [number, number],
+					),
+				},
+			),
+		);
+	}
+	return { elements: newElements, connections: newConnections };
+}
+
+/**
+ * The ladder clipboard holds either a fragment (elements + connections internal to a selection)
+ * or one or more whole sections. There is a single live clipboard: copying sections overwrites a
+ * fragment and vice versa, and `pasteElements` routes on `kind`.
  */
 export type LadderClipboard =
 	| { kind: "elements"; elements: LadderElement[]; connections: Connection[] }
@@ -167,8 +217,8 @@ export default class LadderCopyCutPasteManager extends AbstractCopyCutPasteManag
 	}
 
 	/**
-	 * Copie une ou plusieurs sections entières (titre, description, éléments, connexions) — clone
-	 * défensif, réordonné selon l'ordre du ladder.
+	 * Copies one or more whole sections (title, description, elements, connections) as a
+	 * defensive clone, reordered to the ladder's order.
 	 */
 	copySections(sectionIds: string[]): void {
 		const ordered = this.getStoreState().ladder.getSectionsInOrder(sectionIds);
@@ -189,7 +239,7 @@ export default class LadderCopyCutPasteManager extends AbstractCopyCutPasteManag
 		if (clipboard.elements.length === 0) return;
 		if (!mousePosition) return;
 
-		// Trouver la section sous le curseur
+		// Find the section under the cursor
 		const domElements = document.elementsFromPoint(
 			mousePosition.x,
 			mousePosition.y,
@@ -205,30 +255,27 @@ export default class LadderCopyCutPasteManager extends AbstractCopyCutPasteManag
 		const rfInstance = state.viewManager.getInstance(sectionId);
 		if (!section || !rfInstance) return;
 
-		// Convertir la position souris en coordonnées de flow
+		// Convert the mouse position to flow coordinates
 		const flowPos = rfInstance.screenToFlowPosition({
 			x: mousePosition.x,
 			y: mousePosition.y,
 		});
 
-		// Convertir en cellule de départ
+		// Convert to the starting cell
 		const startRow = Math.max(0, Math.floor(yToRow(flowPos.y)));
 		const startCol = Math.max(0, Math.floor(xToCol(flowPos.x)));
 
-		// Bounding box des éléments copiés
+		// Bounding box of the copied elements
 		const minRow = Math.min(...clipboard.elements.map((e) => e.position.row));
 		const minCol = Math.min(...clipboard.elements.map((e) => e.position.col));
 		const maxCol = Math.max(...clipboard.elements.map((e) => e.position.col));
 
 		const width = maxCol - minCol + 1;
 
-		// Décalage pour rester dans les limites (ex: LADDER_MAX_COLS si défini, ici on décale à gauche si besoin)
-		// Le ladder n'a pas de max strict, mais on peut vérifier si on veut rester dans une certaine limite,
-		// sinon on applique un offset normal.
+		// Shift left when needed so that the pasted block stays within `LADDER_MAX_COLS`.
 		let offsetCol = startCol - minCol;
 		let finalStartCol = startCol;
 
-		// Si on a une limite arbitraire de 10 colonnes :
 		const SECTION_MAX_COLS = LADDER_MAX_COLS;
 		if (finalStartCol + width > SECTION_MAX_COLS) {
 			finalStartCol = Math.max(0, SECTION_MAX_COLS - width);
@@ -237,9 +284,9 @@ export default class LadderCopyCutPasteManager extends AbstractCopyCutPasteManag
 
 		let offsetRow = startRow - minRow;
 
-		// Gestion des collisions — chevauchement d'empreinte complète (largeur et hauteur, voir
-		// `getElementWidth`/`getElementHeight`), pas une simple égalité de cellule de départ : un
-		// `block` colle occupe 2 colonnes et plusieurs lignes.
+		// Collision handling: the full footprint overlap (width and height, see
+		// `getElementWidth`/`getElementHeight`) is checked, not just an equal starting cell: a pasted
+		// `block` occupies 2 columns and several rows.
 		const { leafPositions } = computeSectionLayout(section);
 		let collision = true;
 
@@ -268,65 +315,26 @@ export default class LadderCopyCutPasteManager extends AbstractCopyCutPasteManag
 			}
 
 			if (collision) {
-				// On descend juste en dessous de l'occupant le plus bas trouvé dans cette zone
+				// Move just below the lowest occupant found in this area
 				const newStartRow = maxRowInCollision + 1;
 				offsetRow = newStartRow - minRow;
 			}
 		}
 
-		// Un bloc timer/compteur collé ne peut pas garder le nom de son original : ce nom identifie
-		// l'instance dans tout le ladder (voir `LadderAnalyser.checkBlockNameConflicts`). La copie
-		// est suffixée (`Tempo` -> `Tempo_2`), en accumulant pour un collage multi-blocs.
+		// A pasted timer/counter block cannot keep its original's name: the name identifies the
+		// instance across the whole ladder (see `LadderAnalyser.checkBlockNameConflicts`). The copy is
+		// suffixed (`Tempo` -> `Tempo_2`), accumulating across a multi-block paste.
 		const takenBlockNames = state.ladder.getBlockNames();
 
-		// Création des nouveaux éléments
-		const idMap = new Map<string, string>();
-		const newElements = clipboard.elements.map((el) => {
-			const newId = createRandomId();
-			idMap.set(el.id, newId);
-			return {
-				...withCopiedBlockName(el, takenBlockNames),
-				id: newId,
-				position: {
-					row: el.position.row + offsetRow,
-					col: el.position.col + offsetCol,
-				},
-			} as LadderElement;
-		});
+		const { elements: newElements, connections: newConnections } =
+			cloneWithNewIds(
+				clipboard.elements,
+				clipboard.connections,
+				takenBlockNames,
+				{ row: offsetRow, col: offsetCol },
+			);
 
-		// Création des nouvelles connexions
-		const newConnections = clipboard.connections
-			.map((conn) => {
-				const sourceId = idMap.get(conn.source.id);
-				const targetId = idMap.get(conn.target.id);
-				if (!sourceId || !targetId) return null;
-
-				const newPoints = conn.data.points.map(
-					(p) =>
-						[
-							p[0] + offsetRow * CELL_SUBDIVISIONS,
-							p[1] + offsetCol * CELL_SUBDIVISIONS,
-						] as [number, number],
-				);
-
-				return new Connection(
-					createRandomId(),
-					{
-						id: sourceId,
-						type: conn.source.type as any,
-						handle: conn.source.handle,
-					},
-					{
-						id: targetId,
-						type: conn.target.type as any,
-						handle: conn.target.handle,
-					},
-					{ points: newPoints },
-				);
-			})
-			.filter((c) => c !== null) as Connection[];
-
-		// Application des règles de dépôt pour les nouveaux éléments collés
+		// Apply the drop rules to the newly pasted elements
 		const {
 			elementsToAdd: finalElements,
 			connectionsToAdd: autoConnections,
@@ -348,7 +356,7 @@ export default class LadderCopyCutPasteManager extends AbstractCopyCutPasteManag
 			),
 		];
 
-		// Exécution des commandes
+		// Run the commands
 		const commands: AbstractLadderCommand<any>[] = [
 			new ElementsAddCommand({ sectionId, elements: finalElements }),
 		];
@@ -370,7 +378,7 @@ export default class LadderCopyCutPasteManager extends AbstractCopyCutPasteManag
 	}
 
 	/**
-	 * Duplique une section : la copie est insérée juste sous l'originale.
+	 * Duplicates a section: the copy is inserted right below the original.
 	 */
 	duplicateSection(sectionId: string): void {
 		const ladder = this.getStoreState().ladder;
@@ -381,8 +389,9 @@ export default class LadderCopyCutPasteManager extends AbstractCopyCutPasteManag
 	}
 
 	/**
-	 * Colle les sections du presse-papiers en bloc consécutif : juste sous la section active
-	 * (`activeSectionId`) si elle existe, sinon tout en bas. Leur ordre relatif est conservé.
+	 * Pastes the clipboard's sections as one consecutive block: right below the active section
+	 * (`activeSectionId`) if there is one, otherwise at the very bottom. Their relative order is
+	 * kept.
 	 */
 	pasteSections(sections: Section[]): void {
 		const { ladder, activeSectionId } = this.getStoreState();
@@ -394,12 +403,11 @@ export default class LadderCopyCutPasteManager extends AbstractCopyCutPasteManag
 	}
 
 	/**
-	 * Insère de nouvelles sections reprenant le titre, la description et le contenu de chaque
-	 * `source`, en bloc à partir de `atIndex`. Le contenu est recréé avec la sémantique d'un
-	 * collage — nouveaux identifiants pour chaque élément et chaque connexion, blocs timer/
-	 * compteur renommés pour rester des instances uniques dans le ladder cible (le suffixage
-	 * s'accumule d'une section à l'autre, voir `withCopiedBlockName`). Les positions sont
-	 * conservées : les sections cibles étant vides, aucune gestion de collision n'est nécessaire.
+	 * Inserts new sections carrying the title, description and content of each `source`, as a
+	 * block starting at `atIndex`. The content is recreated with paste semantics: new ids for every
+	 * element and connection, timer/counter blocks renamed to remain unique instances in the target
+	 * ladder (the suffixing accumulates from one section to the next, see `withCopiedBlockName`).
+	 * Positions are kept: the target sections are empty, so no collision handling is needed.
 	 */
 	private insertSections(sources: Section[], atIndex: number): void {
 		if (sources.length === 0) return;
@@ -415,42 +423,8 @@ export default class LadderCopyCutPasteManager extends AbstractCopyCutPasteManag
 			const newSectionId = createRandomId();
 			newSectionIds.push(newSectionId);
 
-			const idMap = new Map<string, string>();
-			const newElements = source.elements.map((el) => {
-				const newId = createRandomId();
-				idMap.set(el.id, newId);
-				return {
-					...withCopiedBlockName(el, takenBlockNames),
-					id: newId,
-					position: { ...el.position },
-				} as LadderElement;
-			});
-
-			const newConnections = source.connections
-				.map((conn) => {
-					const sourceElId = idMap.get(conn.source.id);
-					const targetElId = idMap.get(conn.target.id);
-					if (!sourceElId || !targetElId) return null;
-					return new Connection(
-						createRandomId(),
-						{
-							id: sourceElId,
-							type: conn.source.type as any,
-							handle: conn.source.handle,
-						},
-						{
-							id: targetElId,
-							type: conn.target.type as any,
-							handle: conn.target.handle,
-						},
-						{
-							points: conn.data.points.map(
-								(p) => [p[0], p[1]] as [number, number],
-							),
-						},
-					);
-				})
-				.filter((c): c is Connection => c !== null);
+			const { elements: newElements, connections: newConnections } =
+				cloneWithNewIds(source.elements, source.connections, takenBlockNames);
 
 			commands.push(
 				new SectionAddCommand({
@@ -474,8 +448,8 @@ export default class LadderCopyCutPasteManager extends AbstractCopyCutPasteManag
 		}
 
 		const previousOrderedSectionIds = ladder.sections.map((s) => s.id);
-		// `SectionAddCommand` pousse chaque section en fin de liste, dans l'ordre : un reorder
-		// n'est utile que si la cible n'est pas déjà cette dernière position.
+		// `SectionAddCommand` pushes each section at the end of the list, in order: a reorder is
+		// only useful when the target is not already that last position.
 		if (atIndex < previousOrderedSectionIds.length) {
 			commands.push(
 				new SectionReorderCommand({

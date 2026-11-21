@@ -1,8 +1,10 @@
+import { getHmiPageData } from "../pages-data";
 import { deepObjectsComparison } from "@/lib/object";
 import { canEdit } from "../editability";
 import Project from "@/schemas/project/project.schema";
 import type { Locale } from "@/i18n/config";
 import HmiPage from "@/schemas/hmi/hmi-page.schema";
+import type { HmiAction } from "@/schemas/hmi/hmi-widget.schema";
 import {
 	HmiStoreManagers,
 	HmiStoreValues,
@@ -87,11 +89,7 @@ export default class HmiManager extends AbstractDocumentsManager<
 		const newProject = project.copy();
 		const page = newProject.createHmiPage(resolvedName);
 		this.analytics.trackEvent("hmi-page-created");
-		this.getStoreState().pagesManager.openPage({
-			id: page.id,
-			type: "hmi",
-			title: page.name,
-		});
+		this.getStoreState().pagesManager.openPage(getHmiPageData(page));
 		this.setStoreState(() => ({
 			project: newProject,
 			hasUnsavedChanges: true,
@@ -156,10 +154,19 @@ export default class HmiManager extends AbstractDocumentsManager<
 	}
 
 	/** Change la page affichée par l'onglet "Simulation HMI" — utilisé par l'action
-	 * "changer de page" déclenchée en simulation (voir `executeHmiAction`). Ne touche pas au
+	 * "changer de page" déclenchée en simulation (voir `executeAction`). Ne touche pas au
 	 * système d'onglets de conception : la navigation reste interne à cet unique onglet. */
 	navigateHmiSimulation(hmiPageId: string): void {
 		this.setStoreState(() => ({ hmiSimulationActivePageId: hmiPageId }));
+	}
+
+	/** Exécute une action déclenchée par un événement de widget (voir `HmiWidgetEvents`). */
+	executeAction(action: HmiAction): void {
+		switch (action.type) {
+			case "navigate-to-page":
+				this.navigateHmiSimulation(action.targetHmiPageId);
+				break;
+		}
 	}
 
 	getHmiPageOrThrow(hmiPageId: string): HmiPage {

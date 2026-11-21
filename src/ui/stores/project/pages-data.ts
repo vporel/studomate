@@ -1,3 +1,5 @@
+import type HmiPage from "@/schemas/hmi/hmi-page.schema";
+import type Program from "@/schemas/program/program.schema";
 import type { PageData } from "./project.store.types";
 import {
 	getVariablesPageDefinition,
@@ -66,4 +68,12 @@ export function getVariablesPageData(pageId: VariablesPageId): PageData {
 		type: "variables",
 		title: getVariablesPageDefinition(pageId).title,
 	};
+}
+
+export function getProgramPageData(program: Program): PageData {
+	return { id: program.id, type: program.type, title: program.name };
+}
+
+export function getHmiPageData(page: HmiPage): PageData {
+	return { id: page.id, type: "hmi", title: page.name };
 }

@@ -182,6 +182,36 @@ export default class ProjectLifecycleManager {
 		if (project) deleteDraft(project.id);
 	}
 
+	/**
+	 * Runs `proceed` right away when the project has no unsaved changes; otherwise asks for
+	 * confirmation first. `onDiscard` only runs once the user chooses to continue without saving,
+	 * right before `proceed`.
+	 */
+	async guardUnsavedChanges(
+		proceed: () => void | Promise<void>,
+		{
+			message = null,
+			onDiscard,
+		}: { message?: string | null; onDiscard?: () => void } = {},
+	): Promise<void> {
+		if (!this.getStoreState().hasUnsavedChanges) {
+			await proceed();
+			return;
+		}
+		this.setStoreState((state) => ({
+			ui: {
+				...state.ui,
+				unsavedChangesDialogVisible: true,
+				unsavedChangesDialogMessage: message,
+				onUnsavedChangesDialogCancel: null,
+				onUnsavedChangesDialogContinue: () => {
+					onDiscard?.();
+					void proceed();
+				},
+			},
+		}));
+	}
+
 	private async doCloseProject(): Promise<void> {
 		const set = this.setStoreState;
 		const get = this.getStoreState;
@@ -332,25 +362,11 @@ export default class ProjectLifecycleManager {
 
 	async newProject(): Promise<void> {
 		const set = this.setStoreState;
-		const get = this.getStoreState;
 		const openModal = () =>
 			set((state) => ({ ui: { ...state.ui, newProjectModalVisible: true } }));
-		if (!get().hasUnsavedChanges) {
-			openModal();
-			return;
-		}
-		set((state) => ({
-			ui: {
-				...state.ui,
-				unsavedChangesDialogVisible: true,
-				unsavedChangesDialogMessage: null,
-				onUnsavedChangesDialogCancel: null,
-				onUnsavedChangesDialogContinue: () => {
-					this.discardCurrentDraft();
-					openModal();
-				},
-			},
-		}));
+		await this.guardUnsavedChanges(openModal, {
+			onDiscard: () => this.discardCurrentDraft(),
+		});
 	}
 
 	async newProjectFromTemplate(
@@ -507,23 +523,9 @@ export default class ProjectLifecycleManager {
 	}
 
 	async closeProject(): Promise<void> {
-		const get = this.getStoreState;
-		if (!get().hasUnsavedChanges) {
-			await this.doCloseProject();
-			return;
-		}
-		this.setStoreState((state) => ({
-			ui: {
-				...state.ui,
-				unsavedChangesDialogVisible: true,
-				unsavedChangesDialogMessage: null,
-				onUnsavedChangesDialogCancel: null,
-				onUnsavedChangesDialogContinue: () => {
-					this.discardCurrentDraft();
-					void this.doCloseProject();
-				},
-			},
-		}));
+		await this.guardUnsavedChanges(() => this.doCloseProject(), {
+			onDiscard: () => this.discardCurrentDraft(),
+		});
 	}
 
 	async resolveDraftConflict(choice: "draft" | "real"): Promise<void> {

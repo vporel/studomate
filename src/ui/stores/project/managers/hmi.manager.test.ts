@@ -304,6 +304,26 @@ describe("HmiManager", () => {
 		});
 	});
 
+	describe("executeAction", () => {
+		it("navigate-to-page change la page affichée sans toucher aux onglets", () => {
+			const project = new Project("p1", "Projet", "");
+			const page = project.createHmiPage("Vue 1");
+			const target = project.createHmiPage("Vue 2");
+			const { manager, getState } = makeManager({
+				project,
+				hmiSimulationActivePageId: page.id,
+			});
+
+			manager.executeAction({
+				type: "navigate-to-page",
+				targetHmiPageId: target.id,
+			});
+
+			expect(getState().hmiSimulationActivePageId).toBe(target.id);
+			expect(getState().pagesManager.openPage).not.toHaveBeenCalled();
+		});
+	});
+
 	describe("syncMountedStoresFromProject", () => {
 		function setup(storePageDiffers: boolean) {
 			const project = new Project("p1", "Projet", "auteur");

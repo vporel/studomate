@@ -5,7 +5,6 @@ import {
 	HmiWidget,
 } from "@/schemas/hmi/hmi-widget.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { isHmiBindable } from "@/ui/components/hmi/logic/hmi-bindable-variable";
 import { resolvePositionAnimationOffset } from "@/ui/components/hmi/logic/hmi-position-animation";
 
 /**
@@ -18,7 +17,7 @@ export function useHmiSimulationValue(
 	mnemonic: string | undefined,
 ): boolean | number | undefined {
 	return useProjectStore((s) =>
-		mnemonic && isHmiBindable(s.project, mnemonic)
+		mnemonic && (s.project?.isMnemonicBindable(mnemonic) ?? true)
 			? s.simulationVariablesStatesByMnemonic[mnemonic]?.value
 			: undefined,
 	);

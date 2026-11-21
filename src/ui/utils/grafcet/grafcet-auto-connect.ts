@@ -1,3 +1,4 @@
+import { clamp } from "@/lib/number";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import Element, { ElementType } from "@/schemas/grafcet/element.schema";
 import {
@@ -51,7 +52,6 @@ export type AutoPlacement = {
 };
 
 type Neighbour = { element: Element<any>; gap: number };
-
 
 const SUCCESSOR_HANDLES: Partial<Record<ElementType, string>> = {
 	step: STEP_HANDLE_SOURCE_SUCCESSOR,
@@ -115,7 +115,7 @@ function shiftForNeighbours(
 		hi = Math.min(hi, gapBelow);
 	}
 	if (lo > hi) return null;
-	return Math.min(Math.max(0, lo), hi);
+	return clamp(0, lo, hi);
 }
 
 /** A step, a transition or a step referral placed above or below an element it can be linked to. */

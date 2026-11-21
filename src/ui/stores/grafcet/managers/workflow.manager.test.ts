@@ -4,6 +4,7 @@ import ActionBuilder from "@/schemas/grafcet/builders/action.builder";
 import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import JunctionAndStartBuilder from "@/schemas/grafcet/builders/junction-and-start.builder";
+import Step from "@/schemas/grafcet/step.schema";
 import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import StepReferralSourceBuilder from "@/schemas/grafcet/builders/step-referral-source.builder";
 import StepReferralTargetBuilder from "@/schemas/grafcet/builders/step-referral-target.builder";
@@ -1218,6 +1219,44 @@ describe("GrafcetWorkflowManager.handleNodesChange: actions follow their step", 
 
 		expect(elementPosition(store, "a1")).toEqual({ x: 180, y: 1300 });
 		expect(elementPosition(store, "a2").y).toBe(1358);
+	});
+
+	it("pins an action taller than the page to the top edge", () => {
+		const grafcet = new GrafcetBuilder()
+			.addStep(
+				new StepBuilder()
+					.id("s")
+					.number(1)
+					.initial()
+					.position(100, 100)
+					.build(),
+			)
+			.addAction(
+				new ActionBuilder()
+					.id("tall")
+					.position(180, 100 + Step.DEFAULT_DIMENSIONS.height / 2 - 750)
+					.dimensions(80, 1500)
+					.build(),
+			)
+			.addConnection(
+				new ConnectionBuilder()
+					.id("c")
+					.source("step", "s", "source:action")
+					.target("action", "tall", "target:predecessor")
+					.build(),
+			)
+			.build();
+		const store = createGrafcetStore(
+			grafcet,
+			new CommandsStack<Grafcet>(100),
+			() => Dialect.FR,
+		);
+		const { workflowManager } = store.getState();
+
+		workflowManager.handleNodesChange([move("s", 100, 130, true)]);
+		workflowManager.handleNodesChange([move("s", 100, 130, false)]);
+
+		expect(elementPosition(store, "tall").y).toBe(0);
 	});
 
 	it("moves the actions with the step corrected by the automatic link", () => {

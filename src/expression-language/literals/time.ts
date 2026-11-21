@@ -4,7 +4,7 @@
  * (`T#100s`), décimales et underscore comme séparateur de lisibilité tolérés (`T#1h_30m`,
  * `T#1.5s`).
  */
-const UNIT_TO_MS: Record<string, number> = {
+export const UNIT_TO_MS: Record<string, number> = {
 	d: 86_400_000,
 	h: 3_600_000,
 	m: 60_000,
@@ -51,7 +51,10 @@ export function parseTimeLiteral(text: string): number | null {
 
 /** End index of the `T#...` constant starting at `position` in `text`, or `null` if none starts
  * there. Only delimits the constant (letters, digits, `_`, `.`), without validating it. */
-export function findTimeLiteralEnd(text: string, position: number): number | null {
+export function findTimeLiteralEnd(
+	text: string,
+	position: number,
+): number | null {
 	if (text.slice(position, position + 2).toUpperCase() !== TIME_LITERAL_PREFIX)
 		return null;
 	let end = position + 2;

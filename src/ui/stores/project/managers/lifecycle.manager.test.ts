@@ -1215,6 +1215,61 @@ describe("ProjectLifecycleManager", () => {
 		});
 	});
 
+	describe("guardUnsavedChanges", () => {
+		it("runs the action right away without opening the dialog when there is nothing unsaved", async () => {
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+			const proceed = jest.fn();
+			const onDiscard = jest.fn();
+
+			await lifecycle(store).guardUnsavedChanges(proceed, { onDiscard });
+
+			expect(proceed).toHaveBeenCalledTimes(1);
+			expect(onDiscard).not.toHaveBeenCalled();
+			expect(store.getState().ui.unsavedChangesDialogVisible).toBe(false);
+		});
+
+		it("shows the dialog with the given message and holds the action back", async () => {
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+			store.setState({ hasUnsavedChanges: true });
+			const proceed = jest.fn();
+
+			await lifecycle(store).guardUnsavedChanges(proceed, {
+				message: "Export en cours",
+			});
+
+			const { ui } = store.getState();
+			expect(ui.unsavedChangesDialogVisible).toBe(true);
+			expect(ui.unsavedChangesDialogMessage).toBe("Export en cours");
+			expect(ui.onUnsavedChangesDialogCancel).toBeNull();
+			expect(proceed).not.toHaveBeenCalled();
+		});
+
+		it("has no message by default", async () => {
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+			store.setState({ hasUnsavedChanges: true });
+
+			await lifecycle(store).guardUnsavedChanges(jest.fn());
+
+			expect(store.getState().ui.unsavedChangesDialogMessage).toBeNull();
+		});
+
+		it("discards then proceeds when the user continues without saving", async () => {
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+			store.setState({ hasUnsavedChanges: true });
+			const calls: string[] = [];
+
+			await lifecycle(store).guardUnsavedChanges(
+				() => {
+					calls.push("proceed");
+				},
+				{ onDiscard: () => calls.push("discard") },
+			);
+			store.getState().ui.onUnsavedChangesDialogContinue?.();
+
+			expect(calls).toEqual(["discard", "proceed"]);
+		});
+	});
+
 	describe("abandon des modifications (« continuer sans enregistrer »)", () => {
 		async function openProjectWithDraft(
 			store: ReturnType<typeof createProjectStore>,

@@ -9,7 +9,7 @@ import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import useAutoStartTour from "@/ui/components/product-tour/engine/useAutoStartTour";
 import useStartTour from "@/ui/components/product-tour/engine/useStartTour";
 import { useCallback } from "react";
-import shouldStartEditorTour from "./editor-tour-eligibility";
+import { shouldStartEditorTour } from "@/ui/components/product-tour/engine/tour-eligibility";
 import EDITOR_TOUR_STEP_BUILDERS, {
 	isEditorTourKind,
 } from "./editor-tour-step-builders";

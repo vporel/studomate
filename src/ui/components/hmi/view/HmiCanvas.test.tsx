@@ -17,9 +17,6 @@ jest.mock("@/ui/components/hmi/context-menu/HmiContextMenu", () => ({
 	__esModule: true,
 	default: () => null,
 }));
-jest.mock("@/ui/components/hmi/logic/hmi-action.executor", () => ({
-	executeHmiAction: jest.fn(),
-}));
 jest.mock("@/ui/lib/context-menu/useContextMenuState", () => ({
 	__esModule: true,
 	default: () => ({
@@ -135,7 +132,7 @@ function setup({
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			simulationManager: {},
-			hmiManager: {},
+			hmiManager: { executeAction: jest.fn() },
 			project: null,
 		}),
 	);

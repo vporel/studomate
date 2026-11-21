@@ -296,6 +296,18 @@ describe("authStore", () => {
 			if (!result.ok) expect(result.code).toBe("emailAlreadyExists");
 		});
 
+		it("reconnaît 'already registered' sans code d'erreur", async () => {
+			mockSignUp.mockResolvedValue({
+				data: {},
+				error: { message: "User already registered" },
+			});
+
+			const result = await authStore.getState().signUp("x@x.com", "p");
+
+			if (!result.ok) expect(result.code).toBe("emailAlreadyExists");
+			expect(result.ok).toBe(false);
+		});
+
 		it("retourne un message français pour un mot de passe faible", async () => {
 			mockSignUp.mockResolvedValue({
 				data: {},
@@ -344,6 +356,18 @@ describe("authStore", () => {
 					code: "invalid_credentials",
 					message: "Invalid login credentials",
 				},
+			});
+
+			const result = await authStore.getState().signIn("x@x.com", "wrong");
+
+			expect(result.ok).toBe(false);
+			if (!result.ok) expect(result.code).toBe("invalidCredentials");
+		});
+
+		it("reconnaît 'invalid login credentials' sans code d'erreur", async () => {
+			mockSignInWithPassword.mockResolvedValue({
+				data: {},
+				error: { message: "Invalid login credentials" },
 			});
 
 			const result = await authStore.getState().signIn("x@x.com", "wrong");

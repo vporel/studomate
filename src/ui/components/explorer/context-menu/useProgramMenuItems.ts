@@ -1,5 +1,6 @@
 "use client";
 
+import { getProgramPageData } from "@/ui/stores/project/pages-data";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";
 import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
@@ -32,11 +33,7 @@ export default function useProgramMenuItems(
 						onClick: () => {
 							const program = manager.getProgramOrThrow(programId);
 							if (program) {
-								pagesManager.openPage({
-									id: programId,
-									type: programType,
-									title: program.name,
-								});
+								pagesManager.openPage(getProgramPageData(program));
 							}
 						},
 					},

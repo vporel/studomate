@@ -1,5 +1,5 @@
 import type { ParkingState } from "./parking.model";
-import { mix } from "@/3d-scenes/scene-math";
+import { lerp } from "@/lib/number";
 
 /**
  * Blend of two consecutive states for a smooth rendering. A car is matched by its id: a car
@@ -15,13 +15,13 @@ export default function interpolateParking(
 	return {
 		...to,
 		barriers: {
-			entry: mix(from.barriers.entry, to.barriers.entry, ratio),
-			exit: mix(from.barriers.exit, to.barriers.exit, ratio),
+			entry: lerp(from.barriers.entry, to.barriers.entry, ratio),
+			exit: lerp(from.barriers.exit, to.barriers.exit, ratio),
 		},
 		cars: to.cars.map((car) => {
 			const before = earlier.get(car.id);
 			if (!before || before.phase !== car.phase) return car;
-			return { ...car, s: mix(before.s, car.s, ratio) };
+			return { ...car, s: lerp(before.s, car.s, ratio) };
 		}),
 	};
 }

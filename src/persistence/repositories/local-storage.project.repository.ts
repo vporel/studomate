@@ -1,3 +1,4 @@
+import { isRecord } from "@/lib/object";
 import Project from "@/schemas/project/project.schema";
 import {
 	deserializeProject,
@@ -124,7 +125,7 @@ export default class LocalStorageProjectRepository implements ProjectRepository 
 			const raw = localStorage.getItem(projectKey(id));
 			if (!raw) return null;
 			const parsed = JSON.parse(raw);
-			return parsed && typeof parsed === "object" ? parsed : null;
+			return isRecord(parsed) ? parsed : null;
 		} catch (e) {
 			console.error(`Projet "${id}" illisible, ignoré :`, e);
 			return null;
@@ -135,9 +136,7 @@ export default class LocalStorageProjectRepository implements ProjectRepository 
 		try {
 			const raw = localStorage.getItem(PROJECTS_INDEX_KEY);
 			const parsed = raw ? JSON.parse(raw) : {};
-			if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-				return {};
-			}
+			if (!isRecord(parsed)) return {};
 			return parsed as ProjectIndex;
 		} catch {
 			return {};
@@ -171,7 +170,7 @@ export default class LocalStorageProjectRepository implements ProjectRepository 
 					return null;
 				}
 			})
-			.filter((p): p is Record<string, any> => !!p && typeof p === "object");
+			.filter((p): p is Record<string, any> => isRecord(p));
 	}
 
 	private writeKey(key: string, value: unknown): SaveResult {

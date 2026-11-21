@@ -18,6 +18,7 @@ import {
 	type DeviceMessage,
 	type PinValue,
 } from "./messages";
+import { clamp } from "@/lib/number";
 import { FrameDecoder } from "./frame";
 import { isFirmwareOutdated } from "./firmware-version";
 import type { RemoteIoPlan } from "./remote-io-plan";
@@ -250,7 +251,7 @@ export default class RemoteIoClient {
 			const { min, max } = output.range;
 			const numeric =
 				typeof raw === "boolean" ? (raw ? 1 : 0) : Math.round(raw);
-			const value = Math.min(max, Math.max(min, numeric));
+			const value = clamp(numeric, min, max);
 			if (this.outputValues.get(output.pin) !== value) changed = true;
 			this.outputValues.set(output.pin, value);
 		}

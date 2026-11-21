@@ -1,5 +1,6 @@
 "use client";
 
+import isTextEntryTarget from "@/ui/lib/is-text-entry-target";
 import { useEffect, type RefObject } from "react";
 import useCanEdit from "@/ui/components/projects/useCanEdit";
 import { usePageVisible } from "@/ui/components/pages/page-visibility-context";
@@ -82,11 +83,7 @@ export default function useLadderSectionSelection(
 		const onKeyDown = (event: KeyboardEvent) => {
 			if (event.key !== "Delete" && event.key !== "Backspace") return;
 			const target = event.target as HTMLElement | null;
-			if (
-				target &&
-				(target.tagName === "INPUT" || target.tagName === "TEXTAREA")
-			)
-				return;
+			if (isTextEntryTarget(target)) return;
 			const embeddedBlock = target?.closest?.("[data-embedded-block]");
 			if (embeddedBlock && !embeddedBlock.contains(container.current)) return;
 			const state = store.getState();

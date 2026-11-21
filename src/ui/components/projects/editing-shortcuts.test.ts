@@ -77,8 +77,26 @@ function setup({
 	};
 }
 
+const editableDiv = () => {
+	const div = document.createElement("div");
+	Object.defineProperty(div, "isContentEditable", { value: true });
+	return div;
+};
+
 describe("handleEditingShortcut", () => {
 	afterEach(() => jest.clearAllMocks());
+
+	it("ignores what is typed in editable content", () => {
+		const { store, copyCutPaste } = setup();
+
+		const handled = handleEditingShortcut(
+			event("c", { ctrlKey: true, target: editableDiv() }),
+			store,
+		);
+
+		expect(handled).toBe(false);
+		expect(copyCutPaste.copySelectedElements).not.toHaveBeenCalled();
+	});
 
 	it("ignores what is typed in a text field", () => {
 		const { store, copyCutPaste } = setup();

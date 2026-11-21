@@ -1,6 +1,5 @@
 "use client";
 
-import { range } from "@/lib/array";
 import { RefObject } from "react";
 
 type StepNumberInputProps = {
@@ -32,7 +31,7 @@ const StepNumberInput = ({
 		onKeyDown={(e) => {
 			if (e.key === "Enter" || e.key === "Escape") {
 				inputRef.current?.blur();
-			} else if (e.key.length == 1 && !range(0, 10).includes(parseInt(e.key))) {
+			} else if (e.key.length == 1 && !/^\d$/.test(e.key)) {
 				e.preventDefault();
 			}
 		}}

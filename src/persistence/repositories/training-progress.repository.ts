@@ -1,3 +1,4 @@
+import { isRecord } from "@/lib/object";
 import { readJson, writeJson } from "../safe-local-storage";
 import { isSupabaseConfigured, supabase } from "./supabase-client";
 
@@ -12,16 +13,12 @@ type LocalProgress = Record<string, LocalEntry>;
 
 function readLocal(): LocalProgress {
 	const parsed = readJson(TRAINING_PROGRESS_LOCAL_KEY);
-	if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+	if (!isRecord(parsed)) return {};
 	const progress: LocalProgress = {};
 	for (const [moduleId, value] of Object.entries(parsed)) {
 		if (typeof value === "string") {
 			progress[moduleId] = { stepId: value, updatedAt: null };
-		} else if (
-			value &&
-			typeof value === "object" &&
-			typeof (value as LocalEntry).stepId === "string"
-		) {
+		} else if (isRecord(value) && typeof value.stepId === "string") {
 			const { stepId, updatedAt } = value as LocalEntry;
 			progress[moduleId] = {
 				stepId,

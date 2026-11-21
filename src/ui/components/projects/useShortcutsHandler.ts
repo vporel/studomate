@@ -1,5 +1,6 @@
 "use client";
 
+import isTextEntryTarget from "@/ui/lib/is-text-entry-target";
 import { canEdit } from "@/ui/stores/project/editability";
 import { useEffect } from "react";
 import { useShallow } from "zustand/shallow";
@@ -27,10 +28,7 @@ export default function useShortcutsHandler() {
 		if (!projectStore) return;
 
 		const handleKeyDown = (e: KeyboardEvent) => {
-			const isInput =
-				(e.target as HTMLElement).tagName === "INPUT" ||
-				(e.target as HTMLElement).tagName === "TEXTAREA";
-			if (isInput) return; //Don't trigger shortcuts when the user is typing in an input or textarea
+			if (isTextEntryTarget(e.target)) return;
 			const designing = canEdit(projectStore.getState());
 
 			if (e.ctrlKey || e.metaKey) {

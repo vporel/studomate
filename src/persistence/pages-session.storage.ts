@@ -1,3 +1,4 @@
+import { isRecord } from "@/lib/object";
 import { readJson, writeJson } from "./safe-local-storage";
 
 export type PagesSession = {
@@ -55,7 +56,7 @@ type SessionMap = Record<string, StoredSession>;
 
 function readAll(): SessionMap {
 	const parsed = readJson(STORAGE_KEY);
-	if (!parsed || typeof parsed !== "object") return {};
+	if (!isRecord(parsed)) return {};
 	const map: SessionMap = {};
 	for (const [id, value] of Object.entries(parsed)) {
 		const entry = normalize(value);
@@ -70,8 +71,8 @@ function writeAll(map: SessionMap): void {
 }
 
 function normalize(value: unknown): StoredSession | null {
-	if (!value || typeof value !== "object") return null;
-	const candidate = value as Record<string, unknown>;
+	if (!isRecord(value)) return null;
+	const candidate = value;
 	if (!Array.isArray(candidate.pagesOrder)) return null;
 	return {
 		pagesOrder: candidate.pagesOrder.filter(

@@ -57,7 +57,11 @@ describe.each([
 	afterEach(() => jest.clearAllMocks());
 
 	it(`opens the page for the given ${type}`, () => {
-		manager.getProgramOrThrow.mockReturnValue({ name: "Program 1" });
+		manager.getProgramOrThrow.mockReturnValue({
+			id,
+			type,
+			name: "Program 1",
+		});
 		const { result } = setup(ProjectMode.DESIGN);
 
 		act(() => result.current(id)[0][0].onClick?.());

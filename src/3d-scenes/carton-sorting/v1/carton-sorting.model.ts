@@ -1,4 +1,4 @@
-import { clamp } from "@/3d-scenes/scene-math";
+import { clamp } from "@/lib/number";
 import type { SceneModel, ScenePointValues } from "@/3d-scenes/scene-model";
 
 /** Distance travelled on T1 up to the detection station. */

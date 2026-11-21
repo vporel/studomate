@@ -290,6 +290,21 @@ describe("useShortcutsHandler", () => {
 		document.body.removeChild(input);
 	});
 
+	const editableDiv = () => {
+		const div = document.createElement("div");
+		Object.defineProperty(div, "isContentEditable", { value: true });
+		return div;
+	};
+
+	it("ignores shortcuts typed inside editable content", () => {
+		setup(ProjectMode.DESIGN);
+		const div = editableDiv();
+		document.body.appendChild(div);
+		dispatchShortcut("s", { target: div });
+		expect(saveProject).not.toHaveBeenCalled();
+		document.body.removeChild(div);
+	});
+
 	it("ignores shortcuts typed inside an input", () => {
 		setup(ProjectMode.DESIGN);
 		const input = document.createElement("input");

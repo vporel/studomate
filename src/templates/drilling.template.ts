@@ -18,6 +18,7 @@ import {
 	TRANSITION_HANDLE_SOURCE_SUCCESSOR,
 } from "@/schemas/grafcet/transition.schema";
 import DrillingDescriptor from "@/3d-scenes/drilling/v1/drilling.descriptor";
+import { buildSuggestedScene3d } from "@/3d-scenes/scene3d-wiring";
 import {
 	createArithmeticBlockElement,
 	createCompareBlockElement,
@@ -206,19 +207,10 @@ export function createDrillingProject(locale: Locale = "fr"): Project {
 		VariableBuilder.buildAnalogInput(createRandomId(), "position"),
 	);
 
-	const variableIdByMnemonic = new Map(
-		project.variables.map((variable) => [variable.mnemonic, variable.id]),
+	project.scene3d = buildSuggestedScene3d(
+		DrillingDescriptor,
+		project.variables,
 	);
-	project.scene3d = {
-		sceneId: DrillingDescriptor.id,
-		sceneVersion: DrillingDescriptor.version,
-		bindings: Object.fromEntries(
-			DrillingDescriptor.points.map((point) => [
-				point.id,
-				variableIdByMnemonic.get(point.suggestedMnemonic)!,
-			]),
-		),
-	};
 
 	return project;
 }

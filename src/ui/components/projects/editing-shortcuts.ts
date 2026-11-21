@@ -1,3 +1,4 @@
+import isTextEntryTarget from "@/ui/lib/is-text-entry-target";
 import { SNAP_GRID } from "@/ui/components/hmi/logic/constants";
 import { getT } from "@/ui/i18n/translateGlobal";
 import { getLastMousePosition } from "@/ui/lib/mouse-position";
@@ -39,9 +40,7 @@ export default function handleEditingShortcut(
 	e: ShortcutEvent,
 	store: StoreApi<ProjectStoreState>,
 ): boolean {
-	const target = e.target as HTMLElement | null;
-	if (target?.tagName === "INPUT" || target?.tagName === "TEXTAREA")
-		return false;
+	if (isTextEntryTarget(e.target)) return false;
 	const state = store.getState();
 	const editable = canEdit(state);
 	const copyCutPaste = activeCopyCutPasteManager(state);

@@ -1,3 +1,5 @@
+import { isRecord } from "@/lib/object";
+
 export const SCENE_PROTOCOL_VERSION = 1;
 
 export type SceneSimulationStatus = "stopped" | "running" | "paused";
@@ -59,8 +61,8 @@ export function toEnvelope<M extends SceneMessage>(
 
 /** The message carried by `raw`, or `null` when it is not a message of this protocol version. */
 export function parseSceneMessage(raw: unknown): SceneMessage | null {
-	if (typeof raw !== "object" || raw === null) return null;
-	const candidate = raw as { protocolVersion?: unknown; type?: unknown };
+	if (!isRecord(raw)) return null;
+	const candidate = raw;
 	if (candidate.protocolVersion !== SCENE_PROTOCOL_VERSION) return null;
 	if (!MESSAGE_TYPES.includes(candidate.type as SceneMessage["type"])) {
 		return null;
@@ -76,8 +78,8 @@ export function parseSceneMessage(raw: unknown): SceneMessage | null {
 export function foreignVersionMessageType(
 	raw: unknown,
 ): SceneMessage["type"] | null {
-	if (typeof raw !== "object" || raw === null) return null;
-	const candidate = raw as { protocolVersion?: unknown; type?: unknown };
+	if (!isRecord(raw)) return null;
+	const candidate = raw;
 	const type = candidate.type as SceneMessage["type"];
 	return typeof candidate.protocolVersion === "number" &&
 		candidate.protocolVersion !== SCENE_PROTOCOL_VERSION &&

@@ -3,6 +3,8 @@ import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import { PROJECT_SCHEMA_VERSION } from "@/schemas/project/project.schema";
 import {
+	PROJECT_FILE_EXTENSION,
+	PROJECT_FILE_MIME_TYPE,
 	importProjectFromFile,
 	parseProjectFromFile,
 	ProjectFileError,
@@ -167,5 +169,12 @@ describe("fichier de projet", () => {
 
 			expect(() => importProjectFromFile(futur)).toThrow(ProjectFileError);
 		});
+	});
+});
+
+describe("project file format", () => {
+	it("is a JSON file", () => {
+		expect(PROJECT_FILE_EXTENSION).toBe(".json");
+		expect(PROJECT_FILE_MIME_TYPE).toBe("application/json");
 	});
 });

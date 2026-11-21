@@ -1,4 +1,8 @@
-import { serializeProjectToFile } from "@/persistence/project-file";
+import {
+	PROJECT_FILE_EXTENSION,
+	PROJECT_FILE_MIME_TYPE,
+	serializeProjectToFile,
+} from "@/persistence/project-file";
 import Project from "@/schemas/project/project.schema";
 import { downloadFile } from "@/ui/lib/download";
 
@@ -10,7 +14,7 @@ import { downloadFile } from "@/ui/lib/download";
 export const exportProject = (project: Project, fileName: string) => {
 	downloadFile(
 		serializeProjectToFile(project),
-		`${fileName}.json`,
-		"application/json",
+		`${fileName}${PROJECT_FILE_EXTENSION}`,
+		PROJECT_FILE_MIME_TYPE,
 	);
 };

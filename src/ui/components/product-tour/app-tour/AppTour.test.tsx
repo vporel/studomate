@@ -11,9 +11,8 @@ jest.mock("./useStartAppTour", () => ({
 }));
 
 const shouldStartAppTour = jest.fn();
-jest.mock("@/ui/components/product-tour/app-tour/app-tour-eligibility", () => ({
-	__esModule: true,
-	default: () => shouldStartAppTour(),
+jest.mock("@/ui/components/product-tour/engine/tour-eligibility", () => ({
+	shouldStartAppTour: () => shouldStartAppTour(),
 }));
 
 describe("AppTour", () => {

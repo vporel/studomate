@@ -1,4 +1,5 @@
 import JunctionHelper from "@/schemas/grafcet/helpers/junction.helper";
+import { clamp } from "@/lib/number";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import EdgesFactory from "../factories/edges.factory";
 import NodesFactory from "../factories/nodes.factory";
@@ -194,14 +195,8 @@ export default class GrafcetWorkflowManager {
 					id: element.id,
 					dragging: change.dragging,
 					position: {
-						x:
-							follows && axis === "x"
-								? Math.min(Math.max(base.x + dx, 0), maxX)
-								: base.x,
-						y:
-							follows && axis === "y"
-								? Math.min(Math.max(base.y + dy, 0), maxY)
-								: base.y,
+						x: follows && axis === "x" ? clamp(base.x + dx, 0, maxX) : base.x,
+						y: follows && axis === "y" ? clamp(base.y + dy, 0, maxY) : base.y,
 					},
 				});
 			}

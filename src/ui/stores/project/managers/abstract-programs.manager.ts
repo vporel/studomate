@@ -1,3 +1,4 @@
+import { getProgramPageData } from "../pages-data";
 import { deepObjectsComparison } from "@/lib/object";
 import { refuseEdit } from "../editability";
 import Program, {
@@ -40,11 +41,7 @@ export default abstract class AbstractProgramsManager<
 		const program = create(newProject);
 		this.analytics.trackEvent("program-created", { type: this.programType });
 		this.feedback?.notify("program-created");
-		this.getStoreState().pagesManager.openPage({
-			id: program.id,
-			type: this.programType,
-			title: program.name,
-		});
+		this.getStoreState().pagesManager.openPage(getProgramPageData(program));
 		this.setStoreState(() => ({
 			project: newProject,
 			hasUnsavedChanges: true,

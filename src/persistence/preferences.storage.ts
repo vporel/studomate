@@ -1,3 +1,4 @@
+import { isRecord } from "@/lib/object";
 import { detectBrowserLocale, isLocale, type Locale } from "@/i18n/config";
 import {
 	readJson,
@@ -174,8 +175,8 @@ export type Scene3dFloatingFrame = {
 /** `null` when the frame was never placed or its stored value is not usable. */
 export function getScene3dFloatingFrame(): Scene3dFloatingFrame | null {
 	const stored = readJson(SCENE3D_FLOATING_FRAME_KEY);
-	if (typeof stored !== "object" || stored === null) return null;
-	const { x, y, width, height } = stored as Record<string, unknown>;
+	if (!isRecord(stored)) return null;
+	const { x, y, width, height } = stored;
 	return [x, y, width, height].every(
 		(value) => typeof value === "number" && Number.isFinite(value),
 	)

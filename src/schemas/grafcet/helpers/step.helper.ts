@@ -33,6 +33,15 @@ export default class StepHelper {
 	}
 
 	/**
+	 * The step number when it is a valid one (an integer, 0 or more), `null` otherwise. Works on
+	 * plain data and also covers null/undefined/"" which imported data may carry.
+	 */
+	static getValidNumber(data: StepData): number | null {
+		const n = data.number;
+		return typeof n === "number" && Number.isInteger(n) && n >= 0 ? n : null;
+	}
+
+	/**
 	 * Mnémonique de la variable synthétique X{n} associée à une étape numérotée n.
 	 */
 	static getStepVariableMnemonic(stepNumber: number): string {

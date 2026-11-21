@@ -10,7 +10,7 @@ import HmiPageView from "./HmiPageView";
 /**
  * Onglet "Simulation HMI" (voir `HmiManager.openHmiSimulationPageIfAny`) — un seul onglet
  * fixe dans lequel la page HMI affichée change (voir `hmiSimulationActivePageId`), au lieu de
- * naviguer entre onglets de conception : l'action "changer de page" (voir `executeHmiAction`)
+ * naviguer entre onglets de conception : l'action "changer de page" (voir `HmiManager.executeAction`)
  * reste ainsi interne à cette vue, sans perturber la barre d'onglets.
  *
  * `HmiPageView` remonté avec une nouvelle clé à chaque changement de page plutôt que de faire

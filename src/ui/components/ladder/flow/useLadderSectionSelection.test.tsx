@@ -165,6 +165,19 @@ describe("useLadderSectionSelection", () => {
 		otherBlock.remove();
 	});
 
+	it("Suppr en cours de saisie dans un contenu éditable → ignoré", () => {
+		const { getByTestId, deleteSections } = setup();
+		pointerDown(getByTestId("h-s1"));
+		const div = document.createElement("div");
+		Object.defineProperty(div, "isContentEditable", { value: true });
+		document.body.appendChild(div);
+
+		fireEvent.keyDown(div, { key: "Delete" });
+
+		expect(deleteSections).not.toHaveBeenCalled();
+		div.remove();
+	});
+
 	it("Suppr en cours de saisie dans un input → ignoré", () => {
 		const { getByTestId, deleteSections } = setup();
 		pointerDown(getByTestId("h-s1"));

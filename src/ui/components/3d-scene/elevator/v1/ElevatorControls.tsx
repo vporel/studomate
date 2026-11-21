@@ -6,22 +6,22 @@ import {
 	type ElevatorButton,
 	type ElevatorState,
 } from "@/3d-scenes/elevator/v1/elevator.model";
-import { useTranslations } from "next-intl";
-import { useEffect, useRef } from "react";
-import {
-	ConsoleDisplay,
-	Lamp,
-	consoleButtonStyle,
-	PushButtonIllustration,
-} from "@/ui/components/3d-scene/parts/ConsoleParts";
 import ConsoleGroup from "@/ui/components/3d-scene/parts/ConsoleGroup";
 import ConsolePanels from "@/ui/components/3d-scene/parts/ConsolePanels";
+import {
+	COMMAND_COLOR,
+	consoleButtonStyle,
+	ConsoleDisplay,
+	LampWithLegend,
+	PushButtonIllustration,
+	SENSOR_COLOR,
+} from "@/ui/components/3d-scene/parts/ConsoleParts";
 import type { SceneComponentProps } from "@/ui/components/3d-scene/scene-views";
 import useSampledValue from "@/ui/components/3d-scene/useSampledValue";
+import { useTranslations } from "next-intl";
+import { useEffect, useRef } from "react";
 
 const BUTTON_COLOR = "#37474f";
-const COMMAND_COLOR = "#ef6c00";
-const SENSOR_COLOR = "#2e7d32";
 const FLOORS = [2, 1, 0] as const;
 const PANELS_WIDTH = 250;
 
@@ -168,19 +168,7 @@ export default function ElevatorControls({
 							{ id: "doorOpen", on: doorOpen, color: SENSOR_COLOR },
 						] as const
 					).map(({ id, on, color }) => (
-						<span
-							key={id}
-							style={{
-								display: "flex",
-								alignItems: "center",
-								gap: 6,
-								font: "12px system-ui, sans-serif",
-								color: "#37474f",
-							}}
-						>
-							<Lamp on={on} color={color} label={tLamps(id)} />
-							{tLamps(id)}
-						</span>
+						<LampWithLegend key={id} on={on} color={color} label={tLamps(id)} />
 					))}
 				</div>
 			</ConsoleGroup>

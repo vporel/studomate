@@ -1,5 +1,5 @@
 import type { CartonSortingState } from "./carton-sorting.model";
-import { mix } from "@/3d-scenes/scene-math";
+import { lerp } from "@/lib/number";
 
 /**
  * Blend of two consecutive states for a smooth rendering. A carton that goes back to the start
@@ -15,7 +15,7 @@ export default function interpolateCartonSorting(
 		to.cartonPos < from.cartonPos ||
 		to.cartonY < from.cartonY ||
 		to.cartonXExtra < from.cartonXExtra;
-	const carton = (a: number, b: number) => (respawned ? b : mix(a, b, ratio));
+	const carton = (a: number, b: number) => (respawned ? b : lerp(a, b, ratio));
 	return {
 		...to,
 		sortedCartons: to.sortedCartons.map((sorted, index) => {
@@ -26,16 +26,16 @@ export default function interpolateCartonSorting(
 				before.tall === sorted.tall &&
 				before.x <= sorted.x;
 			return sameCarton
-				? { ...sorted, x: mix(before.x, sorted.x, ratio) }
+				? { ...sorted, x: lerp(before.x, sorted.x, ratio) }
 				: sorted;
 		}),
 		cartonPos: carton(from.cartonPos, to.cartonPos),
 		cartonY: carton(from.cartonY, to.cartonY),
 		cartonXExtra: carton(from.cartonXExtra, to.cartonXExtra),
 		cylinders: {
-			p1: mix(from.cylinders.p1, to.cylinders.p1, ratio),
-			p2: mix(from.cylinders.p2, to.cylinders.p2, ratio),
-			p3: mix(from.cylinders.p3, to.cylinders.p3, ratio),
+			p1: lerp(from.cylinders.p1, to.cylinders.p1, ratio),
+			p2: lerp(from.cylinders.p2, to.cylinders.p2, ratio),
+			p3: lerp(from.cylinders.p3, to.cylinders.p3, ratio),
 		},
 	};
 }

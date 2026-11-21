@@ -28,7 +28,7 @@ export default class StepAnalyser extends GrafcetElementAnalyser<Step> {
 			}
 			return issues;
 		}
-		if (!Number.isInteger(step.data.number) || step.data.number < 0) {
+		if (StepHelper.getValidNumber(step.data) === null) {
 			issues.push(
 				new ProjectAnalyserIssue(
 					"error",

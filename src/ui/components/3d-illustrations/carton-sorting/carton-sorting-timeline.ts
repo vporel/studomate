@@ -1,5 +1,7 @@
 /** Scripted sorting cycle of the carton-sorting illustration: world units, seconds. */
 
+import { lerp } from "@/lib/number";
+
 export const STATION_X = 5.16;
 export const T1_START_X = -0.6;
 export const T1_WIDTH = 0.6;
@@ -49,9 +51,6 @@ type Phase = {
 		carton: IllustrationCarton,
 	) => void;
 };
-
-const lerp = (from: number, to: number, ratio: number) =>
-	from + (to - from) * ratio;
 
 const cartonPhases = (tall: boolean): Phase[] => {
 	const targetZ = tall ? HIGH_Z : LOW_Z;

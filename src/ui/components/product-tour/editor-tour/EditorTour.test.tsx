@@ -11,9 +11,8 @@ jest.mock("@/ui/components/product-tour/engine/useStartTour", () => ({
 }));
 
 const shouldStartEditorTour = jest.fn();
-jest.mock("./editor-tour-eligibility", () => ({
-	__esModule: true,
-	default: (kind: string) => shouldStartEditorTour(kind),
+jest.mock("@/ui/components/product-tour/engine/tour-eligibility", () => ({
+	shouldStartEditorTour: (kind: string) => shouldStartEditorTour(kind),
 }));
 
 let storeState: {

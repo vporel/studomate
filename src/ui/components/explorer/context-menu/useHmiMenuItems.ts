@@ -1,5 +1,6 @@
 "use client";
 
+import { getHmiPageData } from "@/ui/stores/project/pages-data";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";
 import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
@@ -27,11 +28,7 @@ export default function useHmiMenuItems(): (
 						label: t("open"),
 						onClick: () => {
 							const page = hmiManager.getHmiPageOrThrow(hmiPageId);
-							pagesManager.openPage({
-								id: hmiPageId,
-								type: "hmi",
-								title: page.name,
-							});
+							pagesManager.openPage(getHmiPageData(page));
 						},
 					},
 				],

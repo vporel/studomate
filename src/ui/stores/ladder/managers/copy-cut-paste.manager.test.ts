@@ -509,6 +509,37 @@ describe("LadderCopyCutPasteManager (ladder)", () => {
 			);
 		});
 
+		it("garde les positions et les points de connexion de la section d'origine", () => {
+			const { store, contact, coil } = buildMultiSectionStore();
+
+			store.getState().copyCutPasteManager.duplicateSection("s1");
+
+			const copy = store.getState().ladder.sections[1];
+			expect(copy.elements.map((e) => e.position)).toEqual([
+				contact.position,
+				coil.position,
+			]);
+			expect(copy.connections[0].data.points).toEqual([[0, 0]]);
+		});
+
+		it("n'emporte pas une connexion dont une extrémité est absente de la section", () => {
+			const { store } = buildMultiSectionStore();
+			const s1 = store.getState().ladder.sections[0];
+			s1.connections.push(
+				new Connection(
+					"dangling",
+					{ id: s1.elements[0].id, type: "contact", handle: "source" },
+					{ id: "absent", type: "coil", handle: "target" },
+					{ points: [] },
+				),
+			);
+
+			store.getState().copyCutPasteManager.duplicateSection("s1");
+
+			const copy = store.getState().ladder.sections[1];
+			expect(copy.connections).toHaveLength(1);
+		});
+
 		it("suffixe le nom des blocs timer pour ne pas dupliquer l'instance", () => {
 			const timer = createTimerBlockElement(
 				{ name: "Tempo", timerType: "TON", pt: "T#5s" },

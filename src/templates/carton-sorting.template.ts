@@ -1,4 +1,5 @@
 import CartonSortingDescriptor from "@/3d-scenes/carton-sorting/v1/carton-sorting.descriptor";
+import { buildSuggestedScene3d } from "@/3d-scenes/scene3d-wiring";
 import { createRandomId } from "@/ids";
 import type { Locale } from "@/i18n/config";
 import createTemplateText from "@/templates/template-text";
@@ -70,19 +71,10 @@ export function createCartonSortingProject(locale: Locale = "fr"): Project {
 	counter.comment = t("counterComment");
 	project.variables.push(counter);
 
-	const variableIdByMnemonic = new Map(
-		project.variables.map((variable) => [variable.mnemonic, variable.id]),
+	project.scene3d = buildSuggestedScene3d(
+		CartonSortingDescriptor,
+		project.variables,
 	);
-	project.scene3d = {
-		sceneId: CartonSortingDescriptor.id,
-		sceneVersion: CartonSortingDescriptor.version,
-		bindings: Object.fromEntries(
-			CartonSortingDescriptor.points.map((point) => [
-				point.id,
-				variableIdByMnemonic.get(point.suggestedMnemonic)!,
-			]),
-		),
-	};
 
 	return project;
 }

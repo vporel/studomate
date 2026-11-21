@@ -53,6 +53,15 @@ describe("StepNumberInput", () => {
 		expect(fireEvent.keyDown(input, { key: "Backspace" })).toBe(true);
 	});
 
+	it("laisse passer 0 et 9 et bloque les caractères voisins dans la table ASCII", () => {
+		const { input } = setup();
+
+		expect(fireEvent.keyDown(input, { key: "0" })).toBe(true);
+		expect(fireEvent.keyDown(input, { key: "9" })).toBe(true);
+		expect(fireEvent.keyDown(input, { key: "/" })).toBe(false);
+		expect(fireEvent.keyDown(input, { key: ":" })).toBe(false);
+	});
+
 	it.each(["Enter", "Escape"])(
 		"%s fait perdre le focus et déclenche la sauvegarde",
 		(key) => {

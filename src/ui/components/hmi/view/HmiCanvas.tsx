@@ -21,7 +21,6 @@ import {
 	useState,
 } from "react";
 import { SNAP_GRID } from "@/ui/components/hmi/logic/constants";
-import { executeHmiAction } from "@/ui/components/hmi/logic/hmi-action.executor";
 import HmiCanvasSidebarSection from "./HmiCanvasSidebarSection";
 import HmiObjectsPanel from "./HmiObjectsPanel";
 import HmiPagePropertiesPanel from "./HmiPagePropertiesPanel";
@@ -142,7 +141,7 @@ const HmiCanvas = ({ isSimulation, zoom }: HmiCanvasProps) => {
 			if (!widget) return;
 			const actions = (widget.data as { events?: Record<string, HmiAction[]> })
 				.events?.[eventName];
-			actions?.forEach((action) => executeHmiAction(action, hmiManager));
+			actions?.forEach((action) => hmiManager.executeAction(action));
 		},
 		[hmiPage.widgets, hmiManager],
 	);

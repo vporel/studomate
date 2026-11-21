@@ -84,24 +84,18 @@ export const createProjectStore = (env: ProjectStoreEnvironment) => {
 				message = null,
 			}: { discardDraft?: boolean; message?: string | null } = {},
 		) => {
-			if (!get().hasUnsavedChanges) {
-				set((state) => ({ ui: { ...state.ui, [uiKey]: true } }));
-				return;
-			}
-			set((state) => ({
-				ui: {
-					...state.ui,
-					unsavedChangesDialogVisible: true,
-					unsavedChangesDialogMessage: message,
-					onUnsavedChangesDialogCancel: null,
-					onUnsavedChangesDialogContinue: () => {
-						const project = get().project;
-						if (discardDraft && project)
-							env.persistence?.drafts.delete(project.id);
-						set((state) => ({ ui: { ...state.ui, [uiKey]: true } }));
-					},
+			void lifecycleManager.guardUnsavedChanges(
+				() => set((state) => ({ ui: { ...state.ui, [uiKey]: true } })),
+				{
+					message,
+					onDiscard: discardDraft
+						? () => {
+								const project = get().project;
+								if (project) env.persistence?.drafts.delete(project.id);
+							}
+						: undefined,
 				},
-			}));
+			);
 		};
 
 		/** Setter d'un drapeau de visibilité simple de `ui` (sans logique de garde). */

@@ -52,7 +52,7 @@ export type HmiAction = HmiNavigateToPageAction;
 
 /** Liaisons événement -> actions déclenchées d'un widget, clé par nom d'événement propre à son
  * type (ex. `HmiPushButtonEventName`) — plusieurs actions peuvent être liées au même événement,
- * exécutées dans l'ordre (voir `executeHmiAction`). */
+ * exécutées dans l'ordre (voir `HmiManager.executeAction`). */
 export type HmiWidgetEvents<TEventName extends string> = Partial<
 	Record<TEventName, HmiAction[]>
 >;

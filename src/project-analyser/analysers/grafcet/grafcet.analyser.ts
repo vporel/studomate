@@ -27,10 +27,6 @@ export function getStepVariableId(
 	return `grafcet-${grafcetId}-step-${stepNumber}`;
 }
 
-export function getStepVariableMnemonic(stepNumber: number): string {
-	return StepHelper.getStepVariableMnemonic(stepNumber);
-}
-
 export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 	/**
 	 * Les variables d'étape synthétiques générées par ce grafcet (`X{n}`) — voir
@@ -188,21 +184,13 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 		const variables: Variable[] = [];
 
 		for (const step of Object.values(grafcet.steps)) {
-			const n = step.data.number;
-			if (
-				n === null ||
-				n === undefined ||
-				n === "" ||
-				!Number.isInteger(n) ||
-				(n as number) < 0
-			)
-				continue;
-			if (seen.has(n as number)) continue;
-			seen.add(n as number);
+			const n = StepHelper.getValidNumber(step.data);
+			if (n === null || seen.has(n)) continue;
+			seen.add(n);
 			variables.push(
 				new Variable({
 					id: getStepVariableId(grafcet.id, n),
-					mnemonic: getStepVariableMnemonic(n),
+					mnemonic: StepHelper.getStepVariableMnemonic(n),
 					zone: "memory",
 					type: "BOOL",
 					dialect,

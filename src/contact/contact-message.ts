@@ -1,3 +1,4 @@
+import { isRecord } from "@/lib/object";
 import { isLocale, type Locale } from "@/i18n/config";
 
 /** Topics a visitor can write about, also accepted as `?topic=` by the contact page. */
@@ -59,11 +60,8 @@ export type ContactSubmission = {
 
 /** `null` when the payload is not a valid message. A blank name is no name. */
 export function parseContactSubmission(raw: unknown): ContactSubmission | null {
-	if (typeof raw !== "object" || raw === null) return null;
-	const { topic, email, name, message, locale, userAgent } = raw as Record<
-		string,
-		unknown
-	>;
+	if (!isRecord(raw)) return null;
+	const { topic, email, name, message, locale, userAgent } = raw;
 
 	if (!isContactTopic(topic)) return null;
 	if (typeof email !== "string" || !isValidContactEmail(email.trim()))

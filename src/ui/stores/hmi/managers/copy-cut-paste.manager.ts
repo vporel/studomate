@@ -8,6 +8,7 @@ import { createRandomId } from "@/ids";
 import { getLastMousePosition } from "@/ui/lib/mouse-position";
 import { snapToGrid } from "@/ui/components/hmi/logic/constants";
 import { nextCopyName } from "@/lib/naming";
+import { clamp } from "@/lib/number";
 import type { ClipboardStore } from "@/ui/stores/shared/clipboard.store";
 import AbstractCopyCutPasteManager from "@/ui/stores/shared/abstract-copy-cut-paste.manager";
 import { HmiStoreGetFunction, HmiStoreSetFunction } from "../hmi.store";
@@ -75,16 +76,15 @@ export default class HmiCopyCutPasteManager extends AbstractCopyCutPasteManager<
 		if (cursorCanvasPosition) {
 			const width = boundsRight - boundsLeft;
 			const height = boundsBottom - boundsTop;
-			const targetLeft = Math.max(
+			const targetLeft = clamp(
+				cursorCanvasPosition.x - width / 2,
 				0,
-				Math.min(HMI_CANVAS_WIDTH - width, cursorCanvasPosition.x - width / 2),
+				HMI_CANVAS_WIDTH - width,
 			);
-			const targetTop = Math.max(
+			const targetTop = clamp(
+				cursorCanvasPosition.y - height / 2,
 				0,
-				Math.min(
-					HMI_CANVAS_HEIGHT - height,
-					cursorCanvasPosition.y - height / 2,
-				),
+				HMI_CANVAS_HEIGHT - height,
 			);
 			dx = targetLeft - boundsLeft;
 			dy = targetTop - boundsTop;
@@ -113,21 +113,13 @@ export default class HmiCopyCutPasteManager extends AbstractCopyCutPasteManager<
 			// Les widgets collés retombent sur la grille (comme un dépôt depuis la palette), même si
 			// l'original a été placé ou redimensionné hors grille via le panneau Propriétés.
 			const x = snapToGrid(
-				Math.max(
-					0,
-					Math.min(
-						HMI_CANVAS_WIDTH - widget.size.width,
-						widget.position.x + dx,
-					),
-				),
+				clamp(widget.position.x + dx, 0, HMI_CANVAS_WIDTH - widget.size.width),
 			);
 			const y = snapToGrid(
-				Math.max(
+				clamp(
+					widget.position.y + dy,
 					0,
-					Math.min(
-						HMI_CANVAS_HEIGHT - widget.size.height,
-						widget.position.y + dy,
-					),
+					HMI_CANVAS_HEIGHT - widget.size.height,
 				),
 			);
 			const newWidget = HmiWidget.createInstance(

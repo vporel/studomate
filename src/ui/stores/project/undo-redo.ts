@@ -1,4 +1,5 @@
 import { ProjectStoreState } from "./project.store";
+import activeDocumentsManager from "./active-documents.selector";
 import { canEdit } from "./editability";
 
 /**
@@ -14,60 +15,23 @@ import { canEdit } from "./editability";
  */
 
 function activeCommandsStackManager(state: ProjectStoreState) {
-	if (state.activeScopeType === "grafcet") {
-		return (
-			state.grafcetsManager.getActiveStoreManagers()?.commandsStackManager ??
-			null
-		);
-	}
-	if (state.activeScopeType === "ladder") {
-		return (
-			state.laddersManager.getActiveStoreManagers()?.commandsStackManager ??
-			null
-		);
-	}
-	if (state.activeScopeType === "hmi") {
-		return (
-			state.hmiManager.getActiveStoreManagers()?.commandsStackManager ?? null
-		);
-	}
-	return state.commandsStackManager;
+	const documents = activeDocumentsManager(state);
+	if (!documents) return state.commandsStackManager;
+	return documents.getActiveStoreManagers()?.commandsStackManager ?? null;
 }
 
 export function canUndoActiveScope(state: ProjectStoreState): boolean {
 	if (!canEdit(state)) return false;
-	if (state.activeScopeType === "grafcet") {
-		return (
-			state.grafcetsManager.getActiveStoreValues()?.hasCommandsToUndo ?? false
-		);
-	}
-	if (state.activeScopeType === "ladder") {
-		return (
-			state.laddersManager.getActiveStoreValues()?.hasCommandsToUndo ?? false
-		);
-	}
-	if (state.activeScopeType === "hmi") {
-		return state.hmiManager.getActiveStoreValues()?.hasCommandsToUndo ?? false;
-	}
-	return state.hasCommandsToUndo;
+	const documents = activeDocumentsManager(state);
+	if (!documents) return state.hasCommandsToUndo;
+	return documents.getActiveStoreValues()?.hasCommandsToUndo ?? false;
 }
 
 export function canRedoActiveScope(state: ProjectStoreState): boolean {
 	if (!canEdit(state)) return false;
-	if (state.activeScopeType === "grafcet") {
-		return (
-			state.grafcetsManager.getActiveStoreValues()?.hasCommandsToRedo ?? false
-		);
-	}
-	if (state.activeScopeType === "ladder") {
-		return (
-			state.laddersManager.getActiveStoreValues()?.hasCommandsToRedo ?? false
-		);
-	}
-	if (state.activeScopeType === "hmi") {
-		return state.hmiManager.getActiveStoreValues()?.hasCommandsToRedo ?? false;
-	}
-	return state.hasCommandsToRedo;
+	const documents = activeDocumentsManager(state);
+	if (!documents) return state.hasCommandsToRedo;
+	return documents.getActiveStoreValues()?.hasCommandsToRedo ?? false;
 }
 
 export function performUndo(state: ProjectStoreState): void {

@@ -3,6 +3,12 @@ import { isRecord } from "@/lib/object";
 import Project from "@/schemas/project/project.schema";
 import { isFromNewerVersion, migrateProject } from "./migrations/schema";
 
+/** Extension of a project file. */
+export const PROJECT_FILE_EXTENSION = ".json";
+
+/** MIME type of a project file. */
+export const PROJECT_FILE_MIME_TYPE = "application/json";
+
 /**
  * Sérialisation d'un projet vers un fichier autonome.
  *

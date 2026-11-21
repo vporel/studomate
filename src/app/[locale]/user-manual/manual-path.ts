@@ -1,7 +1,7 @@
 import type { Locale } from "@/i18n/config";
 import { getPathname } from "@/i18n/navigation";
-import { manualSlug } from "@/i18n/manual-slugs";
 import { MANUAL_DEFAULT_SECTION, resolveManualTarget } from "./manual-sections";
+import manualSectionHref from "./manual-section-href";
 
 /** URL localisée d'une entrée du plan (section de premier niveau ou ancre de sous-section). */
 export default function manualPath(locale: Locale, id: string): string | null {
@@ -12,10 +12,7 @@ export default function manualPath(locale: Locale, id: string): string | null {
 			? getPathname({ locale, href: "/user-manual" })
 			: getPathname({
 					locale,
-					href: {
-						pathname: "/user-manual/[section]",
-						params: { section: manualSlug(locale, target.section) },
-					},
+					href: manualSectionHref(target.section)(locale),
 				});
 	return target.hash ? `${path}#${target.hash}` : path;
 }

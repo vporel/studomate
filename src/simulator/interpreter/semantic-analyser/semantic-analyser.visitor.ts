@@ -156,30 +156,43 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 		this.visit(node.expr);
 	}
 
+	/** Left operand first, then right: the first one of the wrong type is the one reported. */
+	private expectOperandsType(
+		node:
+			| ArithmeticExpressionNode
+			| ComparisonExpressionNode
+			| LogicalExpressionNode,
+		expected: "number" | "boolean",
+		leftType: ExpectedNodeResultType | "unknown",
+		rightType: ExpectedNodeResultType | "unknown",
+	): void {
+		if (leftType !== expected) {
+			throw new InvalidBinaryExprOperandTypeException(
+				node.operator,
+				"left",
+				expected,
+				leftType,
+				node,
+			);
+		}
+		if (rightType !== expected) {
+			throw new InvalidBinaryExprOperandTypeException(
+				node.operator,
+				"right",
+				expected,
+				rightType,
+				node,
+			);
+		}
+	}
+
 	protected visitArithmeticExpressionNode(
 		node: ArithmeticExpressionNode,
 	): void {
 		// Check that both operands are numbers
 		const leftOperandType = this.typeAnalyser.visit(node.left);
 		const rightOperandType = this.typeAnalyser.visit(node.right);
-		if (leftOperandType !== "number") {
-			throw new InvalidBinaryExprOperandTypeException(
-				node.operator,
-				"left",
-				"number",
-				leftOperandType,
-				node,
-			);
-		}
-		if (rightOperandType !== "number") {
-			throw new InvalidBinaryExprOperandTypeException(
-				node.operator,
-				"right",
-				"number",
-				rightOperandType,
-				node,
-			);
-		}
+		this.expectOperandsType(node, "number", leftOperandType, rightOperandType);
 		this.visit(node.left);
 		this.visit(node.right);
 
@@ -280,24 +293,7 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 		}
 		if (node.operator !== "=" && node.operator !== "!=") {
 			// For comparison operators other than equality and inequality, check that both operands are numbers
-			if (leftType !== "number") {
-				throw new InvalidBinaryExprOperandTypeException(
-					node.operator,
-					"left",
-					"number",
-					leftType,
-					node,
-				);
-			}
-			if (rightType !== "number") {
-				throw new InvalidBinaryExprOperandTypeException(
-					node.operator,
-					"right",
-					"number",
-					rightType,
-					node,
-				);
-			}
+			this.expectOperandsType(node, "number", leftType, rightType);
 		}
 		this.visit(node.left);
 		this.visit(node.right);
@@ -307,24 +303,7 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 		const leftType = this.typeAnalyser.visit(node.left);
 		const rightType = this.typeAnalyser.visit(node.right);
 		// Check that both operands are boolean
-		if (leftType !== "boolean") {
-			throw new InvalidBinaryExprOperandTypeException(
-				node.operator,
-				"left",
-				"boolean",
-				leftType,
-				node,
-			);
-		}
-		if (rightType !== "boolean") {
-			throw new InvalidBinaryExprOperandTypeException(
-				node.operator,
-				"right",
-				"boolean",
-				rightType,
-				node,
-			);
-		}
+		this.expectOperandsType(node, "boolean", leftType, rightType);
 		this.visit(node.left);
 		this.visit(node.right);
 	}

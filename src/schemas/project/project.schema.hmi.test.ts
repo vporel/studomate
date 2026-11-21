@@ -1,5 +1,7 @@
 import HmiPage from "@/schemas/hmi/hmi-page.schema";
 import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
+import Variable from "@/schemas/variable/variable.schema";
+import { Dialect } from "@/expression-language/dialect.enum";
 import Project from "./project.schema";
 
 describe("Project — intégration HMI", () => {
@@ -175,5 +177,38 @@ describe("Project.nextHmiPageName", () => {
 		project.createHmiPage("Page HMI_1");
 
 		expect(project.nextHmiPageName("Page HMI")).toBe("Page HMI_2");
+	});
+});
+
+describe("Project.isMnemonicBindable", () => {
+	const project = new Project("p", "n", "");
+	project.variables = [
+		new Variable({
+			id: "k",
+			mnemonic: "SEUIL",
+			zone: "constant",
+			type: "INT",
+			value: "4",
+			dialect: Dialect.FR,
+		}),
+		new Variable({
+			id: "m",
+			mnemonic: "Compteur",
+			zone: "memory",
+			type: "INT",
+			dialect: Dialect.FR,
+		}),
+	];
+
+	it("refuses a constant", () => {
+		expect(project.isMnemonicBindable("SEUIL")).toBe(false);
+	});
+
+	it("accepts a memory variable", () => {
+		expect(project.isMnemonicBindable("Compteur")).toBe(true);
+	});
+
+	it("accepts an unknown mnemonic", () => {
+		expect(project.isMnemonicBindable("Inconnue")).toBe(true);
 	});
 });
