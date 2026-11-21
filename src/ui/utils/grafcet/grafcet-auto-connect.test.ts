@@ -124,18 +124,18 @@ describe("computeAutoConnections: step and transition", () => {
 		expect(ids(result)).toEqual(["dropped->t"]);
 	});
 
-	it("accepts a gap of exactly 10px and refuses 11px", () => {
+	it("accepts a gap of exactly 20px and refuses 21px", () => {
 		const grafcet = new GrafcetBuilder().addStep(step("s", 100, 100)).build();
 
 		expect(
-			connectionsOf(dropped("transition", 100, 150), grafcet),
+			connectionsOf(dropped("transition", 100, 160), grafcet),
 		).toHaveLength(1);
 		expect(
-			connectionsOf(dropped("transition", 100, 151), grafcet),
+			connectionsOf(dropped("transition", 100, 161), grafcet),
 		).toHaveLength(0);
 	});
 
-	it("treats an overlap as a gap: accepted up to 10px, refused at 11px, below the neighbour", () => {
+	it("treats an overlap as a gap: accepted up to 20px, refused at 21px, below the neighbour", () => {
 		const grafcet = new GrafcetBuilder().addStep(step("s", 100, 100)).build();
 
 		// step bottom = 140
@@ -143,14 +143,14 @@ describe("computeAutoConnections: step and transition", () => {
 			connectionsOf(dropped("transition", 100, 135), grafcet),
 		).toHaveLength(1);
 		expect(
-			connectionsOf(dropped("transition", 100, 130), grafcet),
+			connectionsOf(dropped("transition", 100, 120), grafcet),
 		).toHaveLength(1);
 		expect(
-			connectionsOf(dropped("transition", 100, 129), grafcet),
+			connectionsOf(dropped("transition", 100, 119), grafcet),
 		).toHaveLength(0);
 	});
 
-	it("treats an overlap as a gap: accepted up to 10px, refused at 11px, above the neighbour", () => {
+	it("treats an overlap as a gap: accepted up to 20px, refused at 21px, above the neighbour", () => {
 		const grafcet = new GrafcetBuilder().addStep(step("s", 100, 200)).build();
 
 		// transition bottom = y + 30, step top = 200
@@ -158,10 +158,10 @@ describe("computeAutoConnections: step and transition", () => {
 			connectionsOf(dropped("transition", 100, 175), grafcet),
 		).toHaveLength(1);
 		expect(
-			connectionsOf(dropped("transition", 100, 180), grafcet),
+			connectionsOf(dropped("transition", 100, 190), grafcet),
 		).toHaveLength(1);
 		expect(
-			connectionsOf(dropped("transition", 100, 181), grafcet),
+			connectionsOf(dropped("transition", 100, 191), grafcet),
 		).toHaveLength(0);
 	});
 
@@ -574,10 +574,10 @@ describe("computeAutoConnections: step referrals", () => {
 			.build();
 
 		expect(
-			connectionsOf(dropped("step-referral-source", 100, 140), grafcet),
+			connectionsOf(dropped("step-referral-source", 100, 150), grafcet),
 		).toHaveLength(1);
 		expect(
-			connectionsOf(dropped("step-referral-source", 100, 141), grafcet),
+			connectionsOf(dropped("step-referral-source", 100, 151), grafcet),
 		).toHaveLength(0);
 	});
 
@@ -680,11 +680,11 @@ describe("computeAutoConnections: position correction", () => {
 	const positionOf = (placed: PlacedElement, grafcet: Grafcet) =>
 		computeAutoConnections(placed, grafcet).position;
 
-	it("keeps the position when the gap is between 0 and 10px", () => {
+	it("keeps the position when the gap is between 0 and 20px", () => {
 		const grafcet = new GrafcetBuilder().addStep(step("s", 100, 100)).build();
 
 		// step bottom = 140
-		for (const y of [140, 145, 150]) {
+		for (const y of [140, 150, 160]) {
 			expect(positionOf(dropped("transition", 100, y), grafcet)).toEqual({
 				x: 100,
 				y,
@@ -783,9 +783,9 @@ describe("computeAutoConnections: position correction", () => {
 	it("keeps the position when nothing is linked, even if it overlaps", () => {
 		const grafcet = new GrafcetBuilder().addStep(step("s", 100, 100)).build();
 
-		expect(positionOf(dropped("transition", 100, 125), grafcet)).toEqual({
+		expect(positionOf(dropped("transition", 100, 115), grafcet)).toEqual({
 			x: 100,
-			y: 125,
+			y: 115,
 		});
 	});
 

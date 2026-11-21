@@ -116,6 +116,38 @@ describe("grafcetToScene: liaisons d'action", () => {
 		]);
 	});
 
+	it("ajoute une flèche sur le segment montant d'une boucle de retour, et aucune sur une liaison descendante", () => {
+		const grafcet = new GrafcetBuilder()
+			.addStep(new StepBuilder().id("s0").number(0).position(200, 0).build())
+			.addStep(new StepBuilder().id("s1").number(1).position(200, 100).build())
+			.addConnection(
+				new ConnectionBuilder()
+					.id("down")
+					.source("step", "s0", "source:successor")
+					.target("step", "s1", "target:predecessor")
+					.build(),
+			)
+			.addConnection(
+				new ConnectionBuilder()
+					.id("loop")
+					.source("step", "s1", "source:successor")
+					.target("step", "s0", "target:predecessor")
+					.data([
+						[220, 180],
+						[100, 180],
+						[100, -20],
+						[220, -20],
+					])
+					.build(),
+			)
+			.build();
+
+		const arrows = grafcetToScene(grafcet).ops.filter((o) => o.op === "path");
+
+		expect(arrows).toHaveLength(1);
+		expect(arrows[0]).toMatchObject({ fill: "#000000" });
+	});
+
 	it("trace une liaison action → action chaînée en droite, du bord droit au bord gauche", () => {
 		const grafcet = new GrafcetBuilder()
 			.addAction(new ActionBuilder().id("a1").position(180, 100).build())

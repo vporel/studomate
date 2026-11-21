@@ -97,6 +97,19 @@ describe("useToolDragOverHandlers", () => {
 		expect(node.id).toEqual(expect.any(String));
 	});
 
+	it("snaps the top-left corner of the dropped node to the 10px grid", () => {
+		const { result } = setup({ type: "step" });
+		const [, handleToolDrop] = result.current;
+
+		// step is 100x60: raw top-left = (153 - 50, 137 - 30) = (103, 107)
+		act(() => handleToolDrop(fakeDragEvent(153, 137)));
+		// raw top-left = (155 - 50, 134 - 30) = (105, 104)
+		act(() => handleToolDrop(fakeDragEvent(155, 134)));
+
+		expect(addNodes.mock.calls[0][0].position).toEqual({ x: 100, y: 110 });
+		expect(addNodes.mock.calls[1][0].position).toEqual({ x: 110, y: 100 });
+	});
+
 	it("does nothing when no tool is being dragged", () => {
 		const { result } = setup(null);
 		const [, handleToolDrop] = result.current;

@@ -1,8 +1,8 @@
-import { Scene } from "@/ui/lib/drawing/draw-op";
 import { sceneToSvg } from "@/ui/lib/drawing/backends/svg-backend";
+import { Scene } from "@/ui/lib/drawing/draw-op";
 
 /** Resolution of a PNG relative to the scene's px size. */
-export const PNG_SCALE = 2;
+export const PNG_SCALE = 6;
 /** Largest canvas side and area browsers reliably accept (Safari caps the area near 16.7 M px). */
 const MAX_CANVAS_SIDE = 8192;
 const MAX_CANVAS_AREA = 16_000_000;

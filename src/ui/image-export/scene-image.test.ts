@@ -16,7 +16,13 @@ const scene: Scene = {
 
 describe("fitRasterScale", () => {
 	it("keeps the desired scale for a normal-sized scene", () => {
-		expect(fitRasterScale(1123, 794)).toBe(2);
+		expect(fitRasterScale(400, 300)).toBe(6);
+	});
+
+	it("lowers the scale for an A4 page so the canvas area stays within the limit", () => {
+		const scale = fitRasterScale(794, 1123);
+		expect(scale).toBeCloseTo(Math.sqrt(16_000_000 / (794 * 1123)));
+		expect(scale).toBeLessThan(6);
 	});
 
 	it("lowers the scale so the longest side stays within the canvas limit", () => {
@@ -84,12 +90,12 @@ describe("sceneToPngBytes", () => {
 
 	afterEach(() => jest.restoreAllMocks());
 
-	it("draws the SVG on a canvas at twice the scene size and returns the PNG bytes", async () => {
+	it("draws the SVG on a canvas at six times the scene size and returns the PNG bytes", async () => {
 		const bytes = await sceneToPngBytes(scene);
 
-		expect(canvas.width).toBe(400);
-		expect(canvas.height).toBe(200);
-		expect(drawImage).toHaveBeenCalledWith(expect.anything(), 0, 0, 400, 200);
+		expect(canvas.width).toBe(1200);
+		expect(canvas.height).toBe(600);
+		expect(drawImage).toHaveBeenCalledWith(expect.anything(), 0, 0, 1200, 600);
 		expect(Array.from(bytes)).toEqual([1, 2, 3]);
 	});
 

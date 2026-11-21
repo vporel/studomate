@@ -10,6 +10,7 @@ import computeBranchInsertion from "@/ui/utils/grafcet/junction-branch-insertion
 import computeAutoConnections, {
 	AutoConnection,
 } from "@/ui/utils/grafcet/grafcet-auto-connect";
+import { bottom } from "@/ui/utils/grafcet/grafcet-geometry";
 import getFollowers from "@/ui/utils/grafcet/grafcet-followers";
 import { GRAFCET_ELEMENT_CLASSES } from "@/ui/utils/grafcet/grafcet-element-classes";
 import Connection from "@/schemas/grafcet/connection.schema";
@@ -57,6 +58,9 @@ import {
 	GrafcetStoreGetFunction,
 	GrafcetStoreSetFunction,
 } from "../grafcet.store";
+
+/** Vertical gap, in px, between a step and the transition below it (or the reverse) when added from the context menu. */
+const STEP_TRANSITION_GAP = 10;
 
 export default class GrafcetWorkflowManager {
 	private setStoreState: GrafcetStoreSetFunction;
@@ -288,7 +292,7 @@ export default class GrafcetWorkflowManager {
 	}
 
 	/**
-	 * Ajoute une transition sous une étape (y + 50, même x) et crée la connexion étape → transition.
+	 * Ajoute une transition sous une étape (même x, à STEP_TRANSITION_GAP du bas de l'étape) et crée la connexion étape → transition.
 	 * Sans effet si l'étape a déjà un élément aval.
 	 */
 	addTransitionAfterStep(stepId: string): void {
@@ -308,7 +312,10 @@ export default class GrafcetWorkflowManager {
 					type: "transition",
 					id: transitionId,
 					data: Transition.generateDefaultData(),
-					position: { x: step.position.x, y: step.position.y + 50 },
+					position: {
+						x: step.position.x,
+						y: bottom(step) + STEP_TRANSITION_GAP,
+					},
 					size: { ...Transition.DEFAULT_DIMENSIONS },
 				},
 			]),
@@ -327,7 +334,7 @@ export default class GrafcetWorkflowManager {
 	}
 
 	/**
-	 * Ajoute une étape sous une transition (y + 50, même x) et crée la connexion transition → étape.
+	 * Ajoute une étape sous une transition (même x, à STEP_TRANSITION_GAP du bas de la transition) et crée la connexion transition → étape.
 	 * Sans effet si la transition a déjà un élément aval.
 	 */
 	addStepAfterTransition(transitionId: string): void {
@@ -350,7 +357,10 @@ export default class GrafcetWorkflowManager {
 						...Step.generateDefaultData(),
 						number: StepHelper.getNextAvailableNumber(grafcet),
 					},
-					position: { x: transition.position.x, y: transition.position.y + 50 },
+					position: {
+						x: transition.position.x,
+						y: bottom(transition) + STEP_TRANSITION_GAP,
+					},
 					size: { ...Step.DEFAULT_DIMENSIONS },
 				},
 			]),

@@ -1,6 +1,7 @@
 "use client";
 
 import { createRandomId } from "@/ids";
+import { FLOW_GRID_CELL_WIDTH } from "@/ui/constants";
 import { useT } from "@/ui/i18n/useT";
 import { useReactFlow } from "@xyflow/react";
 import { useCallback } from "react";
@@ -15,6 +16,9 @@ import {
 	GrafcetNodeType,
 	GRAFCET_ELEMENTS_CONFIG,
 } from "./grafcet-nodes-definitions";
+
+const snapToGrid = (px: number) =>
+	Math.round(px / FLOW_GRID_CELL_WIDTH) * FLOW_GRID_CELL_WIDTH || 0;
 
 export default function useToolDragOverHandlers(): [
 	handleToolDragOver: (e: React.DragEvent) => void,
@@ -39,8 +43,12 @@ export default function useToolDragOverHandlers(): [
 			const { type } = draggedItem;
 			const elementClass = GRAFCET_ELEMENTS_CONFIG[type].elementClass;
 			const position = screenToFlowPosition({ x: e.clientX, y: e.clientY });
-			position.x = position.x - elementClass.DEFAULT_DIMENSIONS.width / 2;
-			position.y = position.y - elementClass.DEFAULT_DIMENSIONS.height / 2;
+			position.x = snapToGrid(
+				position.x - elementClass.DEFAULT_DIMENSIONS.width / 2,
+			);
+			position.y = snapToGrid(
+				position.y - elementClass.DEFAULT_DIMENSIONS.height / 2,
+			);
 			const newNode = {
 				id: createRandomId(),
 				type,

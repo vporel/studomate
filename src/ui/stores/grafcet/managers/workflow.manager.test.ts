@@ -415,7 +415,7 @@ describe("GrafcetWorkflowManager.addActionToStep", () => {
 });
 
 describe("GrafcetWorkflowManager.addTransitionAfterStep", () => {
-	it("ajoute une transition à y+50 (même x) et la connecte à l'étape", () => {
+	it("ajoute une transition à 10px sous l'étape (même x) et la connecte à l'étape", () => {
 		const store = buildStore(); // step-1 en (0, 0), sans aval
 
 		store.getState().workflowManager.addTransitionAfterStep("step-1");
@@ -496,7 +496,7 @@ describe("GrafcetWorkflowManager.addStepAfterTransition", () => {
 		);
 	}
 
-	it("ajoute une étape à y+50 (même x), numéro suivant disponible, connectée à la transition", () => {
+	it("ajoute une étape à 10px sous la transition (même x), numéro suivant disponible, connectée à la transition", () => {
 		const store = buildStoreWithTransition();
 
 		store.getState().workflowManager.addStepAfterTransition("tr-1");
@@ -506,7 +506,8 @@ describe("GrafcetWorkflowManager.addStepAfterTransition", () => {
 			.getElementsByType("step")
 			.find((s) => s.id !== "step-1")!;
 		expect(newStep).toBeDefined();
-		expect(newStep.position).toEqual({ x: 0, y: 100 });
+		// transition at y=50, height 30
+		expect(newStep.position).toEqual({ x: 0, y: 90 });
 		expect(newStep.data.number).toBe(2);
 
 		const connection = grafcet.getConnection("tr-1", newStep.id);

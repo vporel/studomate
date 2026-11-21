@@ -7,6 +7,7 @@ import {
 	getHandleConnectionLinePoints,
 } from "@/ui/utils/grafcet/grafcet-utils";
 import { DrawOp, Scene } from "@/ui/lib/drawing/draw-op";
+import getEdgeArrowPolygon from "@/ui/utils/grafcet/grafcet-edge-arrow";
 import grafcetHandlePosition from "./grafcet-handle-position";
 import { framePage } from "@/ui/lib/drawing/scene-geometry";
 import { wrapText } from "@/ui/lib/drawing/text-layout";
@@ -326,6 +327,15 @@ export default function grafcetToScene(grafcet: Grafcet): Scene {
 				points: vertices.map(([x, y]) => [x, y]),
 				strokeWidth: CONNECTION_STROKE,
 			});
+			const arrow = getEdgeArrowPolygon(vertices);
+			if (arrow)
+				ops.push({
+					op: "path",
+					d: `M ${arrow[0].join(" ")} L ${arrow[1].join(" ")} L ${arrow[2].join(" ")} Z`,
+					stroke: "#000000",
+					strokeWidth: 1,
+					fill: "#000000",
+				});
 		}
 	}
 

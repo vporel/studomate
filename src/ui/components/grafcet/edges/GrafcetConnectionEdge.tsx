@@ -1,6 +1,7 @@
 import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
 import { EDGE_INTERACTION_WIDTH } from "@/ui/constants";
 import { getStraightPathFromPoints } from "@/ui/lib/svg";
+import getEdgeArrowPolygon from "@/ui/utils/grafcet/grafcet-edge-arrow";
 import { getHandleConnectionLinePoints } from "@/ui/utils/grafcet/grafcet-utils";
 import { Box, SxProps, Theme, useTheme } from "@mui/material";
 import { Edge, type EdgeProps } from "@xyflow/react";
@@ -56,6 +57,7 @@ const GrafcetConnectionEdge = ({
 		() => getStraightPathFromPoints(vertices),
 		[vertices],
 	);
+	const arrow = useMemo(() => getEdgeArrowPolygon(vertices), [vertices]);
 	const color = useMemo(
 		() => (!selected ? "black" : th.palette.primary.main),
 		[selected, th],
@@ -95,6 +97,14 @@ const GrafcetConnectionEdge = ({
 	return (
 		<Box component="g" sx={containerSx}>
 			<path d={pathString} fill="none" className={`react-flow__edge-path `} />
+			{arrow ? (
+				<polygon
+					points={arrow.map((p) => p.join(",")).join(" ")}
+					fill={color}
+					stroke={color}
+					className="grafcet-edge-arrow"
+				/>
+			) : null}
 			{interactionWidth ? (
 				<path
 					d={pathString}

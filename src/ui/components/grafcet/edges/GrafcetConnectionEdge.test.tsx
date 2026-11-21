@@ -77,6 +77,35 @@ describe("GrafcetConnectionEdge", () => {
 		).toContain("L -40,");
 	});
 
+	it("affiche une flèche sur la boucle de retour qui remonte", () => {
+		const { container } = setup({
+			sourceHandleId: "source:successor",
+			target: [0, -200],
+			points: [
+				[0, 20],
+				[-100, 20],
+				[-100, -220],
+				[0, -220],
+			],
+		});
+
+		expect(container.querySelectorAll(".grafcet-edge-arrow")).toHaveLength(1);
+	});
+
+	it("n'affiche pas de flèche sur une liaison qui descend", () => {
+		const { container } = setup({ target: [0, 100] });
+
+		expect(container.querySelector(".grafcet-edge-arrow")).toBeNull();
+	});
+
+	it("colore la flèche comme la liaison", () => {
+		const { container } = setup({ target: [0, -100], selected: false });
+
+		expect(
+			container.querySelector(".grafcet-edge-arrow")!.getAttribute("fill"),
+		).toBe("black");
+	});
+
 	it("trace le tracé (path) reliant la source à la cible", () => {
 		const { container } = setup({ points: [] });
 		expect(
