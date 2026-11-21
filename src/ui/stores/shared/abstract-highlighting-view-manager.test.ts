@@ -52,6 +52,107 @@ describe("AbstractHighlightingViewManager", () => {
 		jest.useRealTimers();
 	});
 
+	describe("surbrillances qui se chevauchent", () => {
+		beforeEach(() => jest.useFakeTimers());
+		afterEach(() => jest.useRealTimers());
+
+		it("garde l'élément surligné jusqu'à la fin de la seconde surbrillance", () => {
+			const { manager, getState } = makeManager();
+
+			manager.temporarilyHighlightNodesAndEdges(["n1"], [], 1000);
+			jest.advanceTimersByTime(600);
+			manager.temporarilyHighlightNodesAndEdges(["n1"], [], 1000);
+
+			jest.advanceTimersByTime(400); // fin de la première
+			expect(getState().highlightedNodesIds).toEqual(["n1"]);
+
+			jest.advanceTimersByTime(599);
+			expect(getState().highlightedNodesIds).toEqual(["n1"]);
+
+			jest.advanceTimersByTime(1); // fin de la seconde
+			expect(getState().highlightedNodesIds).toEqual([]);
+		});
+
+		it("fait de même pour les arêtes", () => {
+			const { manager, getState } = makeManager();
+
+			manager.temporarilyHighlightNodesAndEdges([], ["e1"], 1000);
+			jest.advanceTimersByTime(600);
+			manager.temporarilyHighlightNodesAndEdges([], ["e1"], 1000);
+
+			jest.advanceTimersByTime(400);
+			expect(getState().highlightedEdgesIds).toEqual(["e1"]);
+			jest.advanceTimersByTime(600);
+			expect(getState().highlightedEdgesIds).toEqual([]);
+		});
+
+		it("garde l'élément jusqu'à la fin de la plus longue quand elle a commencé la première", () => {
+			const { manager, getState } = makeManager();
+
+			manager.temporarilyHighlightNodesAndEdges(["n1"], [], 3000);
+			manager.temporarilyHighlightNodesAndEdges(["n1"], [], 500);
+
+			jest.advanceTimersByTime(500);
+			expect(getState().highlightedNodesIds).toEqual(["n1"]);
+			jest.advanceTimersByTime(2500);
+			expect(getState().highlightedNodesIds).toEqual([]);
+		});
+
+		it("laisse indépendants les éléments différents", () => {
+			const { manager, getState } = makeManager();
+
+			manager.temporarilyHighlightNodesAndEdges(["n1"], [], 500);
+			manager.temporarilyHighlightNodesAndEdges(["n2"], [], 1000);
+
+			jest.advanceTimersByTime(500);
+			expect(getState().highlightedNodesIds).toEqual(["n2"]);
+			jest.advanceTimersByTime(500);
+			expect(getState().highlightedNodesIds).toEqual([]);
+		});
+
+		it("éteint l'élément à l'expiration quand les surbrillances se suivent sans se chevaucher", () => {
+			const { manager, getState } = makeManager();
+
+			manager.temporarilyHighlightNodesAndEdges(["n1"], [], 500);
+			jest.advanceTimersByTime(500);
+			expect(getState().highlightedNodesIds).toEqual([]);
+			manager.temporarilyHighlightNodesAndEdges(["n1"], [], 500);
+			expect(getState().highlightedNodesIds).toEqual(["n1"]);
+			jest.advanceTimersByTime(500);
+
+			expect(getState().highlightedNodesIds).toEqual([]);
+		});
+	});
+
+	it("retire un id passé deux fois dans un appel par un appel symétrique", () => {
+		const { manager, getState } = makeManager();
+		manager.highlightNodesAndEdges(["n1", "n1"], []);
+
+		manager.unhighlightNodesAndEdges(["n1", "n1"], []);
+
+		expect(getState().highlightedNodesIds).toEqual([]);
+	});
+
+	it("n'enlève qu'une occurrence d'un id surligné deux fois", () => {
+		const { manager, getState } = makeManager();
+		manager.highlightNodesAndEdges(["n1"], []);
+		manager.highlightNodesAndEdges(["n1"], []);
+
+		manager.unhighlightNodesAndEdges(["n1"], []);
+
+		expect(getState().highlightedNodesIds).toEqual(["n1"]);
+	});
+
+	it("ignore le retrait d'un id qui n'est pas surligné", () => {
+		const { manager, getState } = makeManager();
+		manager.highlightNodesAndEdges(["n1"], ["e1"]);
+
+		manager.unhighlightNodesAndEdges(["absent"], ["inconnue"]);
+
+		expect(getState().highlightedNodesIds).toEqual(["n1"]);
+		expect(getState().highlightedEdgesIds).toEqual(["e1"]);
+	});
+
 	it("dispose annule les minuteries de surlignage encore en attente", () => {
 		jest.useFakeTimers();
 		const { manager, getState } = makeManager();

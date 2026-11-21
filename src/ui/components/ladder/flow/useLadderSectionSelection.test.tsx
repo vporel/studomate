@@ -1,17 +1,17 @@
 /**
  * @jest-environment jsdom
  */
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
 import { fireEvent, render } from "@testing-library/react";
 import { useRef } from "react";
-import useCanEdit from "@/ui/components/projects/useCanEdit";
 import { useLadderContext } from "../context/LadderContext";
 import useLadderSectionSelection from "./useLadderSectionSelection";
 
 jest.mock("../context/LadderContext");
-jest.mock("@/ui/components/projects/useCanEdit");
+jest.mock("@/ui/components/projects/useCanEditActivePage");
 
 function setup(sectionIds = ["s1", "s2", "s3"], canEdit = true) {
-	(useCanEdit as jest.Mock).mockReturnValue(canEdit);
+	(useCanEditActivePage as jest.Mock).mockReturnValue(canEdit);
 	const setSelectedSectionIds = jest.fn();
 	const deselectAllElements = jest.fn();
 	const deleteSections = jest.fn();

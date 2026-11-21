@@ -1,22 +1,27 @@
-import { Dialect } from "@/expression-language/dialect.enum";
-import { canEdit } from "./editability";
 import { getSceneDescriptor } from "@/3d-scenes/scene.registry";
 import { planMissingVariables } from "@/3d-scenes/scene3d-wiring";
-import { localizeMnemonic } from "@/templates/localize-project";
-import ProjectFieldSetCommand from "@/schemas/project/commands/project-field-set.command";
+import { emptyAnalysisIssues } from "@/bridge/analysis-issues.mapper";
+import { Dialect } from "@/expression-language/dialect.enum";
 import ProjectDialectSetCommand from "@/schemas/project/commands/project-dialect-set.command";
-import { createStore } from "zustand";
+import ProjectFieldSetCommand from "@/schemas/project/commands/project-field-set.command";
+import { localizeMnemonic } from "@/templates/localize-project";
+import { PROJECT_STARTUP_PAGE_ID } from "@/ui/stores/project/pages-data";
 import { createClipboardStore } from "@/ui/stores/shared/clipboard.store";
+import { createStore } from "zustand";
+import { canEditActivePage } from "./editability";
+import {
+	requirePersistence,
+	type ProjectStoreEnvironment,
+} from "./environment/project-store-environment";
+import unavailableRemoteIoDevice from "./environment/unavailable-remote-io-device";
+import UNAVAILABLE_REPOSITORY from "./environment/unavailable-repository";
 import VariablesCommandsFactory from "./factories/variables-commands.factory";
+import Scene3dDisplayManager, {
+	resolveScene3dDisplayMode,
+} from "./managers/3d-scene/scene3d-display.manager";
+import Scene3dLinkManager from "./managers/3d-scene/scene3d-link.manager";
 import ProjectCommandsStackManager from "./managers/commands-stack.manager";
 import GrafcetsManager from "./managers/grafcets.manager";
-import LaddersManager from "./managers/ladders.manager";
-import PagesManager from "./managers/pages.manager";
-import HmiManager from "./managers/hmi.manager";
-import ProjectLifecycleManager from "./managers/lifecycle.manager";
-import ProjectSharingManager from "./managers/sharing.manager";
-import { emptyAnalysisIssues } from "@/bridge/analysis-issues.mapper";
-import ModeManager from "./managers/mode.manager";
 import HardwareLinkManager from "./managers/hardware-link/hardware-link.manager";
 import {
 	DISCONNECTED_HARDWARE_LINK,
@@ -24,25 +29,22 @@ import {
 	IDLE_HARDWARE_OBSERVATION,
 	IDLE_HARDWARE_UPLOAD,
 } from "./managers/hardware-link/hardware-link.state";
-import Scene3dDisplayManager, {
-	resolveScene3dDisplayMode,
-} from "./managers/3d-scene/scene3d-display.manager";
-import Scene3dLinkManager from "./managers/3d-scene/scene3d-link.manager";
+import HmiManager from "./managers/hmi.manager";
+import LaddersManager from "./managers/ladders.manager";
+import ProjectLifecycleManager from "./managers/lifecycle.manager";
+import ModeManager from "./managers/mode.manager";
+import PagesManager from "./managers/pages.manager";
+import ProjectSharingManager from "./managers/sharing.manager";
 import SimulationManager from "./managers/simulation/simulation.manager";
 import VariablesManager from "./managers/variables.manager";
-import { ProjectMode } from "./project-mode.enum";
-import type { ProjectStoreEnvironment } from "./environment/project-store-environment";
-import UNAVAILABLE_REPOSITORY from "./environment/unavailable-repository";
-import unavailableRemoteIoDevice from "./environment/unavailable-remote-io-device";
-import { performRedo, performUndo } from "./undo-redo";
 import { getInitialPagesData } from "./pages-session-restore";
-import { getT } from "@/ui/i18n/translateGlobal";
+import { ProjectMode } from "./project-mode.enum";
 import {
 	ProjectStoreState,
 	ProjectUiState,
 	ScopeType,
 } from "./project.store.types";
-import { PROJECT_STARTUP_PAGE_ID } from "@/ui/stores/project/pages-data";
+import { performRedo, performUndo } from "./undo-redo";
 
 /** Clés de `ProjectUiState` portant un simple `boolean` de visibilité. */
 type BooleanUiKey = {
@@ -50,23 +52,23 @@ type BooleanUiKey = {
 }[keyof ProjectUiState];
 
 export type {
-	PageType,
-	ScopeType,
-	PageData,
-	GrafcetStoreValues,
 	GrafcetStoreManagers,
-	LadderStoreValues,
-	LadderStoreManagers,
-	HmiStoreValues,
+	GrafcetStoreValues,
 	HmiStoreManagers,
-	PLCConfig,
-	SimulationVariableState,
+	HmiStoreValues,
+	LadderStoreManagers,
+	LadderStoreValues,
 	ObservableValueState,
-	ProjectUiState,
+	PageData,
+	PageType,
+	PLCConfig,
 	ProjectBootStatus,
-	ProjectStoreState,
-	ProjectStoreSetFunction,
 	ProjectStoreGetFunction,
+	ProjectStoreSetFunction,
+	ProjectStoreState,
+	ProjectUiState,
+	ScopeType,
+	SimulationVariableState,
 } from "./project.store.types";
 
 export const createProjectStore = (env: ProjectStoreEnvironment) => {
@@ -91,7 +93,8 @@ export const createProjectStore = (env: ProjectStoreEnvironment) => {
 					onDiscard: discardDraft
 						? () => {
 								const project = get().project;
-								if (project) env.persistence?.drafts.delete(project.id);
+								if (project)
+									requirePersistence(env, "Drafts").drafts.delete(project.id);
 							}
 						: undefined,
 				},
@@ -256,7 +259,7 @@ export const createProjectStore = (env: ProjectStoreEnvironment) => {
 			createMissingScene3dVariables: () => {
 				const project = get().project;
 				const scene = project?.scene3d;
-				if (!project || !scene || !canEdit(get())) return;
+				if (!project || !scene || !canEditActivePage(get())) return;
 				const descriptor = getSceneDescriptor(
 					scene.sceneId,
 					scene.sceneVersion,
@@ -315,7 +318,7 @@ export const createProjectStore = (env: ProjectStoreEnvironment) => {
 					return;
 				}
 				openWithUnsavedGuard("exportModalVisible", {
-					message: getT("projects.unsavedChanges")("exportMessage"),
+					message: env.translate("projects.unsavedChanges")("exportMessage"),
 				});
 			},
 

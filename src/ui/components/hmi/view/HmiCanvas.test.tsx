@@ -3,6 +3,7 @@ import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
 import { useHmiStore } from "@/ui/components/hmi/HmiContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import usePageEditingEnabled from "@/ui/components/projects/usePageEditingEnabled";
+import type { Locale } from "@/i18n/config";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import { act, fireEvent } from "@testing-library/react";
@@ -117,6 +118,7 @@ function setup({
 	selected = [] as string[],
 	simulation = false,
 	editable = true,
+	locale = "fr" as Locale,
 } = {}) {
 	(usePageEditingEnabled as jest.Mock).mockReturnValue(editable);
 	(useHmiStore as jest.Mock).mockImplementation(
@@ -138,6 +140,7 @@ function setup({
 	);
 	const utils = renderWithI18n(
 		<HmiCanvas isSimulation={simulation} zoom={1} />,
+		{ locale },
 	);
 	const canvas = utils.getByTestId("w-a").parentElement as HTMLElement;
 	return { ...utils, canvas };
@@ -237,6 +240,42 @@ describe("HmiCanvas", () => {
 			fireEvent.mouseDown(canvas, { shiftKey: true });
 
 			expect(startMarquee).toHaveBeenCalledWith(expect.anything(), ["a"]);
+		});
+
+		it("does not swallow the next background click when no click followed the marquee", () => {
+			jest.useFakeTimers();
+			try {
+				const { canvas } = setup({ selected: ["a"] });
+
+				act(() => onMarqueeSelect([]));
+				act(() => {
+					jest.advanceTimersByTime(0);
+				});
+				fireEvent.click(canvas);
+
+				expect(clearSelection).toHaveBeenCalledTimes(1);
+			} finally {
+				jest.useRealTimers();
+			}
+		});
+
+		it("still ignores a click dispatched right after the marquee release", () => {
+			jest.useFakeTimers();
+			try {
+				const { canvas } = setup({ selected: ["a"] });
+
+				act(() => onMarqueeSelect(["a", "b"]));
+				fireEvent.click(canvas);
+
+				expect(clearSelection).not.toHaveBeenCalled();
+				act(() => {
+					jest.advanceTimersByTime(0);
+				});
+				fireEvent.click(canvas);
+				expect(clearSelection).toHaveBeenCalledTimes(1);
+			} finally {
+				jest.useRealTimers();
+			}
 		});
 
 		it("ignores the click that follows a marquee selection, once", () => {
@@ -374,6 +413,19 @@ describe("HmiCanvas", () => {
 			getByText(/2 widgets/);
 			expect(queryByTestId("events-pane")).toBeNull();
 		});
+
+		it.each([
+			["fr", "2 widgets sélectionnés."],
+			["en", "2 widgets selected."],
+			["es", "2 widgets seleccionados."],
+		] as [Locale, string][])(
+			"words the multiple selection count in %s",
+			(locale, expected) => {
+				const { getByText } = setup({ selected: ["a", "b"], locale });
+
+				getByText(expected);
+			},
+		);
 
 		it("shows the page panel when nothing is selected", () => {
 			const { getByTestId } = setup();

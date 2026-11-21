@@ -1,11 +1,13 @@
 /**
  * @jest-environment jsdom
  */
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
 import { fireEvent, render } from "@testing-library/react";
 import JunctionNodeBranchAddButtons from "./JunctionNodeBranchAddButtons";
 import { useJunctionNodeContext } from "./context/JunctionNodeContext";
 
 jest.mock("./context/JunctionNodeContext");
+jest.mock("@/ui/components/projects/useCanEditActivePage");
 
 function setup(positions: { left: number; insertIndex: number }[]) {
 	const onBranchAdd = jest.fn();
@@ -18,6 +20,8 @@ function setup(positions: { left: number; insertIndex: number }[]) {
 }
 
 describe("JunctionNodeBranchAddButtons", () => {
+	beforeEach(() => (useCanEditActivePage as jest.Mock).mockReturnValue(true));
+
 	it("renders one button per position", () => {
 		const { getAllByRole } = setup([
 			{ left: 10, insertIndex: 0 },
@@ -25,6 +29,12 @@ describe("JunctionNodeBranchAddButtons", () => {
 			{ left: 90, insertIndex: 2 },
 		]);
 		expect(getAllByRole("button")).toHaveLength(3);
+	});
+
+	it("renders no button when the project cannot be edited", () => {
+		(useCanEditActivePage as jest.Mock).mockReturnValue(false);
+		const { queryAllByRole } = setup([{ left: 10, insertIndex: 0 }]);
+		expect(queryAllByRole("button")).toHaveLength(0);
 	});
 
 	it("renders nothing without positions", () => {

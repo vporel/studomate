@@ -234,20 +234,144 @@ describe("GrafcetCopyCutPasteManager", () => {
 			);
 		});
 
-		it("décale les éléments collés depuis la position de la souris", () => {
-			const store = buildStoreWithConnectedSteps();
-			const { nodes, edges } = store.getState();
-			store.getState().copyCutPasteManager.copyElements(nodes, edges);
+		describe("placement du groupe collé", () => {
+			/** Instance dont la boîte englobante vient des tailles réelles des nœuds. */
+			function sizedRfInstance() {
+				return {
+					screenToFlowPosition: (p: { x: number; y: number }) => p,
+					getNodesBounds: (
+						nodes: {
+							position: { x: number; y: number };
+							width?: number;
+							height?: number;
+						}[],
+					) => {
+						const x = Math.min(...nodes.map((n) => n.position.x));
+						const y = Math.min(...nodes.map((n) => n.position.y));
+						const right = Math.max(
+							...nodes.map((n) => n.position.x + (n.width ?? 0)),
+						);
+						const bottom = Math.max(
+							...nodes.map((n) => n.position.y + (n.height ?? 0)),
+						);
+						return { x, y, width: right - x, height: bottom - y };
+					},
+				} as any;
+			}
 
-			const { addedNodes } = store
-				.getState()
-				.copyCutPasteManager.pasteElements({ x: 500, y: 500 });
+			/** step-1 (40x40) en (0,0), step-2 (100x60) en (0,100), coude à (20, 70). */
+			function buildSizedStore() {
+				const store = buildStoreWithConnectedSteps();
+				store.getState().viewManager.rfInstance = sizedRfInstance();
+				store.setState((state) => ({
+					nodes: state.nodes.map((n) => ({
+						...n,
+						width: n.id === "step-1" ? 40 : 100,
+						height: n.id === "step-1" ? 40 : 60,
+					})) as GrafcetNodeType[],
+					edges: state.edges.map((e) => ({
+						...e,
+						data: { ...e.data, points: [[20, 70]] },
+					})) as typeof state.edges,
+				}));
+				const { nodes, edges } = store.getState();
+				store.getState().copyCutPasteManager.copyElements(nodes, edges);
+				return store;
+			}
 
-			const originalStep1 = nodes.find((n) => n.id === "step-1")!;
-			const pastedStep1 = addedNodes.find(
-				(n) => (n.data as StepData).number === 3,
-			)!;
-			expect(pastedStep1.position).not.toEqual(originalStep1.position);
+			const pastedPosition = (
+				result: { addedNodes: GrafcetNodeType[] },
+				number: number,
+			) =>
+				result.addedNodes.find((n) => (n.data as StepData).number === number)!
+					.position;
+
+			it("centre le groupe sur le pointeur sans déformer ses écarts relatifs", () => {
+				const store = buildSizedStore();
+
+				const result = store
+					.getState()
+					.copyCutPasteManager.pasteElements({ x: 500, y: 500 });
+
+				//Boîte englobante : 100 x 160 centrée sur (500, 500) => coin en (450, 420)
+				expect(pastedPosition(result, 3)).toEqual({ x: 450, y: 420 });
+				expect(pastedPosition(result, 4)).toEqual({ x: 450, y: 520 });
+			});
+
+			it("fait suivre aux coudes le décalage de leur groupe", () => {
+				const store = buildSizedStore();
+
+				const result = store
+					.getState()
+					.copyCutPasteManager.pasteElements({ x: 500, y: 500 });
+
+				expect(result.addedEdges[0].data?.points).toEqual([[470, 490]]);
+			});
+
+			it("centre un nœud seul sur le pointeur", () => {
+				const store = buildSizedStore();
+				const { nodes } = store.getState();
+				store.getState().copyCutPasteManager.copyElements(
+					nodes.filter((n) => n.id === "step-1"),
+					[],
+				);
+
+				const result = store
+					.getState()
+					.copyCutPasteManager.pasteElements({ x: 500, y: 500 });
+
+				expect(pastedPosition(result, 3)).toEqual({ x: 480, y: 480 });
+			});
+
+			it.each([
+				["en haut à gauche", { x: 5, y: 5 }, { x: 0, y: 0 }],
+				["en bas à droite", { x: 790, y: 1120 }, { x: 694, y: 963 }],
+			])(
+				"garde le groupe dans la page quand le pointeur est %s",
+				(_label, mouse, expectedCorner) => {
+					const store = buildSizedStore();
+
+					const result = store
+						.getState()
+						.copyCutPasteManager.pasteElements(mouse);
+
+					expect(pastedPosition(result, 3)).toEqual(expectedCorner);
+					expect(pastedPosition(result, 4)).toEqual({
+						x: expectedCorner.x,
+						y: expectedCorner.y + 100,
+					});
+				},
+			);
+
+			it("sans souris, décale tout le groupe de 10 sans retrancher la moitié des tailles", () => {
+				const store = buildSizedStore();
+
+				const result = store.getState().copyCutPasteManager.pasteElements();
+
+				expect(pastedPosition(result, 3)).toEqual({ x: 10, y: 10 });
+				expect(pastedPosition(result, 4)).toEqual({ x: 10, y: 110 });
+				expect(result.addedEdges[0].data?.points).toEqual([[30, 80]]);
+			});
+
+			it("sans souris, un second collage se décale encore de 10", () => {
+				const store = buildSizedStore();
+				store.getState().copyCutPasteManager.pasteElements();
+
+				const result = store.getState().copyCutPasteManager.pasteElements();
+
+				expect(pastedPosition(result, 5)).toEqual({ x: 20, y: 20 });
+				expect(pastedPosition(result, 6)).toEqual({ x: 20, y: 120 });
+			});
+
+			it("avec la souris hors de la page, retombe sur le décalage de 10", () => {
+				const store = buildSizedStore();
+
+				const result = store
+					.getState()
+					.copyCutPasteManager.pasteElements({ x: -50, y: 300 });
+
+				expect(pastedPosition(result, 3)).toEqual({ x: 10, y: 10 });
+			});
 		});
 	});
 

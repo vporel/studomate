@@ -810,7 +810,7 @@
 			"Flèches : Déplacer les widgets sélectionnés d'un pas de grille (canvas HMI actif, mode conception)"
 		],
 		"explorerTitle": "Explorateur",
-		"explorerItems": ["F2 : Renommer le grafcet ou le ladder sélectionné"],
+		"explorerItems": ["F2 : Renommer le grafcet, le ladder ou la page HMI sélectionné", "Suppr : Supprimer le grafcet, le ladder ou la page HMI sélectionné (confirmation demandée, non déclenché par Retour arrière)"],
 		"inlineTitle": "Édition sur place",
 		"inlineItems": [
 			"Entrée : Valider la modification",

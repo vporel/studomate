@@ -4,7 +4,6 @@ import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useT } from "@/ui/i18n/useT";
 import { platformShortcut } from "@/ui/lib/platform";
 import { activeCopyCutPasteManager } from "@/ui/stores/project/copy-cut-paste";
-import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import {
 	canRedoActiveScope,
 	canUndoActiveScope,
@@ -12,13 +11,12 @@ import {
 import useProjectClipboard from "@/ui/components/projects/useProjectClipboard";
 import { useMemo } from "react";
 import { AppMenuType } from "../app-menu-bar";
+import useCanEditProject from "@/ui/components/projects/useCanEditProject";
 
 export default function useEditMenu(): AppMenuType {
 	const activeScopeType = useProjectStore((state) => state.activeScopeType);
 	const copyCutPasteManager = useProjectStore(activeCopyCutPasteManager);
-	const designing = useProjectStore(
-		(state) => state.mode === ProjectMode.DESIGN,
-	);
+	const designing = useCanEditProject();
 	const canUndo = useProjectStore(canUndoActiveScope);
 	const canRedo = useProjectStore(canRedoActiveScope);
 	const undo = useProjectStore((state) => state.undoActiveScope);

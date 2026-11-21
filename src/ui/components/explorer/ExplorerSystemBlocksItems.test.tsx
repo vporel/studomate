@@ -15,7 +15,7 @@ jest.mock("../projects/ProjectContext");
 
 function setup(mode: ProjectMode) {
 	(useProjectStore as jest.Mock).mockImplementation(
-		selectorImplementation({ mode }),
+		selectorImplementation({ mode, editingEnabled: true }),
 	);
 	render(
 		<SimpleTreeView>

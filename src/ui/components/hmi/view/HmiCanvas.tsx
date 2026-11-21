@@ -80,7 +80,12 @@ const HmiCanvas = ({ isSimulation, zoom }: HmiCanvasProps) => {
 		zoom,
 		Object.values(hmiPage.widgets),
 		(ids) => {
+			//The click that follows the release is dispatched in the same task: it consumes the
+			//flag. A release outside the canvas produces none, and the flag must not outlive it.
 			suppressNextCanvasClickRef.current = true;
+			setTimeout(() => {
+				suppressNextCanvasClickRef.current = false;
+			}, 0);
 			setSelection(ids);
 		},
 		setMarqueeRect,
@@ -372,7 +377,7 @@ const HmiCanvas = ({ isSimulation, zoom }: HmiCanvasProps) => {
 							<Typography
 								sx={{ px: 1.5, pb: 1.5, fontSize: "0.8rem", color: "#888" }}
 							>
-								{selectedWidgets.length} widgets sélectionnés.
+								{t("multipleSelected", { count: selectedWidgets.length })}
 							</Typography>
 						) : (
 							<HmiPagePropertiesPanel

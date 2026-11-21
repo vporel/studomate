@@ -1,10 +1,12 @@
-import { getHmiPageData } from "../pages-data";
-import { deepObjectsComparison } from "@/lib/object";
-import { canEdit } from "../editability";
-import Project from "@/schemas/project/project.schema";
 import type { Locale } from "@/i18n/config";
+import { deepObjectsComparison } from "@/lib/object";
 import HmiPage from "@/schemas/hmi/hmi-page.schema";
 import type { HmiAction } from "@/schemas/hmi/hmi-widget.schema";
+import Project from "@/schemas/project/project.schema";
+import defaultContent from "../default-content";
+import { canEditActivePage } from "../editability";
+import type { ProjectStoreAnalytics } from "../environment/project-store-environment";
+import { getHmiPageData } from "../pages-data";
 import {
 	HmiStoreManagers,
 	HmiStoreValues,
@@ -14,8 +16,6 @@ import type {
 	ProjectStoreGetFunction,
 	ProjectStoreSetFunction,
 } from "../project.store.types";
-import type { ProjectStoreAnalytics } from "../environment/project-store-environment";
-import defaultContent from "../default-content";
 import AbstractDocumentsManager from "./abstract-documents.manager";
 
 /** Id fixe de l'unique onglet "Simulation HMI" (voir `HmiSimulationPageView`) — pas lié à une
@@ -82,7 +82,7 @@ export default class HmiManager extends AbstractDocumentsManager<
 	newHmiPage(name?: string): HmiPage | null {
 		const project = this.getStoreState().project;
 		if (!project) return null;
-		if (!canEdit(this.getStoreState())) return null;
+		if (!canEditActivePage(this.getStoreState())) return null;
 		const resolvedName =
 			name ??
 			project.nextHmiPageName(defaultContent(this.getLocale()).hmiPageName);
@@ -100,14 +100,14 @@ export default class HmiManager extends AbstractDocumentsManager<
 	deleteHmiPage(hmiPageId: string): void {
 		const project = this.getStoreState().project;
 		if (!project) return;
-		if (!canEdit(this.getStoreState())) return;
+		if (!canEditActivePage(this.getStoreState())) return;
 		this.deleteDocumentById(hmiPageId, (p) => p.deleteHmiPage(hmiPageId));
 	}
 
 	renameHmiPage(hmiPageId: string, newName: string): void {
 		const project = this.getStoreState().project;
 		if (!project) return;
-		if (!canEdit(this.getStoreState())) return;
+		if (!canEditActivePage(this.getStoreState())) return;
 		this.renameDocumentById(hmiPageId, newName);
 	}
 

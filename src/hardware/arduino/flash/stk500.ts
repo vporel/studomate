@@ -65,6 +65,7 @@ export interface FlashOptions {
 class ByteQueue {
 	private bytes: number[] = [];
 	private waiter: (() => void) | null = null;
+	private aborted = false;
 
 	push(chunk: string) {
 		for (let i = 0; i < chunk.length; i++)
@@ -74,6 +75,12 @@ class ByteQueue {
 
 	clear() {
 		this.bytes = [];
+	}
+
+	/** Ends the wait in progress, and every later one, with no reply: nothing more will arrive. */
+	abort() {
+		this.aborted = true;
+		this.waiter?.();
 	}
 
 	/** Discards everything received until no byte arrives for `quietMs`. */
@@ -86,6 +93,7 @@ class ByteQueue {
 	async take(count: number, timeoutMs: number): Promise<number[] | null> {
 		const deadline = Date.now() + timeoutMs;
 		while (this.bytes.length < count) {
+			if (this.aborted) return null;
 			const left = deadline - Date.now();
 			if (left <= 0) return null;
 			await new Promise<void>((resolve) => {
@@ -122,8 +130,17 @@ export async function flashFirmware(options: FlashOptions): Promise<void> {
 	} = options;
 	const queue = new ByteQueue();
 	const unsubscribe = transport.onData((chunk) => queue.push(chunk));
+	let portLost = false;
+	const unsubscribeClose = transport.onClose(() => {
+		portLost = true;
+		queue.abort();
+	});
+	const throwIfPortLost = () => {
+		if (portLost) throw new FlashError("transport", "port closed");
+	};
 	const checkNotCancelled = () => {
 		if (signal?.aborted) throw new FlashError("cancelled");
+		throwIfPortLost();
 	};
 
 	const command = async (bytes: number[], responseLength: number) => {
@@ -135,6 +152,7 @@ export async function flashFirmware(options: FlashOptions): Promise<void> {
 			throw new FlashError("transport", String(cause));
 		}
 		const reply = await queue.take(responseLength + 2, commandTimeoutMs);
+		throwIfPortLost();
 		if (!reply) throw new FlashError("protocol-error", "timeout");
 		if (reply[0] !== STK.INSYNC || reply[reply.length - 1] !== STK.OK) {
 			throw new FlashError("protocol-error", "unexpected reply");
@@ -163,6 +181,7 @@ export async function flashFirmware(options: FlashOptions): Promise<void> {
 			queue.clear();
 			await transport.write(toBinaryString([STK.GET_SYNC, STK.EOP]));
 			const reply = await queue.take(2, syncIntervalMs);
+			throwIfPortLost();
 			synced = reply?.[0] === STK.INSYNC && reply[1] === STK.OK;
 		}
 		if (!synced) throw new FlashError("sync-failed");
@@ -212,6 +231,7 @@ export async function flashFirmware(options: FlashOptions): Promise<void> {
 			: new FlashError("transport", String(error));
 	} finally {
 		unsubscribe();
+		unsubscribeClose();
 		await transport.close().catch(() => {});
 	}
 }

@@ -35,6 +35,7 @@ function setup(scene: Scene3d | null, mode = ProjectMode.DESIGN) {
 		selectorImplementation({
 			activePageId: SCENE3D_CONFIGURATION_PAGE_ID,
 			mode,
+			editingEnabled: true,
 			project: { scene3d: scene, variables: [] },
 			setScene3d,
 			createMissingScene3dVariables: jest.fn(),

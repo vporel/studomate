@@ -107,6 +107,8 @@ jest.mock("@/ui/lib/pdf/pdf-table", () => ({
 describe("JsPdfExporter", () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
+		mockSplitTextToSize.mockReset();
+		mockSplitTextToSize.mockImplementation((text: string) => [text]);
 		mockPageCount = 1;
 		mockPageSize = { width: 210, height: 297 };
 	});
@@ -160,6 +162,172 @@ describe("JsPdfExporter", () => {
 		expect(placement.scale).toBeGreaterThan(0);
 		expect(placement.x).toBeGreaterThanOrEqual(0);
 		expect(placement.y).toBeGreaterThan(0);
+	});
+
+	describe("titre sur plusieurs lignes", () => {
+		/** Ordonnée de la première ligne de texte égale à `value`. */
+		const yOf = (value: string) =>
+			mockText.mock.calls.find(([text]) => text === value)?.[2] as number;
+		const wrapInto = (title: string, lines: number) =>
+			mockSplitTextToSize.mockImplementation((text: string) =>
+				text === title
+					? Array.from({ length: lines }, (_, i) => `${title} ${i}`)
+					: [text],
+			);
+		/** 24 pt : 24 × 1,15 × 25,4 / 72 mm ; 14 pt : 14 × 1,15 × 25,4 / 72 mm. */
+		const COVER_LINE_MM = (24 * 1.15 * 25.4) / 72;
+		const PAGE_LINE_MM = (14 * 1.15 * 25.4) / 72;
+
+		describe("sur la page de garde", () => {
+			const exportCover = (name: string) =>
+				new JsPdfExporter().export(
+					makeDoc({ cover: { ...cover, projectName: name }, sections: [] }),
+				);
+
+			it("garde les positions actuelles pour un nom sur une ligne", async () => {
+				await exportCover("Mon projet");
+
+				expect(yOf("Auteur : Alice")).toBe(45 + 16);
+				expect(yOf("Exporté le 01/09/2026")).toBe(45 + 16 + 7);
+			});
+
+			it("décale auteur, date et statistiques d'une interligne par ligne en plus", async () => {
+				wrapInto("Nom très long", 2);
+				await exportCover("Nom très long");
+
+				expect(yOf("Auteur : Alice")).toBeCloseTo(45 + 16 + COVER_LINE_MM, 5);
+				expect(yOf("Exporté le 01/09/2026")).toBeCloseTo(
+					45 + 16 + COVER_LINE_MM + 7,
+					5,
+				);
+				expect(yOf("2 grafcet(s), 1 ladder(s), 5 variable(s)")).toBeCloseTo(
+					45 + 16 + COVER_LINE_MM + 14,
+					5,
+				);
+			});
+
+			it("décale de trois interlignes pour quatre lignes", async () => {
+				wrapInto("Nom très long", 4);
+				await exportCover("Nom très long");
+
+				expect(yOf("Auteur : Alice")).toBeCloseTo(
+					45 + 16 + 3 * COVER_LINE_MM,
+					5,
+				);
+			});
+
+			it("laisse la première ligne du titre où elle est", async () => {
+				wrapInto("Nom très long", 2);
+				await exportCover("Nom très long");
+
+				const titleCall = mockText.mock.calls.find(
+					([text]) => Array.isArray(text) && text[0] === "Nom très long 0",
+				);
+				expect(titleCall?.[2]).toBe(45);
+			});
+		});
+
+		describe("au-dessus d'une page de programme", () => {
+			const grafcetSection = (title: string) => makeSection(title, "portrait");
+
+			it("garde la bande de titre actuelle pour un titre sur une ligne", async () => {
+				await new JsPdfExporter().export(
+					makeDoc({ sections: [grafcetSection("GRAFCET — G1")] }),
+				);
+
+				expect(mockRenderSceneToJsPdf.mock.calls[0][2].y).toBe(15 + 12);
+			});
+
+			it("descend la scène grafcet d'une interligne et réduit la place qui lui reste", async () => {
+				await new JsPdfExporter().export(
+					makeDoc({ sections: [grafcetSection("Titre")] }),
+				);
+				const { y: oneLineY, scale: oneLineScale } =
+					mockRenderSceneToJsPdf.mock.calls[0][2];
+				jest.clearAllMocks();
+				wrapInto("Titre", 2);
+				await new JsPdfExporter().export(
+					makeDoc({ sections: [grafcetSection("Titre")] }),
+				);
+
+				const { y, scale } = mockRenderSceneToJsPdf.mock.calls[0][2];
+				expect(y).toBeCloseTo(oneLineY + PAGE_LINE_MM, 5);
+				expect(scale).toBeLessThanOrEqual(oneLineScale);
+			});
+
+			it("descend le haut du tableau d'une interligne", async () => {
+				const table = {
+					columns: [{ header: "Mnémonique", width: 50 }],
+					rows: [["M0"]],
+				};
+				wrapInto("Variables", 2);
+				await new JsPdfExporter().export(
+					makeDoc({
+						sections: [{ title: "Variables", orientation: "portrait", table }],
+					}),
+				);
+
+				const [, , area] = mockDrawPdfTable.mock.calls[0];
+				expect(area.top).toBeCloseTo(15 + 12 + PAGE_LINE_MM, 5);
+				expect(area.pageTop).toBe(15);
+			});
+
+			it("garde le haut du tableau actuel pour un titre sur une ligne", async () => {
+				const table = {
+					columns: [{ header: "Mnémonique", width: 50 }],
+					rows: [["M0"]],
+				};
+				await new JsPdfExporter().export(
+					makeDoc({
+						sections: [{ title: "Variables", orientation: "portrait", table }],
+					}),
+				);
+
+				expect(mockDrawPdfTable.mock.calls[0][2].top).toBe(15 + 12);
+			});
+
+			it("descend le premier réseau d'un ladder d'une interligne", async () => {
+				const ladderSection = (title: string) => ({
+					title,
+					orientation: "landscape" as const,
+					ladderSections: [
+						{
+							heading: "Section 1",
+							description: "",
+							scene: { ops: [], width: 300, height: 100 },
+						},
+					],
+				});
+				await new JsPdfExporter().export(
+					makeDoc({ sections: [ladderSection("Ladder")] }),
+				);
+				const oneLineY = mockRenderSceneToJsPdf.mock.calls[0][2].y;
+				jest.clearAllMocks();
+				wrapInto("Ladder", 2);
+				await new JsPdfExporter().export(
+					makeDoc({ sections: [ladderSection("Ladder")] }),
+				);
+
+				expect(mockRenderSceneToJsPdf.mock.calls[0][2].y).toBeCloseTo(
+					oneLineY + PAGE_LINE_MM,
+					5,
+				);
+			});
+
+			it("imprime toutes les lignes du titre", async () => {
+				wrapInto("Titre", 3);
+				await new JsPdfExporter().export(
+					makeDoc({ sections: [grafcetSection("Titre")] }),
+				);
+
+				const printed = mockText.mock.calls.flatMap((c) =>
+					Array.isArray(c[0]) ? c[0] : [c[0]],
+				);
+				expect(printed).toEqual(
+					expect.arrayContaining(["Titre 0", "Titre 1", "Titre 2"]),
+				);
+			});
+		});
 	});
 
 	it("ouvre les sections paysage en orientation paysage", async () => {
@@ -223,7 +391,9 @@ describe("JsPdfExporter", () => {
 	});
 
 	it("imprime la description d'une section de ladder sous son intitulé et décale le dessin", async () => {
-		mockSplitTextToSize.mockReturnValueOnce(["Ligne A", "Ligne B"]);
+		mockSplitTextToSize.mockImplementation((text: string) =>
+			text === "Ligne A Ligne B" ? ["Ligne A", "Ligne B"] : [text],
+		);
 		const withDesc = { ops: [], width: 300, height: 100 };
 		const withoutDesc = { ops: [], width: 300, height: 100 };
 		await new JsPdfExporter().export(
@@ -257,7 +427,9 @@ describe("JsPdfExporter", () => {
 
 	it("cuts a ladder section description too long for the page and keeps its drawing visible", async () => {
 		const lines = Array.from({ length: 200 }, (_, i) => `Ligne ${i}`);
-		mockSplitTextToSize.mockReturnValueOnce(lines);
+		mockSplitTextToSize.mockImplementation((text: string) =>
+			text === "long" ? lines : [text],
+		);
 		const scene = { ops: [], width: 300, height: 100 };
 		await new JsPdfExporter().export(
 			makeDoc({

@@ -1,3 +1,4 @@
+import { useT } from "@/ui/i18n/useT";
 import { useCallback } from "react";
 import type { PageData } from "@/ui/stores/project/project.store.types";
 import { useProjectStore } from "./ProjectContext";
@@ -18,6 +19,7 @@ export default function useGotoProgram(
 	const grafcetsManager = useProjectStore((s) => s.grafcetsManager);
 	const laddersManager = useProjectStore((s) => s.laddersManager);
 	const pagesManager = useProjectStore((s) => s.pagesManager);
+	const t = useT("crossReference");
 
 	return useCallback(
 		(
@@ -27,8 +29,8 @@ export default function useGotoProgram(
 		) => {
 			const name =
 				programType === "grafcet"
-					? (project?.getGrafcet(programId)?.name ?? "Nom inconnu")
-					: (project?.getLadder(programId)?.name ?? "Nom inconnu");
+					? (project?.getGrafcet(programId)?.name ?? t("unknownProgram"))
+					: (project?.getLadder(programId)?.name ?? t("unknownProgram"));
 			const pageData: PageData = {
 				type: programType,
 				id: programId,
@@ -55,6 +57,6 @@ export default function useGotoProgram(
 				}, 100);
 			}
 		},
-		[project, grafcetsManager, laddersManager, pagesManager, openPage],
+		[project, grafcetsManager, laddersManager, pagesManager, openPage, t],
 	);
 }

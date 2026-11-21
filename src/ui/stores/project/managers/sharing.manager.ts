@@ -6,8 +6,6 @@ import {
 	requirePersistence,
 	type ProjectStoreEnvironment,
 } from "../environment/project-store-environment";
-import { toast } from "react-toastify";
-import { getT } from "@/ui/i18n/translateGlobal";
 import {
 	ProjectStoreGetFunction,
 	ProjectStoreSetFunction,
@@ -33,6 +31,15 @@ export default class ProjectSharingManager {
 	) {
 		this.setStoreState = set;
 		this.getStoreState = get;
+	}
+
+	/** `key` is relative to the `toasts` messages. */
+	private translateToast(key: string): string {
+		return this.env.translate("toasts")(key);
+	}
+
+	private notifyError(key: string): void {
+		this.env.notifications.error(this.translateToast(key));
 	}
 
 	/**
@@ -76,7 +83,7 @@ export default class ProjectSharingManager {
 			});
 			authStore
 				.getState()
-				.setAuthModalVisible(true, getT("toasts")("shareLoginPrompt"));
+				.setAuthModalVisible(true, this.translateToast("shareLoginPrompt"));
 			return;
 		}
 
@@ -100,7 +107,7 @@ export default class ProjectSharingManager {
 		}
 		const result = await repo.createShareToken(project.id);
 		if (!result.ok) {
-			toast.error(getT("toasts")("shareLinkFailed"));
+			this.notifyError("shareLinkFailed");
 			return;
 		}
 		this.env.analytics.trackEvent("share-link-created", {
@@ -119,10 +126,10 @@ export default class ProjectSharingManager {
 		if (!isStorageLocationAware(repo)) return;
 		const result = await repo.moveToCloud(project);
 		if (!result.ok) {
-			toast.error(
+			this.notifyError(
 				result.reason === "conflict"
-					? getT("toasts")("moveToCloudConflict")
-					: getT("toasts")("moveToCloudFailed"),
+					? "moveToCloudConflict"
+					: "moveToCloudFailed",
 			);
 			return;
 		}
@@ -141,7 +148,7 @@ export default class ProjectSharingManager {
 		if (!isShareable(repo)) return;
 		const result = await repo.deleteShareToken(project.id);
 		if (!result.ok) {
-			toast.error(getT("toasts")("shareRevokeFailed"));
+			this.notifyError("shareRevokeFailed");
 			return;
 		}
 		set(() => ({ shareToken: null }));

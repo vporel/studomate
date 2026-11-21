@@ -1,8 +1,9 @@
 "use client";
 
-import useCanEdit from "@/ui/components/projects/useCanEdit";
 import SectionUpdateCommand from "@/schemas/ladder/commands/section-update.command";
 import Section from "@/schemas/ladder/section.schema";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
+import { useT } from "@/ui/i18n/useT";
 import {
 	DraggableAttributes,
 	DraggableSyntheticListeners,
@@ -23,7 +24,6 @@ import {
 	useTheme,
 } from "@mui/material";
 import { type PointerEvent as ReactPointerEvent, useCallback } from "react";
-import { useT } from "@/ui/i18n/useT";
 import { useLadderStore } from "../context/LadderContext";
 
 interface LadderSectionHeaderProps {
@@ -47,7 +47,7 @@ export default function LadderSectionHeader({
 }: LadderSectionHeaderProps) {
 	const th = useTheme();
 	const t = useT("ladderEditor.sectionHeader");
-	const canEdit = useCanEdit();
+	const canEdit = useCanEditActivePage();
 	const commandsStackManager = useLadderStore(
 		(state) => state.commandsStackManager,
 	);

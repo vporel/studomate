@@ -112,6 +112,17 @@ describe("fichier de projet", () => {
 			expect(rejectionReason(futur)).toBe("newer-version");
 		});
 
+		it.each([
+			["un texte", '"6"'],
+			["un décimal", "3.5"],
+			["un négatif", "-1"],
+			["null", "null"],
+		])("refuse un schemaVersion illisible (%s)", (_label, version) => {
+			const raw = `{"id":"p1","schemaVersion":${version}}`;
+
+			expect(rejectionReason(raw)).toBe("not-a-project");
+		});
+
 		it("refuses a JSON object that is not a project", () => {
 			expect(rejectionReason('{"foo":1}')).toBe("not-a-project");
 		});

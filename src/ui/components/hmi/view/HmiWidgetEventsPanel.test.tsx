@@ -3,6 +3,7 @@ import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
 import { useHmiStore } from "@/ui/components/hmi/HmiContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { fireEvent, screen, within } from "@testing-library/react";
+import type { Locale } from "@/i18n/config";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import HmiWidgetEventsPanel from "./HmiWidgetEventsPanel";
@@ -23,7 +24,11 @@ const pushButton = (events?: object) =>
 		data: { variable: "v", ...(events ? { events } : {}) },
 	}) as unknown as HmiWidget;
 
-function setup(widget: HmiWidget, hmiPages: object | undefined = pages) {
+function setup(
+	widget: HmiWidget,
+	hmiPages: object | undefined = pages,
+	locale: Locale = "fr",
+) {
 	const updateWidget = jest.fn();
 	(useHmiStore as jest.Mock).mockImplementation(
 		selectorImplementation({ updateWidget }),
@@ -35,6 +40,7 @@ function setup(widget: HmiWidget, hmiPages: object | undefined = pages) {
 	);
 	const { container } = renderWithI18n(
 		<HmiWidgetEventsPanel widget={widget} />,
+		{ locale },
 	);
 	return { updateWidget, container };
 }
@@ -50,6 +56,19 @@ describe("HmiWidgetEventsPanel", () => {
 
 		expect(container).toBeEmptyDOMElement();
 	});
+
+	it.each([
+		["fr", "Ajouter une action"],
+		["en", "Add an action"],
+		["es", "Añadir una acción"],
+	] as [Locale, string][])(
+		"libelle le bouton d'ajout d'une action en %s",
+		(locale, label) => {
+			setup(pushButton(), pages, locale);
+
+			expect(screen.getByRole("button", { name: label })).toBeInTheDocument();
+		},
+	);
 
 	it("affiche l'événement sans action et le bouton d'ajout", () => {
 		setup(pushButton());

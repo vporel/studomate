@@ -149,7 +149,7 @@ const HmiWidgetPropertiesPanel = ({
 						onClick={openEventsPane}
 						sx={{ flex: 1 }}
 					>
-						Événements
+						{t("events")}
 					</Button>
 				)}
 				<Button

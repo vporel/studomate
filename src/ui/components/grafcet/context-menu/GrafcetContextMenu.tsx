@@ -1,20 +1,20 @@
 "use client";
 
 import { getStepVariableId } from "@/project-analyser/analysers/grafcet/grafcet.analyser";
+import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
+import useProjectClipboard from "@/ui/components/projects/useProjectClipboard";
+import { useT } from "@/ui/i18n/useT";
+import type { MenuTranslate } from "@/ui/lib/context-menu/context-menu";
 import { ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";
 import ContextMenu from "@/ui/lib/context-menu/ContextMenu";
 import useContextMenuBus from "@/ui/lib/context-menu/useContextMenuBus";
 import useBooleanState from "@/ui/lib/hooks/useBooleanState";
+import useExportProgramPdf from "@/ui/pdf/useExportProgramPdf";
+import type { PdfExportProgramConfig } from "@/ui/pdf/usePdfExport";
 import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { XYPosition } from "@xyflow/react";
 import { useCallback, useMemo, useState } from "react";
-import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import useExportProgramPdf from "@/ui/pdf/useExportProgramPdf";
-import type { PdfExportProgramConfig } from "@/ui/pdf/usePdfExport";
-import { useT } from "@/ui/i18n/useT";
-import useCanEdit from "@/ui/components/projects/useCanEdit";
-import useProjectClipboard from "@/ui/components/projects/useProjectClipboard";
-import type { MenuTranslate } from "@/ui/lib/context-menu/context-menu";
 import { useGrafcetContext, useGrafcetStore } from "../context/GrafcetContext";
 import {
 	GrafcetNodeType,
@@ -22,6 +22,7 @@ import {
 } from "../flow/grafcet-nodes-definitions";
 import { ActionNodeType } from "../nodes/ActionNode";
 import { StepNodeType } from "../nodes/StepNode";
+import { TransitionNodeType } from "../nodes/TransitionNode";
 import actionContextMenuItems from "./action-context-menu-items";
 import defaultContextMenuItems from "./default-context-menu-items";
 import {
@@ -32,7 +33,6 @@ import junctionContextMenuItems from "./junction-context-menu-items";
 import paneContextMenuItems from "./pane-context-menu-items";
 import stepContextMenuItems from "./step-context-menu-items";
 import transitionContextMenuItems from "./transition-context-menu-items";
-import { TransitionNodeType } from "../nodes/TransitionNode";
 
 /**
  *
@@ -69,7 +69,7 @@ const GrafcetContextMenu = ({
 	const inSimulation = useProjectStore(
 		(state) => state.mode === ProjectMode.SIMULATION,
 	);
-	const canEdit = useCanEdit();
+	const canEdit = useCanEditActivePage();
 	const canExport = useProjectStore((state) => state.capabilities.export);
 	const simulationManager = useProjectStore((state) => state.simulationManager);
 	const forcedVariables = useProjectStore((state) => state.forcedVariables);

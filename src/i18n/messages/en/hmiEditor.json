@@ -91,8 +91,12 @@
 		"offsetY": "Offset Y",
 		"reset": "Reset",
 		"addRow": "Add a row",
+		"addAction": "Add an action",
 		"imposedByInputBehavior": "Imposed by the behaviour of the variable \"{variable}\" ({behavior}). Can be changed in the inputs table.",
 		"noWidgetSelected": "No widget selected: page properties.",
+		"multipleSelected": "{count} widgets selected.",
+		"noObjects": "No objects.",
+		"events": "Events",
 		"setAsMainPage": "Set as main page"
 	},
 	"menu": {

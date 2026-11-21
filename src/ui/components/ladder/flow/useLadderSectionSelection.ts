@@ -1,9 +1,9 @@
 "use client";
 
+import { usePageVisible } from "@/ui/components/pages/page-visibility-context";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
 import isTextEntryTarget from "@/ui/lib/is-text-entry-target";
 import { useEffect, type RefObject } from "react";
-import useCanEdit from "@/ui/components/projects/useCanEdit";
-import { usePageVisible } from "@/ui/components/pages/page-visibility-context";
 import { useLadderContext } from "../context/LadderContext";
 
 /**
@@ -28,7 +28,7 @@ export default function useLadderSectionSelection(
 ) {
 	const store = useLadderContext()?.store ?? null;
 	const visible = usePageVisible();
-	const canEdit = useCanEdit();
+	const canEdit = useCanEditActivePage();
 
 	useEffect(() => {
 		if (!store || !visible) return;

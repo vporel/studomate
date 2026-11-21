@@ -1,32 +1,32 @@
 "use client";
 
-import useCollapseOnOverflow from "@/ui/lib/hooks/useCollapseOnOverflow";
-import WidgetsOutlinedIcon from "@mui/icons-material/WidgetsOutlined";
-import ZoomControls from "@/ui/components/app-toolbar/ZoomControls";
-import useCanEdit from "@/ui/components/projects/useCanEdit";
-import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
+import { createRandomId } from "@/ids";
 import SectionAddCommand from "@/schemas/ladder/commands/section-add.command";
 import { DEFAULT_SECTION_TITLE } from "@/schemas/ladder/ladder.schema";
-import { createRandomId } from "@/ids";
-import FlexBox from "@/ui/lib/boxes/FlexBox";
-import AddIcon from "@mui/icons-material/Add";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import { Box, Button, Divider, IconButton } from "@mui/material";
-import { useCallback, useRef, useState } from "react";
+import ZoomControls from "@/ui/components/app-toolbar/ZoomControls";
+import { SYSTEM_BLOCK_CATALOG } from "@/ui/components/ladder/system-blocks/system-block-catalog";
 import AnalyserToolbarItem from "@/ui/components/programs/AnalyserToolbarItem";
 import ExportProgramTool from "@/ui/components/programs/ExportProgramTool";
-import type { PdfExportProgramConfig } from "@/ui/pdf/usePdfExport";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
 import { useT } from "@/ui/i18n/useT";
+import FlexBox from "@/ui/lib/boxes/FlexBox";
+import useCollapseOnOverflow from "@/ui/lib/hooks/useCollapseOnOverflow";
+import type { PdfExportProgramConfig } from "@/ui/pdf/usePdfExport";
 import {
 	LADDER_FLOW_MAX_ZOOM,
 	LADDER_FLOW_MIN_ZOOM,
 } from "@/ui/stores/ladder/managers/view.manager";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
+import AddIcon from "@mui/icons-material/Add";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import WidgetsOutlinedIcon from "@mui/icons-material/WidgetsOutlined";
+import { Box, Button, Divider, IconButton } from "@mui/material";
+import { useCallback, useRef, useState } from "react";
 import { useLadderStore, useLadderStoreApi } from "../context/LadderContext";
 import CoilSymbol from "../nodes/CoilSymbol";
 import ContactSymbol from "../nodes/ContactSymbol";
-import { SYSTEM_BLOCK_CATALOG } from "@/ui/components/ladder/system-blocks/system-block-catalog";
 import LadderSystemBlockTool from "./LadderSystemBlockTool";
 import LadderTool from "./LadderTool";
 
@@ -71,7 +71,7 @@ const LadderToolbar = ({
 	const commandsStackManager = useLadderStore(
 		(state) => state.commandsStackManager,
 	);
-	const canEdit = useCanEdit();
+	const canEdit = useCanEditActivePage();
 	const laddersManager = useProjectStore((state) => state.laddersManager);
 	const simulating = useProjectStore(
 		(state) => state.mode === ProjectMode.SIMULATION,

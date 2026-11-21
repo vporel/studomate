@@ -7,7 +7,7 @@ import Ladder, { DEFAULT_MAIN_NAME } from "../ladder/ladder.schema";
 import Program, { PROGRAM_TYPES, ProgramType } from "../program/program.schema";
 import { createRandomId } from "@/ids";
 import { nextAvailableName } from "@/lib/naming";
-import { isRecord } from "@/lib/object";
+import { isRecord, getOwnPropertyValue } from "@/lib/object";
 import Variable from "../variable/variable.schema";
 import { getCounterBlockParams } from "../ladder/function-blocks/counter.schema";
 import { getTimerBlockParams } from "../ladder/function-blocks/timer.schema";
@@ -429,7 +429,7 @@ export default class Project {
 	renameMnemonics(renames: Record<string, string>): void {
 		const applicable: Record<string, string> = {};
 		for (const variable of this.variables) {
-			const to = renames[variable.mnemonic];
+			const to = getOwnPropertyValue(renames, variable.mnemonic);
 			if (to !== undefined && to !== variable.mnemonic) {
 				applicable[variable.mnemonic] = to;
 			}
@@ -437,7 +437,8 @@ export default class Project {
 		if (Object.keys(applicable).length === 0) return;
 
 		const finalMnemonics = this.variables.map(
-			(variable) => applicable[variable.mnemonic] ?? variable.mnemonic,
+			(variable) =>
+				getOwnPropertyValue(applicable, variable.mnemonic) ?? variable.mnemonic,
 		);
 		const duplicate = finalMnemonics.find(
 			(mnemonic, i) => finalMnemonics.indexOf(mnemonic) !== i,
@@ -447,7 +448,7 @@ export default class Project {
 		}
 
 		this.variables = this.variables.map((variable) => {
-			const to = applicable[variable.mnemonic];
+			const to = getOwnPropertyValue(applicable, variable.mnemonic);
 			return to === undefined
 				? variable
 				: variable.update({ mnemonic: to }, this.dialect);

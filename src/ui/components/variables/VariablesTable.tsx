@@ -1,12 +1,15 @@
 "use client";
 
-import useCanEdit from "../projects/useCanEdit";
+import { createRandomId } from "@/ids";
 import { DEFAULT_LOGIC_INPUT_BEHAVIOR } from "@/schemas/variable/input-behavior";
 import {
 	VariableType,
 	VariableZone,
 	ZONES_TO_TYPES,
 } from "@/schemas/variable/variable.schema";
+import { useLocaleContext } from "@/ui/i18n/LocaleProvider";
+import EMPTY_ARRAY from "@/ui/lib/empty";
+import { getVariablesPageDefinitionForZone } from "@/ui/stores/project/variables-pages";
 import { Box } from "@mui/material";
 import {
 	DataGrid,
@@ -27,12 +30,9 @@ import {
 	useState,
 } from "react";
 import { useShallow } from "zustand/shallow";
-import { createRandomId } from "@/ids";
-import { useLocaleContext } from "@/ui/i18n/LocaleProvider";
-import EMPTY_ARRAY from "@/ui/lib/empty";
 import { useProjectStore } from "../projects/ProjectContext";
+import useCanEditActivePage from "../projects/useCanEditActivePage";
 import GridToolBar from "./GridToolBar";
-import { getVariablesPageDefinitionForZone } from "@/ui/stores/project/variables-pages";
 import VariableRowContextMenu, {
 	VariableRowMenuTarget,
 } from "./VariableRowContextMenu";
@@ -61,7 +61,7 @@ const VariablesTable = ({
 }) => {
 	if (zones.length === 0) throw new Error("At least one zone must be provided");
 	const variablesManager = useProjectStore((state) => state.variablesManager);
-	const canEdit = useCanEdit();
+	const canEdit = useCanEditActivePage();
 	const crossReference = useProjectStore(
 		(state) => state.capabilities.crossReference,
 	);

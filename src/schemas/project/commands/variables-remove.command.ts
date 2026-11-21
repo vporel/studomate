@@ -4,8 +4,13 @@ import Variable, {
 import Project from "../project.schema";
 import AbstractProjectCommand from "./abstract-project.command";
 
+/** A removed variable, with its position in `project.variables` before the removal. */
+export type VariableRemoval = VariableUpdatableFieldsWithId & {
+	index?: number;
+};
+
 export default class VariablesRemoveCommand extends AbstractProjectCommand<
-	VariableUpdatableFieldsWithId[]
+	VariableRemoval[]
 > {
 	getType(): string {
 		return "variables-remove";
@@ -18,10 +23,23 @@ export default class VariablesRemoveCommand extends AbstractProjectCommand<
 		return [project, true];
 	}
 
+	/**
+	 * Puts every variable back at its position. Inserting by increasing original position
+	 * rebuilds the list exactly, even for variables that were not next to each other; one without
+	 * a position goes to the end.
+	 */
 	cancel(project: Project): Project {
-		project.variables.push(
-			...this.payload.map((v) => Variable.fromData(v, project.dialect)),
+		const byPosition = [...this.payload].sort(
+			(a, b) => (a.index ?? Infinity) - (b.index ?? Infinity),
 		);
+		for (const { index, ...fields } of byPosition) {
+			const variable = Variable.fromData(fields, project.dialect);
+			project.variables.splice(
+				Math.min(index ?? project.variables.length, project.variables.length),
+				0,
+				variable,
+			);
+		}
 		return project;
 	}
 }

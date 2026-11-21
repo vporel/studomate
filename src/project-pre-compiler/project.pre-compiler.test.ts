@@ -295,6 +295,74 @@ describe("ProjectPreCompiler", () => {
 			expect(identifiers.map((n) => n.value)).not.toContain("X1");
 		});
 
+		it("rebinds the input of a timer reading another grafcet's step to that step's memo", () => {
+			const g1 = GrafcetFactory.createSimpleCycle("g1", "VRAI", "VRAI", 0);
+			const g2 = GrafcetFactory.createSimpleCycle("g2", "5s/X1", "VRAI", 10);
+			const project = ProjectFactory.create([], [g1, g2]);
+			const generatedVariables =
+				ProjectAnalyser.analyse(project).generatedVariables;
+
+			const result = ProjectPreCompiler.preCompile(
+				project,
+				generatedVariables,
+				Dialect.FR,
+			);
+
+			expect(result.errors).toEqual([]);
+			const grafcet1 = asGrafcet(result.result!.programs["g1"]);
+			const grafcet2 = asGrafcet(result.result!.programs["g2"]);
+			const step1Id = Array.from(grafcet1.steps.entries()).find(
+				([, step]) => step.node.value === "X1",
+			)![0];
+			const memoNameForX1 = grafcet1.stepsMemos
+				.get(step1Id)!
+				.variable.getName();
+
+			const [timer] = Array.from(grafcet2.transitions.values())[0].timers;
+			expect(timer.input).toMatchObject({
+				type: "IDENTIFIER",
+				value: memoNameForX1,
+			});
+		});
+
+		it("keeps a timer reading a step of its own grafcet on the live step", () => {
+			const g1 = GrafcetFactory.createSimpleCycle("g1", "5s/X0", "VRAI", 0);
+			const project = ProjectFactory.create([], [g1]);
+			const generatedVariables =
+				ProjectAnalyser.analyse(project).generatedVariables;
+
+			const result = ProjectPreCompiler.preCompile(
+				project,
+				generatedVariables,
+				Dialect.FR,
+			);
+
+			const grafcet1 = asGrafcet(result.result!.programs["g1"]);
+			const [timer] = Array.from(grafcet1.transitions.values())[0].timers;
+			expect(timer.input).toMatchObject({ type: "IDENTIFIER", value: "X0" });
+		});
+
+		it("leaves the input of a timer without step reference untouched", () => {
+			const g1 = GrafcetFactory.createSimpleCycle("g1", "VRAI", "VRAI", 0);
+			const g2 = GrafcetFactory.createSimpleCycle("g2", "5s/VRAI", "VRAI", 10);
+			const project = ProjectFactory.create([], [g1, g2]);
+			const generatedVariables =
+				ProjectAnalyser.analyse(project).generatedVariables;
+
+			const result = ProjectPreCompiler.preCompile(
+				project,
+				generatedVariables,
+				Dialect.FR,
+			);
+
+			const grafcet2 = asGrafcet(result.result!.programs["g2"]);
+			const [timer] = Array.from(grafcet2.transitions.values())[0].timers;
+			expect(timer.input).toMatchObject({
+				type: "BOOLEAN_LITERAL",
+				value: true,
+			});
+		});
+
 		it("also rebinds a receptivity referencing a non-predecessor step of its own grafcet", () => {
 			const g1 = new GrafcetBuilder()
 				.id("g1")

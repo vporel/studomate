@@ -166,14 +166,110 @@ describe("CommandsStack", () => {
 			}
 		}
 
-		it("propagates the error, leaving the batch out of the undo stack and in the redo stack", () => {
+		it("propagates the error and drops the batch: it is in neither stack", () => {
 			const stack = new CommandsStack<Counter>();
 			stack.execute([new FailingCancelCommand(5)], { value: 0 });
 
 			expect(() => stack.undo({ value: 5 })).toThrow("cancel failed");
 
 			expect(stack.commandsToUndo).toHaveLength(0);
+			expect(stack.commandsToRedo).toHaveLength(0);
+		});
+
+		it("does not replay the batch on a redo that follows the failure", () => {
+			const stack = new CommandsStack<Counter>();
+			stack.execute([new FailingCancelCommand(5)], { value: 0 });
+			expect(() => stack.undo({ value: 5 })).toThrow();
+
+			const [object, redone] = stack.redo({ value: 5 });
+
+			expect(redone).toBeNull();
+			expect(object).toEqual({ value: 5 });
+		});
+
+		it("keeps the older batches undoable", () => {
+			const stack = new CommandsStack<Counter>();
+			let object = stack.execute([new AddCommand(3)], { value: 0 });
+			object = stack.execute([new FailingCancelCommand(5)], object);
+			expect(object).toEqual({ value: 8 });
+
+			expect(() => stack.undo(object)).toThrow("cancel failed");
+			const [afterOlder, undone] = stack.undo({ value: 3 });
+
+			expect(undone).toHaveLength(1);
+			expect(afterOlder).toEqual({ value: 0 });
+		});
+
+		it("leaves the redo stack untouched by the failure", () => {
+			const stack = new CommandsStack<Counter>();
+			let object = stack.execute([new AddCommand(3)], { value: 0 });
+			[object] = stack.undo(object);
+			object = stack.execute([new FailingCancelCommand(5)], object);
+			// A new execution clears the redo stack: undo the older batch again to refill it
+			expect(stack.commandsToRedo).toHaveLength(0);
+			stack.execute([new AddCommand(1)], object);
+			[object] = stack.undo({ value: 6 });
 			expect(stack.commandsToRedo).toHaveLength(1);
+
+			expect(() => stack.undo(object)).toThrow("cancel failed");
+
+			expect(stack.commandsToRedo).toHaveLength(1);
+		});
+
+		it("keeps both stacks consistent when a later cancel of a batch throws", () => {
+			const stack = new CommandsStack<Counter>();
+			stack.execute([new FailingCancelCommand(5), new AddCommand(1)], {
+				value: 0,
+			});
+
+			// Reverse order: AddCommand cancels, then the failing one throws
+			expect(() => stack.undo({ value: 6 })).toThrow("cancel failed");
+
+			expect(stack.commandsToUndo).toHaveLength(0);
+			expect(stack.commandsToRedo).toHaveLength(0);
+		});
+
+		it("still records a batch that is undone without error", () => {
+			const stack = new CommandsStack<Counter>();
+			const afterExecute = stack.execute([new AddCommand(5)], { value: 0 });
+
+			stack.undo(afterExecute);
+
+			expect(stack.commandsToUndo).toHaveLength(0);
+			expect(stack.commandsToRedo).toHaveLength(1);
+		});
+	});
+
+	describe("redo of a command whose execute throws", () => {
+		class FailingRedoCommand extends AbstractCommand<Counter, number> {
+			private executions = 0;
+
+			getType(): string {
+				return "failing-redo";
+			}
+
+			execute(object: Counter): [Counter, boolean] {
+				this.executions++;
+				if (this.executions > 1) throw new Error("execute failed");
+				return [{ value: object.value + this.payload }, true];
+			}
+
+			cancel(object: Counter): Counter {
+				return { value: object.value - this.payload };
+			}
+		}
+
+		it("propagates the error and drops the batch: it is in neither stack", () => {
+			const stack = new CommandsStack<Counter>();
+			const afterExecute = stack.execute([new FailingRedoCommand(5)], {
+				value: 0,
+			});
+			const [afterUndo] = stack.undo(afterExecute);
+
+			expect(() => stack.redo(afterUndo)).toThrow("execute failed");
+
+			expect(stack.commandsToUndo).toHaveLength(0);
+			expect(stack.commandsToRedo).toHaveLength(0);
 		});
 	});
 

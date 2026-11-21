@@ -1,5 +1,6 @@
 import {
-	canEdit,
+	canEditActivePage,
+	canEditProject,
 	isPageEditingEnabled,
 	isPageReadOnly,
 	refuseEdit,
@@ -31,33 +32,75 @@ function state(
 	};
 }
 
-describe("canEdit", () => {
+describe("canEditProject", () => {
 	it("is true in design mode with editing enabled", () => {
-		expect(canEdit(state())).toBe(true);
+		expect(canEditProject(state())).toBe(true);
 	});
 
 	it("is false in simulation mode", () => {
-		expect(canEdit(state({ mode: ProjectMode.SIMULATION }))).toBe(false);
+		expect(canEditProject(state({ mode: ProjectMode.SIMULATION }))).toBe(false);
 	});
 
-	it("is false when editing is disabled, even in design mode", () => {
-		expect(canEdit(state({ editingEnabled: false }))).toBe(false);
+	it("is false when the project is opened read-only, even in design mode", () => {
+		expect(canEditProject(state({ editingEnabled: false }))).toBe(false);
 	});
 
-	it("is false when the active page is locked", () => {
-		expect(canEdit(state({ pages: [page("g1", "grafcet", true)] }))).toBe(
+	it("does not depend on the active page: a locked page does not lock the project", () => {
+		const pages = [page("g1", "grafcet", true), page("v1", "variables")];
+
+		expect(canEditProject(state({ pages, activePageId: "g1" }))).toBe(true);
+		expect(canEditProject(state({ pages, activePageId: "v1" }))).toBe(true);
+	});
+
+	it("needs no page information at all", () => {
+		expect(
+			canEditProject({ mode: ProjectMode.DESIGN, editingEnabled: true }),
+		).toBe(true);
+	});
+
+	it("is implied by canEditActivePage: it is never false when a page can be edited", () => {
+		const cases = [
+			state(),
+			state({ mode: ProjectMode.SIMULATION }),
+			state({ editingEnabled: false }),
+			state({ pages: [page("g1", "grafcet", true)] }),
+		];
+
+		for (const s of cases) {
+			if (canEditActivePage(s)) expect(canEditProject(s)).toBe(true);
+		}
+	});
+});
+
+describe("canEditActivePage", () => {
+	it("is true in design mode with editing enabled", () => {
+		expect(canEditActivePage(state())).toBe(true);
+	});
+
+	it("is false in simulation mode", () => {
+		expect(canEditActivePage(state({ mode: ProjectMode.SIMULATION }))).toBe(
 			false,
 		);
 	});
 
+	it("is false when editing is disabled, even in design mode", () => {
+		expect(canEditActivePage(state({ editingEnabled: false }))).toBe(false);
+	});
+
+	it("is false when the active page is locked", () => {
+		expect(
+			canEditActivePage(state({ pages: [page("g1", "grafcet", true)] })),
+		).toBe(false);
+	});
+
 	it("follows the active page: a locked page does not lock the others", () => {
 		const pages = [page("g1", "grafcet"), page("v1", "variables", true)];
-		expect(canEdit(state({ pages, activePageId: "g1" }))).toBe(true);
-		expect(canEdit(state({ pages, activePageId: "v1" }))).toBe(false);
+		expect(canEditActivePage(state({ pages, activePageId: "g1" }))).toBe(true);
+		expect(canEditActivePage(state({ pages, activePageId: "v1" }))).toBe(false);
 	});
 
 	it("is not blocked by a lock when there is no active page", () => {
-		expect(canEdit(state({ activePageId: null }))).toBe(true);
+		expect(canEditActivePage(state({ activePageId: null }))).toBe(true);
 	});
 });
 

@@ -58,7 +58,15 @@ export default class LocalStorageProjectRepository implements ProjectRepository 
 	}
 
 	async list(): Promise<ProjectListResult> {
-		return deserializeProjects(this.readRawProjects());
+		const { raws, unreadableIds } = this.readRawProjects();
+		const { projects, skipped } = deserializeProjects(raws);
+		return {
+			projects,
+			skipped: [
+				...skipped,
+				...unreadableIds.map((id) => ({ reason: "unreadable" as const, id })),
+			],
+		};
 	}
 
 	async get(projectId: string): Promise<Project | null> {
@@ -111,36 +119,91 @@ export default class LocalStorageProjectRepository implements ProjectRepository 
 		);
 	}
 
-	private readRawProjects(): Record<string, any>[] {
-		if (this.ensureLayout() >= 1) {
-			return Object.keys(this.readIndex())
-				.map((id) => this.readRawProject(id))
-				.filter((p): p is Record<string, any> => p !== null);
+	/**
+	 * `unreadableIds`: the projects whose key holds something that is not a project. An index
+	 * entry whose key is gone is ignored: there is nothing left to warn about.
+	 */
+	private readRawProjects(): {
+		raws: Record<string, any>[];
+		unreadableIds: string[];
+	} {
+		if (this.ensureLayout() < 1) {
+			return { raws: this.readLegacyProjects(), unreadableIds: [] };
 		}
-		return this.readLegacyProjects();
+		const raws: Record<string, any>[] = [];
+		const unreadableIds: string[] = [];
+		for (const id of Object.keys(this.readIndex())) {
+			const entry = this.readRawProjectEntry(id);
+			if (entry.kind === "ok") raws.push(entry.raw);
+			else if (entry.kind === "unreadable") unreadableIds.push(id);
+		}
+		return { raws, unreadableIds };
 	}
 
 	private readRawProject(id: string): Record<string, any> | null {
+		const entry = this.readRawProjectEntry(id);
+		return entry.kind === "ok" ? entry.raw : null;
+	}
+
+	private readRawProjectEntry(
+		id: string,
+	):
+		| { kind: "ok"; raw: Record<string, any> }
+		| { kind: "absent" }
+		| { kind: "unreadable" } {
 		try {
 			const raw = localStorage.getItem(projectKey(id));
-			if (!raw) return null;
+			if (!raw) return { kind: "absent" };
 			const parsed = JSON.parse(raw);
-			return isRecord(parsed) ? parsed : null;
+			return isRecord(parsed)
+				? { kind: "ok", raw: parsed }
+				: { kind: "unreadable" };
 		} catch (e) {
 			console.error(`Projet "${id}" illisible, ignoré :`, e);
-			return null;
+			return { kind: "unreadable" };
 		}
 	}
 
+	/**
+	 * Absent, or the array of the v0 layout: nothing is indexed. Unreadable: rebuilt from the
+	 * project keys, so that the projects it no longer lists are neither lost from the list nor
+	 * left out of the next index written.
+	 */
 	private readIndex(): ProjectIndex {
+		let raw: string | null;
 		try {
-			const raw = localStorage.getItem(PROJECTS_INDEX_KEY);
-			const parsed = raw ? JSON.parse(raw) : {};
-			if (!isRecord(parsed)) return {};
-			return parsed as ProjectIndex;
+			raw = localStorage.getItem(PROJECTS_INDEX_KEY);
 		} catch {
 			return {};
 		}
+		if (!raw) return {};
+		try {
+			const parsed = JSON.parse(raw);
+			if (Array.isArray(parsed)) return {};
+			if (isRecord(parsed)) return parsed as ProjectIndex;
+		} catch {
+			// Unreadable: rebuilt below
+		}
+		return this.rebuildIndex();
+	}
+
+	private rebuildIndex(): ProjectIndex {
+		const index: ProjectIndex = {};
+		const prefix = projectKey("");
+		try {
+			for (let i = 0; i < localStorage.length; i++) {
+				const key = localStorage.key(i);
+				if (!key?.startsWith(prefix)) continue;
+				const id = key.slice(prefix.length);
+				const entry = this.readRawProjectEntry(id);
+				if (entry.kind === "absent") continue;
+				const name = entry.kind === "ok" ? entry.raw.name : undefined;
+				index[id] = { name: typeof name === "string" ? name : "" };
+			}
+		} catch (e) {
+			console.error("Index des projets non reconstruit :", e);
+		}
+		return index;
 	}
 
 	/**

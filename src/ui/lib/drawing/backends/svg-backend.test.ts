@@ -1,3 +1,6 @@
+/**
+ * @jest-environment jsdom
+ */
 import { Scene } from "../draw-op";
 import { escapeXml, sceneToSvg } from "./svg-backend";
 
@@ -6,6 +9,71 @@ describe("escapeXml", () => {
 		expect(escapeXml('a & b < c > "d"')).toBe(
 			"a &amp; b &lt; c &gt; &quot;d&quot;",
 		);
+	});
+
+	it.each([
+		["U+0000", "\u0000"],
+		["U+0008 (retour arrière)", "\u0008"],
+		["U+000B (saut de ligne doux de Word)", "\u000B"],
+		["U+000C", "\u000C"],
+		["U+001B (échappement)", "\u001B"],
+		["U+FFFE", "\uFFFE"],
+		["U+FFFF", "\uFFFF"],
+		["une demi-paire haute isolée", "\uD83D"],
+		["une demi-paire basse isolée", "\uDE00"],
+	])("retire %s, interdit en XML 1.0", (_label, invalid) => {
+		expect(escapeXml(`a${invalid}b`)).toBe("ab");
+	});
+
+	it("garde tabulation, sauts de ligne, accents et emoji complets", () => {
+		const value = "a\tb\nc\rd é ç œ 😀 日本";
+
+		expect(escapeXml(value)).toBe(value);
+	});
+
+	it("retire les caractères interdits avant d'échapper le reste", () => {
+		expect(escapeXml("<a\u000B&b>")).toBe("&lt;a&amp;b&gt;");
+	});
+
+	it("laisse une chaîne vide ou sans rien d'interdit inchangée", () => {
+		expect(escapeXml("")).toBe("");
+		expect(escapeXml("simple")).toBe("simple");
+	});
+});
+
+describe("sceneToSvg with invalid XML characters", () => {
+	const parse = (svg: string) =>
+		new DOMParser().parseFromString(svg, "image/svg+xml");
+
+	it("stays well-formed XML when a text contains a control character", () => {
+		const svg = sceneToSvg({
+			ops: [
+				{
+					op: "text",
+					x: 0,
+					y: 10,
+					text: "Nom\u000Bcollé\u0008",
+					fontSize: 12,
+				},
+			],
+			width: 100,
+			height: 50,
+		});
+
+		const document = parse(svg);
+
+		expect(document.querySelector("parsererror")).toBeNull();
+		expect(document.querySelector("text")?.textContent).toBe("Nomcollé");
+	});
+
+	it("stays well-formed XML when a path carries one", () => {
+		const svg = sceneToSvg({
+			ops: [{ op: "path", d: "M0 0 L10\u0000 10" }],
+			width: 100,
+			height: 50,
+		});
+
+		expect(parse(svg).querySelector("parsererror")).toBeNull();
 	});
 });
 

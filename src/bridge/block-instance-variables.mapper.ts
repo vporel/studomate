@@ -7,6 +7,7 @@ import {
 	createTimerBlockVariables,
 	getTimerBlockParams,
 } from "@/schemas/ladder/function-blocks/timer.schema";
+import type Ladder from "@/schemas/ladder/ladder.schema";
 import Project from "@/schemas/project/project.schema";
 import Variable from "@/schemas/variable/variable.schema";
 
@@ -17,18 +18,32 @@ import Variable from "@/schemas/variable/variable.schema";
  * for analysis — they are never persisted in `project.variables`, and a block instance is
  * referenceable from any ladder or grafcet in the project, not just the one that contains it.
  * A block whose name fails `validateBlockName` is skipped: the analyser reports the name error
- * itself, there is no valid variable to expose yet.
+ * itself, there is no valid variable to expose yet. A block of a ladder excluded from the
+ * execution is skipped too: the analyser generates nothing for it, so the variable would be
+ * reported as undeclared.
  */
 export function getBlockInstanceVariables(project: Project): Variable[] {
-	const timerVariables = project.getAllTimerBlockElements().flatMap(({ element }) => {
-		const params = getTimerBlockParams(element);
-		if (!params || validateBlockName(params.name).length > 0) return [];
-		return createTimerBlockVariables(element.id, params.name);
-	});
-	const counterVariables = project.getAllCounterBlockElements().flatMap(({ element }) => {
-		const params = getCounterBlockParams(element);
-		if (!params || validateBlockName(params.name).length > 0) return [];
-		return createCounterBlockVariables(element.id, params.name, params.counterType);
-	});
+	const isExecuted = ({ ladder }: { ladder: Ladder }) =>
+		!ladder.excludedFromExecution;
+	const timerVariables = project
+		.getAllTimerBlockElements()
+		.filter(isExecuted)
+		.flatMap(({ element }) => {
+			const params = getTimerBlockParams(element);
+			if (!params || validateBlockName(params.name).length > 0) return [];
+			return createTimerBlockVariables(element.id, params.name);
+		});
+	const counterVariables = project
+		.getAllCounterBlockElements()
+		.filter(isExecuted)
+		.flatMap(({ element }) => {
+			const params = getCounterBlockParams(element);
+			if (!params || validateBlockName(params.name).length > 0) return [];
+			return createCounterBlockVariables(
+				element.id,
+				params.name,
+				params.counterType,
+			);
+		});
 	return [...timerVariables, ...counterVariables];
 }

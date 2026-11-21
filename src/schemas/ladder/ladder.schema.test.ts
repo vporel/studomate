@@ -393,6 +393,39 @@ describe("Ladder", () => {
 	});
 
 	describe("renameVariableReferences", () => {
+		it.each(["constructor", "toString", "valueOf"])(
+			"laisse intacts un contact et une pinoche de bloc nommés %s quand une autre variable est renommée",
+			(name) => {
+				const ladder = new Ladder("l1", "Mon ladder");
+				const [section] = ladder.sections;
+				const contact = createContactElement(name, "NO", 0, 0);
+				const compare = createCompareBlockElement(0, 2, {
+					in1: name,
+					in2: "niveau",
+					operator: "<",
+				});
+				ladder.addElements(section.id, [contact, compare]);
+
+				ladder.renameVariableReferences({ niveau: "level" });
+
+				expect(contact.data.variable).toBe(name);
+				expect(compare.data.params).toMatchObject({ in1: name, in2: "level" });
+			},
+		);
+
+		it("renomme un contact nommé toString quand c'est lui qui est renommé", () => {
+			const ladder = new Ladder("l1", "Mon ladder");
+			const [section] = ladder.sections;
+			const contact = createContactElement("toString", "NO", 0, 0);
+			ladder.addElements(section.id, [contact]);
+			const renames: Record<string, string> = {};
+			renames["toString"] = "autre";
+
+			ladder.renameVariableReferences(renames);
+
+			expect(contact.data.variable).toBe("autre");
+		});
+
 		it("réécrit la variable référencée par les contacts et bobines de toutes les sections", () => {
 			const ladder = new Ladder("l1", "Mon ladder");
 			const [section1] = ladder.sections;

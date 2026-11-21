@@ -24,7 +24,7 @@ jest.mock("@/ui/components/projects/ProjectContext", () => ({
 	useProjectStore: (selector: (state: unknown) => unknown) =>
 		selector(storeState),
 }));
-jest.mock("@/ui/components/projects/useCanEdit", () => ({
+jest.mock("@/ui/components/projects/useCanEditActivePage", () => ({
 	__esModule: true,
 	default: () => canEdit,
 }));

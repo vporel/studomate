@@ -13,6 +13,10 @@ import JunctionBarsRow from "./JunctionBarsRow";
 import JunctionNode from "./JunctionNode";
 import JunctionNodeBranchAddButtons from "./JunctionNodeBranchAddButtons";
 
+jest.mock("@/ui/components/projects/useCanEditActivePage", () => ({
+	__esModule: true,
+	default: () => true,
+}));
 jest.mock("@/ui/components/grafcet/context/GrafcetContext");
 jest.mock("@/ui/lib/react-flow/HandleWithConnectionsLimit", () => ({
 	__esModule: true,

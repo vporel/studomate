@@ -1,9 +1,9 @@
-import isTextEntryTarget from "@/ui/lib/is-text-entry-target";
 import { SNAP_GRID } from "@/ui/components/hmi/logic/constants";
 import { getT } from "@/ui/i18n/translateGlobal";
+import isTextEntryTarget from "@/ui/lib/is-text-entry-target";
 import { getLastMousePosition } from "@/ui/lib/mouse-position";
 import { activeCopyCutPasteManager } from "@/ui/stores/project/copy-cut-paste";
-import { canEdit } from "@/ui/stores/project/editability";
+import { canEditActivePage } from "@/ui/stores/project/editability";
 import type { ProjectStoreState } from "@/ui/stores/project/project.store.types";
 import { toast } from "react-toastify";
 import type { StoreApi } from "zustand";
@@ -42,7 +42,7 @@ export default function handleEditingShortcut(
 ): boolean {
 	if (isTextEntryTarget(e.target)) return false;
 	const state = store.getState();
-	const editable = canEdit(state);
+	const editable = canEditActivePage(state);
 	const copyCutPaste = activeCopyCutPasteManager(state);
 	const consume = () => {
 		e.stopPropagation();

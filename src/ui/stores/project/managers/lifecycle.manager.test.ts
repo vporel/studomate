@@ -379,6 +379,171 @@ describe("ProjectLifecycleManager", () => {
 			expect(toast.error).toHaveBeenCalled();
 		});
 
+		describe("messages d'échec passant par l'environnement", () => {
+			beforeEach(() => (toast.error as jest.Mock).mockClear());
+
+			const envWithSpies = () => {
+				const error = jest.fn();
+				const env = createAppProjectStoreEnvironment({
+					notifications: { error },
+					translate: (namespace) => (key) => `${namespace}:${key}`,
+				});
+				return { env, error };
+			};
+
+			it("annonce l'échec d'un enregistrement par l'environnement, pas par un toast direct", async () => {
+				const { env, error } = envWithSpies();
+				const store = createProjectStore(env);
+				await openBlankProject(store);
+				jest
+					.spyOn(store.getState().projectRepository, "save")
+					.mockResolvedValue({ ok: false, reason: "network", cause: null });
+
+				await lifecycle(store).saveProject();
+
+				expect(error).toHaveBeenCalledWith("toasts.save:cloudUnreachable");
+				expect(toast.error).not.toHaveBeenCalled();
+			});
+
+			it("annonce l'échec d'un enregistrement sous par l'environnement", async () => {
+				const { env, error } = envWithSpies();
+				const store = createProjectStore(env);
+				await openBlankProject(store);
+				jest
+					.spyOn(store.getState().projectRepository, "save")
+					.mockResolvedValue({ ok: false, reason: "unknown", cause: null });
+
+				await lifecycle(store).saveProjectAs("Copie");
+
+				expect(error).toHaveBeenCalledWith("toasts.save:generic");
+			});
+
+			it("annonce l'échec du rechargement cloud par l'environnement", async () => {
+				const { env, error } = envWithSpies();
+				const store = createProjectStore(env);
+				await openBlankProject(store);
+				jest
+					.spyOn(store.getState().projectRepository, "get")
+					.mockResolvedValue(null);
+
+				await lifecycle(store).resolveCloudConflict("reload");
+
+				expect(error).toHaveBeenCalledWith("toasts:cloudReloadFailed");
+			});
+		});
+
+		describe("sauvegardes concurrentes", () => {
+			it("ignore un second saveProject lancé pendant le premier : un seul appel au repository", async () => {
+				const store = createProjectStore(createAppProjectStoreEnvironment());
+				await openBlankProject(store);
+				store.getState().setProjectName("Projet concurrent");
+				const save = jest.spyOn(store.getState().projectRepository, "save");
+
+				const [first, second] = await Promise.all([
+					lifecycle(store).saveProject(),
+					lifecycle(store).saveProject(),
+				]);
+
+				expect(first).toBe(true);
+				expect(second).toBe(false);
+				expect(save).toHaveBeenCalledTimes(1);
+			});
+
+			it("autorise une nouvelle sauvegarde une fois la première terminée", async () => {
+				const store = createProjectStore(createAppProjectStoreEnvironment());
+				await openBlankProject(store);
+				const save = jest.spyOn(store.getState().projectRepository, "save");
+
+				expect(await lifecycle(store).saveProject()).toBe(true);
+				expect(await lifecycle(store).saveProject()).toBe(true);
+
+				expect(save).toHaveBeenCalledTimes(2);
+			});
+
+			it("remet savingProject à false quand le repository rejette, et permet de réessayer", async () => {
+				const store = createProjectStore(createAppProjectStoreEnvironment());
+				await openBlankProject(store);
+				const save = jest
+					.spyOn(store.getState().projectRepository, "save")
+					.mockRejectedValueOnce(new Error("réseau coupé"));
+
+				await expect(lifecycle(store).saveProject()).rejects.toThrow(
+					"réseau coupé",
+				);
+
+				expect(store.getState().savingProject).toBe(false);
+				expect(await lifecycle(store).saveProject()).toBe(true);
+				expect(save).toHaveBeenCalledTimes(2);
+			});
+
+			it("remet savingProject à false quand la modale d'emplacement est annulée", async () => {
+				localStorage.clear();
+				setDefaultDialect(Dialect.FR);
+				const store = createProjectStore(createAppProjectStoreEnvironment());
+				await openBlankProject(store);
+				const saveResult = lifecycle(store).saveProject();
+				await flushMicrotasks();
+				expect(store.getState().savingProject).toBe(true);
+
+				store.getState().ui.onSaveLocationChosen?.(null);
+
+				expect(await saveResult).toBe(false);
+				expect(store.getState().savingProject).toBe(false);
+			});
+
+			it("un second saveProject pendant la modale d'emplacement ne la rouvre pas et laisse le premier aboutir", async () => {
+				localStorage.clear();
+				setDefaultDialect(Dialect.FR);
+				const store = createProjectStore(createAppProjectStoreEnvironment());
+				await openBlankProject(store);
+				const first = lifecycle(store).saveProject();
+				await flushMicrotasks();
+				const chooser = store.getState().ui.onSaveLocationChosen;
+
+				expect(await lifecycle(store).saveProject()).toBe(false);
+				expect(store.getState().ui.onSaveLocationChosen).toBe(chooser);
+
+				chooser?.("local");
+				expect(await first).toBe(true);
+			});
+
+			it("saveProjectAs lancé pendant saveProject est ignoré, et réciproquement", async () => {
+				const store = createProjectStore(createAppProjectStoreEnvironment());
+				await openBlankProject(store);
+				const save = jest.spyOn(store.getState().projectRepository, "save");
+
+				const [saved, savedAs] = await Promise.all([
+					lifecycle(store).saveProject(),
+					lifecycle(store).saveProjectAs("Copie"),
+				]);
+
+				expect(saved).toBe(true);
+				expect(savedAs).toBe(false);
+				expect(save).toHaveBeenCalledTimes(1);
+
+				const [asFirst, saveSecond] = await Promise.all([
+					lifecycle(store).saveProjectAs("Copie 2"),
+					lifecycle(store).saveProject(),
+				]);
+				expect(asFirst).toBe(true);
+				expect(saveSecond).toBe(false);
+			});
+
+			it("saveProjectAs remet savingProject à false quand le repository rejette", async () => {
+				const store = createProjectStore(createAppProjectStoreEnvironment());
+				await openBlankProject(store);
+				jest
+					.spyOn(store.getState().projectRepository, "save")
+					.mockRejectedValueOnce(new Error("réseau coupé"));
+
+				await expect(lifecycle(store).saveProjectAs("Copie")).rejects.toThrow(
+					"réseau coupé",
+				);
+
+				expect(store.getState().savingProject).toBe(false);
+			});
+		});
+
 		it("projet partagé (lecture seule) : ouvre la modale Save As au lieu d'enregistrer", async () => {
 			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);

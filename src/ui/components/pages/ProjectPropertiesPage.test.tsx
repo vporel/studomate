@@ -23,12 +23,25 @@ const SHAREABLE_REPOSITORY = {
 
 function setup(
 	mode: ProjectMode,
-	{ shareable = true, isSharedProject = false } = {},
+	{
+		shareable = true,
+		isSharedProject = false,
+		editingEnabled = true,
+		activePageLocked = false,
+	} = {},
 ) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			mode,
+			editingEnabled,
 			activePageId: "project-properties",
+			pagesData: {
+				"project-properties": {
+					id: "project-properties",
+					type: "project-properties",
+					locked: activePageLocked,
+				},
+			},
 			project: {
 				name: "Mon projet",
 				author: "Moi",
@@ -97,6 +110,21 @@ describe("ProjectPropertiesPage", () => {
 			expect(field).not.toHaveAttribute("aria-disabled", "true");
 		}
 		expect(screen.queryByText(READ_ONLY_TEXT)).not.toBeInTheDocument();
+	});
+
+	it("disables every field for a project opened read-only", () => {
+		setup(ProjectMode.DESIGN, { editingEnabled: false });
+
+		expect(screen.getByLabelText("Nom")).toBeDisabled();
+		expect(screen.getByLabelText("Auteur")).toBeDisabled();
+		expect(screen.getByLabelText("Énoncé de l'exercice")).toBeDisabled();
+	});
+
+	it("keeps every field editable when the page itself is locked", () => {
+		setup(ProjectMode.DESIGN, { activePageLocked: true });
+
+		expect(screen.getByLabelText("Nom")).not.toBeDisabled();
+		expect(screen.getByLabelText("Auteur")).not.toBeDisabled();
 	});
 
 	it("disables every field and explains why in Simulation mode", () => {

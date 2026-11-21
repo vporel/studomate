@@ -1,3 +1,4 @@
+import { getOwnPropertyValue } from "@/lib/object";
 import { getKeywordsStringsForDialect } from "./keywords";
 import scanWords from "./scan-words";
 import { Dialect } from "@/expression-language/dialect.enum";
@@ -36,14 +37,15 @@ export default class IdentifierRenamer {
 		if (!expression || Object.keys(renames).length === 0) return expression;
 
 		const occurrences = this.scanIdentifiers(expression, dialect).filter(
-			(o) => renames[o.name] !== undefined,
+			(o) => getOwnPropertyValue(renames, o.name) !== undefined,
 		);
 		if (occurrences.length === 0) return expression;
 
 		let result = "";
 		let cursor = 0;
 		for (const { start, end, name } of occurrences) {
-			result += expression.slice(cursor, start) + renames[name];
+			result +=
+				expression.slice(cursor, start) + getOwnPropertyValue(renames, name);
 			cursor = end;
 		}
 		return result + expression.slice(cursor);

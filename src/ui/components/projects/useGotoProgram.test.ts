@@ -1,7 +1,9 @@
 /**
  * @jest-environment jsdom
  */
+import type { Locale } from "@/i18n/config";
 import { renderHook } from "@testing-library/react";
+import { i18nWrapper } from "@tests/utils/i18n";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import { useProjectStore } from "./ProjectContext";
 import useGotoProgram from "./useGotoProgram";
@@ -35,7 +37,9 @@ describe("useGotoProgram", () => {
 	});
 
 	it("opens the page of the program, titled with its name", () => {
-		const { result } = renderHook(() => useGotoProgram());
+		const { result } = renderHook(() => useGotoProgram(), {
+			wrapper: i18nWrapper(),
+		});
 
 		result.current("g1", "grafcet");
 
@@ -46,20 +50,37 @@ describe("useGotoProgram", () => {
 		});
 	});
 
-	it("falls back to an unknown name for a program that no longer exists", () => {
-		const { result } = renderHook(() => useGotoProgram());
+	it.each([
+		["fr", "Programme inconnu"],
+		["en", "Unknown program"],
+		["es", "Programa desconocido"],
+	] as [Locale, string][])(
+		"falls back to a translated unknown name in %s for a program that no longer exists",
+		(locale, title) => {
+			const { result } = renderHook(() => useGotoProgram(), {
+				wrapper: i18nWrapper(locale),
+			});
 
-		result.current("gone", "ladder");
+			result.current("gone", "ladder");
+			result.current("gone", "grafcet");
 
-		expect(openPage).toHaveBeenCalledWith({
-			type: "ladder",
-			id: "gone",
-			title: "Nom inconnu",
-		});
-	});
+			expect(openPage).toHaveBeenCalledWith({
+				type: "ladder",
+				id: "gone",
+				title,
+			});
+			expect(openPage).toHaveBeenCalledWith({
+				type: "grafcet",
+				id: "gone",
+				title,
+			});
+		},
+	);
 
 	it("highlights the element once the page is active", () => {
-		const { result } = renderHook(() => useGotoProgram());
+		const { result } = renderHook(() => useGotoProgram(), {
+			wrapper: i18nWrapper(),
+		});
 
 		result.current("g1", "grafcet", "step-1");
 		expect(highlight).not.toHaveBeenCalled();
@@ -71,7 +92,9 @@ describe("useGotoProgram", () => {
 	describe("with its own way of opening the page", () => {
 		it("uses it instead of adding a tab", () => {
 			const open = jest.fn(() => true);
-			const { result } = renderHook(() => useGotoProgram(open));
+			const { result } = renderHook(() => useGotoProgram(open), {
+				wrapper: i18nWrapper(),
+			});
 
 			result.current("l1", "ladder");
 
@@ -84,7 +107,9 @@ describe("useGotoProgram", () => {
 		});
 
 		it("still highlights the element when the page was opened", () => {
-			const { result } = renderHook(() => useGotoProgram(() => true));
+			const { result } = renderHook(() => useGotoProgram(() => true), {
+				wrapper: i18nWrapper(),
+			});
 
 			result.current("g1", "grafcet", "step-1");
 			jest.advanceTimersByTime(100);
@@ -93,7 +118,9 @@ describe("useGotoProgram", () => {
 		});
 
 		it("highlights nothing when the page could not be opened", () => {
-			const { result } = renderHook(() => useGotoProgram(() => false));
+			const { result } = renderHook(() => useGotoProgram(() => false), {
+				wrapper: i18nWrapper(),
+			});
 
 			result.current("g1", "grafcet", "step-1");
 			jest.advanceTimersByTime(100);

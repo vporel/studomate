@@ -1,11 +1,11 @@
 "use client";
 
-import useCanEdit from "@/ui/components/projects/useCanEdit";
 import { SYSTEM_BLOCK_CATALOG } from "@/ui/components/ladder/system-blocks/system-block-catalog";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
+import { useT } from "@/ui/i18n/useT";
 import FloatingBox, {
 	type FloatingBoxPosition,
 } from "@/ui/lib/boxes/FloatingBox";
-import { useT } from "@/ui/i18n/useT";
 import { LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE } from "@/ui/utils/ladder/ladder-system-block-drag";
 import { Box } from "@mui/material";
 import type { ComponentType } from "react";
@@ -27,7 +27,7 @@ const SystemBlocksPalette = ({
 }) => {
 	const t = useT("ladderEditor.systemBlocksPalette");
 	const tsb = useT("ladderEditor.systemBlocks");
-	const canEdit = useCanEdit();
+	const canEdit = useCanEditActivePage();
 
 	return (
 		<FloatingBox

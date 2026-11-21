@@ -1,6 +1,5 @@
 "use client";
 
-import useCanEdit from "@/ui/components/projects/useCanEdit";
 import { getBlockInstanceVariables } from "@/bridge/block-instance-variables.mapper";
 import { getStepVariables } from "@/bridge/step-variables.mapper";
 import { Dialect } from "@/expression-language/dialect.enum";
@@ -13,6 +12,7 @@ import Variable, {
 	VariableZone,
 } from "@/schemas/variable/variable.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
 import { formatVariableValue } from "@/ui/components/variables/format-variable-value";
 import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import {
@@ -170,7 +170,7 @@ const VariableSelector = forwardRef<
 		[projectVariables, project],
 	);
 	const dialect = useProjectStore((s) => s.project?.dialect ?? Dialect.FR);
-	const canEdit = useCanEdit();
+	const canEdit = useCanEditActivePage();
 	const inputRef = useRef<HTMLInputElement>(null);
 	const [editingValue, setEditingValue] = useState(value);
 	const [widthPx, setWidthPx] = useState(44);

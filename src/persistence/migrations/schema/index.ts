@@ -43,13 +43,18 @@ export function migrateProject(
 	from: number;
 } {
 	const from = readVersion(raw);
+	if (from === null) {
+		throw new Error(
+			"schemaVersion illisible : ni absent, ni un entier positif.",
+		);
+	}
 	let current = raw as Record<string, unknown>;
 	let currentVersion = from;
 	for (const migration of migrations) {
 		if (migration.from !== currentVersion) continue;
 		current = migration.migrate(current);
 		const nextVersion = readVersion(current);
-		if (nextVersion <= currentVersion) {
+		if (nextVersion === null || nextVersion <= currentVersion) {
 			throw new Error(
 				`Migration depuis la version ${migration.from} : schemaVersion n'a pas progressé (${currentVersion} → ${nextVersion}).`,
 			);
@@ -65,10 +70,19 @@ export function migrateProject(
  * l'interpréter partiellement — et de le réécrire abîmé.
  */
 export function isFromNewerVersion(raw: unknown): boolean {
-	return readVersion(raw) > PROJECT_SCHEMA_VERSION;
+	const version = readVersion(raw);
+	return version !== null && version > PROJECT_SCHEMA_VERSION;
 }
 
-function readVersion(raw: unknown): number {
+/**
+ * Absent : projet d'avant le versionnement. Présent : un entier positif ou nul. `null` pour toute
+ * autre valeur (texte, décimal, négatif, `null`, `NaN`) : ce n'est pas une version qu'on sait
+ * rejouer, et la traiter comme « non versionné » rejouerait toute la chaîne sur un projet à jour.
+ */
+function readVersion(raw: unknown): number | null {
 	const version = (raw as { schemaVersion?: unknown })?.schemaVersion;
-	return typeof version === "number" ? version : UNVERSIONED;
+	if (version === undefined) return UNVERSIONED;
+	return Number.isInteger(version) && (version as number) >= 0
+		? (version as number)
+		: null;
 }

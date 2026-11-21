@@ -369,6 +369,14 @@ describe("EvaluatorVisitor : calcul dans le type IEC 61131-3", () => {
 			expect(evaluate("INT_TO_WORD(-1)")).toBe(65535);
 		});
 
+		it("un réel qui déborde vers un entier sature à la borne du type", () => {
+			env.setVariableValueByName("r", 1e308);
+
+			expect(evaluate("REAL_TO_INT(r * 10)")).toBe(32767);
+			expect(evaluate("REAL_TO_INT(-r * 10)")).toBe(-32768);
+			expect(evaluate("REAL_TO_DINT(r * 10)")).toBe(2147483647);
+		});
+
 		it("un réel vers un entier arrondit au plus proche, à égalité vers le pair", () => {
 			expect(evaluate("REAL_TO_INT(1.4)")).toBe(1);
 			expect(evaluate("REAL_TO_INT(1.6)")).toBe(2);

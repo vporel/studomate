@@ -1,6 +1,11 @@
 import { coerceToRange, NumericRange } from "./numeric-range";
 
-const INT: NumericRange = { min: -32768, max: 32767, integer: true, wrap: true };
+const INT: NumericRange = {
+	min: -32768,
+	max: 32767,
+	integer: true,
+	wrap: true,
+};
 const WORD: NumericRange = { min: 0, max: 65535, integer: true, wrap: true };
 const SATURATING: NumericRange = {
 	min: -9007199254740991,
@@ -38,8 +43,30 @@ describe("coerceToRange", () => {
 		expect(coerceToRange(-1e18, SATURATING)).toBe(SATURATING.min);
 	});
 
-	it("laisse passer NaN et Infinity sans les borner", () => {
-		expect(coerceToRange(NaN, INT)).toBeNaN();
-		expect(coerceToRange(Infinity, INT)).toBe(Infinity);
+	describe("valeur non finie", () => {
+		it.each([
+			["INT (repli)", INT],
+			["WORD (repli)", WORD],
+			["saturant", SATURATING],
+		])("sature aux bornes de %s", (_label, range) => {
+			expect(coerceToRange(Infinity, range)).toBe(range.max);
+			expect(coerceToRange(-Infinity, range)).toBe(range.min);
+		});
+
+		it("sature aussi une plage non entière", () => {
+			const analog: NumericRange = {
+				min: -10,
+				max: 10,
+				integer: false,
+				wrap: false,
+			};
+
+			expect(coerceToRange(Infinity, analog)).toBe(10);
+			expect(coerceToRange(-Infinity, analog)).toBe(-10);
+		});
+
+		it.each([INT, WORD, SATURATING])("ramène NaN à 0", (range) => {
+			expect(coerceToRange(NaN, range)).toBe(0);
+		});
 	});
 });

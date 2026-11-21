@@ -9,6 +9,7 @@ import Variable from "@/schemas/variable/variable.schema";
 import { useHmiStore } from "@/ui/components/hmi/HmiContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
+import type { Locale } from "@/i18n/config";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import HmiWidgetPropertiesPanel from "./HmiWidgetPropertiesPanel";
@@ -38,7 +39,7 @@ const variables = [
 	}),
 ];
 
-function setup(widget: HmiWidget, readOnly = false) {
+function setup(widget: HmiWidget, readOnly = false, locale: Locale = "fr") {
 	const updateWidget = jest.fn();
 	(useHmiStore as jest.Mock).mockImplementation(
 		selectorImplementation({
@@ -61,6 +62,7 @@ function setup(widget: HmiWidget, readOnly = false) {
 			onGeometryPreview={jest.fn()}
 			readOnly={readOnly}
 		/>,
+		{ locale },
 	);
 	return { updateWidget };
 }
@@ -133,5 +135,17 @@ describe("HmiWidgetPropertiesPanel — lecture seule", () => {
 		expect(
 			screen.getByRole("button", { name: "Animations" }).closest("[inert]"),
 		).toBeNull();
+	});
+});
+
+describe("HmiWidgetPropertiesPanel — bouton d'événements", () => {
+	it.each([
+		["fr", "Événements"],
+		["en", "Events"],
+		["es", "Eventos"],
+	] as [Locale, string][])("est libellé en %s", (locale, label) => {
+		setup(pushButton, false, locale);
+
+		expect(screen.getByRole("button", { name: label })).toBeInTheDocument();
 	});
 });

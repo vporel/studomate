@@ -12,6 +12,7 @@ import FinderVisitor from "@/expression-language/ast/visitors/finder.visitor";
 import { Dialect } from "@/expression-language/dialect.enum";
 import { parseExpressionCached } from "@/expression-language/parse-expression-cached";
 import buildAnalysisEnvironment from "@/project-analyser/analysis-environment";
+import analyseContinuousStoredConflicts from "./continuous-stored-conflicts.analyser";
 import GrafcetElementAnalyserFactory from "./element-analyser.factory";
 
 export type GrafcetAnalysisResult = {
@@ -112,10 +113,13 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 		project: Project,
 		generatedVariablesByProgram: Map<string, Variable[]>,
 	): ProjectAnalyserIssue[] {
-		return GrafcetAnalyser.checkDuplicateStepNumbers(
-			generatedVariablesByProgram,
-			project,
-		);
+		return [
+			...GrafcetAnalyser.checkDuplicateStepNumbers(
+				generatedVariablesByProgram,
+				project,
+			),
+			...analyseContinuousStoredConflicts(project),
+		];
 	}
 
 	/**

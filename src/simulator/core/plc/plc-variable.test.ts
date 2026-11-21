@@ -41,9 +41,9 @@ describe("PLCVariable", () => {
 		});
 
 		it("keeps the internal flag on a copy", () => {
-			expect(PLCVariable.createInternal("memo", "boolean").copy().isInternal()).toBe(
-				true,
-			);
+			expect(
+				PLCVariable.createInternal("memo", "boolean").copy().isInternal(),
+			).toBe(true);
 		});
 
 		it("throws on string variable with non-memory scope", () => {
@@ -75,6 +75,30 @@ describe("PLCVariable", () => {
 			});
 			wrapping.setValue(32768);
 			expect(wrapping.getValue()).toBe(-32768);
+		});
+
+		it("sature une valeur non finie au lieu de la stocker dans un entier", () => {
+			const variable = new PLCVariable("i", "compteur", "memory", "number", {
+				min: -32768,
+				max: 32767,
+				integer: true,
+				wrap: true,
+			});
+
+			variable.setValue(Infinity);
+			expect(variable.getValue()).toBe(32767);
+			variable.setValue(-Infinity);
+			expect(variable.getValue()).toBe(-32768);
+			variable.setValue(NaN);
+			expect(variable.getValue()).toBe(0);
+		});
+
+		it("laisse une valeur non finie dans une variable sans plage (REAL)", () => {
+			const real = new PLCVariable("r", "reel", "memory", "number");
+
+			real.setValue(Infinity);
+
+			expect(real.getValue()).toBe(Infinity);
 		});
 
 		it("sets boolean value correctly", () => {

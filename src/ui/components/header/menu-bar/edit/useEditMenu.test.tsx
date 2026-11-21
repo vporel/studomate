@@ -89,6 +89,7 @@ describe("useEditMenu", () => {
 			laddersManager,
 			hmiManager,
 			mode: ProjectMode.DESIGN,
+			editingEnabled: true,
 			hasCommandsToUndo: true,
 			hasCommandsToRedo: true,
 			undoActiveScope: undo,

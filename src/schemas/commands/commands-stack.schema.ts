@@ -37,16 +37,18 @@ export default class CommandsStack<T> {
 	 *
 	 * @param object
 	 * @returns Tuple : The first element is the new object after undoing the command, the second element is the command that was undone. If there is no command to undo, both elements are null.
+	 * If a `cancel` throws, the error propagates and the batch is dropped: it is in neither stack,
+	 * so a redo never replays a batch that was not undone, and the older batches stay undoable.
 	 */
 	undo(object: T): [T, AbstractCommand<T, any>[] | null] {
 		const commands = this.commandsToUndo.pop();
 		if (!commands) return [object, null];
-		this.commandsToRedo.push(commands);
 		//Ordre inverse de l'exécution : si B dépend de A, annuler A avant B produirait un état
 		//incohérent.
 		for (let i = commands.length - 1; i >= 0; i--) {
 			object = commands[i].cancel(object);
 		}
+		this.commandsToRedo.push(commands);
 		return [object, commands];
 	}
 

@@ -30,6 +30,7 @@ describe("useProjectMenu", () => {
 				hmiManager,
 				pagesManager,
 				mode,
+				editingEnabled: true,
 				isSharedProject,
 				sharingManager: { shareProject },
 				setShareModalVisible,

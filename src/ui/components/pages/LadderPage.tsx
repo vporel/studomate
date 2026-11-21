@@ -11,14 +11,14 @@ import SystemBlocksPalette, {
 	type SystemBlocksPalettePosition,
 } from "@/ui/components/ladder/toolbar/SystemBlocksPalette";
 import { useEffect, useState } from "react";
-import useCanEdit from "../projects/useCanEdit";
+import useCanEditActivePage from "../projects/useCanEditActivePage";
 import Page from "./Page";
 
 const LadderPage = ({ initialLadder }: { initialLadder: Ladder }) => {
 	const [systemBlocksPaletteOpen, setSystemBlocksPaletteOpen] = useState(false);
 	const [systemBlocksPalettePosition, setSystemBlocksPalettePosition] =
 		useState<SystemBlocksPalettePosition | null>(null);
-	const canEdit = useCanEdit();
+	const canEdit = useCanEditActivePage();
 	useEffect(() => {
 		if (!canEdit) setSystemBlocksPaletteOpen(false);
 	}, [canEdit]);

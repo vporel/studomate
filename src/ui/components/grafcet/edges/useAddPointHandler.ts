@@ -1,6 +1,6 @@
 "use client";
 
-import useCanEdit from "@/ui/components/projects/useCanEdit";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
 import React, { useCallback, useEffect, useState } from "react";
 import { useGrafcetStore } from "../context/GrafcetContext";
 
@@ -35,7 +35,7 @@ export default function useAddPointHandler(
 		getPointsForAdding(vertices),
 	);
 	const workflowManager = useGrafcetStore((state) => state.workflowManager);
-	const canEdit = useCanEdit();
+	const canEdit = useCanEditActivePage();
 
 	const addPoint = useCallback(
 		(segmentIndex: number) => {

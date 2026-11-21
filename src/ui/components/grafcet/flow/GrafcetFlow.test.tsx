@@ -217,6 +217,14 @@ describe("GrafcetFlow", () => {
 		});
 	});
 
+	describe("suppression au clavier", () => {
+		it("répond à Suppr comme à Retour arrière", () => {
+			mockStores({}, true, 1);
+			render(<GrafcetFlow />);
+			expect(reactFlowProps.deleteKeyCode).toEqual(["Backspace", "Delete"]);
+		});
+	});
+
 	describe("déplacement à la souris", () => {
 		it("est désactivé quand la page est à sa taille réelle, elle défile", () => {
 			mockStores({}, true, 1);

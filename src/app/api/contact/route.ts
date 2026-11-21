@@ -1,5 +1,6 @@
 import { parseContactSubmission } from "@/contact/contact-message";
 import createRateLimiter, { clientAddress } from "../rate-limit";
+import readJsonBody from "../read-json-body";
 import { isEmailConfigured } from "../send-email";
 import sendContactEmail from "./send-contact-email";
 
@@ -13,12 +14,13 @@ function json(body: Record<string, unknown>, status: number): Response {
 }
 
 export async function POST(request: Request): Promise<Response> {
-	let payload: unknown;
-	try {
-		payload = await request.json();
-	} catch {
-		return json({ error: "invalid" }, 400);
+	const body = await readJsonBody(request);
+	if (!body.ok) {
+		return body.reason === "too-large"
+			? json({ error: "too-large" }, 413)
+			: json({ error: "invalid" }, 400);
 	}
+	const payload = body.value;
 
 	// The hidden `website` field is only filled by bots: they are answered as if it had worked.
 	const website = (payload as { website?: unknown } | null)?.website;

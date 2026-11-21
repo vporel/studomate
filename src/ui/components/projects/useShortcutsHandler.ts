@@ -1,7 +1,7 @@
 "use client";
 
 import isTextEntryTarget from "@/ui/lib/is-text-entry-target";
-import { canEdit } from "@/ui/stores/project/editability";
+import { canEditActivePage } from "@/ui/stores/project/editability";
 import { useEffect } from "react";
 import { useShallow } from "zustand/shallow";
 import handleEditingShortcut from "./editing-shortcuts";
@@ -27,9 +27,33 @@ export default function useShortcutsHandler() {
 	useEffect(() => {
 		if (!projectStore) return;
 
+		const handleSaveShortcut = (e: KeyboardEvent, typing: boolean) => {
+			e.stopPropagation();
+			e.preventDefault();
+			if (e.repeat) return;
+			//A field commits its value on blur: leaving it first saves what is being typed
+			if (typing) (e.target as HTMLElement).blur();
+			if (e.shiftKey) {
+				setSaveAsModalVisible(true);
+			} else if (typing) {
+				setTimeout(() => void lifecycleManager.saveProject(), 0);
+			} else {
+				void lifecycleManager.saveProject();
+			}
+		};
+
 		const handleKeyDown = (e: KeyboardEvent) => {
-			if (isTextEntryTarget(e.target)) return;
-			const designing = canEdit(projectStore.getState());
+			const typing = isTextEntryTarget(e.target);
+			if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+				//A field of a dialog keeps its native behaviour: saving behind an open modal
+				//would leave the modal on screen
+				if (typing && (e.target as HTMLElement).closest('[role="dialog"]'))
+					return;
+				handleSaveShortcut(e, typing);
+				return;
+			}
+			if (typing) return;
+			const designing = canEditActivePage(projectStore.getState());
 
 			if (e.ctrlKey || e.metaKey) {
 				switch (e.key.toLowerCase()) {
@@ -38,16 +62,6 @@ export default function useShortcutsHandler() {
 						e.preventDefault();
 						if (!designing) break;
 						setOpenModalVisible(true);
-						return;
-					}
-					case "s": {
-						e.stopPropagation();
-						e.preventDefault();
-						if (e.shiftKey) {
-							setSaveAsModalVisible(true);
-						} else {
-							void lifecycleManager.saveProject();
-						}
 						return;
 					}
 					case "g": {

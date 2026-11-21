@@ -81,4 +81,41 @@ describe("formatAnalysisIssue", () => {
 			"« AND » est un mot-clé du dialecte anglais. Écrivez ET ou changez le dialecte du projet dans ses propriétés.",
 		);
 	});
+	describe("variable issues", () => {
+		const invalid = (reason: {
+			code: string;
+			params?: Record<string, string | number>;
+		}) => issue("PROJECT_VARIABLE_INVALID", { variableName: "my var" }, reason);
+
+		it("renders the validation reason as the detail, in every locale", () => {
+			const reason = { code: "MNEMONIC_TOO_LONG", params: { max: 32 } };
+
+			expect(formatAnalysisIssue(invalid(reason), "fr")).toBe(
+				"La variable « my var » est invalide : Le mnémonique doit faire au plus 32 caractères.",
+			);
+			expect(formatAnalysisIssue(invalid(reason), "en")).toContain(
+				'Variable "my var" is invalid:',
+			);
+			expect(formatAnalysisIssue(invalid(reason), "es")).toContain(
+				'La variable "my var" no es válida:',
+			);
+		});
+
+		it("renders a reason without params", () => {
+			expect(
+				formatAnalysisIssue(invalid({ code: "ADDRESS_INVALID" })),
+			).toContain("L'adresse est invalide");
+		});
+
+		it("renders a duplicated mnemonic with its count", () => {
+			const duplicate = issue("PROJECT_VARIABLE_MNEMONIC_DUPLICATE", {
+				variableName: "M",
+				count: 3,
+			});
+
+			expect(formatAnalysisIssue(duplicate)).toBe(
+				"La variable « M » est déclarée 3 fois : chaque mnémonique doit être unique dans le projet.",
+			);
+		});
+	});
 });

@@ -25,12 +25,22 @@ export function isPageEditingEnabled(
 }
 
 /**
- * The project can be modified from the active page: in design mode, on a page that is not
- * locked, and not opened read-only.
+ * The project can be modified at all: in design mode, and not opened read-only. Whatever the
+ * page: use it for what acts on the project itself (explorer, menus, project properties).
  */
-export function canEdit(state: EditabilityState): boolean {
+export function canEditProject(
+	state: Pick<ProjectStoreState, "mode" | "editingEnabled">,
+): boolean {
+	return state.mode === ProjectMode.DESIGN && state.editingEnabled;
+}
+
+/**
+ * The project can be modified from the active page: `canEditProject`, on a page that is not
+ * locked. Use it for what edits the content shown by the page.
+ */
+export function canEditActivePage(state: EditabilityState): boolean {
 	return (
-		state.mode === ProjectMode.DESIGN &&
+		canEditProject(state) &&
 		isPageEditingEnabled(state, state.activePageId ?? "")
 	);
 }
@@ -58,7 +68,7 @@ export function refuseEdit(
 	state: EditabilityState,
 	operation: string,
 ): boolean {
-	if (canEdit(state)) return false;
+	if (canEditActivePage(state)) return false;
 	if (isPageEditingEnabled(state, state.activePageId ?? "")) {
 		console.warn(`Cannot ${operation} in non-design mode`);
 	}

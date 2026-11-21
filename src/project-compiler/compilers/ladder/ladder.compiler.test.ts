@@ -82,6 +82,133 @@ describe("LadderCompiler", () => {
 			});
 		});
 
+		describe("avec une bobine de front", () => {
+			const edgeCoil = (
+				coilId: string,
+				variable: string,
+				kind: "rising" | "falling",
+			) =>
+				({
+					...coil(coilId, variable, "normal"),
+					edge: { kind, memoMnemonic: `MEMO_${coilId}` },
+				}) as const;
+			const memoAssignment = (coilId: string) =>
+				({
+					kind: "contactEdge",
+					contactId: coilId,
+					mnemonic: `MEMO_${coilId}`,
+					value: reach,
+				}) as const;
+
+			it("évalue la condition une fois pour normale + front montant + normale", () => {
+				const nodes = compileToNodes(
+					ladderOf([
+						coil("c1", "Motor", "normal"),
+						edgeCoil("c2", "Pulse", "rising"),
+						memoAssignment("c2"),
+						coil("c3", "Lamp", "normal"),
+					]),
+				);
+
+				expect(nodes).toHaveLength(1);
+				expect(nodes[0]).toMatchObject({
+					type: "IF_CONTROL",
+					condition: { type: "IDENTIFIER", value: "A" },
+					trueBranch: [
+						{ left: { value: "Motor" }, right: { value: true } },
+						{
+							left: { value: "Pulse" },
+							right: {
+								type: "UNARY_EXPRESSION",
+								operator: "NOT",
+								expr: { value: "MEMO_c2" },
+							},
+						},
+						{ left: { value: "MEMO_c2" }, right: { value: true } },
+						{ left: { value: "Lamp" }, right: { value: true } },
+					],
+					falseBranch: [
+						{ left: { value: "Motor" }, right: { value: false } },
+						{ left: { value: "Pulse" }, right: { value: false } },
+						{ left: { value: "MEMO_c2" }, right: { value: false } },
+						{ left: { value: "Lamp" }, right: { value: false } },
+					],
+				});
+			});
+
+			it("front descendant : faux quand la condition est vraie, mémoire quand elle est fausse", () => {
+				const nodes = compileToNodes(
+					ladderOf([
+						coil("c1", "Motor", "normal"),
+						edgeCoil("c2", "Pulse", "falling"),
+						memoAssignment("c2"),
+					]),
+				);
+
+				expect(nodes).toHaveLength(1);
+				expect(nodes[0]).toMatchObject({
+					trueBranch: [
+						{ left: { value: "Motor" }, right: { value: true } },
+						{ left: { value: "Pulse" }, right: { value: false } },
+						{ left: { value: "MEMO_c2" }, right: { value: true } },
+					],
+					falseBranch: [
+						{ left: { value: "Motor" }, right: { value: false } },
+						{
+							left: { value: "Pulse" },
+							right: { type: "IDENTIFIER", value: "MEMO_c2" },
+						},
+						{ left: { value: "MEMO_c2" }, right: { value: false } },
+					],
+				});
+			});
+
+			it("groupe aussi une bobine de front avec une bobine set", () => {
+				const nodes = compileToNodes(
+					ladderOf([
+						coil("c1", "Latch", "set"),
+						edgeCoil("c2", "Pulse", "rising"),
+						memoAssignment("c2"),
+					]),
+				);
+
+				expect(nodes).toHaveLength(1);
+				expect(nodes[0]).toMatchObject({
+					trueBranch: [
+						{ left: { value: "Latch" }, right: { value: true } },
+						{ left: { value: "Pulse" } },
+						{ left: { value: "MEMO_c2" }, right: { value: true } },
+					],
+				});
+			});
+
+			it("ne regroupe pas une bobine de front isolée avec son affectation mémoire", () => {
+				const nodes = compileToNodes(
+					ladderOf([edgeCoil("c2", "Pulse", "rising"), memoAssignment("c2")]),
+				);
+
+				expect(nodes.map((n) => n.type)).toEqual([
+					"ASSIGN_STATEMENT",
+					"ASSIGN_STATEMENT",
+				]);
+			});
+
+			it("ne prend pas dans le groupe l'affectation mémoire d'un autre élément", () => {
+				const nodes = compileToNodes(
+					ladderOf([
+						coil("c1", "Motor", "normal"),
+						coil("c2", "Lamp", "normal"),
+						memoAssignment("other"),
+					]),
+				);
+
+				expect(nodes.map((n) => n.type)).toEqual([
+					"IF_CONTROL",
+					"ASSIGN_STATEMENT",
+				]);
+			});
+		});
+
 		it("ne regroupe pas des bobines d'alimentations différentes ni une bobine isolée", () => {
 			const nodes = compileToNodes(
 				ladderOf([

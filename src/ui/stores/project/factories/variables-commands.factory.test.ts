@@ -127,6 +127,52 @@ describe("VariablesCommandsFactory", () => {
 			expect(variablesToRemove[0].id).toBe("v1");
 		});
 
+		it("renseigne la position d'origine de chaque variable retirée", () => {
+			const project = new Project("p1", "Projet", "auteur");
+			project.variables = ["A", "B", "C", "D"].map(
+				(mnemonic) =>
+					new Variable({
+						id: mnemonic.toLowerCase(),
+						mnemonic,
+						zone: "memory",
+						type: "BOOL",
+						dialect: Dialect.FR,
+					}),
+			);
+
+			const { variablesToRemove } = VariablesCommandsFactory.onRemoveVariable(
+				project,
+				["d", "b"],
+			);
+
+			expect(variablesToRemove.map((v) => [v.id, v.index])).toEqual([
+				["b", 1],
+				["d", 3],
+			]);
+		});
+
+		it("rend à l'annulation la liste dans son ordre d'origine", () => {
+			const project = new Project("p1", "Projet", "auteur");
+			project.variables = ["A", "B", "C"].map(
+				(mnemonic) =>
+					new Variable({
+						id: mnemonic.toLowerCase(),
+						mnemonic,
+						zone: "memory",
+						type: "BOOL",
+						dialect: Dialect.FR,
+					}),
+			);
+			const { commands } = VariablesCommandsFactory.onRemoveVariable(project, [
+				"b",
+			]);
+
+			commands[0].execute(project);
+			commands[0].cancel(project);
+
+			expect(project.variables.map((v) => v.id)).toEqual(["a", "b", "c"]);
+		});
+
 		it("ne crée aucune commande si aucun id ne correspond", () => {
 			const project = projectWithVariable();
 

@@ -4,6 +4,7 @@ import HmiCommandsStackManager from "@/ui/stores/hmi/managers/commands-stack.man
 import LadderCommandsStackManager from "@/ui/stores/ladder/managers/commands-stack.manager";
 import { Dialect } from "@/expression-language/dialect.enum";
 import Project from "@/schemas/project/project.schema";
+import ProjectDialectSetCommand from "@/schemas/project/commands/project-dialect-set.command";
 import ProjectFieldSetCommand from "@/schemas/project/commands/project-field-set.command";
 import VariablesUpdateCommand from "@/schemas/project/commands/variables-update.command";
 import Variable from "@/schemas/variable/variable.schema";
@@ -410,6 +411,68 @@ describe("ProjectCommandsStackManager (project)", () => {
 			).not.toHaveBeenCalled();
 			expect(get().laddersManager.clearCommandsStacksOf).not.toHaveBeenCalled();
 			expect(get().hmiManager.clearCommandsStacksOf).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("history of the programs rewritten by a dialect change", () => {
+		let spy: jest.SpyInstance;
+		beforeEach(() => {
+			//Stands for the keyword translation of the grafcets: only "G1" is touched,
+			//toggling so that undo/redo rewrite it too.
+			spy = jest
+				.spyOn(Project.prototype, "setDialect")
+				.mockImplementation(function (this: Project, dialect: Dialect) {
+					Object.values(this.grafcets)
+						.filter((g) => g.name === "G1" || g.name === "G1*")
+						.forEach((g) => {
+							g.name = g.name.endsWith("*") ? "G1" : "G1*";
+						});
+					this.dialect = dialect;
+				});
+		});
+		afterEach(() => spy.mockRestore());
+
+		function setup() {
+			const store = makeStore();
+			const project = store.get().project!;
+			const rewritten = project.createGrafcet("G1").id;
+			project.createGrafcet("G2");
+			return { ...store, rewritten };
+		}
+
+		const dialectCommand = () =>
+			new ProjectDialectSetCommand({
+				newDialect: Dialect.EN,
+				oldDialect: Dialect.FR,
+			});
+
+		it("clears only the rewritten grafcet, on execute, undo and redo", () => {
+			const { get, manager, rewritten } = setup();
+			const clearGrafcets = get().grafcetsManager
+				.clearCommandsStacksOf as jest.Mock;
+
+			manager.executeOperation([dialectCommand()]);
+			expect(clearGrafcets).toHaveBeenCalledTimes(1);
+			expect(clearGrafcets).toHaveBeenLastCalledWith([rewritten]);
+
+			manager.undoOperation();
+			expect(clearGrafcets).toHaveBeenCalledTimes(2);
+			expect(clearGrafcets).toHaveBeenLastCalledWith([rewritten]);
+
+			manager.redoOperation();
+			expect(clearGrafcets).toHaveBeenCalledTimes(3);
+			expect(clearGrafcets).toHaveBeenLastCalledWith([rewritten]);
+		});
+
+		it("leaves the ladders and HMI pages alone since they are not rewritten", () => {
+			const { get, manager } = setup();
+
+			manager.executeOperation([dialectCommand()]);
+
+			expect(get().laddersManager.clearCommandsStacksOf).toHaveBeenCalledWith(
+				[],
+			);
+			expect(get().hmiManager.clearCommandsStacksOf).toHaveBeenCalledWith([]);
 		});
 	});
 

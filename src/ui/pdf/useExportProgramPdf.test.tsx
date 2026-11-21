@@ -120,4 +120,46 @@ describe("useExportProgramPdf", () => {
 		await waitFor(() => expect(exportProgramPdf).toHaveBeenCalled());
 		expect(exportProgramPdf.mock.calls[0][0].config).toBe(ladderConfig);
 	});
+	describe("while an export is running", () => {
+		it("ignores a second request, so the file is downloaded once", async () => {
+			let finish!: () => void;
+			exportProgramPdf.mockImplementation(
+				() => new Promise<void>((resolve) => (finish = resolve)),
+			);
+			const { result } = setup(grafcetConfig);
+
+			act(() => result.current());
+			act(() => result.current());
+			act(() => result.current());
+
+			await waitFor(() => expect(exportProgramPdf).toHaveBeenCalledTimes(1));
+			await new Promise((resolve) => setTimeout(resolve, 20));
+			expect(exportProgramPdf).toHaveBeenCalledTimes(1);
+			finish();
+			await waitFor(() => expect(trackPdfExported).toHaveBeenCalledTimes(1));
+		});
+
+		it("accepts a new request once the export is over", async () => {
+			const { result } = setup(grafcetConfig);
+
+			act(() => result.current());
+			await waitFor(() => expect(trackPdfExported).toHaveBeenCalledTimes(1));
+			act(() => result.current());
+
+			await waitFor(() => expect(trackPdfExported).toHaveBeenCalledTimes(2));
+			expect(exportProgramPdf).toHaveBeenCalledTimes(2);
+		});
+
+		it("accepts a new request after a failure", async () => {
+			exportProgramPdf.mockRejectedValueOnce(new Error("boom"));
+			const { result } = setup(grafcetConfig);
+
+			act(() => result.current());
+			await waitFor(() => expect(toast.error).toHaveBeenCalledTimes(1));
+			act(() => result.current());
+
+			await waitFor(() => expect(exportProgramPdf).toHaveBeenCalledTimes(2));
+			await waitFor(() => expect(trackPdfExported).toHaveBeenCalledTimes(1));
+		});
+	});
 });

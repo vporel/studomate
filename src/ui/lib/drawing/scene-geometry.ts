@@ -50,7 +50,7 @@ export function bboxOfOps(ops: DrawOp[]): Bbox {
 				extendPath(b, op.d);
 				break;
 			case "text": {
-				const width = estimateTextWidth(op.text, op.fontSize);
+				const width = estimateTextWidth(op.text, op.fontSize, op.bold);
 				const left =
 					op.align === "center"
 						? op.x - width / 2

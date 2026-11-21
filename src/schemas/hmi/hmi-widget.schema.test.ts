@@ -490,3 +490,47 @@ describe("HMI_WIDGET_DEFINITIONS", () => {
 		);
 	});
 });
+
+describe("HmiWidget.renameVariableReferences", () => {
+	it.each(["constructor", "toString", "valueOf"])(
+		"laisse intactes une liaison et des animations sur %s quand une autre variable est renommée",
+		(name) => {
+			const widget = HmiWidget.create("indicator", 0, 0);
+			const data = widget.data as unknown as Record<string, unknown>;
+			data.variable = name;
+			data.animations = {
+				position: { xVariable: name, yVariable: "niveau" },
+				style: { variable: name },
+			};
+
+			widget.renameVariableReferences({ niveau: "level" });
+
+			const renamed = widget.data as unknown as {
+				variable: string;
+				animations: {
+					position: { xVariable: string; yVariable: string };
+					style: { variable: string };
+				};
+			};
+			expect(renamed.variable).toBe(name);
+			expect(renamed.animations.position).toEqual({
+				xVariable: name,
+				yVariable: "level",
+			});
+			expect(renamed.animations.style.variable).toBe(name);
+		},
+	);
+
+	it("renomme une liaison nommée toString quand c'est elle qui est renommée", () => {
+		const widget = HmiWidget.create("indicator", 0, 0);
+		(widget.data as unknown as Record<string, unknown>).variable = "toString";
+		const renames: Record<string, string> = {};
+		renames["toString"] = "autre";
+
+		widget.renameVariableReferences(renames);
+
+		expect((widget.data as unknown as { variable: string }).variable).toBe(
+			"autre",
+		);
+	});
+});

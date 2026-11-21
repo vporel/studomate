@@ -6,6 +6,7 @@ import Variable from "@/schemas/variable/variable.schema";
 import GrafcetAnalyser from "./analysers/grafcet/grafcet.analyser";
 import LadderAnalyser from "./analysers/ladder/ladder.analyser";
 import analyseConstants from "./constants.analyser";
+import analyseVariables from "./variables.analyser";
 import analyseHardwareTarget from "./hardware-target.analyser";
 import analyseScene3d from "./scene3d.analyser";
 import ProjectAnalyserIssue from "./project.analyser.issue";
@@ -99,6 +100,7 @@ export default class ProjectAnalyser {
 		}
 
 		issues.push(...analyseConstants(project));
+		issues.push(...analyseVariables(project));
 		issues.push(...analyseHardwareTarget(project));
 		issues.push(...analyseScene3d(project));
 

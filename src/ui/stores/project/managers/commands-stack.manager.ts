@@ -77,15 +77,19 @@ export default class ProjectCommandsStackManager {
 	}
 
 	/**
-	 * A renamed variable rewrites the programs referencing it, but their histories hold
-	 * snapshots written with the old mnemonic: undoing would reintroduce it. The histories of
-	 * the rewritten programs are dropped; the others keep theirs.
+	 * A renamed variable or a changed dialect rewrites the programs, but their histories hold
+	 * snapshots written with the old mnemonic or keywords: undoing would reintroduce them. The
+	 * histories of the rewritten programs are dropped; the others keep theirs.
 	 */
 	private clearCommandsStacksOfRewrittenPrograms(
 		newProject: Project,
 		previous: Project,
 	): void {
-		if (!this.hasRenamedVariable(newProject, previous)) return;
+		if (
+			!this.hasRenamedVariable(newProject, previous) &&
+			newProject.dialect === previous.dialect
+		)
+			return;
 		const changedIds = <T extends { id: string }>(
 			current: T[],
 			before: (id: string) => T | undefined,

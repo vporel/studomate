@@ -25,6 +25,8 @@
 	"SCENE3D_SENSOR_ALSO_ON_PIN": "La entrada \"{variableName}\" la controla el sensor \"{point}\" de la escena 3D pero también tiene la dirección {address} en el destino de hardware: tendría dos fuentes.",
 	"SCENE3D_SENSOR_WRITTEN_BY_HMI": "La entrada \"{variableName}\" la controla la escena 3D: las escrituras desde un widget HMI se ignoran durante la simulación.",
 	"PROJECT_CONSTANT_INVALID": "La constante \"{variableName}\" no es válida: falta el valor declarado, no es compatible con su tipo, o tiene una dirección asignada.",
+	"PROJECT_VARIABLE_INVALID": "La variable \"{variableName}\" no es válida: {detail}",
+	"PROJECT_VARIABLE_MNEMONIC_DUPLICATE": "La variable \"{variableName}\" está declarada {count} veces: cada mnemónico debe ser único en el proyecto.",
 
 	"GRAFCET_TOO_FEW_STEPS": "El grafcet debe contener al menos dos etapas.",
 	"GRAFCET_NO_INITIAL_STEP": "El grafcet no tiene etapa inicial.",
@@ -69,6 +71,7 @@
 	"ACTION_VARIABLE_IS_CONSTANT": "La acción no puede modificar \"{variableName}\" porque es una constante.",
 	"ACTION_STEP_VARIABLE_READONLY": "La acción no puede modificar \"{variableName}\": es una variable de etapa generada automáticamente y de solo lectura.",
 	"ACTION_SET_RESET_CONFLICT_SAME_STEP": "Esta etapa tiene a la vez una acción SET y una acción RESET sobre la variable \"{variableName}\": comportamiento contradictorio dentro del mismo ciclo.",
+	"ACTION_STORED_OVERRIDDEN_BY_CONTINUOUS": "Esta escritura en \"{variableName}\" es reescrita en el mismo ciclo por la acción continua de {programNames}: nunca se mantiene.",
 
 	"JUNCTION_PIVOT_NOT_CONNECTED": "El pivote no está conectado a ningún elemento.",
 	"JUNCTION_BRANCH_NOT_CONNECTED": "Algunas ramas no están conectadas a ningún elemento.",

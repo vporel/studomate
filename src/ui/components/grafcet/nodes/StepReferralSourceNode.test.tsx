@@ -12,7 +12,7 @@ import StepReferralSourceNode, {
 } from "./StepReferralSourceNode";
 
 jest.mock("../context/GrafcetContext");
-jest.mock("@/ui/components/projects/useCanEdit", () => ({
+jest.mock("@/ui/components/projects/useCanEditActivePage", () => ({
 	__esModule: true,
 	default: () => true,
 }));

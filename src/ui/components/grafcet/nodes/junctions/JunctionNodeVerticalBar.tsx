@@ -1,4 +1,5 @@
 "use client";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
 import { Box } from "@mui/material";
 import { useReactFlow } from "@xyflow/react";
 import { useJunctionNodeContext } from "./context/JunctionNodeContext";
@@ -38,6 +39,7 @@ const JunctionNodeVerticalBar = ({
 		nodeX,
 	);
 
+	const canEdit = useCanEditActivePage();
 	const { setNodes, setEdges } = useReactFlow();
 
 	const grab = () => {
@@ -64,7 +66,7 @@ const JunctionNodeVerticalBar = ({
 				background: selected ? "red" : color,
 				height: "100%",
 				left: (selected ? left - 2 : left - 0.5) + "px",
-				cursor: "ew-resize",
+				cursor: canEdit ? "ew-resize" : "default",
 				// Élargit la zone de saisie : la barre visible ne fait que 1 à 4px.
 				"&::before": {
 					content: '""',
@@ -77,7 +79,7 @@ const JunctionNodeVerticalBar = ({
 			}}
 			onPointerDown={(e) => {
 				grab();
-				startDrag(e);
+				if (canEdit) startDrag(e);
 			}}
 			// Empêche React Flow de sélectionner la jonction quand on vise un pin :
 			// jonction et pin ne sont jamais sélectionnés ensemble.

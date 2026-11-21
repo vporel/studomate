@@ -810,7 +810,7 @@
 			"Teclas de flecha: Mover los widgets seleccionados un paso de cuadrícula (lienzo HMI activo, modo diseño)"
 		],
 		"explorerTitle": "Explorador",
-		"explorerItems": ["F2: Renombrar el grafcet o ladder seleccionado"],
+		"explorerItems": ["F2: Renombrar el grafcet, ladder o página HMI seleccionado", "Supr: Eliminar el grafcet, ladder o página HMI seleccionado (se pide confirmación, no se activa con Retroceso)"],
 		"inlineTitle": "Edición en línea",
 		"inlineItems": ["Intro: Confirmar el cambio", "Esc: Cancelar el cambio"]
 	},

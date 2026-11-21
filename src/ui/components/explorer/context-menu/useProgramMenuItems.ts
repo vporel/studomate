@@ -3,11 +3,12 @@
 import { getProgramPageData } from "@/ui/stores/project/pages-data";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";
-import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { useCallback } from "react";
 import { useT } from "@/ui/i18n/useT";
+import useDeleteProgramWithConfirm from "../useDeleteProgramWithConfirm";
 import executionMenuItems from "./execution-menu-items";
 import { explorerContextMenuEventsOut } from "./ExplorerContextMenu";
+import useCanEditProject from "@/ui/components/projects/useCanEditProject";
 
 export default function useProgramMenuItems(
 	programType: "grafcet" | "ladder",
@@ -17,12 +18,10 @@ export default function useProgramMenuItems(
 	);
 	const pagesManager = useProjectStore((state) => state.pagesManager);
 	const project = useProjectStore((state) => state.project);
-	const designing = useProjectStore(
-		(state) => state.mode === ProjectMode.DESIGN,
-	);
+	const designing = useCanEditProject();
 
 	const t = useT("explorer.menu");
-	const tc = useT("explorer.confirmDelete");
+	const deleteProgram = useDeleteProgramWithConfirm(programType);
 
 	return useCallback(
 		(programId: string) => {
@@ -55,11 +54,7 @@ export default function useProgramMenuItems(
 					{
 						label: t("delete"),
 						disabled: !designing,
-						onClick: () => {
-							if (confirm(tc(programType))) {
-								manager.deleteProgramById(programId);
-							}
-						},
+						onClick: () => deleteProgram(programId),
 					},
 				],
 				...executionMenuItems(
@@ -70,6 +65,6 @@ export default function useProgramMenuItems(
 				),
 			];
 		},
-		[manager, pagesManager, project, designing, programType, t, tc],
+		[manager, pagesManager, project, designing, programType, t, deleteProgram],
 	);
 }

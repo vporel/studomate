@@ -46,6 +46,24 @@ describe("OperatorSelect", () => {
 		expect(onChange).toHaveBeenCalledWith("<");
 	});
 
+	it("ne peut pas être ouvert quand il est désactivé", () => {
+		const onChange = jest.fn();
+		render(
+			<OperatorSelect
+				value="="
+				onChange={onChange}
+				operators={OPERATORS}
+				ariaLabel="Opérateur"
+				disabled
+			/>,
+		);
+
+		fireEvent.mouseDown(screen.getByRole("combobox"));
+
+		expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+		expect(onChange).not.toHaveBeenCalled();
+	});
+
 	it("n'appelle pas onChange quand on rechoisit l'opérateur courant", () => {
 		const { onChange } = setup("=");
 

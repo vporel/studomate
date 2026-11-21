@@ -4,12 +4,17 @@ import { fireEvent, screen } from "@testing-library/react";
 import ProfilePromptModal from "./ProfilePromptModal";
 
 const mockShouldAsk = jest.fn();
+const mockGetShareToken = jest.fn();
 const mockSetStored = jest.fn();
 const mockTrackEvent = jest.fn();
 
 jest.mock("@/persistence/user-profile.storage", () => ({
-	shouldAskUserProfile: () => mockShouldAsk(),
+	shouldAskUserProfile: (...args: any[]) => mockShouldAsk(...args),
 	setStoredUserProfile: (...args: any[]) => mockSetStored(...args),
+}));
+
+jest.mock("@/ui/stores/project/url/project-url", () => ({
+	getShareTokenFromUrl: () => mockGetShareToken(),
 }));
 
 jest.mock("@/ui/services/analytics", () => ({
@@ -21,6 +26,18 @@ describe("ProfilePromptModal", () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
 		mockShouldAsk.mockReturnValue(true);
+		mockGetShareToken.mockReturnValue(null);
+	});
+
+	it("asks the storage whether a shared link is open", () => {
+		mockGetShareToken.mockReturnValue("abc");
+		renderWithI18n(<ProfilePromptModal />);
+		expect(mockShouldAsk).toHaveBeenCalledWith(true);
+	});
+
+	it("tells the storage that no shared link is open", () => {
+		renderWithI18n(<ProfilePromptModal />);
+		expect(mockShouldAsk).toHaveBeenCalledWith(false);
 	});
 
 	it("renders nothing when the question must not be asked", () => {

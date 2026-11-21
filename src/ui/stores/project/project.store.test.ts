@@ -415,6 +415,41 @@ describe("createProjectStore", () => {
 			expect(onSceneChanged).toHaveBeenCalledTimes(3);
 		});
 
+		it("puts a removed variable back at its position when the removal is undone, and again after redo", async () => {
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+			await openBlankProject(store);
+			store.getState().variablesManager.addVariables(
+				["A", "B", "C", "D"].map(
+					(mnemonic) =>
+						({
+							mnemonic,
+							zone: "memory",
+							type: "BOOL",
+							address: "",
+							comment: "",
+						}) as never,
+				),
+			);
+			const mnemonics = () =>
+				store.getState().project!.variables.map((v) => v.mnemonic);
+			const idOf = (mnemonic: string) =>
+				store
+					.getState()
+					.project!.variables.find((v) => v.mnemonic === mnemonic)!.id;
+
+			store.getState().variablesManager.removeVariables([idOf("B"), idOf("D")]);
+			expect(mnemonics()).toEqual(["A", "C"]);
+
+			store.getState().commandsStackManager.undoOperation();
+			expect(mnemonics()).toEqual(["A", "B", "C", "D"]);
+
+			store.getState().commandsStackManager.redoOperation();
+			expect(mnemonics()).toEqual(["A", "C"]);
+
+			store.getState().commandsStackManager.undoOperation();
+			expect(mnemonics()).toEqual(["A", "B", "C", "D"]);
+		});
+
 		it("does not notify the scene tab link when a variable operation is undone", async () => {
 			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);

@@ -4,6 +4,18 @@
  */
 
 /**
+ * @description Value of an own key of a record, `undefined` otherwise. A plain object answers for
+ * the names it inherits (`constructor`, `toString`...), which a lookup keyed by user-chosen names
+ * must not see.
+ */
+export function getOwnPropertyValue<V>(
+	record: Record<string, V>,
+	key: string,
+): V | undefined {
+	return Object.hasOwn(record, key) ? record[key] : undefined;
+}
+
+/**
  * @description Invert a record, the keys become values and the values become keys
  */
 export function invertRecord<K extends string, V extends string>(

@@ -2,7 +2,6 @@
 
 import { LadderRole } from "@/schemas/ladder/ladder.schema";
 import { ProgramType } from "@/schemas/program/program.schema";
-import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { Chip, Typography } from "@mui/material";
 import { ElementType, Fragment, useEffect } from "react";
 import { useT } from "@/ui/i18n/useT";
@@ -21,6 +20,8 @@ import {
 import { explorerContextMenuEventsOut } from "./context-menu/ExplorerContextMenu";
 import { LADDER_PROGRAM_DRAG_MIME_TYPE } from "@/ui/utils/ladder/ladder-program-drag";
 import { useRenamableTreeItem } from "./useRenamableTreeItem";
+import useDeleteProgramWithConfirm from "./useDeleteProgramWithConfirm";
+import useCanEditProject from "@/ui/components/projects/useCanEditProject";
 
 /**
  * Icône par type de programme — un grafcet et un ladder partagent le même dossier
@@ -60,15 +61,14 @@ const ExplorerProgramItem = ({
 	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
 	const laddersManager = useProjectStore((state) => state.laddersManager);
 	const pagesManager = useProjectStore((state) => state.pagesManager);
-	const designing = useProjectStore(
-		(state) => state.mode === ProjectMode.DESIGN,
-	);
+	const designing = useCanEditProject();
 	const excludedFromExecution = useProjectStore(
 		(state) =>
 			state.project?.getProgram(programId)?.excludedFromExecution ?? false,
 	);
 	const tExecution = useT("common.programExecution");
-	const { labelMode, startEditing, onDoubleClick, inputProps } =
+	const deleteProgram = useDeleteProgramWithConfirm(programType);
+	const { labelMode, startEditing, onDoubleClick, onKeyDown, inputProps } =
 		useRenamableTreeItem({
 			name: programName,
 			designing,
@@ -76,6 +76,7 @@ const ExplorerProgramItem = ({
 				programType === "grafcet"
 					? grafcetsManager.renameProgramById(programId, name)
 					: laddersManager.renameProgramById(programId, name),
+			onDelete: () => deleteProgram(programId),
 		});
 
 	useEffect(() => {
@@ -149,6 +150,7 @@ const ExplorerProgramItem = ({
 				})
 			}
 			onDoubleClick={onDoubleClick}
+			onKeyDown={onKeyDown}
 			inputProps={inputProps}
 			onContextMenu={(e) => {
 				e.preventDefault();

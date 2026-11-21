@@ -75,53 +75,23 @@ export default class GrafcetCopyCutPasteManager extends AbstractCopyCutPasteMana
 			};
 		}
 		this.getStoreState().viewManager.deselectAllNodesAndEdges();
-		//Calculate the offset to apply to the pasted elements position so they are pasted at the mouse position,
-		//or with an offset if the mouse position is not in the flow bounds,
-		//or with a default offset if the mouse position is not provided
-		const flowMousePosition = !mousePosition
-			? null
-			: rfInstance.screenToFlowPosition(mousePosition);
-		const flowDimensions = GRAFCET_PAGE_DIMENSIONS;
-		const nodesBounds = rfInstance.getNodesBounds(copiedElements.nodes);
-		let offsetDueToMouse = null;
-		if (
-			flowMousePosition &&
-			flowMousePosition.x >= 0 &&
-			flowMousePosition.y >= 0
-		) {
-			offsetDueToMouse = {
-				x: flowMousePosition.x - nodesBounds.x,
-				y: flowMousePosition.y - nodesBounds.y,
-			};
-			//Using the bounds width and height, and the flowDimensions, make sure the pasted elements are not out of the flow bounds
-			if (
-				offsetDueToMouse.x + nodesBounds.x + nodesBounds.width >
-				flowDimensions.width
-			) {
-				offsetDueToMouse.x -=
-					offsetDueToMouse.x +
-					nodesBounds.x +
-					nodesBounds.width -
-					flowDimensions.width;
-			}
-			if (
-				offsetDueToMouse.y + nodesBounds.y + nodesBounds.height >
-				flowDimensions.height
-			) {
-				offsetDueToMouse.y -=
-					offsetDueToMouse.y +
-					nodesBounds.y +
-					nodesBounds.height -
-					flowDimensions.height;
-			}
-		}
+		//One delta moves the whole pasted group, so nodes and edge points keep their relative positions
+		const delta = this.computePasteDelta(
+			copiedElements.nodes,
+			existingNodes,
+			rfInstance,
+			mousePosition,
+		);
 		const nodesIdsMap: Record<string, string> = {}; //Map to keep track of the old node ids and the new node ids, to update the edges source and target
-		const nodesOffsetsMaps: Record<string, { x: number; y: number }> = {}; //Map to keep track of the nodes offsets, to update the edges points
 		let nextStepNumber = StepHelper.getNextAvailableNumber(grafcet);
 		const newNodes = structuredClone(copiedElements.nodes).map((node) => {
 			const newNode = {
 				...node,
 				id: createRandomId(),
+				position: {
+					x: node.position!.x + delta.x,
+					y: node.position!.y + delta.y,
+				},
 			};
 			//If the node is a step, change the number to avoid duplicates with existing steps in the grafcet
 			if (newNode.type === "step") {
@@ -132,35 +102,7 @@ export default class GrafcetCopyCutPasteManager extends AbstractCopyCutPasteMana
 				const initialStepExists = grafcet.hasInitialStep();
 				newNode.data.initial = initialStepExists ? false : newNode.data.initial;
 			}
-
-			if (offsetDueToMouse) {
-				newNode.position = {
-					x: node.position!.x + offsetDueToMouse.x,
-					y: node.position!.y + offsetDueToMouse.y,
-				};
-			} else {
-				while (
-					existingNodes.find(
-						(n) =>
-							n.position?.x === newNode.position?.x &&
-							n.position?.y === newNode.position?.y,
-					)
-				) {
-					newNode.position = {
-						x: newNode.position!.x + 10,
-						y: newNode.position!.y + 10,
-					};
-				}
-			}
-			//Center the node on the mouse position by applying an offset corresponding to half of the node dimensions
-			newNode.position!.x = newNode.position!.x - node.width! / 2;
-			newNode.position!.y = newNode.position!.y - node.height! / 2;
-			//Save the id mapping and the offset for the edges update
 			nodesIdsMap[node.id] = newNode.id;
-			nodesOffsetsMaps[node.id] = {
-				x: newNode.position!.x - node.position!.x,
-				y: newNode.position!.y - node.position!.y,
-			};
 			return newNode;
 		});
 		//An edge can not be pasted if its source or target node is not pasted, so we filter the edges to paste
@@ -180,11 +122,7 @@ export default class GrafcetCopyCutPasteManager extends AbstractCopyCutPasteMana
 				//`data.points` ne porte que les coudes intermédiaires : ils suivent le décalage
 				//de collage, les extrémités sont dérivées des nouveaux nœuds au rendu.
 				const newPoints = (edge.data?.points ?? []).map(
-					(p) =>
-						[
-							p[0] + (offsetDueToMouse?.x ?? nodesOffsetsMaps[edge.source].x),
-							p[1] + (offsetDueToMouse?.y ?? nodesOffsetsMaps[edge.source].y),
-						] as [number, number],
+					(p) => [p[0] + delta.x, p[1] + delta.y] as [number, number],
 				);
 				return {
 					...edge,
@@ -203,5 +141,53 @@ export default class GrafcetCopyCutPasteManager extends AbstractCopyCutPasteMana
 			addedNodes: newNodes,
 			addedEdges: newEdges,
 		};
+	}
+
+	/**
+	 * Translation applied to the pasted group. With the mouse over the page, the group's bounding
+	 * box is centred on the pointer and kept inside the page. Otherwise the group is shifted by
+	 * steps of 10 until none of its nodes sits exactly on an existing node.
+	 */
+	private computePasteDelta(
+		copiedNodes: GrafcetNodeType[],
+		existingNodes: GrafcetNodeType[],
+		rfInstance: NonNullable<
+			ReturnType<GrafcetStoreGetFunction>["viewManager"]["rfInstance"]
+		>,
+		mousePosition?: { x: number; y: number },
+	): { x: number; y: number } {
+		const flowMouse = mousePosition
+			? rfInstance.screenToFlowPosition(mousePosition)
+			: null;
+		if (flowMouse && flowMouse.x >= 0 && flowMouse.y >= 0) {
+			const bounds = rfInstance.getNodesBounds(copiedNodes);
+			const clamp = (value: number, size: number, limit: number) =>
+				Math.max(0, Math.min(value, limit - size));
+			return {
+				x:
+					clamp(
+						flowMouse.x - bounds.width / 2,
+						bounds.width,
+						GRAFCET_PAGE_DIMENSIONS.width,
+					) - bounds.x,
+				y:
+					clamp(
+						flowMouse.y - bounds.height / 2,
+						bounds.height,
+						GRAFCET_PAGE_DIMENSIONS.height,
+					) - bounds.y,
+			};
+		}
+		const isTaken = (x: number, y: number) =>
+			existingNodes.some((n) => n.position?.x === x && n.position?.y === y);
+		let step = 0;
+		while (
+			copiedNodes.some((n) =>
+				isTaken(n.position!.x + step * 10, n.position!.y + step * 10),
+			)
+		) {
+			step++;
+		}
+		return { x: step * 10, y: step * 10 };
 	}
 }

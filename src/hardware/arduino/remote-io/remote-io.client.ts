@@ -163,6 +163,8 @@ export default class RemoteIoClient {
 	private stateListener: ((state: RemoteIoState) => void) | null = null;
 	private lostListener: ((error: RemoteIoError) => void) | null = null;
 	private connectAbort: ((error: RemoteIoError) => void) | null = null;
+	/** Rejects the exchange being waited for, when the link is lost or closed under it. */
+	private cancelPendingWait: ((error: RemoteIoError) => void) | null = null;
 
 	constructor(options: RemoteIoClientOptions) {
 		this.options = { ...DEFAULTS, ...options };
@@ -618,11 +620,16 @@ export default class RemoteIoClient {
 				clearTimeout(timer);
 				if (repeat) clearInterval(repeat);
 				this.messageListener = null;
+				this.cancelPendingWait = null;
 			};
 			const timer = setTimeout(() => {
 				finish();
 				reject(onTimeout());
 			}, timeoutMs);
+			this.cancelPendingWait = (error) => {
+				finish();
+				reject(error);
+			};
 			this.messageListener = (message) => {
 				try {
 					const picked = pick(message);
@@ -758,6 +765,7 @@ export default class RemoteIoClient {
 		this.watch = null;
 		this.stopHeartbeat?.();
 		this.stopHeartbeat = null;
+		this.cancelPendingWait?.(new RemoteIoError("transport", "port closed"));
 		this.messageListener = null;
 		for (const unsubscribe of this.unsubscribers) unsubscribe();
 		this.unsubscribers = [];

@@ -1,6 +1,6 @@
-import { ProjectStoreState } from "./project.store";
 import activeDocumentsManager from "./active-documents.selector";
-import { canEdit } from "./editability";
+import { canEditActivePage } from "./editability";
+import { ProjectStoreState } from "./project.store";
 
 /**
  * Undo/redo is scoped to the active document, like in any multi-document editor: Ctrl+Z in
@@ -21,14 +21,14 @@ function activeCommandsStackManager(state: ProjectStoreState) {
 }
 
 export function canUndoActiveScope(state: ProjectStoreState): boolean {
-	if (!canEdit(state)) return false;
+	if (!canEditActivePage(state)) return false;
 	const documents = activeDocumentsManager(state);
 	if (!documents) return state.hasCommandsToUndo;
 	return documents.getActiveStoreValues()?.hasCommandsToUndo ?? false;
 }
 
 export function canRedoActiveScope(state: ProjectStoreState): boolean {
-	if (!canEdit(state)) return false;
+	if (!canEditActivePage(state)) return false;
 	const documents = activeDocumentsManager(state);
 	if (!documents) return state.hasCommandsToRedo;
 	return documents.getActiveStoreValues()?.hasCommandsToRedo ?? false;

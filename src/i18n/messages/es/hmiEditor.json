@@ -91,8 +91,12 @@
 		"offsetY": "Desplazamiento Y",
 		"reset": "Restablecer",
 		"addRow": "Añadir una fila",
+		"addAction": "Añadir una acción",
 		"imposedByInputBehavior": "Impuesto por el comportamiento de la variable \"{variable}\" ({behavior}). Se puede cambiar en la tabla de entradas.",
 		"noWidgetSelected": "Ningún widget seleccionado: propiedades de la página.",
+		"multipleSelected": "{count} widgets seleccionados.",
+		"noObjects": "Ningún objeto.",
+		"events": "Eventos",
 		"setAsMainPage": "Establecer como página principal"
 	},
 	"menu": {

@@ -6,6 +6,7 @@ import JunctionNodeVerticalBar from "./JunctionNodeVerticalBar";
 import { useJunctionNodeContext } from "./context/JunctionNodeContext";
 
 jest.mock("./context/JunctionNodeContext");
+jest.mock("@/ui/components/projects/useCanEditActivePage");
 jest.mock("./context/useBarDrag", () => ({
 	__esModule: true,
 	default: jest.fn(),
@@ -17,6 +18,7 @@ jest.mock("@xyflow/react", () => ({
 	useReactFlow: () => ({ setNodes: mockSetNodes, setEdges: mockSetEdges }),
 }));
 
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
 import useBarDrag from "./context/useBarDrag";
 
 const startDrag = jest.fn();
@@ -57,6 +59,7 @@ describe("JunctionNodeVerticalBar", () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
 		(useBarDrag as jest.Mock).mockReturnValue(startDrag);
+		(useCanEditActivePage as jest.Mock).mockReturnValue(true);
 	});
 
 	it("is drawn thin and in its own color when not selected", () => {
@@ -100,6 +103,15 @@ describe("JunctionNodeVerticalBar", () => {
 		expect(selectBranch).toHaveBeenCalledWith("b1");
 		expect(selectPivot).not.toHaveBeenCalled();
 		expect(startDrag).toHaveBeenCalledTimes(1);
+	});
+
+	it("selects its branch but starts no drag when the project cannot be edited", () => {
+		(useCanEditActivePage as jest.Mock).mockReturnValue(false);
+		const { bar, selectBranch } = setup();
+		fireEvent.pointerDown(bar);
+		expect(selectBranch).toHaveBeenCalledWith("b1");
+		expect(startDrag).not.toHaveBeenCalled();
+		expect(getComputedStyle(bar).cursor).toBe("default");
 	});
 
 	it("selects the pivot on pointer down for a pivot bar", () => {

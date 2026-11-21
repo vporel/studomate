@@ -152,3 +152,90 @@ describe("VariablesRemoveCommand constants", () => {
 		});
 	});
 });
+
+describe("VariablesRemoveCommand order", () => {
+	const draft = (id: string) => ({
+		id,
+		mnemonic: id.toUpperCase(),
+		zone: "memory" as const,
+		type: "BOOL" as const,
+	});
+	const ids = (project: Project) => project.variables.map((v) => v.id);
+
+	function projectWith(...names: string[]): Project {
+		const project = new Project("p1", "Projet", "");
+		new VariablesAddCommand(names.map(draft)).execute(project);
+		return project;
+	}
+
+	it("remet une variable du milieu à sa place d'origine", () => {
+		const project = projectWith("a", "b", "c", "d");
+		const command = new VariablesRemoveCommand([{ ...draft("b"), index: 1 }]);
+
+		command.execute(project);
+		expect(ids(project)).toEqual(["a", "c", "d"]);
+		command.cancel(project);
+
+		expect(ids(project)).toEqual(["a", "b", "c", "d"]);
+	});
+
+	it("remet plusieurs variables non contiguës à leurs places, quel que soit l'ordre du payload", () => {
+		const project = projectWith("a", "b", "c", "d", "e");
+		const command = new VariablesRemoveCommand([
+			{ ...draft("d"), index: 3 },
+			{ ...draft("b"), index: 1 },
+		]);
+
+		command.execute(project);
+		expect(ids(project)).toEqual(["a", "c", "e"]);
+		command.cancel(project);
+
+		expect(ids(project)).toEqual(["a", "b", "c", "d", "e"]);
+	});
+
+	it("remet des variables contiguës et la première et la dernière", () => {
+		const project = projectWith("a", "b", "c", "d");
+		const command = new VariablesRemoveCommand([
+			{ ...draft("a"), index: 0 },
+			{ ...draft("b"), index: 1 },
+			{ ...draft("d"), index: 3 },
+		]);
+
+		command.execute(project);
+		command.cancel(project);
+
+		expect(ids(project)).toEqual(["a", "b", "c", "d"]);
+	});
+
+	it("ajoute en fin de liste une variable sans position", () => {
+		const project = projectWith("a", "b", "c");
+		const command = new VariablesRemoveCommand([draft("a")]);
+
+		command.execute(project);
+		command.cancel(project);
+
+		expect(ids(project)).toEqual(["b", "c", "a"]);
+	});
+
+	it("borne une position au-delà de la longueur de la liste", () => {
+		const project = projectWith("a");
+		const command = new VariablesRemoveCommand([{ ...draft("z"), index: 99 }]);
+
+		command.cancel(project);
+
+		expect(ids(project)).toEqual(["a", "z"]);
+	});
+
+	it("restitue le même ordre à chaque annuler/rétablir", () => {
+		const project = projectWith("a", "b", "c");
+		const command = new VariablesRemoveCommand([{ ...draft("b"), index: 1 }]);
+
+		command.execute(project);
+		command.cancel(project);
+		command.execute(project);
+		expect(ids(project)).toEqual(["a", "c"]);
+		command.cancel(project);
+
+		expect(ids(project)).toEqual(["a", "b", "c"]);
+	});
+});

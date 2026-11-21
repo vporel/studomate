@@ -3,22 +3,21 @@
 import { getHmiPageData } from "@/ui/stores/project/pages-data";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";
-import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { useCallback } from "react";
 import { useT } from "@/ui/i18n/useT";
+import useDeleteHmiPageWithConfirm from "../useDeleteHmiPageWithConfirm";
 import { explorerContextMenuEventsOut } from "./ExplorerContextMenu";
+import useCanEditProject from "@/ui/components/projects/useCanEditProject";
 
 export default function useHmiMenuItems(): (
 	hmiPageId: string,
 ) => ContextMenuItemType[][] {
 	const hmiManager = useProjectStore((state) => state.hmiManager);
 	const pagesManager = useProjectStore((state) => state.pagesManager);
-	const designing = useProjectStore(
-		(state) => state.mode === ProjectMode.DESIGN,
-	);
+	const designing = useCanEditProject();
 
 	const t = useT("explorer.menu");
-	const tc = useT("explorer.confirmDelete");
+	const deleteHmiPage = useDeleteHmiPageWithConfirm();
 
 	return useCallback(
 		(hmiPageId: string) => {
@@ -43,15 +42,11 @@ export default function useHmiMenuItems(): (
 					{
 						label: t("delete"),
 						disabled: !designing,
-						onClick: () => {
-							if (confirm(tc("hmiPage"))) {
-								hmiManager.deleteHmiPage(hmiPageId);
-							}
-						},
+						onClick: () => deleteHmiPage(hmiPageId),
 					},
 				],
 			];
 		},
-		[hmiManager, pagesManager, designing, t, tc],
+		[hmiManager, pagesManager, designing, t, deleteHmiPage],
 	);
 }

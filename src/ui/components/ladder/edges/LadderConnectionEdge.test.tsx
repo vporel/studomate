@@ -5,21 +5,21 @@ import ConnectionUpdateCommand from "@/schemas/ladder/commands/connection-update
 import { useLadderStore } from "@/ui/components/ladder/context/LadderContext";
 import PageVisibilityContext from "@/ui/components/pages/page-visibility-context";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import useCanEdit from "@/ui/components/projects/useCanEdit";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
 import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import {
-	DEFAULT_THEME,
 	ThemeProvider as AppThemeProvider,
+	DEFAULT_THEME,
 } from "@/ui/theme/ThemeContext";
 import { quarterColToPx } from "@/ui/utils/ladder/ladder-edge-geometry";
 import { computeEnergizedEdges } from "@/ui/utils/ladder/ladder-power-flow";
-import { selectorImplementation } from "@tests/utils/store-mocks";
 import { fireEvent, render } from "@testing-library/react";
+import { selectorImplementation } from "@tests/utils/store-mocks";
 import LadderConnectionEdge from "./LadderConnectionEdge";
 
 jest.mock("@/ui/components/projects/ProjectContext");
 jest.mock("@/ui/components/ladder/context/LadderContext");
-jest.mock("@/ui/components/projects/useCanEdit");
+jest.mock("@/ui/components/projects/useCanEditActivePage");
 jest.mock("@/ui/utils/ladder/ladder-power-flow");
 
 const screenToFlowPosition = jest.fn();
@@ -44,7 +44,7 @@ function setup({
 	pageVisible = true,
 	executeOperation = jest.fn(),
 } = {}) {
-	(useCanEdit as jest.Mock).mockReturnValue(canEdit);
+	(useCanEditActivePage as jest.Mock).mockReturnValue(canEdit);
 	(computeEnergizedEdges as jest.Mock).mockReturnValue(
 		new Set(energized ? ["edge-1"] : []),
 	);

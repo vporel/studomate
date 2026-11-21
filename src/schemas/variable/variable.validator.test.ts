@@ -133,6 +133,13 @@ describe("validateZoneType", () => {
 		},
 	);
 
+	it("ZONE_TYPE_INCOMPATIBLE pour une zone inconnue, sans lever d'exception", () => {
+		const issues = validateZoneType("output" as never, "BOOL" as never);
+
+		expect(codes(issues)).toEqual(["ZONE_TYPE_INCOMPATIBLE"]);
+		expect(issues[0].params).toEqual({ type: "BOOL", zone: "output" });
+	});
+
 	it("ZONE_TYPE_INCOMPATIBLE pour un type hors zone", () => {
 		const issues = validateZoneType("logic-input", "INT" as never);
 		expect(codes(issues)).toContain("ZONE_TYPE_INCOMPATIBLE");

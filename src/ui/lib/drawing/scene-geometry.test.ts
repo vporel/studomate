@@ -1,5 +1,11 @@
 import { DrawOp } from "./draw-op";
-import { scaleOps, translateOps } from "./scene-geometry";
+import { jsPDF } from "jspdf";
+import {
+	frameScene,
+	framePage,
+	scaleOps,
+	translateOps,
+} from "./scene-geometry";
 
 describe("scaleOps", () => {
 	it("scales coordinates, stroke widths and dashes of every shape", () => {
@@ -91,5 +97,44 @@ describe("translateOps", () => {
 		expect(path).toMatchObject({
 			d: "M 10.0000001 110C 11 102 13 104 15 106L 30 100Z",
 		});
+	});
+});
+
+describe("framing of a long uppercase text", () => {
+	const EXPRESSION =
+		"CAPTEUR_HAUT_1 AND NOT CAPTEUR_BAS_2 OR START_BUTTON AND EMERGENCY_STOP";
+	const FONT_SIZE = 12;
+	const MARGIN = 12;
+	const text: DrawOp = {
+		op: "text",
+		x: 20,
+		y: 40,
+		text: EXPRESSION,
+		fontSize: FONT_SIZE,
+	};
+	const realWidth = () => {
+		const doc = new jsPDF({ unit: "pt" });
+		doc.setFont("helvetica", "normal");
+		doc.setFontSize(FONT_SIZE);
+		return doc.getTextWidth(EXPRESSION);
+	};
+
+	it("frameScene keeps the whole text inside the cropped scene", () => {
+		const scene = frameScene([text], MARGIN);
+
+		expect(scene.width).toBeGreaterThanOrEqual(realWidth() + 2 * MARGIN);
+	});
+
+	it("framePage widens the page so the whole text stays inside the frame", () => {
+		const scene = framePage([text], 100, 100, MARGIN);
+
+		expect(scene.width).toBeGreaterThanOrEqual(20 + realWidth() + MARGIN);
+	});
+
+	it("frames a bold text on its bold width", () => {
+		const regular = frameScene([text], MARGIN);
+		const bold = frameScene([{ ...text, bold: true }], MARGIN);
+
+		expect(bold.width).toBeGreaterThan(regular.width);
 	});
 });

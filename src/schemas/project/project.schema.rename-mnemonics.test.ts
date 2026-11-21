@@ -125,3 +125,41 @@ describe("Project.renameMnemonics", () => {
 		);
 	});
 });
+
+describe("Project.renameMnemonics with a mnemonic named like a built-in", () => {
+	function projectWith(name: string) {
+		const project = buildProject();
+		project.variables.push(VariableBuilder.buildLogicInput("v9", name));
+		project.ladders["l1"].addElements(project.ladders["l1"].sections[0].id, [
+			createContactElement(name, "NO", 1, 0),
+		]);
+		return project;
+	}
+	const mnemonics = (project: Project) =>
+		project.variables.map((v) => v.mnemonic);
+
+	it.each(["constructor", "toString", "valueOf"])(
+		"ne touche pas la variable %s quand une autre est renommée",
+		(name) => {
+			const project = projectWith(name);
+
+			project.renameMnemonics({ marche: "start" });
+
+			expect(mnemonics(project)).toEqual(["start", "arret", "pompe", name]);
+			const contact = project.ladders["l1"].getAllElements()[1];
+			expect((contact.data as { variable: string }).variable).toBe(name);
+		},
+	);
+
+	it("renomme la variable toString et ses références quand c'est elle qui est renommée", () => {
+		const project = projectWith("toString");
+		const renames: Record<string, string> = {};
+		renames["toString"] = "moteur";
+
+		project.renameMnemonics(renames);
+
+		expect(mnemonics(project)).toEqual(["marche", "arret", "pompe", "moteur"]);
+		const contact = project.ladders["l1"].getAllElements()[1];
+		expect((contact.data as { variable: string }).variable).toBe("moteur");
+	});
+});

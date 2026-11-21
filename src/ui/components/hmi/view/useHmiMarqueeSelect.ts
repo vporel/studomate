@@ -7,6 +7,7 @@ import {
 } from "@/schemas/hmi/hmi-page.schema";
 import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
 import { MouseEvent as ReactMouseEvent, RefObject, useRef } from "react";
+import useGestureCleanup from "./useGestureCleanup";
 
 export interface HmiMarqueeRect {
 	x: number;
@@ -44,6 +45,7 @@ export default function useHmiMarqueeSelect(
 		startY: number;
 		additiveBase: string[];
 	} | null>(null);
+	const cleanup = useGestureCleanup();
 
 	const clientToCanvas = (clientX: number, clientY: number) => {
 		const el = canvasWrapperRef.current;
@@ -56,6 +58,7 @@ export default function useHmiMarqueeSelect(
 	};
 
 	return (e: ReactMouseEvent, currentSelection: string[]) => {
+		cleanup.current?.();
 		const start = clientToCanvas(e.clientX, e.clientY);
 		const additive = e.shiftKey || e.ctrlKey || e.metaKey;
 		dragState.current = {
@@ -87,6 +90,7 @@ export default function useHmiMarqueeSelect(
 			dragState.current = null;
 			window.removeEventListener("mousemove", onMouseMove);
 			window.removeEventListener("mouseup", onMouseUp);
+			cleanup.current = null;
 			onPreviewChange(null);
 			if (!drag) return;
 			const rect = rectFrom(
@@ -101,5 +105,10 @@ export default function useHmiMarqueeSelect(
 
 		window.addEventListener("mousemove", onMouseMove);
 		window.addEventListener("mouseup", onMouseUp);
+		cleanup.current = () => {
+			dragState.current = null;
+			window.removeEventListener("mousemove", onMouseMove);
+			window.removeEventListener("mouseup", onMouseUp);
+		};
 	};
 }

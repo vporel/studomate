@@ -1,6 +1,7 @@
 import { parseFeedbackSubmission } from "@/feedback/feedback-submission";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { clientAddress } from "../rate-limit";
+import readJsonBody from "../read-json-body";
 import allowFeedbackRequest from "./rate-limit";
 import { isEmailConfigured } from "../send-email";
 import sendFeedbackEmail from "./send-feedback-email";
@@ -46,13 +47,13 @@ export async function POST(request: Request): Promise<Response> {
 		return json({ error: "rate-limited" }, 429);
 	}
 
-	let payload: unknown;
-	try {
-		payload = await request.json();
-	} catch {
-		return json({ error: "invalid" }, 400);
+	const body = await readJsonBody(request);
+	if (!body.ok) {
+		return body.reason === "too-large"
+			? json({ error: "too-large" }, 413)
+			: json({ error: "invalid" }, 400);
 	}
-	const submission = parseFeedbackSubmission(payload);
+	const submission = parseFeedbackSubmission(body.value);
 	if (!submission) return json({ error: "invalid" }, 400);
 
 	const connection = await resolveSupabase(request);

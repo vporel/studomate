@@ -1,11 +1,11 @@
 "use client";
 
-import useCanEdit from "@/ui/components/projects/useCanEdit";
 import SectionUpdateCommand from "@/schemas/ladder/commands/section-update.command";
 import Section from "@/schemas/ladder/section.schema";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
+import { useT } from "@/ui/i18n/useT";
 import { InputBase } from "@mui/material";
 import { useCallback } from "react";
-import { useT } from "@/ui/i18n/useT";
 import { useLadderStore } from "../context/LadderContext";
 
 export default function LadderSectionDescription({
@@ -17,7 +17,7 @@ export default function LadderSectionDescription({
 		(state) => state.commandsStackManager,
 	);
 	const t = useT("ladderEditor.sectionDescription");
-	const canEdit = useCanEdit();
+	const canEdit = useCanEditActivePage();
 
 	const handleBlur = useCallback(
 		(e: React.FocusEvent<HTMLTextAreaElement>) => {

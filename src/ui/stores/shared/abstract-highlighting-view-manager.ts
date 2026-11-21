@@ -3,6 +3,16 @@ export interface HighlightableStoreState {
 	highlightedEdgesIds: string[];
 }
 
+/** `current` without the first occurrence of each of `ids`; an id that is not there is ignored. */
+function removeOnce(current: string[] | undefined, ids: string[]): string[] {
+	const remaining = [...(current ?? [])];
+	for (const id of ids) {
+		const index = remaining.indexOf(id);
+		if (index !== -1) remaining.splice(index, 1);
+	}
+	return remaining;
+}
+
 /**
  * Factorise le surlignage temporaire, identique entre le `GrafcetViewManager` (une instance
  * React Flow) et le `LadderViewManager` (N sections synchronisées) — seule la façon dont chacun
@@ -41,18 +51,16 @@ export default abstract class AbstractHighlightingViewManager<
 		);
 	}
 
+	/**
+	 * Undoes one `highlightNodesAndEdges`: each id is removed once, so an element highlighted by
+	 * two overlapping calls stays highlighted until both are undone.
+	 */
 	unhighlightNodesAndEdges(nodesIds: string[], edgesIds: string[]): void {
-		const nodesToRemove = new Set(nodesIds);
-		const edgesToRemove = new Set(edgesIds);
 		this.setHighlightState(
 			(state) =>
 				({
-					highlightedNodesIds: state.highlightedNodesIds?.filter(
-						(id) => !nodesToRemove.has(id),
-					),
-					highlightedEdgesIds: state.highlightedEdgesIds?.filter(
-						(id) => !edgesToRemove.has(id),
-					),
+					highlightedNodesIds: removeOnce(state.highlightedNodesIds, nodesIds),
+					highlightedEdgesIds: removeOnce(state.highlightedEdgesIds, edgesIds),
 				}) as Partial<TState>,
 		);
 	}

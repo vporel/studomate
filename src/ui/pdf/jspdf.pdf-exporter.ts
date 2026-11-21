@@ -25,6 +25,17 @@ const A4_HEIGHT_MM = 297;
 const MARGIN_MM = 15;
 /** Hauteur réservée au titre au-dessus du dessin d'un programme, en mm. */
 const TITLE_BAND_MM = 12;
+/** Corps du titre d'une page de programme, en points. */
+const PAGE_TITLE_FONT_PT = 14;
+/** Corps du nom du projet sur la page de garde, en points. */
+const COVER_TITLE_FONT_PT = 24;
+/** Interligne de jsPDF (`lineHeightFactor` par défaut), et conversion point → millimètre. */
+const LINE_HEIGHT_FACTOR = 1.15;
+const MM_PER_PT = 25.4 / 72;
+
+/** Hauteur d'une ligne de texte de corps `fontPt` points, en mm. */
+const lineHeightMm = (fontPt: number) =>
+	fontPt * LINE_HEIGHT_FACTOR * MM_PER_PT;
 /** Hauteur réservée à l'intitulé d'une section de ladder, en mm. */
 const SECTION_HEADING_MM = 7;
 /** Espace vertical entre deux sections de ladder sur une même page, en mm. */
@@ -126,12 +137,9 @@ export class JsPdfExporter implements PdfExporter {
 			];
 			for (const [text, x, y, align] of zones) {
 				if (text)
-					doc.text(
-						text === PDF_PAGE_NUMBER ? `${page}/${total}` : text,
-						x,
-						y,
-						{ align },
-					);
+					doc.text(text === PDF_PAGE_NUMBER ? `${page}/${total}` : text, x, y, {
+						align,
+					});
 			}
 		}
 		doc.setTextColor(0);
@@ -142,13 +150,10 @@ export class JsPdfExporter implements PdfExporter {
 		let y = 45;
 
 		doc.setFont("helvetica", "bold");
-		doc.setFontSize(24);
-		doc.text(
-			doc.splitTextToSize(cover.projectName, contentWidth),
-			MARGIN_MM,
-			y,
-		);
-		y += 16;
+		doc.setFontSize(COVER_TITLE_FONT_PT);
+		const titleLines = doc.splitTextToSize(cover.projectName, contentWidth);
+		doc.text(titleLines, MARGIN_MM, y);
+		y += 16 + (titleLines.length - 1) * lineHeightMm(COVER_TITLE_FONT_PT);
 
 		doc.setFont("helvetica", "normal");
 		doc.setFontSize(12);
@@ -182,13 +187,14 @@ export class JsPdfExporter implements PdfExporter {
 		}
 	}
 
-	private pageTitle(doc: jsPDF, title: string, pageWidth: number): void {
+	/** Draws the title of a program page and returns the height it takes above the drawing, in mm. */
+	private pageTitle(doc: jsPDF, title: string, pageWidth: number): number {
 		doc.setFont("helvetica", "bold");
-		doc.setFontSize(14);
-		doc.text(
-			doc.splitTextToSize(title, pageWidth - 2 * MARGIN_MM),
-			MARGIN_MM,
-			MARGIN_MM + 6,
+		doc.setFontSize(PAGE_TITLE_FONT_PT);
+		const lines = doc.splitTextToSize(title, pageWidth - 2 * MARGIN_MM);
+		doc.text(lines, MARGIN_MM, MARGIN_MM + 6);
+		return (
+			TITLE_BAND_MM + (lines.length - 1) * lineHeightMm(PAGE_TITLE_FONT_PT)
 		);
 	}
 
@@ -199,17 +205,17 @@ export class JsPdfExporter implements PdfExporter {
 	): void {
 		const pageWidth = orientation === "landscape" ? A4_HEIGHT_MM : A4_WIDTH_MM;
 		const pageHeight = orientation === "landscape" ? A4_WIDTH_MM : A4_HEIGHT_MM;
-		this.pageTitle(doc, section.title, pageWidth);
+		const titleBand = this.pageTitle(doc, section.title, pageWidth);
 
 		const scene = section.scene!;
 		const availableWidth = pageWidth - 2 * MARGIN_MM;
-		const availableHeight = pageHeight - 2 * MARGIN_MM - TITLE_BAND_MM;
+		const availableHeight = pageHeight - 2 * MARGIN_MM - titleBand;
 		const scale = Math.min(
 			availableWidth / scene.width,
 			availableHeight / scene.height,
 		);
 		const x = MARGIN_MM + (availableWidth - scene.width * scale) / 2;
-		const y = MARGIN_MM + TITLE_BAND_MM;
+		const y = MARGIN_MM + titleBand;
 		renderSceneToJsPdf(doc, scene, { x, y, scale });
 	}
 
@@ -220,13 +226,13 @@ export class JsPdfExporter implements PdfExporter {
 	): void {
 		const pageWidth = orientation === "landscape" ? A4_HEIGHT_MM : A4_WIDTH_MM;
 		const pageHeight = orientation === "landscape" ? A4_WIDTH_MM : A4_HEIGHT_MM;
-		this.pageTitle(doc, section.title, pageWidth);
+		const titleBand = this.pageTitle(doc, section.title, pageWidth);
 		drawPdfTable(
 			doc,
 			section.table!,
 			{
 				x: MARGIN_MM,
-				top: MARGIN_MM + TITLE_BAND_MM,
+				top: MARGIN_MM + titleBand,
 				pageTop: MARGIN_MM,
 				bottom: pageHeight - MARGIN_MM,
 			},
@@ -244,12 +250,13 @@ export class JsPdfExporter implements PdfExporter {
 		const availableWidth = pageWidth - 2 * MARGIN_MM;
 		const sections = section.ladderSections!;
 
+		const titleBand = this.pageTitle(doc, section.title, pageWidth);
 		doc.setFont("helvetica", "normal");
 		doc.setFontSize(SECTION_DESC_FONT_PT);
 		const maxLines = maxDescriptionLines({
 			pageHeight,
 			margin: MARGIN_MM,
-			firstPageTop: MARGIN_MM + TITLE_BAND_MM,
+			firstPageTop: MARGIN_MM + titleBand,
 			headingHeight: SECTION_HEADING_MM,
 			lineHeight: SECTION_DESC_LINE_MM,
 			descriptionGap: SECTION_DESC_GAP_MM,
@@ -278,12 +285,10 @@ export class JsPdfExporter implements PdfExporter {
 			pageWidth,
 			pageHeight,
 			margin: MARGIN_MM,
-			firstPageTop: MARGIN_MM + TITLE_BAND_MM,
+			firstPageTop: MARGIN_MM + titleBand,
 			gap: SECTION_GAP_MM,
 			minSceneWidth: mmToPx(A4_HEIGHT_MM) / LADDER_ZOOM,
 		});
-
-		this.pageTitle(doc, section.title, pageWidth);
 
 		let currentPage = 0;
 		sections.forEach(({ heading, scene }, i) => {

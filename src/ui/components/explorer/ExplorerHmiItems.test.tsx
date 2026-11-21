@@ -33,7 +33,13 @@ function setup({
 		getMainHmiPage: () => pages.find((p) => p.id === mainId),
 	};
 	(useProjectStore as jest.Mock).mockImplementation(
-		selectorImplementation({ project, mode, hmiManager, pagesManager }),
+		selectorImplementation({
+			project,
+			mode,
+			editingEnabled: true,
+			hmiManager,
+			pagesManager,
+		}),
 	);
 	render(
 		<SimpleTreeView>

@@ -294,6 +294,152 @@ describe("LocalStorageProjectRepository", () => {
 		});
 	});
 
+	describe("disposition v1 : index et projets illisibles", () => {
+		const names = (projects: Project[]) => projects.map((p) => p.name).sort();
+
+		async function storeWithTwoProjects() {
+			const repo = new LocalStorageProjectRepository();
+			await repo.save(newProject("a", "Projet A"));
+			await repo.save(newProject("b", "Projet B"));
+			return repo;
+		}
+
+		it.each([
+			["du texte qui n'est pas du JSON", "{ ceci n'est pas du JSON"],
+			["null", "null"],
+			["un nombre", "42"],
+			["une chaîne", '"index"'],
+		])(
+			"un index illisible (%s) n'écarte pas les projets : un nouveau save les garde dans l'index",
+			async (_label, corrupted) => {
+				await storeWithTwoProjects();
+				store.set(STORAGE_KEY, corrupted);
+
+				await new LocalStorageProjectRepository().save(
+					newProject("c", "Projet C"),
+				);
+
+				expect(JSON.parse(store.get(STORAGE_KEY)!)).toEqual({
+					a: { name: "Projet A" },
+					b: { name: "Projet B" },
+					c: { name: "Projet C" },
+				});
+				const { projects } = await new LocalStorageProjectRepository().list();
+				expect(names(projects)).toEqual(["Projet A", "Projet B", "Projet C"]);
+			},
+		);
+
+		it("liste les projets d'un index illisible sans attendre un save", async () => {
+			await storeWithTwoProjects();
+			store.set(STORAGE_KEY, "{ corrompu");
+
+			const { projects, skipped } =
+				await new LocalStorageProjectRepository().list();
+
+			expect(names(projects)).toEqual(["Projet A", "Projet B"]);
+			expect(skipped).toEqual([]);
+		});
+
+		it("retrouve les projets quand l'index a disparu mais que leurs clés existent", async () => {
+			await storeWithTwoProjects();
+			store.set(STORAGE_KEY, "{ corrompu");
+			const repo = new LocalStorageProjectRepository();
+
+			await repo.delete("a");
+
+			expect(JSON.parse(store.get(STORAGE_KEY)!)).toEqual({
+				b: { name: "Projet B" },
+			});
+			expect(store.get(projectKey("a"))).toBeUndefined();
+		});
+
+		it("un index absent reste vide, sans parcourir les clés", async () => {
+			await storeWithTwoProjects();
+			store.delete(STORAGE_KEY);
+
+			const { projects } = await new LocalStorageProjectRepository().list();
+
+			expect(projects).toEqual([]);
+		});
+
+		it("ne prend pas pour illisible l'index tableau de la disposition v0", async () => {
+			store.set(
+				STORAGE_KEY,
+				legacyStoredValue([JSON.parse(JSON.stringify(newProject("p1", "A")))]),
+			);
+			store.set(projectKey("autre"), JSON.stringify(newProject("autre", "B")));
+			const repo = new LocalStorageProjectRepository();
+
+			const { projects } = await repo.list();
+
+			expect(projects.map((p) => p.id)).toEqual(["p1"]);
+		});
+
+		it("ne confond pas la clé de l'index avec une clé de projet", async () => {
+			await storeWithTwoProjects();
+			store.set(STORAGE_KEY, "{ corrompu");
+
+			await new LocalStorageProjectRepository().save(newProject("c", "C"));
+
+			expect(Object.keys(JSON.parse(store.get(STORAGE_KEY)!)).sort()).toEqual([
+				"a",
+				"b",
+				"c",
+			]);
+		});
+
+		it("signale un projet dont la clé n'est pas du JSON valide, sans écarter les autres", async () => {
+			const repo = await storeWithTwoProjects();
+			store.set(projectKey("a"), "{ pas du json");
+			jest.spyOn(console, "error").mockImplementation(() => {});
+
+			const { projects, skipped } = await repo.list();
+
+			expect(names(projects)).toEqual(["Projet B"]);
+			expect(skipped).toEqual([{ reason: "unreadable", id: "a" }]);
+		});
+
+		it("signale un projet dont la clé ne contient pas un objet", async () => {
+			const repo = await storeWithTwoProjects();
+			store.set(projectKey("a"), JSON.stringify(["pas", "un", "projet"]));
+
+			const { skipped } = await repo.list();
+
+			expect(skipped).toEqual([{ reason: "unreadable", id: "a" }]);
+		});
+
+		it("ignore sans le signaler une entrée d'index dont la clé a disparu", async () => {
+			const repo = await storeWithTwoProjects();
+			store.delete(projectKey("a"));
+
+			const { projects, skipped } = await repo.list();
+
+			expect(names(projects)).toEqual(["Projet B"]);
+			expect(skipped).toEqual([]);
+		});
+
+		it("signale aussi, après reconstruction, un projet dont la clé est illisible", async () => {
+			const repo = await storeWithTwoProjects();
+			store.set(STORAGE_KEY, "{ corrompu");
+			store.set(projectKey("a"), "{ pas du json");
+			jest.spyOn(console, "error").mockImplementation(() => {});
+
+			const { projects, skipped } = await repo.list();
+
+			expect(names(projects)).toEqual(["Projet B"]);
+			expect(skipped).toEqual([{ reason: "unreadable", id: "a" }]);
+		});
+
+		it("laisse un stockage sain sans projet écarté", async () => {
+			const repo = await storeWithTwoProjects();
+
+			const { projects, skipped } = await repo.list();
+
+			expect(names(projects)).toEqual(["Projet A", "Projet B"]);
+			expect(skipped).toEqual([]);
+		});
+	});
+
 	describe("disposition v0 (migration impossible)", () => {
 		afterEach(() => jest.restoreAllMocks());
 

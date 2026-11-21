@@ -1,11 +1,13 @@
 "use client";
 
 import { useHmiStore } from "@/ui/components/hmi/HmiContext";
+import { useT } from "@/ui/i18n/useT";
 import { Box, Typography } from "@mui/material";
 
 /** Liste des widgets de la page, triés du plus haut au plus bas dans la pile (voir
  * `HmiWidgetBase.stackOrder`) — un clic sélectionne le widget correspondant sur le canvas. */
 const HmiObjectsPanel = () => {
+	const t = useT("hmiEditor.panel");
 	const widgets = useHmiStore((s) => s.hmiPage.widgets);
 	const selectedWidgetIds = useHmiStore((s) => s.selectedWidgetIds);
 	const selectWidget = useHmiStore((s) => s.selectWidget);
@@ -17,7 +19,7 @@ const HmiObjectsPanel = () => {
 	if (sortedWidgets.length === 0) {
 		return (
 			<Typography sx={{ px: 1.5, pb: 1.5, fontSize: "0.8rem", color: "#888" }}>
-				Aucun objet.
+				{t("noObjects")}
 			</Typography>
 		);
 	}

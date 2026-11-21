@@ -7,15 +7,22 @@ import {
 	setStoredScene3dDisplayMode,
 	setStoredSimulationMode,
 } from "@/persistence/preferences.storage";
-import { deleteDraft } from "@/persistence/draft.storage";
+import {
+	deleteDraft,
+	getDraft,
+	parseDraftProject,
+	saveDraft,
+} from "@/persistence/draft.storage";
 import {
 	getPagesSession,
 	setPagesSession,
 } from "@/persistence/pages-session.storage";
 import HybridProjectRepository from "@/persistence/repositories/hybrid.project.repository";
+import { getT } from "@/ui/i18n/translateGlobal";
 import trackEvent from "@/ui/services/analytics";
 import notifyFeedbackMilestone from "@/ui/services/feedback-prompt";
 import { authStore, isAnonymousUser } from "@/ui/stores/auth/auth.store";
+import { toast } from "react-toastify";
 import createBrowserScene3dLinkHost from "../managers/3d-scene/browser-scene3d-link-host";
 import createBrowserRemoteIoDevice from "../managers/hardware-link/browser-remote-io-device";
 import ToastHardwareLinkNotifier from "../managers/hardware-link/toast.hardware-link.notifier";
@@ -40,6 +47,8 @@ export default function createAppProjectStoreEnvironment(
 ): ProjectStoreEnvironment {
 	return {
 		getLocale: resolveUiLocale,
+		translate: getT,
+		notifications: { error: (message) => toast.error(message) },
 		capabilities: {
 			export: true,
 			crossReference: true,
@@ -88,7 +97,12 @@ export default function createAppProjectStoreEnvironment(
 				clearShareToken: clearShareTokenFromUrl,
 			},
 			pagesSession: { get: getPagesSession, set: setPagesSession },
-			drafts: { delete: deleteDraft },
+			drafts: {
+				get: getDraft,
+				save: saveDraft,
+				delete: deleteDraft,
+				parse: parseDraftProject,
+			},
 			auth: { store: authStore, isAnonymousUser },
 		},
 		...overrides,

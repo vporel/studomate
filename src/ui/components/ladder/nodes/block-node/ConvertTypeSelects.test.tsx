@@ -6,10 +6,19 @@ import { renderWithI18n } from "@tests/utils/i18n";
 import { ConvertBlockParams } from "@/schemas/ladder/block.schema";
 import ConvertTypeSelects from "./ConvertTypeSelects";
 
-function setup(types: Pick<ConvertBlockParams, "inType" | "outType">) {
+function setup(
+	types: Pick<ConvertBlockParams, "inType" | "outType">,
+	disabled = false,
+) {
 	const params: ConvertBlockParams = { in: "A", out: "B", ...types };
 	const onChange = jest.fn();
-	renderWithI18n(<ConvertTypeSelects params={params} onChange={onChange} />);
+	renderWithI18n(
+		<ConvertTypeSelects
+			params={params}
+			onChange={onChange}
+			disabled={disabled}
+		/>,
+	);
 	return { onChange };
 }
 
@@ -109,5 +118,15 @@ describe("ConvertTypeSelects", () => {
 			inType: "WORD",
 			outType: "INT",
 		});
+	});
+
+	it("désactive les deux selects quand le projet n'est pas modifiable", () => {
+		const { onChange } = setup({ inType: "INT", outType: "REAL" }, true);
+
+		fireEvent.mouseDown(inSelect());
+		fireEvent.mouseDown(outSelect());
+
+		expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+		expect(onChange).not.toHaveBeenCalled();
 	});
 });

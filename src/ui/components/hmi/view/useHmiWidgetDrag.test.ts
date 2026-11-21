@@ -33,13 +33,15 @@ function setup(zoom = 1) {
 	(useHmiStore as jest.Mock).mockImplementation(
 		selectorImplementation({ moveWidgets }),
 	);
-	const { result } = renderHook(() => useHmiWidgetDrag(zoom, onPreviewChange));
+	const { result, unmount } = renderHook(() =>
+		useHmiWidgetDrag(zoom, onPreviewChange),
+	);
 	const start = (group: HmiWidget[], x = 500, y = 300) =>
 		result.current(
 			{ clientX: x, clientY: y } as unknown as ReactMouseEvent,
 			group,
 		);
-	return { moveWidgets, onPreviewChange, start };
+	return { moveWidgets, onPreviewChange, start, unmount };
 }
 
 describe("useHmiWidgetDrag", () => {
@@ -157,5 +159,69 @@ describe("useHmiWidgetDrag", () => {
 		expect(onPreviewChange).toHaveBeenCalledWith(null);
 		expect(moveWidgets).toHaveBeenCalledTimes(1);
 		expect(moveWidgets).toHaveBeenCalledWith([a.id], 0, 0);
+	});
+	describe("quand le composant est démonté en plein glisser", () => {
+		it("n'écrit rien dans le store au relâchement qui suit", () => {
+			const { moveWidgets, start, unmount } = setup();
+			start([a]);
+			mouse("mousemove", 540, 300);
+
+			unmount();
+			mouse("mouseup", 560, 300);
+
+			expect(moveWidgets).not.toHaveBeenCalled();
+		});
+
+		it("retire ses écouteurs de window", () => {
+			const add = jest.spyOn(window, "addEventListener");
+			const remove = jest.spyOn(window, "removeEventListener");
+			const { start, unmount } = setup();
+			start([a]);
+			const added = add.mock.calls.filter(([type]) =>
+				["mousemove", "mouseup"].includes(type as string),
+			);
+
+			unmount();
+
+			for (const [type, listener] of added) {
+				expect(remove).toHaveBeenCalledWith(type, listener);
+			}
+			add.mockRestore();
+			remove.mockRestore();
+		});
+
+		it("n'envoie plus d'aperçu après le démontage", () => {
+			const { onPreviewChange, start, unmount } = setup();
+			start([a]);
+			unmount();
+			onPreviewChange.mockClear();
+
+			mouse("mousemove", 600, 320);
+
+			expect(onPreviewChange).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("quand un nouveau glisser commence sans que le précédent ait fini", () => {
+		it("n'empile pas les écouteurs : une seule écriture au relâchement", () => {
+			const { moveWidgets, start } = setup();
+			start([a]);
+			start([b], 600, 400);
+
+			mouse("mouseup", 640, 400);
+
+			expect(moveWidgets).toHaveBeenCalledTimes(1);
+			expect(moveWidgets).toHaveBeenCalledWith([b.id], 40, 0);
+		});
+	});
+
+	it("accepte un nouveau glisser après un relâchement normal", () => {
+		const { moveWidgets, start } = setup();
+		start([a]);
+		mouse("mouseup", 540, 300);
+		start([a]);
+		mouse("mouseup", 520, 300);
+
+		expect(moveWidgets).toHaveBeenCalledTimes(2);
 	});
 });

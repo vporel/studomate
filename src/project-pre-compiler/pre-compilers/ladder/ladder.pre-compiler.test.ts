@@ -28,7 +28,9 @@ import {
 	wireInParallel,
 	wireInSeries,
 } from "@tests/utils/ladder-factory";
+import Connection from "@/schemas/ladder/connection.schema";
 import LadderPreCompiler, {
+	isPreCompiledLadder,
 	PreCompiledCoilAssignment,
 	PreCompiledContactEdgeAssignment,
 	PreCompiledEmbeddedNodeAssignment,
@@ -88,6 +90,35 @@ describe("LadderPreCompiler", () => {
 		const result = LadderPreCompiler.preCompile(ladder, [], Dialect.FR, errors);
 		return { result, errors };
 	}
+
+	it("isPreCompiledLadder distingue un ladder pré-compilé des autres programmes", () => {
+		const { result } = preCompile(new Ladder("l1", "L", []));
+
+		expect(isPreCompiledLadder(result)).toBe(true);
+		expect(
+			isPreCompiledLadder({ type: "grafcet" } as unknown as PreCompiledLadder),
+		).toBe(false);
+	});
+
+	it("ignore une connexion dont une extrémité n'appartient pas à la section", () => {
+		const rail = createRailTerminalElement(0);
+		const contact = createContactElement("A", "NO", 0, 1);
+		const coil = createCoilElement("Q", "normal", 0, 2);
+		const dangling = new Connection(
+			"dangling",
+			{ id: contact.id, type: contact.type, handle: "source" },
+			{ id: "absent", type: "coil", handle: "target" },
+		);
+		const section = createSectionWith(
+			[rail, contact, coil],
+			[...wireInSeries([rail, contact, coil]), dangling],
+		);
+
+		const { result, errors } = preCompile(new Ladder("l1", "L", [section]));
+
+		expect(errors).toEqual([]);
+		expect(describeNode(coilAssignments(result)[0].condition)).toBe("A");
+	});
 
 	it("condition d'un contact NO seul : l'identifiant de la variable", () => {
 		const rail = createRailTerminalElement(0);
@@ -317,18 +348,43 @@ describe("LadderPreCompiler", () => {
 		expect(describeNode(assignment.condition)).toBe("NOT A");
 	});
 
-	it("une bobine de front ne rejoint jamais un groupe d'alimentation", () => {
-		const rail = createRailTerminalElement(0);
-		const contact = createContactElement("A", "NO", 0, 1);
-		const coil = createCoilElement("Q", "rising", 0, 2);
-		const section = createSectionWith(
-			[rail, contact, coil],
-			wireInSeries([rail, contact, coil]),
-		);
+	it.each(["rising", "falling"] as const)(
+		"une bobine de front %s rejoint le groupe d'alimentation de ses voisines et porte son front",
+		(type) => {
+			const rail = createRailTerminalElement(0);
+			const contact = createContactElement("A", "NO", 0, 1);
+			const normal = createCoilElement("Q1", "normal", 0, 2);
+			const edge = createCoilElement("Q2", type, 1, 2);
+			const section = createSectionWith(
+				[rail, contact, normal, edge],
+				[
+					...wireInSeries([rail, contact, normal]),
+					...wireInSeries([contact, edge]),
+				],
+			);
+
+			const { result } = preCompile(new Ladder("l1", "L", [section]));
+
+			const [first, second] = coilAssignments(result);
+			expect(second.reachId).toBeDefined();
+			expect(second.reachId).toBe(first.reachId);
+			expect(describeNode(second.reach!)).toBe("A");
+			expect(second.edge).toEqual({
+				kind: type,
+				memoMnemonic: getContactMemoryVariableMnemonic(edge.id),
+			});
+			expect(first.edge).toBeUndefined();
+		},
+	);
+
+	it("une bobine de front sans connexion entrante n'a pas de reachId", () => {
+		const edge = createCoilElement("Q", "rising", 0, 0);
+		const section = createSectionWith([edge]);
 
 		const { result } = preCompile(new Ladder("l1", "L", [section]));
 
 		expect(coilAssignments(result)[0].reachId).toBeUndefined();
+		expect(coilAssignments(result)[0].edge?.kind).toBe("rising");
 	});
 
 	it("bobine sans prédécesseur : condition repliée sur true", () => {
@@ -757,6 +813,54 @@ describe("LadderPreCompiler", () => {
 				getBlockPortVariableMnemonic(block.id, "lastInput"),
 			);
 			expect(describeNode(counter.control as ASTNode)).toBe("R");
+		});
+
+		it("résout PV comme identifiant quand ce n'est pas un littéral numérique", () => {
+			const rail = createRailTerminalElement(0);
+			const block = createCounterBlockElement(
+				{ name: "Compteur1", counterType: "CTU", control: "R", pv: "limite" },
+				0,
+				1,
+			);
+			const section = createSectionWith(
+				[rail, block],
+				wireInSeries([rail, block]),
+			);
+
+			const { result } = preCompile(new Ladder("l1", "L", [section]));
+
+			const counter = result.assignments.find(
+				(a): a is PreCompiledEmbeddedNodeAssignment =>
+					a.kind === "embeddedNode" && a.simRole === "counter",
+			)!.node as CounterNode;
+			expect(describeNode(counter.presetValue as ASTNode)).toBe("limite");
+		});
+
+		it("recopie CV vers la variable du pin CV quand elle est renseignée, après le CounterNode", () => {
+			const rail = createRailTerminalElement(0);
+			const block = createCounterBlockElement(
+				{
+					name: "Compteur1",
+					counterType: "CTU",
+					control: "R",
+					pv: "5",
+					cv: "valeur",
+				},
+				0,
+				1,
+			);
+			const section = createSectionWith(
+				[rail, block],
+				wireInSeries([rail, block]),
+			);
+
+			const { result } = preCompile(new Ladder("l1", "L", [section]));
+
+			const last = result.assignments[result.assignments.length - 1];
+			expect(last).toMatchObject({ kind: "blockPort", mnemonic: "valeur" });
+			expect(describeNode((last as { value: ASTNode }).value)).toBe(
+				"Compteur1.CV",
+			);
 		});
 
 		it("matérialise un littéral booléen sur R en nœud littéral, pas en identifiant", () => {

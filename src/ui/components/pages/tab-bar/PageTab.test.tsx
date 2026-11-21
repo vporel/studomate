@@ -135,7 +135,7 @@ describe("PageTab", () => {
 		});
 	});
 
-	describe("read-only padlock (canEdit rules)", () => {
+	describe("read-only padlock (canEditActivePage rules)", () => {
 		const padlock = () => screen.queryByRole("img", { name: "Lecture seule" });
 
 		it("is hidden in design mode on an unlocked editor page", () => {

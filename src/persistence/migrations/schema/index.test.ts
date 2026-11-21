@@ -188,4 +188,83 @@ describe("isFromNewerVersion", () => {
 	it("accepte un projet plus ancien", () => {
 		expect(isFromNewerVersion({ id: "p1" })).toBe(false);
 	});
+
+	it.each([
+		["un texte", "6"],
+		["un décimal", 3.5],
+		["un négatif", -1],
+		["null", null],
+		["NaN", NaN],
+		["l'infini", Infinity],
+		["un objet", {}],
+	])(
+		"ne prend pas pour plus récent un schemaVersion illisible (%s)",
+		(_label, schemaVersion) => {
+			expect(isFromNewerVersion({ id: "p1", schemaVersion })).toBe(false);
+		},
+	);
+});
+
+describe("schemaVersion illisible", () => {
+	it.each([
+		["un texte", "6"],
+		["un décimal", 3.5],
+		["un négatif", -1],
+		["null", null],
+		["NaN", NaN],
+		["l'infini", Infinity],
+		["un booléen", true],
+		["un objet", {}],
+	])("migrateProject refuse %s", (_label, schemaVersion) => {
+		expect(() => migrateProject({ id: "p1", schemaVersion })).toThrow(
+			/schemaVersion illisible/,
+		);
+	});
+
+	it("ne rejoue pas la chaîne depuis la v0 sur un projet à jour dont la version est un texte", () => {
+		const project = {
+			id: "p1",
+			schemaVersion: String(PROJECT_SCHEMA_VERSION),
+			programs: {},
+		};
+
+		expect(() => migrateProject(project)).toThrow();
+		expect(project.schemaVersion).toBe(String(PROJECT_SCHEMA_VERSION));
+	});
+
+	it("refuse une migration qui rend un schemaVersion illisible", () => {
+		const cassee: ProjectMigration = {
+			from: 5,
+			description: "rend la version illisible",
+			migrate: (raw) => ({ ...raw, schemaVersion: "6" }),
+		};
+
+		expect(() =>
+			migrateProject({ id: "p1", schemaVersion: 5 }, [cassee]),
+		).toThrow(/n'a pas progressé/);
+	});
+});
+
+describe("schemaVersion valide", () => {
+	it("traite l'absence du champ comme un projet d'avant le versionnement", () => {
+		const { from } = migrateProject({ id: "p1", name: "A" });
+
+		expect(from).toBe(UNVERSIONED);
+	});
+
+	it("accepte un 0 explicite comme non versionné", () => {
+		const { from } = migrateProject({ id: "p1", name: "A", schemaVersion: 0 });
+
+		expect(from).toBe(0);
+	});
+
+	it("accepte la version courante", () => {
+		const { from } = migrateProject({
+			id: "p1",
+			schemaVersion: PROJECT_SCHEMA_VERSION,
+			programs: {},
+		});
+
+		expect(from).toBe(PROJECT_SCHEMA_VERSION);
+	});
 });

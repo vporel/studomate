@@ -1,10 +1,10 @@
 "use client";
 
-import useCanEdit from "@/ui/components/projects/useCanEdit";
 import { SystemBlockType } from "@/ui/components/ladder/system-blocks/system-block-catalog";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
 import { LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE } from "@/ui/utils/ladder/ladder-system-block-drag";
-import DraggableToolCell from "./DraggableToolCell";
 import React from "react";
+import DraggableToolCell from "./DraggableToolCell";
 
 /**
  * Outil de dépose pour un bloc système (compare, assign, arithmetic) — même geste que `LadderTool`
@@ -27,7 +27,7 @@ const LadderSystemBlockTool = ({
 	label?: string;
 	children: React.ReactElement;
 }) => {
-	const canEdit = useCanEdit();
+	const canEdit = useCanEditActivePage();
 	disabled = disabled || !canEdit;
 
 	return (

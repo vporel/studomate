@@ -31,6 +31,7 @@ function setup({
 		selectorImplementation({
 			activePageId: SCENE3D_CONFIGURATION_PAGE_ID,
 			mode,
+			editingEnabled: true,
 			project: { scene3d: scene, variables: VARIABLES },
 			setScene3d,
 			createMissingScene3dVariables,

@@ -1,4 +1,4 @@
-import useCanEdit from "@/ui/components/projects/useCanEdit";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
 import { EDGE_INTERACTION_WIDTH } from "@/ui/constants";
 import { getStraightPathFromPoints } from "@/ui/lib/svg";
 import { getHandleConnectionLinePoints } from "@/ui/utils/grafcet/grafcet-utils";
@@ -66,7 +66,7 @@ const GrafcetConnectionEdge = ({
 		handlePointPointerMove,
 		handlePointPointerUp,
 	} = usePointPointerEventsHandlers(points, setPoints, id);
-	const canEdit = useCanEdit();
+	const canEdit = useCanEditActivePage();
 
 	useEffect(() => {
 		if (!data || !data.points) return;

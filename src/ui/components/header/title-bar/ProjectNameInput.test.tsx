@@ -9,11 +9,19 @@ import ProjectNameInput from "./ProjectNameInput";
 
 jest.mock("@/ui/components/projects/ProjectContext");
 
-function setup(mode: ProjectMode) {
+function setup(
+	mode: ProjectMode,
+	{ editingEnabled = true, activePageLocked = false } = {},
+) {
 	const setProjectName = jest.fn();
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			mode,
+			editingEnabled,
+			activePageId: "g1",
+			pagesData: {
+				g1: { id: "g1", type: "grafcet", locked: activePageLocked },
+			},
 			project: { name: "Mon projet" },
 			setProjectName,
 		}),
@@ -37,5 +45,17 @@ describe("ProjectNameInput", () => {
 		const { input } = setup(ProjectMode.SIMULATION);
 
 		expect(input).toBeDisabled();
+	});
+
+	it("is disabled for a project opened read-only", () => {
+		const { input } = setup(ProjectMode.DESIGN, { editingEnabled: false });
+
+		expect(input).toBeDisabled();
+	});
+
+	it("stays editable when the active page is locked: the name belongs to the project", () => {
+		const { input } = setup(ProjectMode.DESIGN, { activePageLocked: true });
+
+		expect(input).toBeEnabled();
 	});
 });

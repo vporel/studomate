@@ -4,7 +4,7 @@ import {
 	type GrafcetElementsTranslator,
 	grafcetElementTypeLabel,
 } from "@/ui/components/grafcet/flow/describe-grafcet-element";
-import useCanEdit from "@/ui/components/projects/useCanEdit";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
 import { useT } from "@/ui/i18n/useT";
 import { Box } from "@mui/material";
 import React from "react";
@@ -25,7 +25,7 @@ const GrafcetTool = ({
 	children: React.ReactElement;
 }) => {
 	const { setDraggedItem } = useGrafcetToolbarDnD();
-	const canEdit = useCanEdit();
+	const canEdit = useCanEditActivePage();
 	const zoom = useGrafcetStore((state) => state.zoom) ?? 1;
 	const t = useT(
 		"grafcetEditor.elements",

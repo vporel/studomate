@@ -1,9 +1,12 @@
 "use client";
 
-import useCanEdit from "@/ui/components/projects/useCanEdit";
 import ConnectionUpdateCommand from "@/schemas/ladder/commands/connection-update.command";
+import { usePageVisible } from "@/ui/components/pages/page-visibility-context";
+import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
 import { EDGE_INTERACTION_WIDTH } from "@/ui/constants";
 import { getStraightPathFromPoints } from "@/ui/lib/svg";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import {
 	buildVertices,
 	findVerticalSegment,
@@ -11,16 +14,12 @@ import {
 	quarterColToPx,
 	Vertex,
 } from "@/ui/utils/ladder/ladder-edge-geometry";
-import { Box } from "@mui/material";
+import { computeEnergizedEdges } from "@/ui/utils/ladder/ladder-power-flow";
+import { Box, useTheme } from "@mui/material";
 import { Edge, EdgeProps, useReactFlow } from "@xyflow/react";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { useLadderStore } from "../context/LadderContext";
-import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { usePageVisible } from "@/ui/components/pages/page-visibility-context";
 import { useShallow } from "zustand/react/shallow";
-import { computeEnergizedEdges } from "@/ui/utils/ladder/ladder-power-flow";
-import { useTheme } from "@mui/material";
-import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
+import { useLadderStore } from "../context/LadderContext";
 
 export type LadderConnectionEdgeData = { points: [number, number][] };
 export type LadderConnectionEdgeType = Edge<LadderConnectionEdgeData> & {
@@ -43,7 +42,7 @@ const LadderConnectionEdge = ({
 		(state) => state.commandsStackManager,
 	);
 	const ladder = useLadderStore((state) => state.ladder);
-	const canEdit = useCanEdit();
+	const canEdit = useCanEditActivePage();
 	const pageVisible = usePageVisible();
 	const energized = useProjectStore(
 		useShallow((state) => {

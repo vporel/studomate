@@ -137,10 +137,39 @@ export default class TrainingProgressRepository {
 		return last && { moduleId: last.moduleId, stepId: last.stepId };
 	}
 
-	async saveStepId(moduleId: string, stepId: string): Promise<void> {
-		writeLocal(moduleId, stepId);
+	/**
+	 * Saves `stepId` as the progress of the module, unless a saved step is further: a step reached
+	 * again by going back, or a save made before the saved progress was loaded, never lowers it.
+	 * `stepIds`: the module's steps, first to last, used to compare progress.
+	 */
+	async saveStepId(
+		moduleId: string,
+		stepId: string,
+		stepIds: string[],
+	): Promise<void> {
+		if (!stepIds.includes(stepId)) return;
+		const reaches = (saved: string | null) =>
+			furthestStepId(saved, stepId, stepIds) === stepId;
+		if (!reaches(readLocal()[moduleId]?.stepId ?? null)) return;
+
 		const userId = await this.getUserId();
-		if (userId) await this.upsertCloud(userId, moduleId, stepId);
+		if (!userId) {
+			writeLocal(moduleId, stepId);
+			return;
+		}
+		const { data, error } = await supabase
+			.from(TABLE)
+			.select("step_id")
+			.eq("user_id", userId)
+			.eq("module_id", moduleId)
+			.maybeSingle();
+		if (error) {
+			writeLocal(moduleId, stepId);
+			return;
+		}
+		if (!reaches(data ? (data.step_id as string) : null)) return;
+		writeLocal(moduleId, stepId);
+		await this.upsertCloud(userId, moduleId, stepId);
 	}
 
 	private async upsertCloud(

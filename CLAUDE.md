@@ -93,6 +93,11 @@ project goes through a URL token (`ShareableProjectRepository`, `?shareToken=` h
 `src/ui/stores/project/url/project-url.ts`). Error monitoring is wired via Sentry
 (`sentry.{client,server,edge}.config.ts` at the root).
 
+Supabase **email confirmation is disabled** in production: `signUp` returns a session right away.
+Anonymous accounts depend on it (their address, `pseudo@user.studomate.com`, is not a real
+mailbox and could never be confirmed), so the auth store does not handle a sign-up that comes back
+without a session.
+
 This layer is consumed by the UI; it never leaks into the domain (`src/schemas/`).
 Environment variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` for cloud,
 `NEXT_PUBLIC_SENTRY_DSN` for monitoring. Without them, the app stays local-only.
@@ -110,11 +115,14 @@ side effect in a manager goes through `env` too, never a direct import of `track
 loading Supabase, the data grid or three.js: keep page constants in `pages-data.ts` and the editors'
 node types as `import type` in the stores.
 
-"Can the project be modified" is one rule, `canEdit(state)` (`stores/project/editability.ts`, hook
-`useCanEdit()`): design mode **and** the `editingEnabled` flag. Use it for anything that edits
-(commands, toolbars, in-place editors, menus); keep `state.mode` for what depends on the simulation
-itself. The clipboard belongs to each store (`state.clipboard`), and what the surrounding interface
-can offer (PDF export, cross-references, board) is read from `state.capabilities`.
+"Can the project be modified" is answered by `stores/project/editability.ts`, in two levels:
+`canEditProject(state)` (hook `useCanEditProject()`) is design mode **and** the `editingEnabled`
+flag, whatever the page: use it for what acts on the project itself (explorer, menus, project
+name and properties). `canEditActivePage(state)` (hook `useCanEditActivePage()`) adds that the
+active page is not locked: use it for what edits the content of that page (commands, toolbars,
+in-place editors). Keep `state.mode` for what depends on the simulation itself. The clipboard
+belongs to each store (`state.clipboard`), and what the surrounding interface can offer (PDF
+export, cross-references, board) is read from `state.capabilities`.
 
 `EmbeddedApp` (`src/ui/components/embedded/`) shows a `Project` with its editors inside a page, in
 memory only (copy of the project, nothing saved, `onDirtyChange`/`warnOnLeave` for the host). It
@@ -226,6 +234,8 @@ Always check `package.json` before quoting a version: this table goes stale at t
   or a store environment. Keys are named `studomate_xxx`. Since `src/persistence/` never
   depends on `src/ui/`, a value typed by a UI enum is stored as a string and checked against the
   enum by the caller.
+  `sessionStorage` follows the same rule. The only exception is `LocalStorageProjectRepository`
+  (with `migrations/local-storage/keys.ts`): it is the storage of the projects themselves.
 - **Modals**: their visibility lives in the relevant zustand store (`openModalVisible`,
   `exportModalVisible`, ...) when its state is shared between components or when it must be
   openable from several places (keyboard shortcuts, menus, ...). A modal that opens and closes

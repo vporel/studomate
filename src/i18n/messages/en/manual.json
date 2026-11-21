@@ -810,7 +810,7 @@
 			"Arrow keys: Move the selected widgets by one grid step (active HMI canvas, design mode)"
 		],
 		"explorerTitle": "Explorer",
-		"explorerItems": ["F2: Rename the selected grafcet or ladder"],
+		"explorerItems": ["F2: Rename the selected grafcet, ladder or HMI page", "Delete: Delete the selected grafcet, ladder or HMI page (confirmation requested, not triggered by Backspace)"],
 		"inlineTitle": "Inline editing",
 		"inlineItems": ["Enter: Confirm the change", "Esc: Cancel the change"]
 	},

@@ -3,11 +3,11 @@
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useT } from "@/ui/i18n/useT";
 import { platformShortcut } from "@/ui/lib/platform";
-import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { useMemo } from "react";
 import { useShallow } from "zustand/shallow";
 import { AppMenuType } from "../app-menu-bar";
 import { PREFERENCES_PAGE_DATA } from "@/ui/stores/project/pages-data";
+import useCanEditProject from "@/ui/components/projects/useCanEditProject";
 
 export default function useFileMenu(): AppMenuType {
 	const {
@@ -25,9 +25,7 @@ export default function useFileMenu(): AppMenuType {
 			pagesManager: state.pagesManager,
 		})),
 	);
-	const designing = useProjectStore(
-		(state) => state.mode === ProjectMode.DESIGN,
-	);
+	const designing = useCanEditProject();
 	const t = useT("menu.file");
 
 	return useMemo(

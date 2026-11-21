@@ -1,5 +1,6 @@
 import { createRandomId } from "@/ids";
 import { nextAvailableName } from "@/lib/naming";
+import { getOwnPropertyValue } from "@/lib/object";
 import { VariableType } from "@/schemas/variable/variable.schema";
 
 export type HmiWidgetType =
@@ -457,12 +458,14 @@ abstract class HmiWidgetBase<DataType> {
 			variable?: string;
 			animations?: HmiWidgetAnimations<string>;
 		};
-		if (data.variable && renames[data.variable])
-			data.variable = renames[data.variable];
+		const newVariable = data.variable
+			? getOwnPropertyValue(renames, data.variable)
+			: undefined;
+		if (newVariable) data.variable = newVariable;
 
 		const { position, style } = data.animations ?? {};
 		const renamed = (name: string | undefined) =>
-			name && renames[name] ? renames[name] : name;
+			(name && getOwnPropertyValue(renames, name)) || name;
 		if (position) {
 			data.animations = {
 				...data.animations,

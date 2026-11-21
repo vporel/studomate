@@ -15,14 +15,18 @@ export interface NumericRange {
 	wrap: boolean;
 }
 
-/** Ramène `value` dans `range` (troncature entière, puis repli ou saturation selon `range.wrap`). */
+/**
+ * Ramène `value` dans `range` (troncature entière, puis repli ou saturation selon `range.wrap`).
+ * Une valeur non finie ne se replie pas : `±Infinity` sature aux bornes et `NaN` vaut 0.
+ */
 export function coerceToRange(value: number, range: NumericRange): number {
-	if (!Number.isFinite(value)) return value;
+	if (Number.isNaN(value)) return 0;
+	if (!Number.isFinite(value)) return value > 0 ? range.max : range.min;
 	const truncated = range.integer ? Math.trunc(value) : value;
 	if (truncated >= range.min && truncated <= range.max) return truncated;
 	if (!range.wrap) {
 		return clamp(truncated, range.min, range.max);
 	}
 	const span = range.max - range.min + 1;
-	return range.min + (((truncated - range.min) % span) + span) % span;
+	return range.min + ((((truncated - range.min) % span) + span) % span);
 }

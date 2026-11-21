@@ -1,6 +1,5 @@
 import { readJson, writeJson } from "./safe-local-storage";
 import normalizeUserProfile, { UserProfile } from "@/user-profile/user-profile";
-import { getShareTokenFromUrl } from "@/ui/stores/project/url/project-url";
 
 const STORAGE_KEY = "studomate_user_profile";
 
@@ -18,6 +17,6 @@ export function setStoredUserProfile(profile: UserProfile): void {
 }
 
 /** The profile question is asked once per browser, and never to someone opening a shared link. */
-export function shouldAskUserProfile(): boolean {
-	return getShareTokenFromUrl() === null && getStoredUserProfile() === null;
+export function shouldAskUserProfile(sharedLinkOpen: boolean): boolean {
+	return !sharedLinkOpen && getStoredUserProfile() === null;
 }

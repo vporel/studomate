@@ -1,25 +1,23 @@
 "use client";
 
+import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
+import useProjectClipboard from "@/ui/components/projects/useProjectClipboard";
+import { useT } from "@/ui/i18n/useT";
+import type { MenuTranslate } from "@/ui/lib/context-menu/context-menu";
 import { ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";
 import ContextMenu from "@/ui/lib/context-menu/ContextMenu";
 import useContextMenuBus from "@/ui/lib/context-menu/useContextMenuBus";
 import useBooleanState from "@/ui/lib/hooks/useBooleanState";
-import { OnDelete } from "@xyflow/react";
-import { XYPosition } from "@xyflow/react";
-import { useCallback, useMemo, useState } from "react";
-import useCanEdit from "@/ui/components/projects/useCanEdit";
-import useProjectClipboard from "@/ui/components/projects/useProjectClipboard";
-import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import useExportProgramPdf from "@/ui/pdf/useExportProgramPdf";
 import type { PdfExportProgramConfig } from "@/ui/pdf/usePdfExport";
-import { useT } from "@/ui/i18n/useT";
-import { useLadderContext } from "../context/LadderContext";
-import { useLadderStore } from "../context/LadderContext";
+import { OnDelete, XYPosition } from "@xyflow/react";
+import { useCallback, useMemo, useState } from "react";
+import { useLadderContext, useLadderStore } from "../context/LadderContext";
 import {
 	LadderContextMenuElement,
 	LadderContextMenuProps,
 } from "./ladder-context-menu";
-import type { MenuTranslate } from "@/ui/lib/context-menu/context-menu";
 import nodeOrEdgeContextMenuItems from "./node-or-edge-context-menu-items";
 import paneContextMenuItems from "./pane-context-menu-items";
 
@@ -45,7 +43,7 @@ const LadderContextMenu = ({
 			s.entry?.scope === "ladder" &&
 			(s.entry.data as { kind?: string })?.kind === "elements",
 	);
-	const canEdit = useCanEdit();
+	const canEdit = useCanEditActivePage();
 	const canExport = useProjectStore((s) => s.capabilities.export);
 	const getExportConfig = useCallback(
 		(): PdfExportProgramConfig => ({ type: "ladder", program: ladder }),

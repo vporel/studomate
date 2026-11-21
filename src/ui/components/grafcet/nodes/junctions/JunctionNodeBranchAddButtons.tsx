@@ -1,5 +1,6 @@
 "use client";
 
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
 import { Box } from "@mui/material";
 import { useJunctionNodeContext } from "./context/JunctionNodeContext";
 
@@ -46,6 +47,9 @@ const JunctionNodeBranchAddButton = ({
 
 const JunctionNodeBranchAddButtons = ({ top }: { top: number }) => {
 	const { branchAddButtonsPositions, onBranchAdd } = useJunctionNodeContext();
+	const canEdit = useCanEditActivePage();
+
+	if (!canEdit) return null;
 
 	return branchAddButtonsPositions.map((button) => (
 		<JunctionNodeBranchAddButton
