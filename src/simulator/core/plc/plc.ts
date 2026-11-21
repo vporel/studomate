@@ -17,15 +17,27 @@ import PLCVariable, { PLCVariableType, PLCVariableValue } from "./plc-variable";
 
 export default class PLC extends ClockedRunnable {
 	private inputImage: Record<string, PLCVariable> = {};
+	private inputImageEntries: [string, PLCVariable][] = [];
 	private outputImage: Record<string, PLCVariable> = {};
+	private outputImageEntries: [string, PLCVariable][] = [];
 	private physicalInputs: Record<string, PLCVariable> = {};
 	/** Nom → id d'entrée physique. Construit une fois : l'ensemble des E/S est figé à la
 	 * création du PLC, cet index n'a donc jamais à être invalidé. */
 	private physicalInputIdsByName = new Map<string, string>();
+	/**
+	 * `[id, variable]` pairs of the records above, referencing the same `PLCVariable` objects.
+	 * The records serve lookups by id; these arrays serve the per-cycle loops, which would
+	 * otherwise rebuild an `Object.entries` array every cycle. Built once at the end of the
+	 * constructor, valid because the set of variables never changes afterwards.
+	 */
+	private physicalInputEntries: [string, PLCVariable][] = [];
 	private physicalOutputs: Record<string, PLCVariable> = {};
 	private memory: Record<string, PLCVariable> = {};
+	private memoryEntries: [string, PLCVariable][] = [];
 	/** Table de forçage : id de variable → valeur imposée, indépendante du scope. */
 	private forcedVariables: Map<string, PLCVariableValue> = new Map();
+	/** Ids of `forcedVariables`, shared with the environment: only touched by force/release. */
+	private readonly forcedVariableIds = new Set<string>();
 	private program: PLCRoutine[];
 	/**
 	 * Registre de **toutes** les routines compilées, y compris celles jamais scannées
@@ -109,6 +121,11 @@ export default class PLC extends ClockedRunnable {
 				);
 			}
 		}
+
+		this.physicalInputEntries = Object.entries(this.physicalInputs);
+		this.inputImageEntries = Object.entries(this.inputImage);
+		this.outputImageEntries = Object.entries(this.outputImage);
+		this.memoryEntries = Object.entries(this.memory);
 
 		this.environment = new Environment(
 			[
@@ -217,14 +234,17 @@ export default class PLC extends ClockedRunnable {
 		if (this.memory[id]?.isConstant())
 			throw new Error(`"${this.memory[id].getName()}" is a constant`);
 		this.forcedVariables.set(id, value);
+		this.forcedVariableIds.add(id);
 	}
 
 	public releaseVariable(id: string): void {
 		this.forcedVariables.delete(id);
+		this.forcedVariableIds.delete(id);
 	}
 
 	public releaseAllVariables(): void {
 		this.forcedVariables.clear();
+		this.forcedVariableIds.clear();
 	}
 
 	public getForcedVariables(): ReadonlyMap<string, PLCVariableValue> {
@@ -272,20 +292,20 @@ export default class PLC extends ClockedRunnable {
 	}
 
 	private readInputs(): void {
-		Object.entries(this.physicalInputs).forEach(([id, v]) => {
+		for (const [id, v] of this.physicalInputEntries) {
 			this.inputImage[id].setValue(v.getValue());
-		});
+		}
 	}
 
 	private executeProgram(): void {
-		this.environment.setForcedVariableIds(new Set(this.forcedVariables.keys()));
-		for (const [id, v] of Object.entries(this.inputImage)) {
+		this.environment.setForcedVariableIds(this.forcedVariableIds);
+		for (const [id, v] of this.inputImageEntries) {
 			this.environment.hydrateVariableValue(id, v.getValue());
 		}
-		for (const [id, v] of Object.entries(this.outputImage)) {
+		for (const [id, v] of this.outputImageEntries) {
 			this.environment.hydrateVariableValue(id, v.getValue());
 		}
-		for (const [id, v] of Object.entries(this.memory)) {
+		for (const [id, v] of this.memoryEntries) {
 			this.environment.hydrateVariableValue(id, v.getValue());
 		}
 
@@ -302,13 +322,13 @@ export default class PLC extends ClockedRunnable {
 			routine.execute(this.environment, deltaTimeMs, this.routinesById);
 		}
 
-		for (const id of Object.keys(this.outputImage)) {
+		for (const [id] of this.outputImageEntries) {
 			this.setOutputImageValueById(
 				id,
 				this.environment.getVariableValueById(id),
 			);
 		}
-		for (const [id, variable] of Object.entries(this.memory)) {
+		for (const [id, variable] of this.memoryEntries) {
 			if (variable.isConstant()) continue;
 			this.setMemoryValueById(id, this.environment.getVariableValueById(id));
 		}
@@ -351,8 +371,8 @@ export default class PLC extends ClockedRunnable {
 	}
 
 	private writeOutputs(): void {
-		Object.entries(this.outputImage).forEach(([id, v]) => {
+		for (const [id, v] of this.outputImageEntries) {
 			this.physicalOutputs[id].setValue(v.getValue());
-		});
+		}
 	}
 }

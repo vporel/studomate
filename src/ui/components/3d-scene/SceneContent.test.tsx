@@ -6,8 +6,13 @@ import { renderWithI18n } from "@tests/utils/i18n";
 import { SceneContent } from "./SceneApp";
 import type SceneView from "./scene-view";
 
+const canvasProps = jest.fn();
+
 jest.mock("@react-three/fiber", () => ({
-	Canvas: () => null,
+	Canvas: (props: unknown) => {
+		canvasProps(props);
+		return null;
+	},
 }));
 jest.mock("@react-three/drei", () => ({
 	OrbitControls: () => null,
@@ -50,6 +55,12 @@ describe("SceneContent", () => {
 	it("shows the project title in its own window", () => {
 		renderWithI18n(<SceneContent view={createView()} />);
 		expect(screen.getByText("Parking")).toBeInTheDocument();
+	});
+
+	it("caps the canvas pixel ratio at 2", () => {
+		canvasProps.mockClear();
+		renderWithI18n(<SceneContent view={createView()} />);
+		expect(canvasProps.mock.calls[0][0].dpr).toEqual([1, 2]);
 	});
 
 	it("leaves the project title out when shown inline", () => {

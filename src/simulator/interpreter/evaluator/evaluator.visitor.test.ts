@@ -235,6 +235,22 @@ describe("EvaluatorVisitor", () => {
 			expect(parseAndEvaluate("x")).toBe(999);
 		});
 
+		it("setEnvironment avec l'environnement courant ne change pas les résultats", () => {
+			evaluator.setEnvironment(env);
+
+			expect(parseAndEvaluate("x + y")).toBe(15);
+			expect(parseAndEvaluate("x > y")).toBe(true);
+		});
+
+		it("setEnvironment sur un autre environnement reste pris en compte après un rebranchement sur le courant", () => {
+			evaluator.setEnvironment(env);
+			const other = new EnvVariable("id1", "x", "number", "IN");
+			other.setValue(7);
+			evaluator.setEnvironment(new Environment([other]));
+
+			expect(parseAndEvaluate("x")).toBe(7);
+		});
+
 		it("setDeltaTimeMs change le pas de temps vu par une temporisation", () => {
 			const input = new EnvVariable("in", "in", "boolean", "IN");
 			input.setValue(true);
@@ -293,7 +309,9 @@ describe("EvaluatorVisitor : calcul dans le type IEC 61131-3", () => {
 		evaluator = new EvaluatorVisitor(env, { timers: { deltaTimeMs: 10 } });
 	});
 	const evaluate = (expression: string) =>
-		evaluator.visit(new Parser(new Lexer(Dialect.FR).tokenize(expression)).parse());
+		evaluator.visit(
+			new Parser(new Lexer(Dialect.FR).tokenize(expression)).parse(),
+		);
 
 	it("un produit INT déborde dans son type avant d'être affecté à un DINT", () => {
 		evaluate("n := brut * 100");

@@ -182,11 +182,10 @@ export default class HmiManager extends AbstractDocumentsManager<
 		const existing = project.getHmiPage(page.id);
 		if (!existing) return;
 		if (!deepObjectsComparison(existing, page)) {
-			this.setStoreState(() => {
-				const newProject = project.copy();
-				newProject.hmiPages[page.id] = page.copy();
-				return { project: newProject, hasUnsavedChanges: true };
-			});
+			this.setStoreState(() => ({
+				project: project.copyWithHmiPage(page),
+				hasUnsavedChanges: true,
+			}));
 		}
 	}
 }

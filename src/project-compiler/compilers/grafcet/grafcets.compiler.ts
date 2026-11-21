@@ -104,6 +104,10 @@ export default class GrafcetsCompiler implements NotationCompiler {
 			string,
 			ObservableVariableRef[]
 		> = {};
+		// Each observation evaluates the receptivity alone, so that the simulation shows it true
+		// even when the upstream step is inactive or another transition has priority. It is not
+		// the transition's `fired` variable, which also requires those conditions: the two
+		// values differ and cannot stand in for each other.
 		const observationNodes: ASTNode[] = [];
 		for (const [, grafcet] of grafcets) {
 			for (const [sourceId, observation] of grafcet.transitionObservations) {

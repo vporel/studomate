@@ -67,6 +67,7 @@ export default class EvaluatorVisitor extends BaseVisitor<EnvVariableValue> {
 	/** Rebranche l'évaluateur (et ses sous-évaluateurs) sur un autre environnement — permet à
 	 * `PLCRoutine` de réutiliser la même instance de cycle en cycle plutôt que d'en recréer une. */
 	setEnvironment(environment: Environment): void {
+		if (environment === this.env) return;
 		this.env = environment;
 		this.numericTypeAnalyser = new NumericTypeAnalyserVisitor(environment);
 		this.timerEvaluator.setEnvironment(environment);
@@ -152,7 +153,10 @@ export default class EvaluatorVisitor extends BaseVisitor<EnvVariableValue> {
 
 	/** `TIME` counts whole milliseconds and an internal variable holds an integer (elapsed time,
 	 * counter value): their quotient truncates like an integer one, unless a real is involved. */
-	private truncatesDivision(node: ArithmeticExpressionNode, type: NumericType): boolean {
+	private truncatesDivision(
+		node: ArithmeticExpressionNode,
+		type: NumericType,
+	): boolean {
 		let truncates = this.divisionTruncation.get(node);
 		if (truncates === undefined) {
 			truncates =

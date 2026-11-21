@@ -490,6 +490,19 @@ export default class Project {
 	}
 
 	/**
+	 * Copy of the project where only `page` (same id as an existing page) is replaced: the
+	 * programs, the variables and the other HMI pages are reused by reference, and `page` is
+	 * adopted as is, without a copy. The `programs` and `hmiPages` records are distinct from
+	 * the original's.
+	 */
+	copyWithHmiPage(page: HmiPage): Project {
+		const newProject = Project.rehydrate(this);
+		newProject.programs = { ...this.programs };
+		newProject.hmiPages = { ...this.hmiPages, [page.id]: page };
+		return newProject;
+	}
+
+	/**
 	 * Whether raw data, already migrated to the current schema version, has the minimal shape
 	 * `createFromJSON` needs to rebuild a coherent project.
 	 */

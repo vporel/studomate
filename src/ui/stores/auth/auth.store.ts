@@ -1,4 +1,3 @@
-import HybridProjectRepository from "@/persistence/repositories/hybrid.project.repository";
 import { SESSION_LOOKUP_TIMEOUT_MS } from "@/persistence/repositories/session-lookup";
 import { supabase } from "@/persistence/repositories/supabase-client";
 import { User } from "@supabase/supabase-js";
@@ -262,6 +261,8 @@ export const authStore = createStore<AuthStoreState>((set, get) => ({
 			return { ok: false, code };
 		}
 
+		const { default: HybridProjectRepository } =
+			await import("@/persistence/repositories/hybrid.project.repository");
 		const repatriation =
 			await new HybridProjectRepository().moveAllCloudToLocal();
 		if (!repatriation.ok) return { ok: false, code: "repatriationFailed" };

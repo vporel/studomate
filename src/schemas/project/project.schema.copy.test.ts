@@ -101,3 +101,59 @@ describe("Project.copyWithProgram", () => {
 		expect(next.dialect).toBe(project.dialect);
 	});
 });
+
+describe("Project.copyWithHmiPage", () => {
+	function makeProjectWithPages() {
+		const { project, g1, mainId } = makeProject();
+		const page1 = project.createHmiPage("Vue 1");
+		const page2 = project.createHmiPage("Vue 2");
+		return { project, g1, mainId, page1, page2 };
+	}
+
+	it("remplace la page de même id, adoptée telle quelle", () => {
+		const { project, page1 } = makeProjectWithPages();
+		const edited = page1.copy();
+		edited.name = "Vue 1 modifiée";
+
+		const next = project.copyWithHmiPage(edited);
+
+		expect(next).toBeInstanceOf(Project);
+		expect(next.getHmiPage(page1.id)).toBe(edited);
+		expect(project.getHmiPage(page1.id)!.name).toBe("Vue 1");
+	});
+
+	it("réutilise par référence les autres pages, les programmes et les variables", () => {
+		const { project, g1, mainId, page1, page2 } = makeProjectWithPages();
+
+		const next = project.copyWithHmiPage(page1.copy());
+
+		expect(next.getHmiPage(page2.id)).toBe(page2);
+		expect(next.getGrafcet(g1.id)).toBe(g1);
+		expect(next.getProgram(mainId)).toBe(project.getProgram(mainId));
+		expect(next.variables).toBe(project.variables);
+	});
+
+	it("ne partage ni le record `hmiPages` ni le record `programs` avec l'original", () => {
+		const { project, g1, page2 } = makeProjectWithPages();
+
+		const next = project.copyWithHmiPage(project.getHmiPage(page2.id)!.copy());
+		next.deleteHmiPage(page2.id);
+		next.deleteProgram(g1.id);
+
+		expect(next.getHmiPage(page2.id)).toBeUndefined();
+		expect(project.getHmiPage(page2.id)).toBeDefined();
+		expect(next.getGrafcet(g1.id)).toBeUndefined();
+		expect(project.getGrafcet(g1.id)).toBeDefined();
+	});
+
+	it("conserve l'identité du projet (id, nom, auteur, dialecte)", () => {
+		const { project, page1 } = makeProjectWithPages();
+
+		const next = project.copyWithHmiPage(page1.copy());
+
+		expect(next.id).toBe(project.id);
+		expect(next.name).toBe(project.name);
+		expect(next.author).toBe(project.author);
+		expect(next.dialect).toBe(project.dialect);
+	});
+});

@@ -222,6 +222,26 @@ describe("HmiManager", () => {
 		});
 	});
 
+	describe("updateHmiPageData (copie du projet)", () => {
+		it("adopte la page fournie et garde la référence des autres pages et des programmes", () => {
+			const project = new Project("p1", "Projet", "");
+			const page = project.createHmiPage("Vue 1");
+			const other = project.createHmiPage("Vue 2");
+			const { manager, getState } = makeManager({ project });
+			const edited = page.copy();
+			edited.name = "Modifiée";
+
+			manager.updateHmiPageData(edited);
+
+			const next = getState().project!;
+			expect(next.getHmiPage(page.id)).toBe(edited);
+			expect(next.getHmiPage(other.id)).toBe(other);
+			expect(next.getProgram(project.main.id)).toBe(
+				project.getProgram(project.main.id),
+			);
+		});
+	});
+
 	describe("openHmiSimulationPageIfAny", () => {
 		it("ouvre l'onglet et affiche la page principale si le projet a au moins une page HMI", () => {
 			const project = new Project("p1", "Projet", "");

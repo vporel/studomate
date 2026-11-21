@@ -217,6 +217,61 @@ describe("computeEnergizedEdges", () => {
 		expect(computeEnergizedEdges(ladder, { ...state })).not.toBe(first); // nouvelle référence → recalcul
 	});
 
+	describe("plusieurs ladders simulés en alternance", () => {
+		const buildLadder = (id: string) => {
+			const other = new Ladder(id, id);
+			const section = other.sections[0].id;
+			other.addElements(section, [
+				{
+					id: "rail1",
+					type: "railTerminal",
+					data: {},
+					position: { row: 0, col: 0 },
+				},
+				{
+					id: "coil1",
+					type: "coil",
+					data: { variable: "Q1", type: "normal" },
+					position: { row: 0, col: 1 },
+				},
+			]);
+			other.addConnections(section, [
+				new Connection(
+					"c1",
+					{ id: "rail1", type: "railTerminal", handle: "source" },
+					{ id: "coil1", type: "coil", handle: "target" },
+				),
+			]);
+			return other;
+		};
+
+		it("garde le résultat mémoïsé de chaque ladder", () => {
+			const second = buildLadder("ladder2");
+			const stateA: Record<string, SimulationVariableState> = {};
+			const stateB: Record<string, SimulationVariableState> = {};
+			const a = buildLadder("a");
+			const resultA = computeEnergizedEdges(a, stateA);
+			const resultB = computeEnergizedEdges(second, stateB);
+
+			expect(computeEnergizedEdges(a, stateA)).toBe(resultA);
+			expect(computeEnergizedEdges(second, stateB)).toBe(resultB);
+		});
+
+		it("un nouvel état pour un ladder ne touche pas le résultat de l'autre", () => {
+			const a = buildLadder("a");
+			const b = buildLadder("b");
+			const stateA: Record<string, SimulationVariableState> = {};
+			const stateB: Record<string, SimulationVariableState> = {};
+			const resultA = computeEnergizedEdges(a, stateA);
+			const resultB = computeEnergizedEdges(b, stateB);
+
+			const newResultA = computeEnergizedEdges(a, { ...stateA });
+
+			expect(newResultA).not.toBe(resultA);
+			expect(computeEnergizedEdges(b, stateB)).toBe(resultB);
+		});
+	});
+
 	it("un bloc timer ne relaie le courant que lorsque sa sortie Q est vraie", () => {
 		ladder.addElements(sectionId, [
 			{
