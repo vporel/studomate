@@ -7,7 +7,6 @@ import {
 } from "@/3d-scenes/scene.registry";
 import { getCandidateVariables } from "@/3d-scenes/scene3d-wiring";
 import { useT } from "@/ui/i18n/useT";
-import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import {
 	Box,
 	Button,
@@ -30,6 +29,7 @@ import Page from "./Page";
 import SceneChoiceModal from "./SceneChoiceModal";
 import { whiteFieldSx } from "./hardware/hardware-target-editor";
 import { SCENE3D_CONFIGURATION_PAGE_ID } from "@/ui/stores/project/pages-data";
+import { canEditProject } from "@/ui/stores/project/editability";
 
 const NO_VARIABLE = "";
 
@@ -49,7 +49,7 @@ const Scene3dConfigurationPage = () => {
 		useShallow((state) => ({
 			scene: state.project?.scene3d ?? null,
 			variables: state.project?.variables,
-			designing: state.mode === ProjectMode.DESIGN,
+			designing: canEditProject(state),
 			setScene3d: state.setScene3d,
 			createMissingVariables: state.createMissingScene3dVariables,
 			scene3dDisplayManager: state.scene3dDisplayManager,

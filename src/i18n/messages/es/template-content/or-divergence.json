@@ -1,0 +1,8 @@
+{
+	"statement": "## Divergencia en O\n\nEntradas: `cycle_start1`, `cycle_start2`, `end1`, `end2`. Salidas: `output1`, `output2`.\n\n### Trabajo a realizar\n\n1. Con `cycle_start1`, activa `output1`; con `end1`, vuelve al estado inicial.\n2. Con `cycle_start2` (excluyente con `cycle_start1`), activa `output2`; con `end2`, vuelve al estado inicial.\n3. Da la misma receptividad a las dos ramas y lee el mensaje del panel de análisis,\n   y luego restablece receptividades excluyentes.",
+	"texts": {
+		"projectName": "Divergencia en O",
+		"solutionName": "Divergencia en O: solución",
+		"grafcetName": "Divergencia en O"
+	}
+}

@@ -2,10 +2,13 @@ import PlcScenario from "@tests/utils/plc-scenario";
 import Project from "@/schemas/project/project.schema";
 import {
 	coil,
+	fallingCoil,
 	invertedCoil,
+	nf,
 	no,
 	or,
 	resetCoil,
+	risingCoil,
 	section,
 	setCoil,
 	setMainSections,
@@ -78,5 +81,62 @@ describe("coils in parallel in a network", () => {
 		expect(scenario.get("Q1")).toBe(true);
 		expect(scenario.get("Q2")).toBe(false);
 		scenario.stop();
+	});
+	describe("avec une bobine de front entre les bobines normales", () => {
+		//La condition `Start ET NON Motor` dépend de la première bobine : si une bobine suivante
+		//la réévaluait après l'écriture de `Motor`, elle verrait `Motor` vrai et resterait fausse.
+		const build = (edge: "rising" | "falling") => {
+			const project = new Project("p", "edge coil in a fork", "");
+			project.variables.push(
+				input("Start"),
+				memory("Motor"),
+				memory("Pulse"),
+				memory("Lamp"),
+			);
+			setMainSections(project, [
+				section(
+					"fork",
+					"",
+					no("Start"),
+					nf("Motor"),
+					or(
+						[coil("Motor")],
+						[edge === "rising" ? risingCoil("Pulse") : fallingCoil("Pulse")],
+						[coil("Lamp")],
+					),
+				),
+			]);
+			return new PlcScenario(project);
+		};
+
+		it("évalue l'alimentation une seule fois pour toutes les bobines, front montant compris", async () => {
+			const scenario = build("rising");
+			scenario.set("Start", true);
+			await scenario.cycles(1);
+
+			expect(scenario.get("Motor")).toBe(true);
+			expect(scenario.get("Lamp")).toBe(true);
+			expect(scenario.get("Pulse")).toBe(true);
+
+			await scenario.cycles(1);
+			expect(scenario.get("Pulse")).toBe(false);
+			scenario.stop();
+		});
+
+		it("détecte le front descendant de l'alimentation à travers le groupe", async () => {
+			const scenario = build("falling");
+			scenario.set("Start", true);
+			await scenario.cycles(1);
+			expect(scenario.get("Pulse")).toBe(false);
+
+			scenario.set("Start", false);
+			await scenario.cycles(1);
+			expect(scenario.get("Pulse")).toBe(true);
+			expect(scenario.get("Lamp")).toBe(false);
+
+			await scenario.cycles(1);
+			expect(scenario.get("Pulse")).toBe(false);
+			scenario.stop();
+		});
 	});
 });

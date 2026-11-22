@@ -6,10 +6,9 @@ import WHATS_NEW_SLIDE_IDS, {
 	WHATS_NEW_VERSION,
 	type WhatsNewSlideId,
 } from "@/whats-new/whats-new-slides";
-import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
 import CloseIcon from "@mui/icons-material/Close";
-import LinkIcon from "@mui/icons-material/Link";
-import ViewInArIcon from "@mui/icons-material/ViewInAr";
+import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
+import TranslateIcon from "@mui/icons-material/Translate";
 import {
 	Box,
 	Button,
@@ -22,10 +21,9 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 
-const SLIDE_ICONS: Record<WhatsNewSlideId, typeof AutoFixHighIcon> = {
-	grafcetEditor: AutoFixHighIcon,
-	actionChains: LinkIcon,
-	scene3dDisplay: ViewInArIcon,
+const SLIDE_ICONS: Record<WhatsNewSlideId, typeof TranslateIcon> = {
+	spanishLanguage: TranslateIcon,
+	imageExport: ImageOutlinedIcon,
 };
 
 export default function WhatsNewModal({ onClose }: { onClose: () => void }) {

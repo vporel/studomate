@@ -1,6 +1,4 @@
-import Project, {
-	DEFAULT_PROJECT_NAME,
-} from "@/schemas/project/project.schema";
+import Project from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
 import type { Locale } from "@/i18n/config";
 import { PROJECT_TEMPLATES } from "@/templates/index";
@@ -10,21 +8,17 @@ import {
 	isShareable,
 	SaveFailureReason,
 } from "@/persistence/repositories/project.repository";
-import { toast } from "react-toastify";
-import {
-	Draft,
-	deleteDraft,
-	getDraft,
-	parseDraftProject,
-	saveDraft,
-} from "@/persistence/draft.storage";
+import type { Draft } from "@/persistence/draft.storage";
 import type { PagesSession } from "@/persistence/pages-session.storage";
-import type { ProjectStoreEnvironment } from "../environment/project-store-environment";
-import { getT } from "@/ui/i18n/translateGlobal";
+import {
+	requirePersistence,
+	type ProjectStoreEnvironment,
+} from "../environment/project-store-environment";
 import {
 	getInitialPagesData,
 	restorePagesSession,
 } from "../pages-session-restore";
+import defaultContent from "../default-content";
 import resolveDefaultDialect from "../default-dialect";
 import resolveSaveLocationIfNeeded from "../save-location";
 import {
@@ -40,10 +34,6 @@ const SAVE_FAILURE_KEYS: Record<SaveFailureReason, string> = {
 	conflict: "conflict",
 	unknown: "generic",
 };
-
-function saveFailureMessage(reason: SaveFailureReason): string {
-	return getT("toasts.save")(SAVE_FAILURE_KEYS[reason] as never);
-}
 
 const AUTO_SAVE_INTERVAL_MS = 30_000;
 
@@ -166,17 +156,66 @@ export default class ProjectLifecycleManager {
 	}
 
 	private async createBlankProject(): Promise<Project> {
-		const project = new Project(createRandomId(), DEFAULT_PROJECT_NAME, "");
+		const project = new Project(
+			createRandomId(),
+			defaultContent(this.env.getLocale()).projectName,
+			"",
+		);
 		const dialect = await resolveDefaultDialect(this.setStoreState, this.env);
 		if (dialect) project.setDialect(dialect);
 		return project;
+	}
+
+	private get drafts() {
+		return requirePersistence(this.env, "Drafts").drafts;
+	}
+
+	/** `key` is relative to the `toasts` messages. */
+	private notifyError(key: string): void {
+		this.env.notifications.error(this.env.translate("toasts")(key));
+	}
+
+	private notifySaveFailure(reason: SaveFailureReason): void {
+		this.env.notifications.error(
+			this.env.translate("toasts.save")(SAVE_FAILURE_KEYS[reason]),
+		);
 	}
 
 	// Abandon explicite des modifications en cours : le brouillon auto-sauvegardé du projet
 	// courant ne doit pas ressusciter les changements rejetés à la prochaine ouverture.
 	private discardCurrentDraft(): void {
 		const project = this.getStoreState().project;
-		if (project) deleteDraft(project.id);
+		if (project) this.drafts.delete(project.id);
+	}
+
+	/**
+	 * Runs `proceed` right away when the project has no unsaved changes; otherwise asks for
+	 * confirmation first. `onDiscard` only runs once the user chooses to continue without saving,
+	 * right before `proceed`.
+	 */
+	async guardUnsavedChanges(
+		proceed: () => void | Promise<void>,
+		{
+			message = null,
+			onDiscard,
+		}: { message?: string | null; onDiscard?: () => void } = {},
+	): Promise<void> {
+		if (!this.getStoreState().hasUnsavedChanges) {
+			await proceed();
+			return;
+		}
+		this.setStoreState((state) => ({
+			ui: {
+				...state.ui,
+				unsavedChangesDialogVisible: true,
+				unsavedChangesDialogMessage: message,
+				onUnsavedChangesDialogCancel: null,
+				onUnsavedChangesDialogContinue: () => {
+					onDiscard?.();
+					void proceed();
+				},
+			},
+		}));
 	}
 
 	private async doCloseProject(): Promise<void> {
@@ -256,11 +295,11 @@ export default class ProjectLifecycleManager {
 			// projet enregistré. Deux raisons : réamorcer la version de concurrence optimiste du
 			// repository (sans quoi l'enregistrement suivant partirait en faux conflit), et
 			// détecter qu'un autre appareil a écrit depuis la dernière sauvegarde du brouillon.
-			const draft = getDraft(projectId);
-			const draftProject = draft ? parseDraftProject(draft.data) : null;
+			const draft = this.drafts.get(projectId);
+			const draftProject = draft ? this.drafts.parse(draft.data) : null;
 			if (draft && !draftProject) {
 				// Brouillon illisible : suppression et repli sur le projet réel
-				deleteDraft(projectId);
+				this.drafts.delete(projectId);
 			}
 			const stored = await get().projectRepository.get(projectId);
 			if (draft && draftProject) {
@@ -281,7 +320,7 @@ export default class ProjectLifecycleManager {
 			// Ouverture délibérée : charger le projet réel, puis vérifier le brouillon
 			project = await get().projectRepository.get(projectId);
 			if (project) {
-				const draft = getDraft(projectId);
+				const draft = this.drafts.get(projectId);
 				if (draft) {
 					if (draft.savedAt > project.lastModificationDate.getTime()) {
 						// Brouillon plus récent : proposer le choix via modale
@@ -289,7 +328,7 @@ export default class ProjectLifecycleManager {
 						return true;
 					} else {
 						// Brouillon périmé : suppression silencieuse
-						deleteDraft(projectId);
+						this.drafts.delete(projectId);
 					}
 				}
 			}
@@ -314,7 +353,7 @@ export default class ProjectLifecycleManager {
 			? await repo.getByShareToken(token)
 			: null;
 		if (!project) {
-			toast.error(getT("toasts")("shareLinkOpenFailed"));
+			this.notifyError("shareLinkOpenFailed");
 			return false;
 		}
 		await this.openAndRestore(project, { shared: true, unsaved: false });
@@ -329,25 +368,11 @@ export default class ProjectLifecycleManager {
 
 	async newProject(): Promise<void> {
 		const set = this.setStoreState;
-		const get = this.getStoreState;
 		const openModal = () =>
 			set((state) => ({ ui: { ...state.ui, newProjectModalVisible: true } }));
-		if (!get().hasUnsavedChanges) {
-			openModal();
-			return;
-		}
-		set((state) => ({
-			ui: {
-				...state.ui,
-				unsavedChangesDialogVisible: true,
-				unsavedChangesDialogMessage: null,
-				onUnsavedChangesDialogCancel: null,
-				onUnsavedChangesDialogContinue: () => {
-					this.discardCurrentDraft();
-					openModal();
-				},
-			},
-		}));
+		await this.guardUnsavedChanges(openModal, {
+			onDiscard: () => this.discardCurrentDraft(),
+		});
 	}
 
 	async newProjectFromTemplate(
@@ -397,13 +422,23 @@ export default class ProjectLifecycleManager {
 		const set = this.setStoreState;
 		const get = this.getStoreState;
 		const project = get().project;
-		if (!project) return false;
+		if (!project || get().savingProject) return false;
 		// Projet ouvert en lecture seule via un lien de partage : Enregistrer = Enregistrer sous
 		if (get().isSharedProject) {
 			set((state) => ({ ui: { ...state.ui, saveAsModalVisible: true } }));
 			return false;
 		}
 		set(() => ({ savingProject: true }));
+		try {
+			return await this.saveOpenProject(project);
+		} finally {
+			set(() => ({ savingProject: false }));
+		}
+	}
+
+	private async saveOpenProject(project: Project): Promise<boolean> {
+		const set = this.setStoreState;
+		const get = this.getStoreState;
 		if (this.unprimedDraft?.projectId === project.id) {
 			const stored = await get().projectRepository.get(project.id);
 			if (
@@ -411,7 +446,6 @@ export default class ProjectLifecycleManager {
 				stored.lastModificationDate.getTime() > this.unprimedDraft.draftSavedAt
 			) {
 				set((state) => ({
-					savingProject: false,
 					ui: { ...state.ui, cloudConflictModalVisible: true },
 				}));
 				return false;
@@ -424,10 +458,7 @@ export default class ProjectLifecycleManager {
 			set,
 			this.env,
 		);
-		if (location === "cancelled") {
-			set(() => ({ savingProject: false }));
-			return false;
-		}
+		if (location === "cancelled") return false;
 
 		const newProject = project.copy();
 		newProject.touch(); //Update the project's last modified date
@@ -436,14 +467,13 @@ export default class ProjectLifecycleManager {
 		if (!result.ok) {
 			//Ne jamais annoncer un enregistrement qui n'a pas eu lieu : le projet reste
 			//marqué comme modifié pour que l'utilisateur puisse réessayer
-			set(() => ({ savingProject: false }));
 			if (result.reason === "conflict") {
 				set((state) => ({
 					ui: { ...state.ui, cloudConflictModalVisible: true },
 				}));
 				return false;
 			}
-			toast.error(saveFailureMessage(result.reason));
+			this.notifySaveFailure(result.reason);
 			console.error("Failed to save the project:", result.cause);
 			return false;
 		}
@@ -451,7 +481,7 @@ export default class ProjectLifecycleManager {
 		// Edits made during the await replace `project` with a new object: they live only in
 		// the store and the draft, so both must survive.
 		if (get().project !== project) {
-			set(() => ({ autoSaveUnavailable: false, savingProject: false }));
+			set(() => ({ autoSaveUnavailable: false }));
 			return true;
 		}
 
@@ -459,9 +489,8 @@ export default class ProjectLifecycleManager {
 			project: newProject,
 			hasUnsavedChanges: false,
 			autoSaveUnavailable: false,
-			savingProject: false,
 		}));
-		deleteDraft(newProject.id);
+		this.drafts.delete(newProject.id);
 		this.unprimedDraft = null;
 		return true;
 	}
@@ -471,56 +500,42 @@ export default class ProjectLifecycleManager {
 		const set = this.setStoreState;
 		const get = this.getStoreState;
 		const project = get().project;
-		if (!project) return false;
+		if (!project || get().savingProject) return false;
 		const copy = project.copy();
 		copy.id = createRandomId();
 		copy.name = name.trim() || project.name;
 		copy.touch();
 
 		set(() => ({ savingProject: true }));
-		const location = await resolveSaveLocationIfNeeded(
-			copy,
-			get,
-			set,
-			this.env,
-		);
-		if (location === "cancelled") {
-			set(() => ({ savingProject: false }));
-			return false;
-		}
+		try {
+			const location = await resolveSaveLocationIfNeeded(
+				copy,
+				get,
+				set,
+				this.env,
+			);
+			if (location === "cancelled") return false;
 
-		const result = await get().projectRepository.save(copy, location);
-		if (!result.ok) {
+			const result = await get().projectRepository.save(copy, location);
+			if (!result.ok) {
+				this.notifySaveFailure(result.reason);
+				console.error("Failed to save the project:", result.cause);
+				return false;
+			}
+			await this.doOpenProject(copy);
+			set(() => ({ hasUnsavedChanges: false }));
+			// Le brouillon de l'original n'est pas supprimé : seul un enregistrement explicite
+			// sur ce projet l'effacera. La copie démarre sans brouillon.
+			return true;
+		} finally {
 			set(() => ({ savingProject: false }));
-			toast.error(saveFailureMessage(result.reason));
-			console.error("Failed to save the project:", result.cause);
-			return false;
 		}
-		await this.doOpenProject(copy);
-		set(() => ({ hasUnsavedChanges: false, savingProject: false }));
-		// Le brouillon de l'original n'est pas supprimé : seul un enregistrement explicite
-		// sur ce projet l'effacera. La copie démarre sans brouillon.
-		return true;
 	}
 
 	async closeProject(): Promise<void> {
-		const get = this.getStoreState;
-		if (!get().hasUnsavedChanges) {
-			await this.doCloseProject();
-			return;
-		}
-		this.setStoreState((state) => ({
-			ui: {
-				...state.ui,
-				unsavedChangesDialogVisible: true,
-				unsavedChangesDialogMessage: null,
-				onUnsavedChangesDialogCancel: null,
-				onUnsavedChangesDialogContinue: () => {
-					this.discardCurrentDraft();
-					void this.doCloseProject();
-				},
-			},
-		}));
+		await this.guardUnsavedChanges(() => this.doCloseProject(), {
+			onDiscard: () => this.discardCurrentDraft(),
+		});
 	}
 
 	async resolveDraftConflict(choice: "draft" | "real"): Promise<void> {
@@ -540,22 +555,22 @@ export default class ProjectLifecycleManager {
 		}));
 		if (choice === "draft" && draftData) {
 			try {
-				const project = parseDraftProject(draftData);
+				const project = this.drafts.parse(draftData);
 				if (!project) throw new Error("Unreadable draft");
 				await this.openAndRestore(project, {
 					shared: false,
 					unsaved: true,
 				});
 			} catch {
-				toast.error(getT("toasts")("draftCorrupted"));
+				this.notifyError("draftCorrupted");
 			}
 		} else {
 			// Partir du projet réel : supprimer le brouillon puis (re)charger et ouvrir
 			// le projet enregistré (l'ouverture délibérée s'est arrêtée à la modale)
-			deleteDraft(projectId);
+			this.drafts.delete(projectId);
 			const project = await get().projectRepository.get(projectId);
 			if (!project) {
-				toast.error(getT("toasts")("projectReloadFailed"));
+				this.notifyError("projectReloadFailed");
 				return;
 			}
 			await this.openAndRestore(project, {
@@ -584,10 +599,10 @@ export default class ProjectLifecycleManager {
 		if (!project) return;
 		const reloaded = await get().projectRepository.get(project.id);
 		if (!reloaded) {
-			toast.error(getT("toasts")("cloudReloadFailed"));
+			this.notifyError("cloudReloadFailed");
 			return;
 		}
-		deleteDraft(project.id);
+		this.drafts.delete(project.id);
 		await this.openAndRestore(reloaded, { shared: false, unsaved: false });
 	}
 
@@ -601,7 +616,11 @@ export default class ProjectLifecycleManager {
 			this.getStoreState();
 		if (!project || !hasUnsavedChanges) return true;
 		if (isSharedProject) return false;
-		const result = saveDraft(project.id, project.name, JSON.stringify(project));
+		const result = this.drafts.save(
+			project.id,
+			project.name,
+			JSON.stringify(project),
+		);
 		this.setStoreState(() => ({ autoSaveUnavailable: !result.ok }));
 		if (!result.ok) {
 			console.error("Auto-save of the draft failed:", result.reason);

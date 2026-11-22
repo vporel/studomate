@@ -6,6 +6,7 @@ import Variable from "@/schemas/variable/variable.schema";
 import GrafcetAnalyser from "./analysers/grafcet/grafcet.analyser";
 import LadderAnalyser from "./analysers/ladder/ladder.analyser";
 import analyseConstants from "./constants.analyser";
+import analyseVariables from "./variables.analyser";
 import analyseHardwareTarget from "./hardware-target.analyser";
 import analyseScene3d from "./scene3d.analyser";
 import ProjectAnalyserIssue from "./project.analyser.issue";
@@ -52,12 +53,8 @@ export default class ProjectAnalyser {
 		// `<Nom>.IN/.Q/.ET` d'un bloc tempo...), sans encore rien analyser — un programme ne peut
 		// valider ses propres références qu'après avoir vu ce que TOUS les autres génèrent (voir
 		// `ProgramAnalyser.generateVariables`).
-		const executedPrograms = project
-			.getExecutedPrograms()
-			.filter(
-				(program) => !(program.isEmpty() && program.isSkippedWhenEmpty()),
-			);
-		for (const program of executedPrograms) {
+		const analysedPrograms = project.getAnalysedPrograms();
+		for (const program of analysedPrograms) {
 			const analyser = PROGRAM_ANALYSERS[program.type];
 			if (!analyser) continue;
 			generatedVariablesByProgram.set(
@@ -73,7 +70,7 @@ export default class ProjectAnalyser {
 
 		// Seconde passe : analyse réelle, chaque programme voyant l'ensemble complet des
 		// variables du projet (les siennes propres et celles de tous les autres).
-		for (const program of executedPrograms) {
+		for (const program of analysedPrograms) {
 			const analyser = PROGRAM_ANALYSERS[program.type];
 			if (!analyser) {
 				issues.push(
@@ -103,6 +100,7 @@ export default class ProjectAnalyser {
 		}
 
 		issues.push(...analyseConstants(project));
+		issues.push(...analyseVariables(project));
 		issues.push(...analyseHardwareTarget(project));
 		issues.push(...analyseScene3d(project));
 

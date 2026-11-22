@@ -373,9 +373,9 @@ describe("TransitionCompiler", () => {
 			const activated = activation.trueBranch.map((n: any) => n.left.value);
 			expect(activated).toContain("X1");
 			expect(activated).toContain("X2");
-			expect(activation.trueBranch.every((n: any) => n.right.value === true)).toBe(
-				true,
-			);
+			expect(
+				activation.trueBranch.every((n: any) => n.right.value === true),
+			).toBe(true);
 		});
 
 		it("OR divergence: adds NOT(T_prior) to condition for lower-priority branch", () => {
@@ -443,7 +443,8 @@ describe("TransitionCompiler", () => {
 		it("OR divergence: l'exclusion utilise le pureNode de la transition prioritaire (pas son TimerNode)", () => {
 			// trans-1 : réceptivité temporisée — node = TimerNode, pureNode = lecture de la sortie
 			const timerNode = { type: "TIMER_BLOCK", timerType: "TON" } as any;
-			const timerOutputRead = IdentifiersBuilder.buildIdentifierNode("_timerOut");
+			const timerOutputRead =
+				IdentifiersBuilder.buildIdentifierNode("_timerOut");
 
 			const preCompiledTrans1: PreCompiledTransition = {
 				node: timerNode,
@@ -486,6 +487,115 @@ describe("TransitionCompiler", () => {
 			// NOT(...) enveloppe la lecture de la sortie de tempo, jamais le TIMER_BLOCK
 			expect(fired2.right.right.operator).toBe("NOT");
 			expect(fired2.right.right.expr).toBe(timerOutputRead);
+		});
+		describe("inconsistent pre-compiled grafcet", () => {
+			const buildTransition = (
+				overrides: Partial<PreCompiledTransition> = {},
+			): PreCompiledTransition => {
+				const node = IdentifiersBuilder.buildIdentifierNode("I0");
+				return {
+					node,
+					pureNode: node,
+					timers: [],
+					timerElapsedVariables: [],
+					predecessorStepsIds: ["step-0"],
+					successorStepsIds: ["step-1"],
+					orPriorityExclusionTransitionIds: [],
+					...overrides,
+				};
+			};
+			const steps = [
+				{ id: "step-0", varName: "X0", initial: true },
+				{ id: "step-1", varName: "X1" },
+			];
+
+			it("throws when the fired variable of the transition is missing", () => {
+				const transition = buildTransition();
+				const { preCompiledGrafcet, memos } = makeGrafcet(steps, [
+					{ id: "trans-1", preCompiledTransition: transition },
+				]);
+				preCompiledGrafcet.firedVariables.delete("trans-1");
+
+				expect(() =>
+					TransitionCompiler.compile(
+						"trans-1",
+						transition,
+						preCompiledGrafcet,
+						memos,
+					),
+				).toThrow("No fired variable found for transition trans-1");
+			});
+
+			it("throws when the memo of a predecessor step is missing", () => {
+				const transition = buildTransition();
+				const { preCompiledGrafcet, memos } = makeGrafcet(steps, [
+					{ id: "trans-1", preCompiledTransition: transition },
+				]);
+				memos.delete("step-0");
+
+				expect(() =>
+					TransitionCompiler.compile(
+						"trans-1",
+						transition,
+						preCompiledGrafcet,
+						memos,
+					),
+				).toThrow(
+					"No memo node found for predecessor step step-0 on transition trans-1",
+				);
+			});
+
+			it("throws when the pre-compiled node of a prior transition is missing", () => {
+				const transition = buildTransition({
+					orPriorityExclusionTransitionIds: ["trans-0"],
+				});
+				const { preCompiledGrafcet, memos } = makeGrafcet(steps, [
+					{ id: "trans-1", preCompiledTransition: transition },
+				]);
+
+				expect(() =>
+					TransitionCompiler.compile(
+						"trans-1",
+						transition,
+						preCompiledGrafcet,
+						memos,
+					),
+				).toThrow("No pre-compiled node found for prior transition trans-0");
+			});
+
+			it("throws when a predecessor step is not pre-compiled", () => {
+				const transition = buildTransition();
+				const { preCompiledGrafcet, memos } = makeGrafcet(steps, [
+					{ id: "trans-1", preCompiledTransition: transition },
+				]);
+				preCompiledGrafcet.steps.delete("step-0");
+
+				expect(() =>
+					TransitionCompiler.compile(
+						"trans-1",
+						transition,
+						preCompiledGrafcet,
+						memos,
+					),
+				).toThrow("No pre-compiled node found for predecessor step step-0");
+			});
+
+			it("throws when a successor step is not pre-compiled", () => {
+				const transition = buildTransition();
+				const { preCompiledGrafcet, memos } = makeGrafcet(steps, [
+					{ id: "trans-1", preCompiledTransition: transition },
+				]);
+				preCompiledGrafcet.steps.delete("step-1");
+
+				expect(() =>
+					TransitionCompiler.compile(
+						"trans-1",
+						transition,
+						preCompiledGrafcet,
+						memos,
+					),
+				).toThrow("No pre-compiled node found for successor step step-1");
+			});
 		});
 	});
 });

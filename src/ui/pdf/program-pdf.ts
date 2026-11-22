@@ -2,8 +2,8 @@ import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import { LadderRenderContext } from "@/ui/pdf/drawing/ladder-render-context";
 import renderProgramScenes from "@/ui/pdf/drawing/program-scene";
-import { JsPdfExporter } from "@/ui/lib/pdf/jspdf.pdf-exporter";
-import { PdfExportSection } from "@/ui/lib/pdf/pdf-exporter";
+import { JsPdfExporter } from "@/ui/pdf/jspdf.pdf-exporter";
+import { PdfExportSection, PdfPageFrame } from "@/ui/pdf/pdf-exporter";
 
 export type ProgramExportConfig =
 	{ type: "grafcet"; program: Grafcet } | { type: "ladder"; program: Ladder };
@@ -45,9 +45,11 @@ export async function exportProgramPdf(params: {
 	filename: string;
 	sectionTitle: string;
 	ladderContext?: LadderRenderContext;
+	pageFrame?: PdfPageFrame;
 }): Promise<void> {
 	await new JsPdfExporter().export({
 		filename: params.filename,
+		pageFrame: params.pageFrame,
 		sections: [
 			buildProgramSection(
 				params.config,

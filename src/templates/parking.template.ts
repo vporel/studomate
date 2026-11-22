@@ -22,6 +22,7 @@ import {
 	TRANSITION_HANDLE_SOURCE_SUCCESSOR,
 } from "@/schemas/grafcet/transition.schema";
 import ParkingDescriptor from "@/3d-scenes/parking/v1/parking.descriptor";
+import { buildSuggestedScene3d } from "@/3d-scenes/scene3d-wiring";
 import { PARKING_CAPACITY } from "@/3d-scenes/parking/v1/parking.model";
 import Project from "@/schemas/project/project.schema";
 import Variable from "@/schemas/variable/variable.schema";
@@ -81,19 +82,7 @@ export function createParkingProject(locale: Locale = "fr"): Project {
 		VariableBuilder.buildMemoryInt(createRandomId(), "places"),
 	);
 
-	const variableIdByMnemonic = new Map(
-		project.variables.map((variable) => [variable.mnemonic, variable.id]),
-	);
-	project.scene3d = {
-		sceneId: ParkingDescriptor.id,
-		sceneVersion: ParkingDescriptor.version,
-		bindings: Object.fromEntries(
-			ParkingDescriptor.points.map((point) => [
-				point.id,
-				variableIdByMnemonic.get(point.suggestedMnemonic)!,
-			]),
-		),
-	};
+	project.scene3d = buildSuggestedScene3d(ParkingDescriptor, project.variables);
 
 	return project;
 }

@@ -1,0 +1,175 @@
+{
+	"title": "Escena 3D",
+	"titleWithProject": "{project}: escena 3D",
+	"status": {
+		"waiting": "Esperando al editor",
+		"stopped": "Simulación detenida: solo visualización, los controles no tienen efecto",
+		"running": "Simulación en curso",
+		"paused": "Simulación en pausa",
+		"editorClosed": "Editor cerrado",
+		"protocolMismatch": "El editor se ha actualizado: recarga esta ventana"
+	},
+	"missingSession": "Sesión no encontrada. Abre la escena desde el editor.",
+	"unknownScene": "Escena desconocida para esta versión de Studomate.",
+	"dock": "Volver al editor",
+	"view": {
+		"title": "Escena 3D",
+		"close": "Cerrar la escena 3D"
+	},
+	"panels": {
+		"title": "Controles",
+		"collapse": "Contraer el panel",
+		"expand": "Expandir el panel"
+	},
+	"showAs": {
+		"side-panel": "Mostrar en el panel lateral",
+		"floating-box": "Mostrar en una ventana flotante",
+		"page": "Mostrar en una página",
+		"browser-tab": "Abrir en una pestaña del navegador"
+	},
+	"cartonSorting": {
+		"label": "Clasificación de cajas",
+		"description": "Cinta de entrada, tres cilindros empujadores y dos salidas: las cajas bajas van al nivel de P2, las cajas altas al nivel de P3.",
+		"newCarton": "Colocar caja",
+		"heightSwitch": "Altura de la caja",
+		"lowMark": "Baja",
+		"highMark": "Alta",
+		"console": "Consola",
+		"feeder": "Alimentación de cajas",
+		"startCycle": "Iniciar ciclo",
+		"sortedCounter": "Cajas clasificadas",
+		"lamps": {
+			"cmdOut": "orden +",
+			"cmdIn": "orden −",
+			"atOut": "ext.",
+			"atIn": "ret.",
+			"belts": "Cintas",
+			"station": "Estación",
+			"present": "pres.",
+			"high": "alta"
+		},
+		"points": {
+			"t1": "Cinta T1",
+			"t2t3": "Cinta T2 / T3",
+			"p1Out": "P1 extender",
+			"p1In": "P1 retraer",
+			"p2Out": "P2 extender",
+			"p2In": "P2 retraer",
+			"p3Out": "P3 extender",
+			"p3In": "P3 retraer",
+			"startButton": "Iniciar ciclo",
+			"counter": "Contador de cajas clasificadas",
+			"cartonAtStation": "Caja en la estación",
+			"cartonHigh": "Caja alta",
+			"cartonAtP2": "Caja al nivel de P2",
+			"cartonAtP3": "Caja al nivel de P3",
+			"p1AtOut": "P1 extendido",
+			"p1AtIn": "P1 retraído",
+			"p2AtOut": "P2 extendido",
+			"p2AtIn": "P2 retraído",
+			"p3AtOut": "P3 extendido",
+			"p3AtIn": "P3 retraído"
+		}
+	},
+	"crossroads": {
+		"label": "Cruce",
+		"description": "Dos calles que se cruzan, cuatro semáforos y un flujo automático de coches que obedecen los semáforos. Si ambos ejes pasan a la vez, los coches chocan.",
+		"accidents": "Accidentes: {count}",
+		"collision": "¡Colisión!",
+		"points": {
+			"redNS1": "Semáforo norte: rojo",
+			"orangeNS1": "Semáforo norte: naranja",
+			"greenNS1": "Semáforo norte: verde",
+			"redNS2": "Semáforo sur: rojo",
+			"orangeNS2": "Semáforo sur: naranja",
+			"greenNS2": "Semáforo sur: verde",
+			"redEO1": "Semáforo este: rojo",
+			"orangeEO1": "Semáforo este: naranja",
+			"greenEO1": "Semáforo este: verde",
+			"redEO2": "Semáforo oeste: rojo",
+			"orangeEO2": "Semáforo oeste: naranja",
+			"greenEO2": "Semáforo oeste: verde"
+		}
+	},
+	"drilling": {
+		"label": "Taladrado",
+		"description": "Estación de taladrado: un taladro sube y baja entre dos finales de carrera (arriba y abajo), y un husillo lo hace girar. Para taladrar, el husillo debe girar con el taladro abajo durante 1,5 s.",
+		"workpiece": "Pieza",
+		"console": "Consola",
+		"startCycle": "Iniciar ciclo",
+		"lamps": {
+			"down": "Bajar",
+			"up": "Subir",
+			"spindle": "Husillo",
+			"high": "Taladro arriba",
+			"low": "Taladro abajo"
+		},
+		"points": {
+			"down": "Bajar el taladro",
+			"up": "Subir el taladro",
+			"spindle": "Girar el husillo",
+			"high": "Taladro arriba",
+			"low": "Taladro abajo",
+			"startButton": "Iniciar ciclo",
+			"drillPosition": "Posición del taladro"
+		}
+	},
+	"elevator": {
+		"label": "Ascensor",
+		"description": "Cabina de tres plantas: órdenes de subir, bajar y puerta, un sensor de presencia en cada planta y un sensor de puerta abierta. La puerta permanece abierta al menos 2 s antes de poder cerrarse de nuevo.",
+		"floor0": "Planta baja",
+		"floor1": "Planta 1",
+		"floor2": "Planta 2",
+		"outside": "Fuera de la cabina",
+		"inside": "Dentro de la cabina",
+		"lamps": "Lámparas",
+		"currentFloor": "Planta",
+		"lampLabels": {
+			"up": "Subiendo",
+			"down": "Bajando",
+			"doorOpen": "Puerta abierta"
+		},
+		"points": {
+			"up": "Subir",
+			"down": "Bajar",
+			"door": "Abrir la puerta",
+			"floor0": "Cabina en planta baja",
+			"floor1": "Cabina en planta 1",
+			"floor2": "Cabina en planta 2",
+			"doorOpen": "Puerta abierta",
+			"cabinButton0": "Botón de cabina, planta baja",
+			"cabinButton1": "Botón de cabina, planta 1",
+			"cabinButton2": "Botón de cabina, planta 2",
+			"currentFloor": "Planta actual",
+			"landingButton0": "Llamada, planta baja",
+			"landingButton1": "Llamada, planta 1",
+			"landingButton2": "Llamada, planta 2",
+			"cabinPosition": "Posición de la cabina"
+		}
+	},
+	"parking": {
+		"label": "Aparcamiento con barrera",
+		"description": "Aparcamiento de cuatro plazas con una barrera de entrada y otra de salida: sensores de coche en espera frente a cada barrera, una fotocélula bajo la barrera, una lámpara de \"completo\" y un contador de plazas. Los botones Llegada y Salida de la consola traen coches que hacen cola y solo avanzan cuando la barrera está abierta.",
+		"console": "Consola",
+		"places": "Plazas ocupadas",
+		"lampLabels": {
+			"entryRequest": "Petición de entrada",
+			"exitRequest": "Petición de salida",
+			"entryBarrierOpen": "Barrera de entrada abierta",
+			"exitBarrierOpen": "Barrera de salida abierta",
+			"full": "Completo"
+		},
+		"points": {
+			"barrierEntry": "Abrir la barrera de entrada",
+			"barrierExit": "Abrir la barrera de salida",
+			"full": "Lámpara de completo",
+			"entryDetector": "Coche en espera en la entrada",
+			"exitDetector": "Coche en espera en la salida",
+			"photocell": "Fotocélula bajo la barrera",
+			"places": "Plazas ocupadas"
+		},
+		"carsBehaviour": "Comportamiento de los coches",
+		"arrival": "Llegada",
+		"departure": "Salida"
+	}
+}

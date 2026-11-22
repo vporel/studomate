@@ -24,6 +24,7 @@ export default class FakeOptiboot implements SerialTransport {
 	left = false;
 	openCount = 0;
 	private listeners = new Set<(chunk: string) => void>();
+	private closeListeners = new Set<() => void>();
 	private pending: number[] = [];
 	private wordAddress = 0;
 	private syncsSeen = 0;
@@ -59,8 +60,19 @@ export default class FakeOptiboot implements SerialTransport {
 		return () => void this.listeners.delete(listener);
 	}
 
-	onClose() {
-		return () => {};
+	onClose(listener: () => void) {
+		this.closeListeners.add(listener);
+		return () => void this.closeListeners.delete(listener);
+	}
+
+	/** The cable is pulled: the port disappears under the flasher. */
+	unplug() {
+		for (const listener of this.closeListeners) listener();
+	}
+
+	/** From now on the bootloader stops answering, like a board that hangs. */
+	goSilent() {
+		this.options.silent = true;
 	}
 
 	async write(data: string) {

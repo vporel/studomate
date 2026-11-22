@@ -125,7 +125,7 @@
 			"Toolbar (top): quick access to common actions and GRAFCET or Ladder creation tools",
 			"Explorer (left): tree of the project's variables, grafcets, ladders and HMI screens",
 			"Main area (centre): tabs for the open pages (grafcets, ladders, variables, properties).",
-			"Bottom bar (bottom): buttons that open the \"Analysis results\" and \"Cross-references\" panels; during simulation, also \"Watch tables\" and, if the project has HMI pages, \"HMI simulation\" (opens the HMI simulation tab)"
+			"Bottom bar (bottom): \"Cross-references\" and \"Analysis results\" buttons, which open the tabbed panel below the editors (they leave the bar while that panel is open, its tabs taking over); during simulation, also \"Watch tables\" and, if the project has HMI pages, \"HMI simulation\" (opens the HMI simulation tab)"
 		],
 		"helpMenuTitle": "Help menu",
 		"helpMenuBody": "The Help menu contains: User manual (opens this manual in a new tab), Training (opens the learning path in a new tab), Keyboard shortcuts (opens the shortcut list), Replay the guided tour (restarts the interface walkthrough) and Report an issue (opens the Contact page in a new tab, on the \"Report an issue\" topic).",
@@ -180,18 +180,20 @@
 		"addProgramOutro": "The Project menu also groups \"Exercise statement\" (when the project has one), \"Share\" / \"Manage sharing\" (see the Accounts & sharing section) and \"Properties\".",
 		"exportTitle": "Export a project",
 		"exportSubtitle": "File → Export (Ctrl+E)",
-		"exportIntro": "A window opens offering two formats:",
+		"exportIntro": "A window opens offering three formats:",
 		"exportFormats": [
 			"Project file (JSON): an external backup of the whole project, re-importable via File → Open project → \"Open from a file…\".",
-			"PDF: a visual document of the grafcets, the ladders and, optionally, the variable tables (HMI pages are not included)."
+			"PDF: a visual document of the grafcets, the ladders and, optionally, the variable tables (HMI pages are not included).",
+			"Image export (PNG or SVG): one image per grafcet and per ladder, with no cover page or variable tables."
 		],
 		"exportScopeIntro": "For PDF, two scopes:",
 		"exportScopes": [
 			"Whole project: a cover page (project name, author, date, statistics, statement if any) then one page per checked grafcet/ladder, each page titled. The cover page can be unchecked. The \"Variable tables\" box (checked by default) adds the variable tables, grouped by zone, after the programs.",
 			"Active page only: a single titled page for the currently open grafcet, ladder or variables page (no cover page). Unavailable if no program is open."
 		],
+		"exportImageBody": "For image export, choose PNG or SVG, then \"Several programs\" (check the ones to export) or \"Active program only\". A grafcet gives one image at its actual size. A ladder is split into images the size of an A4 landscape page, suffixed _1, _2… whenever several are needed. Several programs, or a ladder spread over several images, are bundled into a ZIP archive.",
 		"exportOutro": "The file is downloaded automatically at the end.",
-		"exportContextMenu": "Shortcut: right-clicking the background of a grafcet or ladder canvas offers \"Export\", which generates the PDF of that single program directly, bypassing this window and with no cover page.",
+		"exportContextMenu": "Shortcuts: the export button in a grafcet or ladder toolbar offers \"Export as PDF\", \"Export as PNG\" and \"Export as SVG\" for that single program. Right-clicking the canvas background also offers \"Export\", which generates the PDF directly, with no cover page.",
 		"closeTitle": "Close a project",
 		"closeBody": "File → Close project (Ctrl+F4 on Windows/Linux, Cmd+W on macOS). If there are unsaved changes, you'll be asked to confirm."
 	},
@@ -210,7 +212,7 @@
 		"storageTitle": "Storage location",
 		"storageBody": "Once signed in, each project in the project list can be switched between local and cloud storage. The default location for new projects is set in File → Preferences.",
 		"sharingTitle": "Share a project",
-		"sharingIntro": "Project → Share creates a share link containing a token. Anyone with the link can open a copy of the project.",
+		"sharingIntro": "Project → Share (or the \"Share\" button in the title bar, or the one in the project properties) creates a share link containing a token. Anyone with the link can open a copy of the project.",
 		"sharingItems": [
 			"Sharing requires a cloud account: if you are not signed in, the sign-in dialog opens and sharing resumes afterwards; if the project is still stored locally, a dialog offers to move it to the cloud first.",
 			"The share dialog lets you copy the link and revoke sharing: the link then stops working.",
@@ -573,7 +575,8 @@
 		"analysisTitle": "Analysis and mode",
 		"analysisItems": [
 			"Analyse button: runs the project's static analysis. Turns red on errors, orange on warnings only.",
-			"Mode selector: switches between Design mode (editing) and Simulation mode. The background flashes orange-grey in Simulation mode. With a configured board, the mode menu also offers \"Simulation with real I/O\" and \"Board observation\" (see the Hardware section)."
+			"Simulate / Stop button: starts the simulation from Design mode, then stops it and returns to design. It flashes green during a continuous simulation.",
+			"Mode selector: switches between Design mode (editing) and Simulation mode. With a configured board, the mode menu also offers \"Simulation with real I/O\" and \"Board observation\" (see the Hardware section)."
 		],
 		"grafcetToolsTitle": "Grafcet creation tools",
 		"grafcetToolsIntro": "When a grafcet is open, extra tools appear. Drag the chosen tool onto the canvas to create the matching element:",
@@ -604,7 +607,7 @@
 		"title": "Cross-references",
 		"p1": "Cross-references show, for any variable in the project, every place where it is read and every place where it is written (across grafcets, ladders and HMI screens alike).",
 		"openTitle": "Open the panel",
-		"openBody": "Click the \"Cross-references\" button in the bottom bar, or use the View → Cross-references menu. The menu entry toggles the panel.",
+		"openBody": "Click the \"Cross-references\" button in the bottom bar, or use the View → Cross-references menu. The menu entry toggles the panel. It opens below the editors, in a tabbed panel shared with the analysis results: clicking the other tab switches between them, and the cross closes the panel.",
 		"panelTitle": "Panel contents",
 		"panelIntro": "The panel lists the project's variables with a filter field. For the selected variable, it shows two lists:",
 		"panelItems": [
@@ -700,7 +703,7 @@
 			"Board observation (configured board): the board runs, Studomate displays what it reports. Editing is locked, there is no pause or step-by-step; unwired inputs, memories and forcing remain possible from Studomate."
 		],
 		"startTitle": "Start the simulation",
-		"startIntro": "Select \"Simulation\" in the mode selector (top right). Before it starts:",
+		"startIntro": "Click \"Simulate\" (top right). Before it starts:",
 		"startItems": [
 			"The project is analysed.",
 			"The project is compiled into programs the simulated PLC can run.",
@@ -736,7 +739,7 @@
 			"When simulation starts, the \"HMI simulation\" tab opens automatically if the project contains HMI pages; without an HMI page, the 3D scene opens instead if the project has a scene (see the 3D scene section). This automatic opening can be turned off in File → Preferences."
 		],
 		"watchTitle": "Watch and modify tables for variables",
-		"watchIntro": "The bottom panel shows the watch-and-modify tables for variables, with four tabs:",
+		"watchIntro": "The right-hand side panel shows the watch-and-modify tables for variables, with four tabs:",
 		"watchItems": [
 			"Inputs: current values of the input variables",
 			"Outputs: current values of the output variables",
@@ -745,7 +748,7 @@
 		],
 		"watchOutro": "Values update after every PLC scan. You can change the values of input and memory variables directly from the table to simulate external signals or force an internal state. Outputs are shown read-only.",
 		"stopTitle": "Stop the simulation",
-		"stopBody": "Switch back to \"Design\" mode via the mode selector. The PLC scan stops and editing the grafcet is available again."
+		"stopBody": "Click \"Stop\" (or switch back to \"Design\" mode via the mode selector). The PLC scan stops and editing the grafcet is available again."
 	},
 	"analysis": {
 		"title": "Analysis",
@@ -807,7 +810,10 @@
 			"Arrow keys: Move the selected widgets by one grid step (active HMI canvas, design mode)"
 		],
 		"explorerTitle": "Explorer",
-		"explorerItems": ["F2: Rename the selected grafcet or ladder"],
+		"explorerItems": [
+			"F2: Rename the selected grafcet, ladder or HMI page",
+			"Delete: Delete the selected grafcet, ladder or HMI page (confirmation requested, not triggered by Backspace)"
+		],
 		"inlineTitle": "Inline editing",
 		"inlineItems": ["Enter: Confirm the change", "Esc: Cancel the change"]
 	},
@@ -877,7 +883,7 @@
 			"\"Create missing variables\" creates the variables of the unbound points with the name suggested by the scene (or reuses a compatible variable already carrying that name) and binds them, as a single undoable operation."
 		],
 		"openTitle": "Showing the scene",
-		"openBody": "Once a scene is chosen, the \"3D scene\" entry of the View menu, the \"3D scene\" button of the status bar (left of \"Cross-references\") and the one of the toolbar show the scene, before or during the simulation. It is shown in one of four modes, chosen in the \"3D scene\" submenu of the View menu (clicking the mode the scene is shown in closes it), the last one chosen being remembered by the browser:",
+		"openBody": "Once a scene is chosen, the \"3D scene\" entry of the View menu, the \"3D scene\" button of the status bar and the one of the toolbar show the scene, before or during the simulation. It is shown in one of four modes, chosen in the \"3D scene\" submenu of the View menu (clicking the mode the scene is shown in closes it), the last one chosen being remembered by the browser:",
 		"openItems": [
 			"side panel (default mode): the scene is shown in a column on the right of the editors, which shrink to make room for it: nothing is hidden, and you follow the grafcet and the operative part at the same time, for example when projecting. Drag the left edge of the column to set its width. During the simulation, the watch tables are shown under the scene in the same column, and the divider between them sets their height. The browser remembers these settings;",
 			"floating box: the scene is shown in a box over the editor, which you move by its title bar and resize by its edges and corners, like a window. It stays visible when you change page;",

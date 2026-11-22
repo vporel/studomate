@@ -108,7 +108,7 @@ export function validateZoneType(
 	zone: VariableZone,
 	type: VariableType,
 ): VariableValidationIssue[] {
-	if (ZONES_TO_TYPES[zone].includes(type)) return [];
+	if (ZONES_TO_TYPES[zone]?.includes(type)) return [];
 	return [issue("ZONE_TYPE_INCOMPATIBLE", { type, zone })];
 }
 

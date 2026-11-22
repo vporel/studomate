@@ -233,6 +233,47 @@ describe("GrafcetsManager", () => {
 		});
 	});
 
+	describe("setExcludedFromExecution (grafcet)", () => {
+		it("envoie l'événement analyser-disabled à la désactivation", () => {
+			const { project, grafcetId } = projectWithGrafcet();
+			const { manager, getState } = makeManager({ project });
+
+			manager.setExcludedFromExecution(grafcetId, true);
+
+			expect(
+				getState().project!.getGrafcet(grafcetId)!.excludedFromExecution,
+			).toBe(true);
+			expect(mockTrackEvent).toHaveBeenCalledWith("analyser-disabled", {
+				type: "grafcet",
+			});
+		});
+
+		it("n'envoie rien à la réactivation ni quand l'état ne change pas", () => {
+			const { project, grafcetId } = projectWithGrafcet();
+			const { manager } = makeManager({ project });
+
+			manager.setExcludedFromExecution(grafcetId, false);
+			manager.setExcludedFromExecution(grafcetId, true);
+			mockTrackEvent.mockClear();
+			manager.setExcludedFromExecution(grafcetId, true);
+			manager.setExcludedFromExecution(grafcetId, false);
+
+			expect(mockTrackEvent).not.toHaveBeenCalled();
+		});
+
+		it("n'envoie rien hors mode DESIGN", () => {
+			const { project, grafcetId } = projectWithGrafcet();
+			const { manager } = makeManager({
+				project,
+				mode: ProjectMode.SIMULATION,
+			});
+
+			manager.setExcludedFromExecution(grafcetId, true);
+
+			expect(mockTrackEvent).not.toHaveBeenCalled();
+		});
+	});
+
 	describe("getGrafcet", () => {
 		it("lève une erreur si aucun projet n'est ouvert", () => {
 			const { manager } = makeManager({ project: null });

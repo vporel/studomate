@@ -3,14 +3,14 @@
  */
 import { Dialect } from "@/expression-language/dialect.enum";
 import GrafcetElementAnalyserFactory from "@/project-analyser/analysers/grafcet/element-analyser.factory";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
 import { act, renderHook } from "@testing-library/react";
-import { useGrafcetContext, useGrafcetStore } from "../context/GrafcetContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
-import useCanEdit from "@/ui/components/projects/useCanEdit";
+import { useGrafcetContext, useGrafcetStore } from "../context/GrafcetContext";
 import useWithTextNodeValue from "./useWithTextNodeValue";
 
 jest.mock("../context/GrafcetContext");
-jest.mock("@/ui/components/projects/useCanEdit");
+jest.mock("@/ui/components/projects/useCanEditActivePage");
 
 type StepElement = {
 	id: string;
@@ -62,11 +62,13 @@ describe("useWithTextNodeValue", () => {
 		);
 	}
 
-	beforeEach(() => (useCanEdit as jest.Mock).mockReturnValue(true));
+	beforeEach(() => (useCanEditActivePage as jest.Mock).mockReturnValue(true));
 	afterEach(() => jest.clearAllMocks());
 
 	describe("when the project cannot be edited", () => {
-		beforeEach(() => (useCanEdit as jest.Mock).mockReturnValue(false));
+		beforeEach(() =>
+			(useCanEditActivePage as jest.Mock).mockReturnValue(false),
+		);
 
 		it("does not enter the editing mode", () => {
 			const { result } = setup({ number: 3 });

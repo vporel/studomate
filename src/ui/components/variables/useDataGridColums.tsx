@@ -1,6 +1,6 @@
 "use client";
 
-import useCanEdit from "../projects/useCanEdit";
+import { Dialect } from "@/expression-language/dialect.enum";
 import {
 	getValidTypesForZones,
 	VariableType,
@@ -11,12 +11,12 @@ import {
 	validateConstantValue,
 	validateMnemonic,
 } from "@/schemas/variable/variable.validator";
-import { Dialect } from "@/expression-language/dialect.enum";
 import { useT } from "@/ui/i18n/useT";
 import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { GridColDef } from "@mui/x-data-grid";
 import { useMemo } from "react";
 import { useProjectStore } from "../projects/ProjectContext";
+import useCanEditActivePage from "../projects/useCanEditActivePage";
 import EditInputCell from "./EditInputCell";
 import InputBehaviorCell from "./InputBehaviorCell";
 import VariableValueCell from "./VariableValueCell";
@@ -26,7 +26,7 @@ export default function useGridColumns(zones: VariableZone[]): GridColDef[] {
 	const tError = useT("pages.variablesGrid.errors");
 	const tv = useT("variableValidation");
 	const variablesManager = useProjectStore((state) => state.variablesManager);
-	const designing = useCanEdit();
+	const designing = useCanEditActivePage();
 	const simulating = useProjectStore(
 		(state) => state.mode === ProjectMode.SIMULATION,
 	);

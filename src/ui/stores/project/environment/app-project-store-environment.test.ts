@@ -16,6 +16,7 @@ jest.mock("@/ui/services/analytics", () => ({
 	default: jest.fn(),
 }));
 jest.mock("react-toastify", () => ({ toast: { error: jest.fn() } }));
+const { toast: mockedToast } = jest.requireMock("react-toastify");
 
 describe("3D scene display mode of the app", () => {
 	beforeEach(() => localStorage.clear());
@@ -76,5 +77,43 @@ describe("capabilities of the app", () => {
 			createAppProjectStoreEnvironment().capabilities
 				.programExecutionExclusionToggle,
 		).toBe(true);
+	});
+});
+
+describe("messages and drafts of the app", () => {
+	beforeEach(() => {
+		localStorage.clear();
+		mockedToast.error.mockClear();
+	});
+
+	it("shows an error as a toast", () => {
+		createAppProjectStoreEnvironment().notifications.error("Oups");
+
+		expect(mockedToast.error).toHaveBeenCalledWith("Oups");
+	});
+
+	it("translates in the language of the interface", () => {
+		const env = createAppProjectStoreEnvironment();
+
+		expect(env.translate("toasts")("draftCorrupted")).toBe(
+			"Le brouillon est corrompu et n'a pas pu être ouvert.",
+		);
+		expect(env.translate("toasts.save")("generic")).toEqual(expect.any(String));
+	});
+
+	it("stores, reads and deletes the drafts of the browser storage", () => {
+		const { drafts } = createAppProjectStoreEnvironment().persistence!;
+
+		expect(drafts.save("p1", "Projet", "{}").ok).toBe(true);
+		expect(drafts.get("p1")).toMatchObject({ projectId: "p1", data: "{}" });
+
+		drafts.delete("p1");
+		expect(drafts.get("p1")).toBeNull();
+	});
+
+	it("reads nothing from unreadable data", () => {
+		const { drafts } = createAppProjectStoreEnvironment().persistence!;
+
+		expect(drafts.parse("not json")).toBeNull();
 	});
 });

@@ -9,6 +9,10 @@
 	},
 	"analyse": "Analyser",
 	"mode": {
+		"start": "Simuler",
+		"startHint": "Lancer la simulation du projet",
+		"stop": "Arrêter",
+		"stopHint": "Arrêter la simulation et revenir à la conception",
 		"design": "Conception",
 		"simulation": "Simulation",
 		"simulationHardwareIo": "Simulation avec E/S réelles",
@@ -139,5 +143,8 @@
 	"mobileGuard": {
 		"title": "Application desktop uniquement",
 		"body": "Cette application est disponible uniquement sur desktop. Veuillez y accéder depuis un ordinateur."
+	},
+	"share": {
+		"label": "Partager"
 	}
 }

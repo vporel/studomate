@@ -2,7 +2,9 @@ import type { FeedbackMilestone } from "@/feedback/feedback-prompt";
 import type { Locale } from "@/i18n/config";
 import type { Scene3dDisplayMode } from "../scene3d-display-mode.enum";
 import type { HeartbeatScheduler } from "@/lib/heartbeat/heartbeat-scheduler";
+import type { Draft, DraftSaveResult } from "@/persistence/draft.storage";
 import type { PagesSession } from "@/persistence/pages-session.storage";
+import type Project from "@/schemas/project/project.schema";
 import type ProjectRepository from "@/persistence/repositories/project.repository";
 import type { authStore, isAnonymousUser } from "@/ui/stores/auth/auth.store";
 import type { Scene3dLinkHost } from "../managers/3d-scene/scene3d-link.manager";
@@ -17,8 +19,8 @@ import type { SimulationMode } from "../simulation-mode.enum";
 
 /** What the interface around the project can offer. */
 export type ProjectCapabilities = {
-	/** A program or a table can be exported as a PDF file. */
-	pdfExport: boolean;
+	/** A program or a table can be exported (PDF, image, CSV). */
+	export: boolean;
 	/** The cross-reference panel exists to show where a variable is used. */
 	crossReference: boolean;
 	/** A board can be linked. */
@@ -28,6 +30,17 @@ export type ProjectCapabilities = {
 	 * stay excluded and are shown as such either way.
 	 */
 	programExecutionExclusionToggle: boolean;
+};
+
+/** Looks up a message in the language of the environment, `key` being relative to `namespace`. */
+export type ProjectStoreTranslator = (
+	key: string,
+	values?: Record<string, string | number>,
+) => string;
+
+/** What the user is told outside of the interface's own panels. */
+export type ProjectStoreNotifications = {
+	error(message: string): void;
 };
 
 export type ProjectStoreAnalytics = {
@@ -70,7 +83,13 @@ export type ProjectStorePersistence = {
 		get(projectId: string): PagesSession | null;
 		set(projectId: string, session: PagesSession): void;
 	};
-	drafts: { delete(projectId: string): void };
+	drafts: {
+		get(projectId: string): Draft | null;
+		save(projectId: string, projectName: string, data: string): DraftSaveResult;
+		delete(projectId: string): void;
+		/** `null` when the stored data does not describe a readable project. */
+		parse(data: string): Project | null;
+	};
 	auth: {
 		store: typeof authStore;
 		isAnonymousUser: typeof isAnonymousUser;
@@ -84,6 +103,9 @@ export type ProjectStorePersistence = {
 export type ProjectStoreEnvironment = {
 	/** Language used by code running outside React (analysis messages, simulation errors). */
 	getLocale(): Locale;
+	/** Translator for the code running outside React, in the language of `getLocale()`. */
+	translate(namespace: string): ProjectStoreTranslator;
+	notifications: ProjectStoreNotifications;
 	capabilities: Omit<ProjectCapabilities, "hardware">;
 	analytics: ProjectStoreAnalytics;
 	feedback?: ProjectStoreFeedback;

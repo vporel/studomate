@@ -1,6 +1,6 @@
 "use client";
 
-import useCanEdit from "@/ui/components/projects/useCanEdit";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
 import React from "react";
 import DraggableToolCell from "./DraggableToolCell";
 import {
@@ -20,7 +20,7 @@ const LadderTool = ({
 	children: React.ReactElement;
 }) => {
 	const { setDraggedItem } = useLadderToolbarDnD();
-	const canEdit = useCanEdit();
+	const canEdit = useCanEditActivePage();
 	disabled = disabled || !canEdit;
 
 	return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { LocaleProvider } from "@/ui/i18n/LocaleProvider";
+import { PreferredLocaleProvider } from "@/ui/i18n/LocaleProvider";
 import { AppContextProvider } from "@/ui/components/AppContext";
 import AppStartup from "@/ui/components/AppStartup";
 import FeedbackPrompt from "@/ui/components/feedback/FeedbackPrompt";
@@ -55,7 +55,7 @@ function AppComponent() {
 
 export default function App() {
 	return (
-		<LocaleProvider>
+		<PreferredLocaleProvider>
 			<NoIndexOnQuery />
 			<WhatsNew />
 			<AppContextProvider>
@@ -65,6 +65,6 @@ export default function App() {
 					<AppComponent />
 				</ProjectContextProvider>
 			</AppContextProvider>
-		</LocaleProvider>
+		</PreferredLocaleProvider>
 	);
 }

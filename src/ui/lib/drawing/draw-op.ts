@@ -1,8 +1,12 @@
 /**
- * IR de dessin des programmes (grafcet, ladder) pour l'export. Un renderer produit une `Scene`
- * (liste de `DrawOp` + dimensions de la bounding box recadrée) ; un backend la rend en PDF
- * (primitives jsPDF) ou en chaîne SVG. Coordonnées en pixels logiques, origine en haut-gauche.
+ * Vector drawing IR for export (PDF, image). A renderer produces a `Scene` (list of `DrawOp` and
+ * the dimensions of the cropped bounding box); a backend renders it as PDF (jsPDF primitives) or as
+ * an SVG string. Coordinates in logical pixels, origin at the top left.
  */
+
+/** A number in a `path` op's `d`, exponent notation included (`1e-7`, as produced by
+ * `String(number)`). */
+export const PATH_NUMBER_PATTERN = String.raw`-?(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?`;
 
 /** Motif de pointillés `[longueur trait, longueur trou]`, en pixels. */
 export type Dash = [number, number];

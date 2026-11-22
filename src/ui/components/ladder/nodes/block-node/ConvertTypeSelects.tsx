@@ -17,9 +17,11 @@ import OperatorSelect from "./OperatorSelect";
 export default function ConvertTypeSelects({
 	params,
 	onChange,
+	disabled = false,
 }: {
 	params: ConvertBlockParams;
 	onChange: (params: ConvertBlockParams) => void;
+	disabled?: boolean;
 }) {
 	const t = useT("ladderEditor.block");
 	return (
@@ -39,6 +41,7 @@ export default function ConvertTypeSelects({
 				onChange={(inType) => onChange(withConvertBlockInType(params, inType))}
 				operators={CONVERTIBLE_TYPES}
 				ariaLabel={t("convertInTypeAria")}
+				disabled={disabled}
 				fontSize={9}
 				menuFontSize={11}
 			/>
@@ -48,6 +51,7 @@ export default function ConvertTypeSelects({
 				onChange={(outType) => onChange({ ...params, outType })}
 				operators={getConvertBlockOutTypes(params.inType)}
 				ariaLabel={t("convertOutTypeAria")}
+				disabled={disabled}
 				fontSize={9}
 				menuFontSize={11}
 			/>

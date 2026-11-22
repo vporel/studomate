@@ -39,6 +39,26 @@ export function getCandidateVariables(
 	return variables.filter((variable) => isVariableCompatible(point, variable));
 }
 
+/** A scene of `descriptor` whose points are bound to the variables carrying their suggested mnemonic. */
+export function buildSuggestedScene3d(
+	descriptor: SceneDescriptor,
+	variables: readonly Variable[],
+): Scene3d {
+	const variableIdByMnemonic = new Map(
+		variables.map((variable) => [variable.mnemonic, variable.id]),
+	);
+	return {
+		sceneId: descriptor.id,
+		sceneVersion: descriptor.version,
+		bindings: Object.fromEntries(
+			descriptor.points.map((point) => [
+				point.id,
+				variableIdByMnemonic.get(point.suggestedMnemonic)!,
+			]),
+		),
+	};
+}
+
 export type MnemonicLocalizer = (mnemonic: string) => string;
 
 const KEEP_MNEMONIC: MnemonicLocalizer = (mnemonic) => mnemonic;

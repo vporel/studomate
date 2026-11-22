@@ -5,6 +5,7 @@ import PublicLink from "@/ui/components/public-pages/PublicLink";
 import { Container, Divider, Typography } from "@mui/material";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import LegalArticle, { LegalList, renderStrong } from "../legal/LegalArticle";
+import LegalTranslationNotice from "../legal/LegalTranslationNotice";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -22,11 +23,10 @@ export default async function PrivacyPolicy({ params }: Props) {
 
 	return (
 		<Container maxWidth="md" sx={{ my: 4 }}>
-			<PageTitle>
-				{t("title")}
-			</PageTitle>
+			<PageTitle>{t("title")}</PageTitle>
 			<Typography>{t("lastUpdated")}</Typography>
 			<Divider sx={{ my: 2 }} />
+			<LegalTranslationNotice locale={locale} href="/privacy" />
 
 			<LegalArticle title={t("introTitle")}>
 				<Typography textAlign="justify">

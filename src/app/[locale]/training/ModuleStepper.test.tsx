@@ -453,7 +453,11 @@ describe("ModuleStepper", () => {
 
 			fireEvent.click(screen.getByRole("button", { name: "Suivant" }));
 
-			expect(mockSaveStepId).toHaveBeenCalledWith("a1", "s2");
+			expect(mockSaveStepId).toHaveBeenCalledWith(
+				"a1",
+				"s2",
+				steps.map((s) => s.id),
+			);
 		});
 
 		it("ne redescend jamais la progression sauvegardée en revenant en arrière", async () => {

@@ -7,18 +7,12 @@ import {
 	shouldAskUserProfile,
 } from "./user-profile.storage";
 
-const mockGetShareToken = jest.fn();
-jest.mock("@/ui/stores/project/url/project-url", () => ({
-	getShareTokenFromUrl: () => mockGetShareToken(),
-}));
-
 describe("user-profile.storage", () => {
 	let store: Map<string, string>;
 	let restoreLocalStorage: () => void;
 
 	beforeEach(() => {
 		({ store, restore: restoreLocalStorage } = installMemoryLocalStorage());
-		mockGetShareToken.mockReturnValue(null);
 	});
 
 	afterEach(() => {
@@ -75,29 +69,26 @@ describe("user-profile.storage", () => {
 
 	describe("shouldAskUserProfile", () => {
 		it("asks on the first visit", () => {
-			expect(shouldAskUserProfile()).toBe(true);
+			expect(shouldAskUserProfile(false)).toBe(true);
 		});
 
 		it("does not ask when the user opens a shared link", () => {
-			mockGetShareToken.mockReturnValue("abc");
-			expect(shouldAskUserProfile()).toBe(false);
+			expect(shouldAskUserProfile(true)).toBe(false);
 		});
 
 		it("asks again on a later visit without share link after having been skipped for one", () => {
-			mockGetShareToken.mockReturnValue("abc");
-			expect(shouldAskUserProfile()).toBe(false);
-			mockGetShareToken.mockReturnValue(null);
-			expect(shouldAskUserProfile()).toBe(true);
+			expect(shouldAskUserProfile(true)).toBe(false);
+			expect(shouldAskUserProfile(false)).toBe(true);
 		});
 
 		it("does not ask again once answered", () => {
 			setStoredUserProfile({ userType: UserType.TEACHER, schoolType: null });
-			expect(shouldAskUserProfile()).toBe(false);
+			expect(shouldAskUserProfile(false)).toBe(false);
 		});
 
 		it("does not ask again once skipped", () => {
 			setStoredUserProfile({ userType: null, schoolType: null });
-			expect(shouldAskUserProfile()).toBe(false);
+			expect(shouldAskUserProfile(false)).toBe(false);
 		});
 	});
 });

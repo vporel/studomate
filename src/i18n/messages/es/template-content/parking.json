@@ -1,0 +1,9 @@
+{
+	"statement": "## Aparcamiento con barreras\n\nUn aparcamiento de 4 plazas tiene una barrera de entrada y una barrera de salida. Entradas: `entry_request` y\n`exit_request` (un coche espera ante la barrera de entrada / salida) y `car_present` (célula bajo una barrera,\nverdadera mientras haya un coche en ella), proporcionadas por la escena 3D (menú Ver → Escena 3D).\nSalidas: `entry_barrier`, `exit_barrier` (apertura) y `full` (indicador).\nEl número de plazas ocupadas se lleva en `spaces`, que se muestra en la consola. Los botones «Llegada» y «Salida»\nde la escena hacen aparecer coches, que se colocan en fila y solo avanzan si su barrera está abierta.\n\n### Trabajo a realizar\n\n1. Con `entry_request`, si el aparcamiento no está lleno: abre la barrera de entrada e incrementa `spaces`.\n2. Con `exit_request`, si el aparcamiento no está vacío: abre la barrera de salida y decrementa `spaces`.\n3. Enciende `full` en cuanto todas las plazas estén ocupadas y rechaza nuevas entradas.\n4. Cierra la barrera una vez que el coche ha pasado (`car_present`) y valida después en simulación con la escena 3D.",
+	"texts": {
+		"projectName": "Aparcamiento con barreras",
+		"solutionName": "Aparcamiento con barreras: solución",
+		"controlGrafcet": "Control",
+		"signalingGrafcet": "Señalización"
+	}
+}

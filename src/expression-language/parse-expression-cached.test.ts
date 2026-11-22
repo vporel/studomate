@@ -16,11 +16,45 @@ describe("parseExpressionCached", () => {
 		expect(b.tokens).toBe(a.tokens);
 	});
 
-	it("ignore les espaces de bord dans la clé", () => {
+	it("ne partage pas l'entrée de deux expressions qui ne diffèrent que par leurs espaces de bord", () => {
 		const a = parseExpressionCached("a ET b", Dialect.FR);
 		const b = parseExpressionCached("   a ET b  ", Dialect.FR);
 
-		expect(b).toBe(a);
+		expect(b).not.toBe(a);
+	});
+
+	it("garde des positions de tokens relatives au texte de chaque appelant, quelle que soit l'indentation du premier", () => {
+		const indented = parseExpressionCached("  a AND b", Dialect.EN);
+		const plain = parseExpressionCached("a AND b", Dialect.EN);
+
+		expect(indented.tokens.map((t) => t.position)).toEqual([2, 4, 8, 9]);
+		expect(plain.tokens.map((t) => t.position)).toEqual([0, 2, 6, 7]);
+	});
+
+	it("rend les positions de l'appelant même quand l'ordre des appels est inversé", () => {
+		const plain = parseExpressionCached("a AND b", Dialect.EN);
+		const indented = parseExpressionCached("  a AND b", Dialect.EN);
+
+		expect(plain.tokens.map((t) => t.position)).toEqual([0, 2, 6, 7]);
+		expect(indented.tokens.map((t) => t.position)).toEqual([2, 4, 8, 9]);
+	});
+
+	it("rapporte la position d'une erreur relative au texte de l'appelant, sans la mettre en cache", () => {
+		parseExpressionCached("a AND b", Dialect.EN);
+
+		expect(() => parseExpressionCached("  a $ b", Dialect.EN)).toThrow(
+			/position 4/,
+		);
+		expect(() => parseExpressionCached("  a $ b", Dialect.EN)).toThrow(
+			/position 4/,
+		);
+	});
+
+	it("ne partage pas l'entrée de deux expressions qui ne diffèrent que par leurs espaces internes", () => {
+		const a = parseExpressionCached("a ET b", Dialect.FR);
+		const b = parseExpressionCached("a  ET  b", Dialect.FR);
+
+		expect(b).not.toBe(a);
 	});
 
 	it("sépare les entrées par dialecte", () => {

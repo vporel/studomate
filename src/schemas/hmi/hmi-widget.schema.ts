@@ -1,5 +1,6 @@
 import { createRandomId } from "@/ids";
 import { nextAvailableName } from "@/lib/naming";
+import { getOwnPropertyValue } from "@/lib/object";
 import { VariableType } from "@/schemas/variable/variable.schema";
 
 export type HmiWidgetType =
@@ -52,7 +53,7 @@ export type HmiAction = HmiNavigateToPageAction;
 
 /** Liaisons événement -> actions déclenchées d'un widget, clé par nom d'événement propre à son
  * type (ex. `HmiPushButtonEventName`) — plusieurs actions peuvent être liées au même événement,
- * exécutées dans l'ordre (voir `executeHmiAction`). */
+ * exécutées dans l'ordre (voir `HmiManager.executeAction`). */
 export type HmiWidgetEvents<TEventName extends string> = Partial<
 	Record<TEventName, HmiAction[]>
 >;
@@ -457,12 +458,14 @@ abstract class HmiWidgetBase<DataType> {
 			variable?: string;
 			animations?: HmiWidgetAnimations<string>;
 		};
-		if (data.variable && renames[data.variable])
-			data.variable = renames[data.variable];
+		const newVariable = data.variable
+			? getOwnPropertyValue(renames, data.variable)
+			: undefined;
+		if (newVariable) data.variable = newVariable;
 
 		const { position, style } = data.animations ?? {};
 		const renamed = (name: string | undefined) =>
-			name && renames[name] ? renames[name] : name;
+			(name && getOwnPropertyValue(renames, name)) || name;
 		if (position) {
 			data.animations = {
 				...data.animations,
@@ -635,12 +638,17 @@ function nextStackOrder(widgets: HmiWidget[]): number {
 		: Math.max(...widgets.map((w) => w.stackOrder)) + 1;
 }
 
-/** Nom à donner au prochain widget de ce type ajouté à `widgets` — format "Label_N" (voir
- * `HMI_WIDGET_DEFINITIONS[type].label`), en partant de 1 et en avançant jusqu'à trouver un nom
- * absent des `widgets` fournis (unicité par page, pas par projet — voir `HmiWidgetBase.name`). */
-function nextName(type: HmiWidgetType, widgets: HmiWidget[]): string {
+/** Nom à donner au prochain widget de ce type ajouté à `widgets` — format "Label_N" (`label`,
+ * par défaut `HMI_WIDGET_DEFINITIONS[type].label`), en partant de 1 et en avançant jusqu'à
+ * trouver un nom absent des `widgets` fournis (unicité par page, pas par projet — voir
+ * `HmiWidgetBase.name`). */
+function nextName(
+	type: HmiWidgetType,
+	widgets: HmiWidget[],
+	label: string = HMI_WIDGET_DEFINITIONS[type].label,
+): string {
 	return nextAvailableName(
-		HMI_WIDGET_DEFINITIONS[type].label,
+		label,
 		widgets.map((w) => w.name),
 	);
 }

@@ -1,5 +1,9 @@
+import Variable from "@/schemas/variable/variable.schema";
+import { useT } from "@/ui/i18n/useT";
+import trackPdfExported from "@/ui/pdf/track-pdf-exported";
+import useSingleExportPageFrame from "@/ui/pdf/useSingleExportPageFrame";
+import type { VariablesTableColumns } from "@/ui/pdf/variables-table-pdf";
 import AddIcon from "@mui/icons-material/Add";
-import useCanEdit from "../projects/useCanEdit";
 import CancelIcon from "@mui/icons-material/Cancel";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
@@ -12,13 +16,8 @@ import InputAdornment from "@mui/material/InputAdornment";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { styled } from "@mui/material/styles";
-import { useT } from "@/ui/i18n/useT";
 import TextField from "@mui/material/TextField";
 import Tooltip from "@mui/material/Tooltip";
-import { toast } from "react-toastify";
-import Variable from "@/schemas/variable/variable.schema";
-import type { VariablesTableColumns } from "@/ui/pdf/variables-table-pdf";
-import trackPdfExported from "@/ui/pdf/track-pdf-exported";
 import {
 	ExportCsv,
 	FilterPanelTrigger,
@@ -32,7 +31,9 @@ import {
 	useGridApiContext,
 } from "@mui/x-data-grid";
 import * as React from "react";
+import { toast } from "react-toastify";
 import { useProjectStore } from "../projects/ProjectContext";
+import useCanEditActivePage from "../projects/useCanEditActivePage";
 
 declare module "@mui/x-data-grid" {
 	interface ToolbarPropsOverrides {
@@ -87,27 +88,23 @@ export default function GridToolBar({
 }) {
 	const t = useT("pages.variablesGrid.toolbar");
 	const tColumns = useT("pages.variablesGrid.columns");
-	const tExport = useT("projects.export");
 	const projectName = useProjectStore((state) => state.project?.name ?? "");
+	const buildPageFrame = useSingleExportPageFrame();
 	const [exportMenuOpen, setExportMenuOpen] = React.useState(false);
 	const exportMenuTriggerRef = React.useRef<HTMLButtonElement>(null);
 	const variablesManager = useProjectStore((state) => state.variablesManager);
-	const canEdit = useCanEdit();
-	const pdfExport = useProjectStore((state) => state.capabilities.pdfExport);
+	const canEdit = useCanEditActivePage();
+	const canExport = useProjectStore((state) => state.capabilities.export);
 	const apiRef = useGridApiContext();
 
 	const exportPdf = () => {
 		setExportMenuOpen(false);
-		const date = new Date().toLocaleDateString();
 		void import("@/ui/pdf/variables-table-pdf")
 			.then(({ exportVariablesTablePdf }) =>
 				exportVariablesTablePdf({
 					filename: `${projectName} - ${pageTitle}`,
-					title: tExport("variablesPdfHeading", {
-						page: pageTitle,
-						project: projectName,
-						date,
-					}),
+					title: pageTitle,
+					pageFrame: buildPageFrame(),
 					variables: zoneVariables,
 					columns: pdfColumns,
 					labels: {
@@ -221,7 +218,7 @@ export default function GridToolBar({
 					},
 				}}
 			>
-				{pdfExport && <MenuItem onClick={exportPdf}>{t("exportPdf")}</MenuItem>}
+				{canExport && <MenuItem onClick={exportPdf}>{t("exportPdf")}</MenuItem>}
 				<ExportCsv
 					render={<MenuItem />}
 					onClick={() => setExportMenuOpen(false)}

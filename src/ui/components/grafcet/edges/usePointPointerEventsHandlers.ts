@@ -1,6 +1,6 @@
 "use client";
 
-import useCanEdit from "@/ui/components/projects/useCanEdit";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
 import { useReactFlow } from "@xyflow/react";
 import { useCallback } from "react";
 import { useGrafcetStore } from "../context/GrafcetContext";
@@ -16,7 +16,7 @@ export default function usePointPointerEventsHandlers(
 ) {
 	const { screenToFlowPosition } = useReactFlow();
 	const workflowManager = useGrafcetStore((state) => state.workflowManager);
-	const canEdit = useCanEdit();
+	const canEdit = useCanEditActivePage();
 
 	const handlePointPointerDown = useCallback(
 		(e: React.PointerEvent<SVGCircleElement>, index: number) => {

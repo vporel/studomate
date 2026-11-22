@@ -39,6 +39,24 @@ describe("deserializeProject", () => {
 		).toEqual({ ok: false, reason: "newer-version", id: "futur" });
 	});
 
+	it.each([
+		["un texte", "6"],
+		["un décimal", 3.5],
+		["un négatif", -1],
+		["null", null],
+	])(
+		"refuse comme illisible un projet dont schemaVersion est %s",
+		(_label, schemaVersion) => {
+			expect(
+				deserializeProject({ id: "bizarre", name: "Altéré", schemaVersion }),
+			).toEqual({ ok: false, reason: "unreadable", id: "bizarre" });
+		},
+	);
+
+	it("lit toujours un projet d'avant le versionnement, sans schemaVersion", () => {
+		expect(deserializeProject({ id: "ancien", name: "A" }).ok).toBe(true);
+	});
+
 	it("refuse un projet dont la reconstruction échoue", () => {
 		const circular: any = {
 			id: "cassé",

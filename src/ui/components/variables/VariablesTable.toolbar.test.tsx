@@ -49,7 +49,7 @@ describe("VariablesTable toolbar", () => {
 				},
 				mode: ProjectMode.DESIGN,
 				editingEnabled: true,
-				capabilities: { pdfExport: true, crossReference: true },
+				capabilities: { export: true, crossReference: true },
 			}),
 		);
 		renderWithI18n(

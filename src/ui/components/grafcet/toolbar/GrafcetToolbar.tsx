@@ -1,13 +1,15 @@
 "use client";
 
-import useCanEdit from "@/ui/components/projects/useCanEdit";
-import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import AnalyserToolbarItem from "@/ui/components/programs/AnalyserToolbarItem";
+import ExportProgramTool from "@/ui/components/programs/ExportProgramTool";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
+import type { PdfExportProgramConfig } from "@/ui/pdf/usePdfExport";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { Divider } from "@mui/material";
-import React from "react";
-import { useGrafcetStore } from "../context/GrafcetContext";
+import React, { useCallback } from "react";
+import { useGrafcetStore, useGrafcetStoreApi } from "../context/GrafcetContext";
 import ActionTool from "./ActionTool";
 import CommentTool from "./CommentTool";
 import GrafcetZoomTools from "./GrafcetZoomTools";
@@ -21,7 +23,15 @@ import StepTool from "./StepTool";
 import TransitionTool from "./TransitionTool";
 
 const GrafcetToolbar = ({ style }: { style?: React.CSSProperties }) => {
+	const grafcetStore = useGrafcetStoreApi();
 	const grafcetId = useGrafcetStore((state) => state.grafcet.id);
+	const getExportConfig = useCallback(
+		(): PdfExportProgramConfig => ({
+			type: "grafcet",
+			program: grafcetStore.getState().grafcet,
+		}),
+		[grafcetStore],
+	);
 	const excludedFromExecution = useGrafcetStore(
 		(state) => state.grafcet.excludedFromExecution,
 	);
@@ -35,7 +45,7 @@ const GrafcetToolbar = ({ style }: { style?: React.CSSProperties }) => {
 	const exclusionToggleAvailable = useProjectStore(
 		(state) => state.capabilities.programExecutionExclusionToggle,
 	);
-	const designing = useCanEdit();
+	const designing = useCanEditActivePage();
 
 	return (
 		<FlexBox
@@ -84,6 +94,7 @@ const GrafcetToolbar = ({ style }: { style?: React.CSSProperties }) => {
 						}
 					/>
 				)}
+				<ExportProgramTool getConfig={getExportConfig} />
 				<GrafcetZoomTools />
 			</FlexBox>
 		</FlexBox>

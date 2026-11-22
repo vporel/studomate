@@ -1,26 +1,23 @@
 "use client";
 
+import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
+import useProjectClipboard from "@/ui/components/projects/useProjectClipboard";
+import { useT } from "@/ui/i18n/useT";
+import type { MenuTranslate } from "@/ui/lib/context-menu/context-menu";
 import { ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";
 import ContextMenu from "@/ui/lib/context-menu/ContextMenu";
 import useContextMenuBus from "@/ui/lib/context-menu/useContextMenuBus";
 import useBooleanState from "@/ui/lib/hooks/useBooleanState";
-import { OnDelete } from "@xyflow/react";
-import { XYPosition } from "@xyflow/react";
+import useExportProgramPdf from "@/ui/pdf/useExportProgramPdf";
+import type { PdfExportProgramConfig } from "@/ui/pdf/usePdfExport";
+import { OnDelete, XYPosition } from "@xyflow/react";
 import { useCallback, useMemo, useState } from "react";
-import { toast } from "react-toastify";
-import useCanEdit from "@/ui/components/projects/useCanEdit";
-import useProjectClipboard from "@/ui/components/projects/useProjectClipboard";
-import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import useLadderRenderContext from "@/ui/pdf/useLadderRenderContext";
-import trackPdfExported from "@/ui/pdf/track-pdf-exported";
-import { useT } from "@/ui/i18n/useT";
-import { useLadderContext } from "../context/LadderContext";
-import { useLadderStore } from "../context/LadderContext";
+import { useLadderContext, useLadderStore } from "../context/LadderContext";
 import {
 	LadderContextMenuElement,
 	LadderContextMenuProps,
 } from "./ladder-context-menu";
-import type { MenuTranslate } from "@/ui/lib/context-menu/context-menu";
 import nodeOrEdgeContextMenuItems from "./node-or-edge-context-menu-items";
 import paneContextMenuItems from "./pane-context-menu-items";
 
@@ -46,24 +43,13 @@ const LadderContextMenu = ({
 			s.entry?.scope === "ladder" &&
 			(s.entry.data as { kind?: string })?.kind === "elements",
 	);
-	const canEdit = useCanEdit();
-	const pdfExport = useProjectStore((s) => s.capabilities.pdfExport);
-	const projectName = useProjectStore((s) => s.project?.name ?? "export");
-	const ladderContext = useLadderRenderContext();
-	const tExport = useT("projects.export");
-	const onExport = useCallback(() => {
-		void import("@/ui/pdf/program-pdf")
-			.then(({ exportProgramPdf }) =>
-				exportProgramPdf({
-					config: { type: "ladder", program: ladder },
-					filename: `${projectName} - ${ladder.name}`,
-					sectionTitle: tExport("sectionTitleLadder", { name: ladder.name }),
-					ladderContext,
-				}),
-			)
-			.then(() => trackPdfExported({ programs: 1, withVariablesTable: false }))
-			.catch(() => toast.error(tExport("errorAssembling")));
-	}, [ladder, projectName, ladderContext, tExport]);
+	const canEdit = useCanEditActivePage();
+	const canExport = useProjectStore((s) => s.capabilities.export);
+	const getExportConfig = useCallback(
+		(): PdfExportProgramConfig => ({ type: "ladder", program: ladder }),
+		[ladder],
+	);
+	const onExport = useExportProgramPdf(getExportConfig);
 	const setCrossReferenceFilter = useProjectStore(
 		(s) => s.setCrossReferenceFilter,
 	);
@@ -101,7 +87,7 @@ const LadderContextMenu = ({
 				screenPosition,
 				canPaste,
 				t,
-				pdfExport ? onExport : null,
+				canExport ? onExport : null,
 				ladder.getAllElements().length === 0,
 			);
 		}
@@ -128,7 +114,7 @@ const LadderContextMenu = ({
 		sectionId,
 		handleDelete,
 		onExport,
-		pdfExport,
+		canExport,
 		openCrossReferences,
 		t,
 	]);
@@ -141,13 +127,13 @@ const LadderContextMenu = ({
 				hide();
 				return;
 			}
-			if (props.element.type === "pane" && !canEdit && !pdfExport) return;
+			if (props.element.type === "pane" && !canEdit && !canExport) return;
 			setElement(props.element);
 			setPosition(props.position);
 			setScreenPosition(props.screenPosition);
 			show();
 		},
-		[hide, show, sectionId, canEdit, pdfExport],
+		[hide, show, sectionId, canEdit, canExport],
 	);
 	useContextMenuBus(contextMenuEvents, showMenu, hide);
 

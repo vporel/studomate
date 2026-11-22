@@ -4,13 +4,13 @@ import { Box } from "@mui/material";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
+import { canEditProject } from "@/ui/stores/project/editability";
 
 const ProjectNameInput = () => {
 	const { projectName, designing, changeProjectName } = useProjectStore(
 		useShallow((state) => ({
 			projectName: state.project?.name ?? "",
-			designing: state.mode === ProjectMode.DESIGN,
+			designing: canEditProject(state),
 			changeProjectName: state.setProjectName,
 		})),
 	);

@@ -1,14 +1,15 @@
 "use client";
 
-import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { Dialect } from "@/expression-language/dialect.enum";
 import { useT } from "@/ui/i18n/useT";
 import { Box, Grid, MenuItem, TextField, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "../projects/ProjectContext";
+import ShareProjectButton from "../projects/ShareProjectButton";
 import Page from "./Page";
 import { PROJECT_PROPERTIES_PAGE_ID } from "@/ui/stores/project/pages-data";
+import { canEditProject } from "@/ui/stores/project/editability";
 
 /** Fond blanc des champs, la page étant posée sur un gris clair. */
 const whiteFieldSx = { "& .MuiInputBase-root": { backgroundColor: "#fff" } };
@@ -100,7 +101,7 @@ const ProjectPropertiesPage = () => {
 			name: state.project?.name ?? "",
 			author: state.project?.author ?? "",
 			dialect: state.project?.dialect ?? Dialect.FR,
-			designing: state.mode === ProjectMode.DESIGN,
+			designing: canEditProject(state),
 			exerciseStatement: state.project?.exercise?.statement ?? "",
 			changeProjectName: state.setProjectName,
 			changeProjectAuthor: state.setProjectAuthor,
@@ -166,6 +167,13 @@ const ProjectPropertiesPage = () => {
 						value={exerciseStatement}
 						onSave={changeExerciseStatement}
 						disabled={!designing}
+					/>
+				</Box>
+				<Box sx={{ mt: 3 }}>
+					<ShareProjectButton
+						source="properties"
+						label={t("share")}
+						variant="outlined"
 					/>
 				</Box>
 			</Box>

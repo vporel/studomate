@@ -35,6 +35,17 @@ describe("exportProject", () => {
 		expect(revokeObjectURL).not.toHaveBeenCalled();
 	});
 
+	it("downloads the serialized project as a .json file", () => {
+		const project = new Project(createRandomId(), DEFAULT_PROJECT_NAME, "");
+
+		exportProject(project, "my-project");
+
+		const anchor = clickSpy.mock.instances[0] as HTMLAnchorElement;
+		expect(anchor.download).toBe("my-project.json");
+		const blob = createObjectURL.mock.calls[0][0] as Blob;
+		expect(blob.type).toBe("application/json");
+	});
+
 	it("revokes the object URL after a delay", () => {
 		const project = new Project(createRandomId(), DEFAULT_PROJECT_NAME, "");
 

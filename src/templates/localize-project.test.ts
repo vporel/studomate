@@ -12,6 +12,16 @@ describe("TEMPLATE_MNEMONICS_EN", () => {
 	});
 });
 
+describe("localizeMnemonic", () => {
+	it("laisse le mnémonique français en français", () => {
+		expect(localizeMnemonic("rouge", "fr")).toBe("rouge");
+	});
+
+	it.each(["en", "es"] as const)("traduit le mnémonique en %s", (locale) => {
+		expect(localizeMnemonic("rouge", locale)).toBe("red");
+	});
+});
+
 describe("localizeProject", () => {
 	const template = PROJECT_TEMPLATES.find((t) => t.id === "traffic-light")!;
 
@@ -29,6 +39,17 @@ describe("localizeProject", () => {
 	it("renomme les mnémoniques et passe au dialecte EN en anglais", () => {
 		const project = template.create("en");
 		localizeProject(project, "en");
+		expect(project.dialect).toBe(Dialect.EN);
+		expect(project.variables.map((v) => v.mnemonic)).toEqual([
+			"red",
+			"amber",
+			"green",
+		]);
+	});
+
+	it("renomme les mnémoniques et passe au dialecte EN en espagnol", () => {
+		const project = template.create("es");
+		localizeProject(project, "es");
 		expect(project.dialect).toBe(Dialect.EN);
 		expect(project.variables.map((v) => v.mnemonic)).toEqual([
 			"red",

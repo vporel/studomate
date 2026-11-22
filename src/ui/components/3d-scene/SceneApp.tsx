@@ -13,6 +13,9 @@ import SceneWidthFit from "./SceneWidthFit";
 import SceneView, { type SceneViewPhase } from "./scene-view";
 import { getSceneViewDefinition, type SceneCamera } from "./scene-views";
 
+/** Pixel ratio range of the canvas: capped so that 3x screens do not render 9 pixels per CSS pixel. */
+const CANVAS_DPR: [number, number] = [1, 2];
+
 const PHASE_KEYS = {
 	waiting: "waiting",
 	stopped: "stopped",
@@ -113,6 +116,7 @@ export function SceneContent({
 		>
 			<Canvas
 				key={`${sceneId}@${sceneVersion}`}
+				dpr={CANVAS_DPR}
 				camera={{ position: camera.position, fov: 50 }}
 			>
 				<ambientLight intensity={0.7} />

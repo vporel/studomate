@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { render } from "@testing-library/react";
+import { renderWithI18n as render } from "@tests/utils/i18n";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { useGrafcetStore } from "../context/GrafcetContext";

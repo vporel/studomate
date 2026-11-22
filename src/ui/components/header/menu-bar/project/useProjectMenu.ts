@@ -3,7 +3,6 @@
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useT } from "@/ui/i18n/useT";
 import { platformShortcut } from "@/ui/lib/platform";
-import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { useMemo } from "react";
 import { useShallow } from "zustand/shallow";
 import { AppMenuType } from "../app-menu-bar";
@@ -13,15 +12,14 @@ import {
 	PROJECT_PROPERTIES_PAGE_DATA,
 	SCENE3D_CONFIGURATION_PAGE_DATA,
 } from "@/ui/stores/project/pages-data";
+import useCanEditProject from "@/ui/components/projects/useCanEditProject";
 
 export default function useProjectMenu(): AppMenuType {
 	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
 	const laddersManager = useProjectStore((state) => state.laddersManager);
 	const hmiManager = useProjectStore((state) => state.hmiManager);
 	const pageManager = useProjectStore((state) => state.pagesManager);
-	const designing = useProjectStore(
-		(state) => state.mode === ProjectMode.DESIGN,
-	);
+	const designing = useCanEditProject();
 	const { isSharedProject, sharingManager, setShareModalVisible, hasExercise } =
 		useProjectStore(
 			useShallow((state) => ({
@@ -95,7 +93,7 @@ export default function useProjectMenu(): AppMenuType {
 						disabled: isSharedProject,
 						onClick: () => {
 							if (isSharedProject) return;
-							void sharingManager.shareProject();
+							void sharingManager.shareProject("menu");
 						},
 					},
 					...(isSharedProject

@@ -5,13 +5,21 @@ import { fireEvent, screen } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
-import { useGrafcetStore } from "../context/GrafcetContext";
+import { useGrafcetStore, useGrafcetStoreApi } from "../context/GrafcetContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import { GrafcetToolbarDnDProvider } from "./GrafcetToolbarDnDContext";
 import GrafcetToolbar from "./GrafcetToolbar";
 
 jest.mock("@/ui/components/projects/ProjectContext");
 jest.mock("../context/GrafcetContext");
+const exportTool = jest.fn();
+jest.mock("@/ui/components/programs/ExportProgramTool", () => ({
+	__esModule: true,
+	default: (props: unknown) => {
+		exportTool(props);
+		return null;
+	},
+}));
 
 describe("GrafcetToolbar", () => {
 	it("assemble tous les outils sans planter", () => {
@@ -185,5 +193,17 @@ describe("GrafcetToolbar", () => {
 		expect(
 			screen.queryByText("Désactiver l'analyseur"),
 		).not.toBeInTheDocument();
+	});
+
+	it("hands the export the grafcet as it is in the store when the export starts", () => {
+		const latest = { id: "g1", name: "Cycle modifié" };
+		(useGrafcetStoreApi as jest.Mock).mockReturnValue({
+			getState: () => ({ grafcet: latest }),
+		});
+		renderToolbar();
+
+		const { getConfig } = exportTool.mock.calls.at(-1)[0];
+
+		expect(getConfig()).toEqual({ type: "grafcet", program: latest });
 	});
 });

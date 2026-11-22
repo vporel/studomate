@@ -27,17 +27,19 @@ jest.mock("react-toastify", () => ({ toast: { error: jest.fn() } }));
 
 function dispatchShortcut(
 	key: string,
-	opts: { shift?: boolean; target?: Element } = {},
+	opts: { shift?: boolean; target?: Element; repeat?: boolean } = {},
 ) {
-	const { shift = false, target = document.body } = opts;
+	const { shift = false, target = document.body, repeat = false } = opts;
 	const event = new KeyboardEvent("keydown", {
 		key,
 		ctrlKey: true,
 		shiftKey: shift,
+		repeat,
 		bubbles: true,
 		cancelable: true,
 	});
 	target.dispatchEvent(event);
+	return event;
 }
 
 function dispatchKey(key: string, target: EventTarget = document.body) {
@@ -143,6 +145,20 @@ describe("useShortcutsHandler", () => {
 		dispatchShortcut("s");
 		expect(saveProject).toHaveBeenCalled();
 		expect(setSaveAsModalVisible).not.toHaveBeenCalled();
+	});
+
+	it("ignores the auto-repeat of Ctrl+S but still blocks the browser's own dialog", () => {
+		setup(ProjectMode.DESIGN);
+		const event = dispatchShortcut("s", { repeat: true });
+		expect(saveProject).not.toHaveBeenCalled();
+		expect(event.defaultPrevented).toBe(true);
+	});
+
+	it("ignores the auto-repeat of Ctrl+Shift+S", () => {
+		setup(ProjectMode.DESIGN);
+		const event = dispatchShortcut("s", { shift: true, repeat: true });
+		expect(setSaveAsModalVisible).not.toHaveBeenCalled();
+		expect(event.defaultPrevented).toBe(true);
 	});
 
 	it("opens the save-as modal on Ctrl+Shift+S regardless of mode", () => {
@@ -290,12 +306,139 @@ describe("useShortcutsHandler", () => {
 		document.body.removeChild(input);
 	});
 
+	const editableDiv = () => {
+		const div = document.createElement("div");
+		Object.defineProperty(div, "isContentEditable", { value: true });
+		return div;
+	};
+
+	it("ignores shortcuts typed inside editable content", () => {
+		setup(ProjectMode.DESIGN);
+		const div = editableDiv();
+		document.body.appendChild(div);
+		dispatchShortcut("g", { target: div });
+		expect(newGrafcet).not.toHaveBeenCalled();
+		document.body.removeChild(div);
+	});
+
 	it("ignores shortcuts typed inside an input", () => {
 		setup(ProjectMode.DESIGN);
 		const input = document.createElement("input");
 		document.body.appendChild(input);
-		dispatchShortcut("s", { target: input });
-		expect(saveProject).not.toHaveBeenCalled();
+		dispatchShortcut("g", { target: input });
+		expect(newGrafcet).not.toHaveBeenCalled();
 		document.body.removeChild(input);
+	});
+
+	describe("Ctrl+S in a text field", () => {
+		beforeEach(() => jest.useFakeTimers());
+		afterEach(() => jest.useRealTimers());
+
+		const fields: [string, () => HTMLElement][] = [
+			["an input", () => document.createElement("input")],
+			["a textarea", () => document.createElement("textarea")],
+			["editable content", () => editableDiv()],
+		];
+
+		it.each(fields)(
+			"in %s: blocks the browser, leaves the field then saves on the next tick",
+			(_name, create) => {
+				setup(ProjectMode.DESIGN);
+				const field = create();
+				field.tabIndex = 0;
+				document.body.appendChild(field);
+				field.focus();
+				const blur = jest.spyOn(field, "blur");
+
+				const event = dispatchShortcut("s", { target: field });
+
+				expect(event.defaultPrevented).toBe(true);
+				expect(blur).toHaveBeenCalledTimes(1);
+				expect(saveProject).not.toHaveBeenCalled();
+				jest.runAllTimers();
+				expect(saveProject).toHaveBeenCalledTimes(1);
+				document.body.removeChild(field);
+			},
+		);
+
+		it("saves what the blur just committed", () => {
+			setup(ProjectMode.DESIGN);
+			const input = document.createElement("input");
+			document.body.appendChild(input);
+			input.focus();
+			const order: string[] = [];
+			input.addEventListener("blur", () => order.push("blur"));
+			saveProject.mockImplementation(() => order.push("save"));
+
+			dispatchShortcut("s", { target: input });
+			jest.runAllTimers();
+
+			expect(order).toEqual(["blur", "save"]);
+			document.body.removeChild(input);
+		});
+
+		it("Ctrl+Shift+S opens the save-as modal after leaving the field", () => {
+			setup(ProjectMode.DESIGN);
+			const input = document.createElement("input");
+			document.body.appendChild(input);
+			const blur = jest.spyOn(input, "blur");
+
+			const event = dispatchShortcut("s", { shift: true, target: input });
+
+			expect(event.defaultPrevented).toBe(true);
+			expect(blur).toHaveBeenCalled();
+			expect(setSaveAsModalVisible).toHaveBeenCalledWith(true);
+			expect(saveProject).not.toHaveBeenCalled();
+			document.body.removeChild(input);
+		});
+
+		it("ignores the auto-repeat but still blocks the browser", () => {
+			setup(ProjectMode.DESIGN);
+			const input = document.createElement("input");
+			document.body.appendChild(input);
+			const blur = jest.spyOn(input, "blur");
+
+			const event = dispatchShortcut("s", { target: input, repeat: true });
+			jest.runAllTimers();
+
+			expect(event.defaultPrevented).toBe(true);
+			expect(blur).not.toHaveBeenCalled();
+			expect(saveProject).not.toHaveBeenCalled();
+			document.body.removeChild(input);
+		});
+
+		it("keeps the native behaviour inside a dialog", () => {
+			setup(ProjectMode.DESIGN);
+			const dialog = document.createElement("div");
+			dialog.setAttribute("role", "dialog");
+			const input = document.createElement("input");
+			dialog.appendChild(input);
+			document.body.appendChild(dialog);
+
+			const event = dispatchShortcut("s", { target: input });
+			const shifted = dispatchShortcut("s", { shift: true, target: input });
+			jest.runAllTimers();
+
+			expect(event.defaultPrevented).toBe(false);
+			expect(shifted.defaultPrevented).toBe(false);
+			expect(saveProject).not.toHaveBeenCalled();
+			expect(setSaveAsModalVisible).not.toHaveBeenCalled();
+			document.body.removeChild(dialog);
+		});
+
+		it("still intercepts Ctrl+S from a non-field element of a dialog", () => {
+			setup(ProjectMode.DESIGN);
+			const dialog = document.createElement("div");
+			dialog.setAttribute("role", "dialog");
+			const button = document.createElement("button");
+			dialog.appendChild(button);
+			document.body.appendChild(dialog);
+
+			const event = dispatchShortcut("s", { target: button });
+
+			expect(event.defaultPrevented).toBe(true);
+			expect(saveProject).toHaveBeenCalledTimes(1);
+			document.body.removeChild(dialog);
+		});
 	});
 });

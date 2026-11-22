@@ -4,7 +4,7 @@ import { useT } from "@/ui/i18n/useT";
 import ContextMenu from "@/ui/lib/context-menu/ContextMenu";
 import EMPTY_ARRAY from "@/ui/lib/empty";
 import { useProjectStore } from "../projects/ProjectContext";
-import useCanEdit from "../projects/useCanEdit";
+import useCanEditActivePage from "../projects/useCanEditActivePage";
 
 /** Variable visée par un clic droit dans la table des variables. */
 export type VariableRowMenuTarget = { variableId: string; mnemonic: string };
@@ -33,7 +33,7 @@ export default function VariableRowContextMenu({
 }) {
 	const t = useT("pages.variablesGrid.contextMenu");
 	const variablesManager = useProjectStore((s) => s.variablesManager);
-	const canEdit = useCanEdit();
+	const canEdit = useCanEditActivePage();
 	const crossReference = useProjectStore((s) => s.capabilities.crossReference);
 	const setCrossReferenceResultVisible = useProjectStore(
 		(s) => s.setCrossReferenceResultVisible,

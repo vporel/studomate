@@ -46,6 +46,7 @@ function setup({
 		selectorImplementation({
 			activePageId: HARDWARE_CONFIGURATION_PAGE_ID,
 			mode,
+			editingEnabled: true,
 			project: { hardwareTarget: target, variables },
 			setHardwareModel,
 			setHardwareTarget,

@@ -3,6 +3,28 @@ import IdentifierRenamer from "./identifier-renamer";
 
 describe("IdentifierRenamer", () => {
 	describe("rename", () => {
+		it.each(["constructor", "toString", "valueOf", "hasOwnProperty"])(
+			"leaves an identifier named %s alone when another one is renamed",
+			(name) => {
+				expect(
+					IdentifierRenamer.rename(
+						`${name} ET moteur`,
+						{ moteur: "pompe" },
+						Dialect.FR,
+					),
+				).toBe(`${name} ET pompe`);
+			},
+		);
+
+		it("renames an identifier named toString when it is the one to rename", () => {
+			const renames: Record<string, string> = {};
+			renames["toString"] = "autre";
+
+			expect(
+				IdentifierRenamer.rename("toString ET moteur", renames, Dialect.FR),
+			).toBe("autre ET moteur");
+		});
+
 		it("renames a simple identifier", () => {
 			expect(
 				IdentifierRenamer.rename("moteur", { moteur: "pompe" }, Dialect.FR),
@@ -127,7 +149,11 @@ describe("IdentifierRenamer", () => {
 
 			it("renomme l'entrée d'une temporisation écrite durée d'abord, sans toucher à l'unité", () => {
 				expect(
-					IdentifierRenamer.rename("5s/X1 ET 2s/(X1 OU s)", { X1: "X10", s: "SECONDE" }, Dialect.FR),
+					IdentifierRenamer.rename(
+						"5s/X1 ET 2s/(X1 OU s)",
+						{ X1: "X10", s: "SECONDE" },
+						Dialect.FR,
+					),
 				).toBe("5s/X10 ET 2s/(X10 OU SECONDE)");
 			});
 		});

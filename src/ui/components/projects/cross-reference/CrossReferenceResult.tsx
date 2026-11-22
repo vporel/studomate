@@ -14,7 +14,6 @@ import {
 	Typography,
 } from "@mui/material";
 import { useMemo } from "react";
-import BottomPanel from "../BottomPanel";
 import { useProjectStore } from "../ProjectContext";
 import useGotoProgram from "../useGotoProgram";
 import { SCENE3D_CONFIGURATION_PAGE_DATA } from "@/ui/stores/project/pages-data";
@@ -59,23 +58,12 @@ function LocationGroup({
 }
 
 /**
- * Coquille : ne monte le panneau (et donc la collecte des références) que lorsqu'il est ouvert.
- * Le composant reste abonné à `project`, un projet édité panneau fermé ne recalcule donc rien.
- */
-export default function CrossReferenceResult() {
-	const visible = useProjectStore((s) => s.ui.crossReferenceResultVisible);
-	if (!visible) return null;
-	return <CrossReferencePanel />;
-}
-
-/**
  * Panneau « Références croisées » : pour chaque variable, ses lecteurs et ses écrivains, avec
  * navigation vers l'élément concerné. Recalculé à chaque rendu du projet tant qu'il est ouvert
  * (coût par ouverture, pas de cache — cf. CLAUDE.md).
  */
-function CrossReferencePanel() {
+export default function CrossReferenceResult() {
 	const t = useT("crossReference");
-	const setVisible = useProjectStore((s) => s.setCrossReferenceResultVisible);
 	const project = useProjectStore((s) => s.project);
 	const filter = useProjectStore((s) => s.crossReferenceFilter);
 	const setFilter = useProjectStore((s) => s.setCrossReferenceFilter);
@@ -128,12 +116,7 @@ function CrossReferencePanel() {
 			: [];
 
 	return (
-		<BottomPanel
-			title={t("panelTitle")}
-			closeLabel={t("close")}
-			closeAriaLabel="close-cross-references"
-			onClose={() => setVisible(false)}
-		>
+		<>
 			<TextField
 				size="small"
 				variant="standard"
@@ -177,6 +160,6 @@ function CrossReferencePanel() {
 					</Box>
 				))}
 			</Box>
-		</BottomPanel>
+		</>
 	);
 }

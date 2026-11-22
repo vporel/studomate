@@ -5,10 +5,7 @@ import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
 import ProjectBuilder from "@/schemas/project/builders/project.builder";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
-import GrafcetAnalyser, {
-	getStepVariableId,
-	getStepVariableMnemonic,
-} from "./grafcet.analyser";
+import GrafcetAnalyser, { getStepVariableId } from "./grafcet.analyser";
 
 describe("GrafcetAnalyser", () => {
 	const grafcetAnalyser = new GrafcetAnalyser();
@@ -23,18 +20,6 @@ describe("GrafcetAnalyser", () => {
 			const id1 = getStepVariableId("grafcet-abc", 10);
 			const id2 = getStepVariableId("grafcet-xyz", 10);
 			expect(id1).not.toBe(id2);
-		});
-	});
-
-	describe("getStepVariableMnemonic", () => {
-		it("generates X mnemonic", () => {
-			expect(getStepVariableMnemonic(1)).toBe("X1");
-			expect(getStepVariableMnemonic(10)).toBe("X10");
-			expect(getStepVariableMnemonic(100)).toBe("X100");
-		});
-
-		it("handles zero", () => {
-			expect(getStepVariableMnemonic(0)).toBe("X0");
 		});
 	});
 

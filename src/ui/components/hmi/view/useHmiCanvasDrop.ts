@@ -9,6 +9,10 @@ import { useHmiStore } from "@/ui/components/hmi/HmiContext";
 import { useHmiWidgetDnD } from "@/ui/components/hmi/toolbar/HmiWidgetDnDContext";
 import { DragEvent as ReactDragEvent } from "react";
 import { snapToGrid } from "@/ui/components/hmi/logic/constants";
+import localizedWidgetDefaults, {
+	type HmiEditorTranslator,
+} from "@/ui/components/hmi/logic/localized-widget-defaults";
+import { useT } from "@/ui/i18n/useT";
 
 /**
  * Dépose sur le canvas d'un widget glissé depuis la toolbar (voir `HmiWidgetDnDContext`,
@@ -24,6 +28,7 @@ export default function useHmiCanvasDrop(
 ] {
 	const addWidget = useHmiStore((s) => s.addWidget);
 	const { draggedItem } = useHmiWidgetDnD();
+	const t = useT("hmiEditor") as unknown as HmiEditorTranslator;
 
 	const onDragOver = (e: ReactDragEvent<HTMLDivElement>) => {
 		if (isSimulation || !draggedItem) return;
@@ -52,12 +57,14 @@ export default function useHmiCanvasDrop(
 				Math.min(HMI_CANVAS_HEIGHT - size.height, rawY - size.height / 2),
 			),
 		);
+		const { nameBase, data } = localizedWidgetDefaults(draggedItem.type, t);
 		addWidget(
 			draggedItem.type,
 			x,
 			y,
 			draggedItem.sizeOverride,
-			draggedItem.dataOverride,
+			{ ...data, ...draggedItem.dataOverride },
+			nameBase,
 		);
 	};
 

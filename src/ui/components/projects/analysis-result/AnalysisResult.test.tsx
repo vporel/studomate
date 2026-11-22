@@ -9,33 +9,34 @@ import {
 } from "@/bridge/analysis-issues.mapper";
 import { useProjectStore } from "../ProjectContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
+import type { Locale } from "@/i18n/config";
 import AnalysisResult from "./AnalysisResult";
 
 jest.mock("../ProjectContext");
 
 function setup({
-	analysisResultVisible = true,
 	analysisErrors = emptyAnalysisIssues(),
 	analysisWarnings = emptyAnalysisIssues(),
-	setAnalysisResultVisible = jest.fn(),
 	openPage = jest.fn(),
+	locale = "fr",
 }: {
-	analysisResultVisible?: boolean;
+	locale?: Locale;
 	analysisErrors?: AnalysisIssues;
 	analysisWarnings?: AnalysisIssues;
-	setAnalysisResultVisible?: jest.Mock;
 	openPage?: jest.Mock;
 } = {}) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
-			ui: { analysisResultVisible },
-			setAnalysisResultVisible,
 			analysisErrors,
 			analysisWarnings,
 			project: {
 				getGrafcet: (id: string) =>
 					id === "g1"
-						? { name: "Grafcet 1", getElementById: () => null }
+						? {
+								name: "Grafcet 1",
+								getElementById: (elementId: string) =>
+									elementId === "a1" ? { type: "action" } : null,
+							}
 						: null,
 				getLadder: () => null,
 			},
@@ -45,16 +46,31 @@ function setup({
 		}),
 	);
 
-	return renderWithI18n(<AnalysisResult />);
+	return renderWithI18n(<AnalysisResult />, { locale });
 }
 
 describe("AnalysisResult", () => {
 	afterEach(() => jest.clearAllMocks());
 
-	it("ne rend rien quand le panneau n'est pas visible", () => {
-		const { container } = setup({ analysisResultVisible: false });
-		expect(container).toBeEmptyDOMElement();
-	});
+	it.each([
+		["fr", "[Action] Variable inconnue"],
+		["en", "[Action] Variable inconnue"],
+		["es", "[Acción] Variable inconnue"],
+	] as const)(
+		"préfixe une erreur d'élément grafcet par son type, dans la langue de l'interface (%s)",
+		(locale, expected) => {
+			setup({
+				locale,
+				analysisErrors: {
+					...emptyAnalysisIssues(),
+					grafcets: {
+						g1: { overall: [], elements: { a1: ["Variable inconnue"] } },
+					},
+				},
+			});
+			expect(screen.getByText(expected)).toBeInTheDocument();
+		},
+	);
 
 	it("affiche 'aucune erreur' et 'aucun avertissement' pour un projet sans issue", () => {
 		setup();
@@ -106,14 +122,5 @@ describe("AnalysisResult", () => {
 			id: "g1",
 			title: "Grafcet 1",
 		});
-	});
-
-	it("ferme le panneau au clic sur le bouton de fermeture", () => {
-		const setAnalysisResultVisible = jest.fn();
-		setup({ setAnalysisResultVisible });
-
-		fireEvent.click(screen.getByLabelText("close-analysis-errors"));
-
-		expect(setAnalysisResultVisible).toHaveBeenCalledWith(false);
 	});
 });

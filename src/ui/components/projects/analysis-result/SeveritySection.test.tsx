@@ -24,6 +24,49 @@ function baseProps(
 }
 
 describe("SeveritySection", () => {
+	function sectionBorderColor() {
+		const section = screen.getByRole("heading", { level: 5 })
+			.parentElement as HTMLElement;
+		return getComputedStyle(section).borderLeftColor;
+	}
+
+	it("n'affiche plus de chevrons devant le titre", () => {
+		renderWithI18n(<SeveritySection {...baseProps()} />);
+		expect(screen.getByRole("heading", { level: 5 })).toHaveTextContent(
+			/^Erreurs$/,
+		);
+	});
+
+	it("colore le titre comme le trait quand il y a des issues, et le laisse par défaut sinon", () => {
+		const issues = { ...emptyAnalysisIssues(), project: ["Message"] };
+		const titleColor = () =>
+			getComputedStyle(screen.getByRole("heading", { level: 5 })).color;
+		const { unmount } = renderWithI18n(
+			<SeveritySection {...baseProps({ issues })} />,
+		);
+		const withIssues = titleColor();
+		unmount();
+		renderWithI18n(<SeveritySection {...baseProps()} />);
+		expect(titleColor()).not.toBe(withIssues);
+	});
+
+	it("utilise une couleur différente pour les avertissements et pour l'absence d'issue", () => {
+		const issues = { ...emptyAnalysisIssues(), project: ["Message"] };
+		const { unmount } = renderWithI18n(
+			<SeveritySection {...baseProps({ severity: "error", issues })} />,
+		);
+		const errorColor = sectionBorderColor();
+		unmount();
+		const warning = renderWithI18n(
+			<SeveritySection {...baseProps({ severity: "warning", issues })} />,
+		);
+		const warningColor = sectionBorderColor();
+		warning.unmount();
+		renderWithI18n(<SeveritySection {...baseProps()} />);
+		const emptyColor = sectionBorderColor();
+		expect(new Set([errorColor, warningColor, emptyColor]).size).toBe(3);
+	});
+
 	it("affiche 'Aucune erreur' pour la sévérité error sans aucune issue", () => {
 		renderWithI18n(<SeveritySection {...baseProps({ severity: "error" })} />);
 		expect(

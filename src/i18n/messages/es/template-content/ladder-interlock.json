@@ -1,0 +1,11 @@
+{
+	"statement": "## Motor de dos sentidos\n\nEntradas: `forward`, `backward`, `stop` (tres pulsadores cableados normalmente abiertos (NO), a 0 en reposo). Salidas: `motor_fwd`, `motor_rev`.\n\n### Tarea\n\n1. `forward` arranca `motor_fwd`, que sigue funcionando al soltar (autorretención con prioridad de paro).\n2. `backward` arranca `motor_rev` del mismo modo.\n3. `stop` corta las dos salidas.\n4. Cuando un sentido está en marcha, pulsar el otro botón no tiene efecto.\n5. Las dos salidas nunca están a verdadero a la vez (cortocircuito en contactores reales).",
+	"texts": {
+		"projectName": "Motor de dos sentidos",
+		"solutionName": "Motor de dos sentidos: solución",
+		"forwardTitle": "Marcha adelante",
+		"forwardDescription": "Autorretención con prioridad de paro, enclavada por la marcha atrás.",
+		"backwardTitle": "Marcha atrás",
+		"backwardDescription": "Autorretención con prioridad de paro, enclavada por la marcha adelante."
+	}
+}

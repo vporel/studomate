@@ -146,6 +146,44 @@ describe("POST /api/feedback", () => {
 		expect(mockInsert).not.toHaveBeenCalled();
 	});
 
+	it("does not let a forged forwarded prefix escape the limit", async () => {
+		const POST = await loadRoute({ supabase: true });
+		const from = (prefix: number) => ({
+			"x-forwarded-for": `9.9.9.${prefix}, 10.0.0.1`,
+		});
+
+		for (let i = 0; i < 5; i++) await POST(post({ rating: 4 }, from(i)));
+
+		expect((await POST(post({ rating: 4 }, from(99)))).status).toBe(429);
+	});
+
+	it("answers 413 for a body announced as too large, without storing anything", async () => {
+		const POST = await loadRoute({ supabase: true });
+
+		const response = await POST(
+			post(
+				{ rating: 4 },
+				{
+					"content-length": String(10 * 1024 * 1024),
+					"x-forwarded-for": "7.7.7.7",
+				},
+			),
+		);
+
+		expect(response.status).toBe(413);
+		expect(await response.json()).toEqual({ error: "too-large" });
+		expect(mockInsert).not.toHaveBeenCalled();
+		expect(mockSendEmail).not.toHaveBeenCalled();
+	});
+
+	it("answers 413 for a very large body", async () => {
+		const POST = await loadRoute({ supabase: true });
+		const huge = JSON.stringify({ rating: 4, comment: "x".repeat(200_000) });
+
+		expect((await POST(post(huge))).status).toBe(413);
+		expect(mockInsert).not.toHaveBeenCalled();
+	});
+
 	it("answers 429 once a client sends too many requests", async () => {
 		const POST = await loadRoute({ supabase: true });
 		const headers = { "x-forwarded-for": "1.2.3.4, 10.0.0.1" };

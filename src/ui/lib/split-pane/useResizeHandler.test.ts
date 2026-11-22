@@ -88,6 +88,29 @@ describe("useResizeHandler", () => {
 		expect(setSizes).not.toHaveBeenCalled();
 	});
 
+	it("starts from the nearest allowed size when a pane begins beyond its maximum", () => {
+		const ref = createRef({ width: 1000, height: 1000 });
+		const children = [
+			fakePane({}),
+			fakePane({ minSize: "30%", maxSize: "60%" }),
+		];
+		const setSizes = jest.fn();
+		const { result } = renderHook(() =>
+			useResizeHandler(ref, true, [25, 75], setSizes, children),
+		);
+
+		act(() => {
+			result.current(0, fakeMouseDownEvent(100, 0));
+		});
+		act(() => {
+			document.dispatchEvent(
+				new MouseEvent("mousemove", { clientX: 150, clientY: 0 }),
+			);
+		});
+
+		expect(setSizes).toHaveBeenCalledWith([45, 55]);
+	});
+
 	it("stops listening for mouse movement after mouseup", () => {
 		const ref = createRef({ width: 1000, height: 1000 });
 		const children = [fakePane({}), fakePane({})];
@@ -199,5 +222,35 @@ describe("useResizeHandler", () => {
 		});
 
 		expect(onSizeChange).not.toHaveBeenCalled();
+	});
+
+	it("passes the new size of both adjacent panes to onDragEnd", () => {
+		const ref = createRef({ width: 1000, height: 1000 });
+		const onDragEnd = jest.fn();
+		const { result } = renderHook(() =>
+			useResizeHandler(
+				ref,
+				true,
+				[50, 50],
+				jest.fn(),
+				[fakePane({}), fakePane({})],
+				onDragEnd,
+			),
+		);
+
+		act(() => {
+			result.current(0, fakeMouseDownEvent(100, 0));
+		});
+		act(() => {
+			document.dispatchEvent(
+				new MouseEvent("mousemove", { clientX: 200, clientY: 0 }),
+			);
+		});
+		act(() => {
+			document.dispatchEvent(new MouseEvent("mouseup"));
+		});
+
+		expect(onDragEnd).toHaveBeenCalledWith(0, { px: 600, percent: 60 });
+		expect(onDragEnd).toHaveBeenCalledWith(1, { px: 400, percent: 40 });
 	});
 });

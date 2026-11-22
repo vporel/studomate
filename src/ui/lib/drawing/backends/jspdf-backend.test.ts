@@ -18,6 +18,13 @@ describe("parsePathData", () => {
 			{ type: "L", x: -1.5, y: 2 },
 		]);
 	});
+
+	it("reads numbers written in exponent notation", () => {
+		expect(parsePathData("M 1e-7 2E+1 L -3e2 .5")).toEqual([
+			{ type: "M", x: 1e-7, y: 20 },
+			{ type: "L", x: -300, y: 0.5 },
+		]);
+	});
 });
 
 function fakeDoc() {

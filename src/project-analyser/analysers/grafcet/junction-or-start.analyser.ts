@@ -1,4 +1,3 @@
-import JunctionHelper from "@/schemas/grafcet/helpers/junction.helper";
 import JunctionOrStart, {
 	JUNCTION_OR_START_HANDLE_BRANCH_TYPES,
 } from "@/schemas/grafcet/junction-or-start.schema";
@@ -15,6 +14,7 @@ import SimplifierVisitor from "@/expression-language/interpreter/simplifier/simp
 import GrafcetElementAnalyser, {
 	ElementAnalyseIsolatedOptions,
 } from "./element.analyser";
+import analyseJunctionStructure from "./junction-structure.analyser";
 
 export default class JunctionOrStartAnalyser extends GrafcetElementAnalyser<JunctionOrStart> {
 	/**
@@ -44,32 +44,14 @@ export default class JunctionOrStartAnalyser extends GrafcetElementAnalyser<Junc
 			sourceId: junctionOrStart.id,
 		};
 
-		if (!JunctionHelper.isPivotConnected(junctionOrStart.id, grafcet)) {
-			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"JUNCTION_PIVOT_NOT_CONNECTED",
-					source,
-				),
-			);
-		}
-
-		if (!JunctionHelper.hasMinimumBranches(junctionOrStart.data)) {
-			issues.push(
-				new ProjectAnalyserIssue("error", "JUNCTION_OR_MIN_BRANCHES", source),
-			);
-		}
-
-		if (!JunctionHelper.areAllBranchesConnected(junctionOrStart.id, grafcet)) {
-			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"JUNCTION_BRANCH_NOT_CONNECTED",
-					source,
-				),
-			);
-			return issues;
-		}
+		const structure = analyseJunctionStructure(
+			junctionOrStart,
+			grafcet,
+			source,
+			"JUNCTION_OR_MIN_BRANCHES",
+		);
+		issues.push(...structure.issues);
+		if (!structure.allBranchesConnected) return issues;
 
 		// Toutes les branches sont connectées — vérifie qu'elles distribuent bien vers des
 		// transitions, puis que les réceptivités atteintes sont mutuellement exclusives.

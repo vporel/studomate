@@ -107,6 +107,83 @@ describe("flashFirmware", () => {
 		).rejects.toMatchObject({ code: "transport" });
 	});
 
+	describe("when the cable is pulled", () => {
+		const SLOW = { ...FAST, commandTimeoutMs: 1000 };
+
+		it("fails with transport between two pages, without sending anything more", async () => {
+			const board = new FakeOptiboot();
+			const promise = flashFirmware({
+				transport: board,
+				image: image(4),
+				onProgress: () => board.unplug(),
+				...FAST,
+			});
+
+			await expect(promise).rejects.toMatchObject({ code: "transport" });
+			expect(board.closed).toBe(true);
+			expect(board.left).toBe(false);
+		});
+
+		it("fails with transport at once when a command is waiting for its reply", async () => {
+			const board = new FakeOptiboot();
+			const started = Date.now();
+			const promise = flashFirmware({
+				transport: board,
+				image: image(4),
+				onProgress: () => {
+					board.goSilent();
+					setTimeout(() => board.unplug(), 10);
+				},
+				...SLOW,
+			});
+
+			await expect(promise).rejects.toMatchObject({ code: "transport" });
+			expect(Date.now() - started).toBeLessThan(500);
+			expect(board.closed).toBe(true);
+		});
+
+		it("fails with transport, not sync-failed, when it happens while syncing", async () => {
+			const board = new FakeOptiboot({ silent: true });
+			setTimeout(() => board.unplug(), 10);
+			const started = Date.now();
+
+			await expect(
+				flashFirmware({
+					transport: board,
+					image: image(1),
+					syncAttempts: 200,
+					syncIntervalMs: 20,
+					settleMs: 1,
+					commandTimeoutMs: 1000,
+				}),
+			).rejects.toMatchObject({ code: "transport" });
+			expect(Date.now() - started).toBeLessThan(500);
+		});
+
+		it("fails with transport during the verification", async () => {
+			const board = new FakeOptiboot();
+			const promise = flashFirmware({
+				transport: board,
+				image: image(2),
+				onProgress: ({ phase }) => {
+					if (phase === "verify") board.unplug();
+				},
+				...FAST,
+			});
+
+			await expect(promise).rejects.toMatchObject({ code: "transport" });
+		});
+
+		it("is not reported once the flash is over", async () => {
+			const board = new FakeOptiboot();
+
+			await flashFirmware({ transport: board, image: image(1), ...FAST });
+			board.unplug();
+
+			expect(board.left).toBe(true);
+		});
+	});
+
 	it("can be cancelled between steps", async () => {
 		const board = new FakeOptiboot();
 		const controller = new AbortController();

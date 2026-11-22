@@ -1,14 +1,16 @@
 /**
  * @jest-environment jsdom
  */
-import { act, renderHook } from "@testing-library/react";
-import { useUpdateNodeInternals } from "@xyflow/react";
-import { useGrafcetStore } from "@/ui/components/grafcet/context/GrafcetContext";
 import { JunctionData } from "@/schemas/grafcet/junction.schema";
+import { useGrafcetStore } from "@/ui/components/grafcet/context/GrafcetContext";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
+import { act, renderHook } from "@testing-library/react";
 import { selectorImplementation } from "@tests/utils/store-mocks";
+import { useUpdateNodeInternals } from "@xyflow/react";
 import useKeyboardEventsHandler from "./useKeyboardEventsHandler";
 
 jest.mock("@/ui/components/grafcet/context/GrafcetContext");
+jest.mock("@/ui/components/projects/useCanEditActivePage");
 jest.mock("@xyflow/react", () => ({
 	useUpdateNodeInternals: jest.fn(),
 }));
@@ -58,6 +60,7 @@ describe("useKeyboardEventsHandler", () => {
 			selectorImplementation({ workflowManager }),
 		);
 		(useUpdateNodeInternals as jest.Mock).mockReturnValue(updateNodeInternals);
+		(useCanEditActivePage as jest.Mock).mockReturnValue(true);
 	});
 
 	afterEach(() => jest.clearAllMocks());
@@ -134,6 +137,51 @@ describe("useKeyboardEventsHandler", () => {
 
 		expect(deleteJunctionBranch).not.toHaveBeenCalled();
 		expect(event.stopPropagation).toHaveBeenCalled();
+	});
+
+	describe("when the project cannot be edited", () => {
+		beforeEach(() =>
+			(useCanEditActivePage as jest.Mock).mockReturnValue(false),
+		);
+
+		it("swallows Delete without deleting the branch", () => {
+			const handler = setup(false, "b2");
+			const event = fakeKeyboardEvent("Delete");
+
+			act(() => handler(event));
+
+			expect(deleteJunctionBranch).not.toHaveBeenCalled();
+			expect(event.preventDefault).toHaveBeenCalled();
+			expect(event.stopPropagation).toHaveBeenCalled();
+		});
+
+		it("moves nothing on plain arrows", () => {
+			const handler = setup(false, "b2");
+
+			act(() => handler(fakeKeyboardEvent("ArrowRight")));
+			act(() => handler(fakeKeyboardEvent("ArrowLeft")));
+
+			expect(updateNodeData).not.toHaveBeenCalled();
+			expect(applyJunctionBranchDrag).not.toHaveBeenCalled();
+		});
+
+		it("moves nothing on an extreme branch either", () => {
+			const handler = setup(false, "b1");
+
+			act(() => handler(fakeKeyboardEvent("ArrowLeft")));
+
+			expect(applyJunctionBranchDrag).not.toHaveBeenCalled();
+		});
+
+		it("still clears the selection on Escape and navigates with Shift+Arrow", () => {
+			const handler = setup(false, "b2");
+
+			act(() => handler(fakeKeyboardEvent("Escape")));
+			act(() => handler(fakeKeyboardEvent("ArrowRight", { shiftKey: true })));
+
+			expect(clearSelection).toHaveBeenCalled();
+			expect(selectNextBranch).toHaveBeenCalled();
+		});
 	});
 
 	it("selects the previous/next branch on Shift+Arrow without touching the store", () => {

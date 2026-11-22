@@ -47,7 +47,7 @@ describe("pagePrecacheEntries", () => {
 			(url) =>
 				url !== "/app" &&
 				url !== "/app/3d-scene" &&
-				!/\/(manuel-utilisateur|user-manual)(\/|$)/.test(url),
+				!/\/(manuel-utilisateur|user-manual|manual-de-usuario)(\/|$)/.test(url),
 		);
 		expect(others).toEqual([]);
 	});

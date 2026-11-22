@@ -1,3 +1,4 @@
+import { isRecord } from "@/lib/object";
 import Project from "@/schemas/project/project.schema";
 import { deserializeProject } from "./project-deserialization";
 import { readJson, writeJson } from "./safe-local-storage";
@@ -17,9 +18,7 @@ type DraftStore = Record<string, Draft>; // indexé par projectId
 
 function readStore(): DraftStore {
 	const parsed = readJson(STORAGE_KEY);
-	return typeof parsed === "object" && parsed !== null
-		? (parsed as DraftStore)
-		: {};
+	return isRecord(parsed) ? (parsed as DraftStore) : {};
 }
 
 export type DraftSaveResult = StorageWriteResult;
@@ -85,7 +84,7 @@ export function parseDraftProject(data: string): Project | null {
 	} catch {
 		return null;
 	}
-	if (typeof raw !== "object" || raw === null) return null;
-	const result = deserializeProject(raw as Record<string, any>);
+	if (!isRecord(raw)) return null;
+	const result = deserializeProject(raw);
 	return result.ok ? result.project : null;
 }

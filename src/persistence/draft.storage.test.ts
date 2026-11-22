@@ -185,6 +185,14 @@ describe("draft.storage", () => {
 		});
 	});
 
+	describe("robustesse face à un tableau", () => {
+		it("traite un tableau stocké comme un store vide", () => {
+			store.set("studomate_drafts", JSON.stringify([{ projectId: "p1" }]));
+
+			expect(getAllDrafts()).toHaveLength(0);
+		});
+	});
+
 	describe("parseDraftProject", () => {
 		function draftJson(overrides: Record<string, unknown> = {}): string {
 			return JSON.stringify({
@@ -226,6 +234,7 @@ describe("draft.storage", () => {
 		it("returns null for JSON that is not an object", () => {
 			expect(parseDraftProject("null")).toBeNull();
 			expect(parseDraftProject("42")).toBeNull();
+			expect(parseDraftProject("[]")).toBeNull();
 		});
 
 		it("returns null for a draft without an id", () => {

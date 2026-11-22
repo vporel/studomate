@@ -9,8 +9,16 @@ const PAGES = [
 		suffix: /Manuel utilisateur — Studomate/,
 	},
 	{ locale: "en", path: "/en/user-manual", suffix: /User manual — Studomate/ },
-	{ locale: "fr", path: "/formations", suffix: /Cours et exercices GRAFCET et Ladder gratuits — Studomate/ },
-	{ locale: "en", path: "/en/training", suffix: /Free GRAFCET and ladder logic course — Studomate/ },
+	{
+		locale: "fr",
+		path: "/formations",
+		suffix: /Cours et exercices GRAFCET et Ladder gratuits — Studomate/,
+	},
+	{
+		locale: "en",
+		path: "/en/training",
+		suffix: /Free GRAFCET and ladder logic course — Studomate/,
+	},
 	{
 		locale: "fr",
 		path: "/formations/a1/observer-sequence-lineaire",
@@ -20,6 +28,27 @@ const PAGES = [
 		locale: "en",
 		path: "/en/training/a1/observe-linear",
 		suffix: /Watch a GRAFCET in simulation/,
+	},
+	{ locale: "es", path: "/es", suffix: /Simulador PLC online gratis/ },
+	{
+		locale: "es",
+		path: "/es/manual-de-usuario",
+		suffix: /Manual de usuario — Studomate/,
+	},
+	{
+		locale: "es",
+		path: "/es/formacion",
+		suffix: /Curso gratuito de GRAFCET y Ladder — Studomate/,
+	},
+	{
+		locale: "es",
+		path: "/es/formacion/a1/observar-secuencia-lineal",
+		suffix: /Observa un GRAFCET en simulación/,
+	},
+	{
+		locale: "es",
+		path: "/es/aviso-legal",
+		suffix: /Aviso legal — Studomate/,
 	},
 ];
 
@@ -63,4 +92,13 @@ test("le lien hreflang pointe vers l'équivalent traduit de la page", async ({
 	expect(href).toContain("/en/user-manual");
 	await page.goto(new URL(href!).pathname);
 	await expect(page).toHaveTitle(/User manual/);
+});
+
+test("une page légale traduite renvoie vers la version française, qui fait foi", async ({
+	page,
+}) => {
+	await page.goto("/es/aviso-legal");
+	await page.getByRole("link", { name: "Leer la versión francesa" }).click();
+	await expect(page).toHaveURL(/\/mentions-legales$/);
+	await expect(page.locator("html")).toHaveAttribute("lang", "fr");
 });

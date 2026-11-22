@@ -87,6 +87,19 @@ describe("buildProgram", () => {
 		expect(() => buildProgram(setup())).toThrow(TypeError);
 	});
 
+	it("lets a malformed image through: it is a defect of the generator, not a limit of the board", () => {
+		const realGenerate = jest.requireActual<typeof generator>(
+			"@/bytecode/bytecode.generator",
+		).default;
+		jest.spyOn(generator, "default").mockImplementation((generation) => {
+			const image = realGenerate(generation);
+			image.bytes[0] ^= 0xff;
+			return image;
+		});
+
+		expect(() => buildProgram(setup())).toThrow(/invalid image: bad magic/);
+	});
+
 	it("blocks a program that does not fit and names the largest program", () => {
 		const input = setup(true);
 		const result = buildProgram({

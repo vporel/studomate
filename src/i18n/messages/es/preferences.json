@@ -1,0 +1,26 @@
+{
+	"tabTitle": "Preferencias",
+	"heading": "Preferencias de la aplicación",
+	"storageLocation": {
+		"heading": "Ubicación de almacenamiento predeterminada",
+		"description": "Se usa la primera vez que se guarda un proyecto nuevo."
+	},
+	"simulation": {
+		"heading": "Simulación",
+		"autoOpenHmi": {
+			"label": "Abrir automáticamente la vista de simulación",
+			"description": "Al entrar en simulación, cambia automáticamente a la pestaña \"Simulación HMI\" si el proyecto tiene al menos una página HMI; si no, abre la pestaña de la escena 3D si el proyecto tiene una escena."
+		}
+	},
+	"defaultDialect": {
+		"heading": "Lenguaje de expresiones predeterminado",
+		"description": "Se aplica a los nuevos proyectos en blanco. El lenguaje de un proyecto existente se cambia en sus propiedades.",
+		"FR": "Francés: ET, OU, NON, VRAI, FAUX",
+		"EN": "Inglés: AND, OR, NOT, TRUE, FALSE",
+		"firstProject": {
+			"title": "Tus preferencias",
+			"body": "Elige el lenguaje de las expresiones de tus proyectos (condiciones, acciones, ecuaciones). Podrás cambiarlo más tarde en Preferencias.",
+			"confirm": "Confirmar"
+		}
+	}
+}

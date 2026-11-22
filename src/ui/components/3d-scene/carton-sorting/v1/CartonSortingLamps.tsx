@@ -4,12 +4,14 @@ import CartonSortingModel, {
 	type CartonSortingState,
 } from "@/3d-scenes/carton-sorting/v1/carton-sorting.model";
 import { useTranslations } from "next-intl";
-import { Lamp } from "@/ui/components/3d-scene/parts/ConsoleParts";
+import {
+	COMMAND_COLOR,
+	Lamp,
+	SENSOR_COLOR,
+} from "@/ui/components/3d-scene/parts/ConsoleParts";
 import type { SceneComponentProps } from "@/ui/components/3d-scene/scene-views";
 import useSampledValue from "@/ui/components/3d-scene/useSampledValue";
 
-const COMMAND_COLOR = "#ef6c00";
-const SENSOR_COLOR = "#2e7d32";
 const CYLINDERS = ["p1", "p2", "p3"] as const;
 
 type LampStates = Record<string, boolean>;

@@ -1,0 +1,27 @@
+{
+	"statement": "## Arranque estrella-triángulo\n\nUn motor trifásico grande arranca en estrella (tensión reducida) y luego pasa a triángulo (tensión plena). Cada conexión la cierra un contactor: un contactor de línea, un contactor de estrella y un contactor de triángulo.\n\n| Variable | Función | Tipo |\n| --- | --- | --- |\n| `start` | arranca el motor | pulsador (verdadero mientras se pulsa) |\n| `stop` | detiene el motor | pulsador (verdadero mientras se pulsa) |\n| `km_line`, `km_star`, `km_delta` | contactores de línea, estrella y triángulo | salidas |\n| `fan` | refrigeración del motor | salida |\n| `blink_sw` | habilitación del intermitente (opcional) | interruptor |\n| `indicator` | indicador del intermitente (opcional) | salida |\n\n### Especificación\n\n1. Tras una pulsación de `start`, el motor arranca en estrella durante 5 s (`km_line` y `km_star`) y luego pasa a triángulo (`km_line` y `km_delta`).\n2. `stop` detiene el motor en cualquier momento (prioridad de paro).\n3. Estrella y triángulo nunca están cerrados a la vez: programa el enclavamiento (un contacto NC del otro contactor en cada red). En una máquina real también se cablea; aquí el programa debe garantizarlo.\n4. El ventilador permanece activo 10 s después de que se detenga el motor (tras la caída de `km_line`).\n5. Opcional: un tiempo muerto (por ejemplo 200 ms) entre estrella y triángulo; un intermitente ajustable (1 s apagado, 1 s encendido) formado por dos `TON` cruzados, habilitado por `blink_sw`.",
+	"texts": {
+		"projectName": "Arranque estrella-triángulo",
+		"solutionName": "Arranque estrella-triángulo: solución",
+		"starTimerName": "t_star",
+		"fanTimerName": "t_fan",
+		"lowPhaseTimerName": "t_low_phase",
+		"highPhaseTimerName": "t_high_phase",
+		"lineContactorTitle": "Contactor de línea",
+		"lineContactorDescription": "Autorretención con prioridad de paro.",
+		"startTimeTitle": "Tiempo de arranque",
+		"startTimeDescription": "El TON mide el tiempo pasado en estrella.",
+		"starTitle": "Estrella",
+		"starDescription": "Estrella durante el arranque, enclavada por el triángulo.",
+		"deltaTitle": "Triángulo",
+		"deltaDescription": "Triángulo tras la temporización, enclavado por la estrella.",
+		"fanTitle": "Ventilador",
+		"fanDescription": "El TOF prolonga la ventilación 10 s tras el paro del motor.",
+		"blinkOffTitle": "Intermitente: fase apagada",
+		"blinkOffDescription": "Primer TON, armado mientras el segundo no haya terminado.",
+		"blinkOnTitle": "Intermitente: fase encendida",
+		"blinkOnDescription": "Segundo TON, armado durante la fase encendida.",
+		"indicatorTitle": "Indicador",
+		"indicatorDescription": "El indicador sigue la fase encendida."
+	}
+}

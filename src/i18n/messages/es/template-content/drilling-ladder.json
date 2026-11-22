@@ -1,0 +1,13 @@
+{
+	"statement": "## Estación de taladrado en Ladder\n\nLa parte operativa (la máquina: taladro, motor, sensores) se proporciona y la llama el Main: no la modifiques. Entradas: `cycle_start` (pulsador, inicio de ciclo), `acknowledge` (pulsador), `h` (taladro arriba), `b` (taladro abajo) y `blocked` (interruptor que simula un taladro atascado: mientras está a verdadero, el taladro ya no baja). Salidas: `down`, `up` y `spindle`. Marcas proporcionadas: `fault`, `X0` a `X3`.\n\n### Tarea\n\n1. Crea los programas `Faults`, `Automatic_cycle` y `Outputs` y llámalos desde el Main en este orden, después de la parte operativa.\n2. En `Automatic_cycle`, implementa el GRAFCET de la estación, una red por transición: `cycle_start` → descenso (`down`, `spindle`) hasta `b` → taladrado durante 2 s (`spindle`, un `TON`) → subida (`up`, `spindle`) hasta `h`.\n3. Vigila el descenso: si el taladro no alcanza `b` en 8 s (un segundo `TON`, en `Automatic_cycle`), el taladro sube directamente y `Faults` memoriza `fault`. Una pulsación de `acknowledge` borra `fault`, y `cycle_start` solo inicia un ciclo cuando `fault` es falso (`cycle_start AND NOT fault`). Pruébalo accionando `blocked`.\n4. En `Outputs`, una red por salida.",
+	"texts": {
+		"projectName": "Estación de taladrado en Ladder",
+		"solutionName": "Estación de taladrado en Ladder: solución",
+		"drillTimer": "t_drill",
+		"watchdogTimer": "t_watchdog",
+		"faultTitle": "Fallo memorizado",
+		"faultDescription": "Se memoriza el fallo de descenso.",
+		"faultAcknowledgeTitle": "Reconocimiento del fallo",
+		"faultAcknowledgeDescription": "Al pulsar el botón de reconocimiento se borra el fallo."
+	}
+}

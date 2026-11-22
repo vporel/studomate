@@ -1,7 +1,5 @@
 import { Dialect } from "@/expression-language/dialect.enum";
-import Action, {
-	ActionType,
-} from "@/schemas/grafcet/action.schema";
+import Action, { ActionType } from "@/schemas/grafcet/action.schema";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import ActionHelper from "@/schemas/grafcet/helpers/action.helper";
 import StepHelper from "@/schemas/grafcet/helpers/step.helper";
@@ -11,9 +9,7 @@ import { expressionRefs, identifierName } from "./expression-refs";
 import { RawReference } from "./cross-reference.types";
 
 function stepNumberOf(step: Step | null): number | null {
-	return step && Number.isInteger(step.data.number) && (step.data.number as number) >= 0
-		? (step.data.number as number)
-		: null;
+	return step ? StepHelper.getValidNumber(step.data) : null;
 }
 
 function transitionReferences(
@@ -21,7 +17,10 @@ function transitionReferences(
 	grafcet: Grafcet,
 	dialect: Dialect,
 ): RawReference[] {
-	const { reads, writes } = expressionRefs(transition.getFullExpression(), dialect);
+	const { reads, writes } = expressionRefs(
+		transition.getFullExpression(),
+		dialect,
+	);
 	const base = {
 		programId: grafcet.id,
 		programType: "grafcet" as const,
@@ -30,8 +29,16 @@ function transitionReferences(
 		locationParams: {},
 	};
 	return [
-		...reads.map((variableName) => ({ ...base, variableName, access: "read" as const })),
-		...writes.map((variableName) => ({ ...base, variableName, access: "write" as const })),
+		...reads.map((variableName) => ({
+			...base,
+			variableName,
+			access: "read" as const,
+		})),
+		...writes.map((variableName) => ({
+			...base,
+			variableName,
+			access: "write" as const,
+		})),
 	];
 }
 

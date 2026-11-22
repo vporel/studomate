@@ -18,6 +18,7 @@ import {
 	type DeviceMessage,
 	type PinValue,
 } from "./messages";
+import { clamp } from "@/lib/number";
 import { FrameDecoder } from "./frame";
 import { isFirmwareOutdated } from "./firmware-version";
 import type { RemoteIoPlan } from "./remote-io-plan";
@@ -162,6 +163,8 @@ export default class RemoteIoClient {
 	private stateListener: ((state: RemoteIoState) => void) | null = null;
 	private lostListener: ((error: RemoteIoError) => void) | null = null;
 	private connectAbort: ((error: RemoteIoError) => void) | null = null;
+	/** Rejects the exchange being waited for, when the link is lost or closed under it. */
+	private cancelPendingWait: ((error: RemoteIoError) => void) | null = null;
 
 	constructor(options: RemoteIoClientOptions) {
 		this.options = { ...DEFAULTS, ...options };
@@ -250,7 +253,7 @@ export default class RemoteIoClient {
 			const { min, max } = output.range;
 			const numeric =
 				typeof raw === "boolean" ? (raw ? 1 : 0) : Math.round(raw);
-			const value = Math.min(max, Math.max(min, numeric));
+			const value = clamp(numeric, min, max);
 			if (this.outputValues.get(output.pin) !== value) changed = true;
 			this.outputValues.set(output.pin, value);
 		}
@@ -617,11 +620,16 @@ export default class RemoteIoClient {
 				clearTimeout(timer);
 				if (repeat) clearInterval(repeat);
 				this.messageListener = null;
+				this.cancelPendingWait = null;
 			};
 			const timer = setTimeout(() => {
 				finish();
 				reject(onTimeout());
 			}, timeoutMs);
+			this.cancelPendingWait = (error) => {
+				finish();
+				reject(error);
+			};
 			this.messageListener = (message) => {
 				try {
 					const picked = pick(message);
@@ -757,6 +765,7 @@ export default class RemoteIoClient {
 		this.watch = null;
 		this.stopHeartbeat?.();
 		this.stopHeartbeat = null;
+		this.cancelPendingWait?.(new RemoteIoError("transport", "port closed"));
 		this.messageListener = null;
 		for (const unsubscribe of this.unsubscribers) unsubscribe();
 		this.unsubscribers = [];

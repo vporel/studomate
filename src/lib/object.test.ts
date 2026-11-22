@@ -3,6 +3,7 @@ import {
 	extractFields,
 	invertRecord,
 	isRecord,
+	getOwnPropertyValue,
 } from "./object";
 
 describe("invertRecord", () => {
@@ -102,4 +103,34 @@ describe("isRecord", () => {
 	it.each([null, undefined, 42, "text", true, []])("rejects %p", (value) => {
 		expect(isRecord(value)).toBe(false);
 	});
+});
+
+describe("getOwnPropertyValue", () => {
+	it("returns the value of an own key", () => {
+		expect(getOwnPropertyValue({ a: "b" }, "a")).toBe("b");
+	});
+
+	it("returns undefined for a missing key", () => {
+		expect(getOwnPropertyValue({ a: "b" }, "c")).toBeUndefined();
+	});
+
+	it.each([
+		"constructor",
+		"toString",
+		"valueOf",
+		"hasOwnProperty",
+		"__proto__",
+	])("does not answer for the inherited name %s", (name) => {
+		expect(getOwnPropertyValue({ a: "b" }, name)).toBeUndefined();
+	});
+
+	it.each(["constructor", "toString", "valueOf"])(
+		"returns the value when the record itself holds the name %s",
+		(name) => {
+			const record: Record<string, string> = {};
+			record[name] = "autre";
+
+			expect(getOwnPropertyValue(record, name)).toBe("autre");
+		},
+	);
 });

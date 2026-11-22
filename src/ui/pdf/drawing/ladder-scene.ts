@@ -15,10 +15,9 @@ import {
 } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Section from "@/schemas/ladder/section.schema";
-import { CELL_SUBDIVISIONS } from "@/ui/utils/ladder/ladder-connection-path";
+import { buildVertices } from "@/ui/utils/ladder/ladder-edge-geometry";
 import {
 	colToX,
-	getConnectionLinePoints,
 	GRID_CELL_HEIGHT,
 	GRID_CELL_WIDTH,
 	LADDER_FLOW_TOP_OFFSET,
@@ -75,28 +74,6 @@ function handlePoint(element: LadderElement, handle: string): [number, number] {
 		isLeft ? elementLeftX(element) : elementRightX(element),
 		wiringY(element),
 	];
-}
-
-/**
- * Sommets (px) du tracé d'une connexion ladder. `data.points` est en `[ligne, quartCol]` (voir
- * `LadderConnectionEdge.buildVertices`) : seule la colonne compte, l'ordonnée vient toujours de
- * la source / de la cible.
- */
-export function connectionVertices(
-	s: [number, number],
-	t: [number, number],
-	stored: [number, number][] | undefined,
-): [number, number][] {
-	if (s[1] === t[1]) return [s, t]; // même ligne : section horizontale
-	if (!stored || stored.length === 0) {
-		return getConnectionLinePoints(s[0], s[1], t[0], t[1]);
-	}
-	const quarterCellWidth = GRID_CELL_WIDTH / CELL_SUBDIVISIONS;
-	const bend = stored.map(([, quarterCol], i): [number, number] => [
-		POWER_RAIL_OFFSET + quarterCol * quarterCellWidth,
-		i === 0 ? s[1] : t[1],
-	]);
-	return [s, ...bend, t];
 }
 
 // --- symboles ------------------------------------------------------------
@@ -544,7 +521,13 @@ function sectionScene(
 		if (!source || !target) continue;
 		const s = handlePoint(source, connection.source.handle);
 		const t = handlePoint(target, connection.target.handle);
-		const points = connectionVertices(s, t, connection.data?.points);
+		const points = buildVertices(
+			s[0],
+			s[1],
+			t[0],
+			t[1],
+			connection.data?.points ?? [],
+		);
 		if (points.some(([px, py]) => px !== points[0][0] || py !== points[0][1])) {
 			ops.push({
 				op: "polyline",

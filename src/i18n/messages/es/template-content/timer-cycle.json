@@ -1,0 +1,8 @@
+{
+	"statement": "## Temporizador\n\nSalidas: `output1`, `output2`. Sin entradas: el ciclo depende únicamente del tiempo.\n\n### Trabajo a realizar\n\n1. En la etapa inicial, activa `output1`.\n2. Tras 4 segundos, activa `output2` en su lugar.\n3. Tras 2 segundos, vuelve a la etapa inicial, en bucle.",
+	"texts": {
+		"projectName": "Temporizador",
+		"solutionName": "Temporizador: solución",
+		"grafcetName": "Temporizador"
+	}
+}

@@ -35,6 +35,10 @@ export interface AdmissibilityReport {
  * Compares an image to what the target and its shipped firmware can hold (`limits` of its
  * descriptor). The sizes are exact:
  * the generator knows them at compile time.
+ *
+ * Throws when the image fails the structural verification for any reason but the nesting limit
+ * of the jumps: the generator produced something malformed, which is a defect of the generator
+ * and not a limit of the target, so callers do not catch it.
  */
 export default function checkAdmissibility(
 	image: BytecodeImage,

@@ -68,6 +68,12 @@ export default class WebSerialTransport implements SerialTransport {
 	async open(): Promise<void> {
 		this.closing = false;
 		await this.port.open({ baudRate: this.options.baudRate });
+		//`close()` called while the port was opening found nothing to release: this call is the
+		//one that has to give the port back.
+		if (this.closing) {
+			await this.closePortQuietly();
+			throw new Error("Port closed while opening");
+		}
 		this.port.addEventListener("disconnect", this.onPortDisconnect);
 		this.writer = this.port.writable!.getWriter();
 		this.reader = this.port.readable!.getReader();
@@ -76,12 +82,20 @@ export default class WebSerialTransport implements SerialTransport {
 			dataTerminalReady: false,
 			requestToSend: false,
 		});
+		this.throwIfClosedWhileOpening();
 		await sleep(this.options.resetPulseMs);
+		this.throwIfClosedWhileOpening();
 		await this.port.setSignals({
 			dataTerminalReady: true,
 			requestToSend: true,
 		});
 		await sleep(this.options.bootDelayMs);
+		this.throwIfClosedWhileOpening();
+	}
+
+	/** `close()` has already released the locks and the port: the opening is over. */
+	private throwIfClosedWhileOpening() {
+		if (this.closing) throw new Error("Port closed while opening");
 	}
 
 	async write(data: string): Promise<void> {
@@ -114,6 +128,10 @@ export default class WebSerialTransport implements SerialTransport {
 		}
 		reader?.releaseLock();
 		writer?.releaseLock();
+		await this.closePortQuietly();
+	}
+
+	private async closePortQuietly(): Promise<void> {
 		try {
 			await this.port.close();
 		} catch {

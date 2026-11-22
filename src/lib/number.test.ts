@@ -1,4 +1,4 @@
-import { clamp } from "./number";
+import { clamp, lerp } from "./number";
 
 describe("clamp", () => {
 	it("laisse passer une valeur dans l'intervalle", () => {
@@ -28,3 +28,19 @@ describe("clamp", () => {
 		expect(clamp(50, 10, 0)).toBe(10);
 	});
 });
+
+describe("lerp", () => {
+	it("returns the bounds at ratio 0 and 1", () => {
+		expect(lerp(10, 20, 0)).toBe(10)
+		expect(lerp(10, 20, 1)).toBe(20)
+	})
+
+	it("returns the midpoint at ratio 0.5", () => {
+		expect(lerp(10, 20, 0.5)).toBe(15)
+	})
+
+	it("extrapolates outside [0, 1]", () => {
+		expect(lerp(10, 20, 2)).toBe(30)
+		expect(lerp(10, 20, -1)).toBe(0)
+	})
+})

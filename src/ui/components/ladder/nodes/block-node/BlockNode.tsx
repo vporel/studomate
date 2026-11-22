@@ -5,15 +5,17 @@ import {
 	resolvePortSpecs,
 	resolveStructuralPorts,
 } from "@/schemas/ladder/block-definition";
-import { BlockData } from "@/schemas/ladder/block.schema";
 import {
 	getBlockHeightInCellUnits,
 	getParameterPinRows,
 } from "@/schemas/ladder/block-port.schema";
+import { BlockData } from "@/schemas/ladder/block.schema";
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
+import { getBlockVariableMnemonics } from "@/schemas/ladder/function-blocks/function-block.schema";
+import Variable from "@/schemas/variable/variable.schema";
 import { useLadderStore } from "@/ui/components/ladder/context/LadderContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import Variable from "@/schemas/variable/variable.schema";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
 import { useT } from "@/ui/i18n/useT";
 import { GRID_CELL_HEIGHT } from "@/ui/utils/ladder/ladder-flow-builder";
 import { Box, useTheme } from "@mui/material";
@@ -26,7 +28,6 @@ import CompareBlockNode from "./CompareBlockNode";
 import ConvertTypeSelects from "./ConvertTypeSelects";
 import { BLOCK_NODE_DIMENSIONS, PIN_ROW_HEIGHT } from "./dimensions";
 import OperatorSelect from "./OperatorSelect";
-import { getBlockVariableMnemonics } from "@/schemas/ladder/function-blocks/function-block.schema";
 import ParamPinRow from "./ParamPinRow";
 
 export type BlockNodeData = BlockData;
@@ -58,6 +59,7 @@ const BoxBlockNode = ({
 }) => {
 	const th = useTheme();
 	const t = useT("ladderEditor.block");
+	const canEdit = useCanEditActivePage();
 	const def = BLOCK_DEFINITIONS[data.blockType];
 	const ui = BLOCK_NODE_UI[data.blockType];
 	const programName =
@@ -180,7 +182,11 @@ const BoxBlockNode = ({
 				/>
 			))}
 			{data.blockType === "convert" && (
-				<ConvertTypeSelects params={data.params} onChange={runUpdate} />
+				<ConvertTypeSelects
+					params={data.params}
+					onChange={runUpdate}
+					disabled={!canEdit}
+				/>
 			)}
 			{def.inlineSelect && (
 				<Box
@@ -197,6 +203,7 @@ const BoxBlockNode = ({
 							runUpdate(def.inlineSelect!.write(data.params, value))
 						}
 						operators={def.inlineSelect.values}
+						disabled={!canEdit}
 						ariaLabel={
 							ui.inlineSelectAriaKey ? t(ui.inlineSelectAriaKey as never) : ""
 						}

@@ -4,7 +4,7 @@
 import { act, render, screen } from "@testing-library/react";
 import {
 	FixedLocaleProvider,
-	LocaleProvider,
+	PreferredLocaleProvider,
 	useLocaleContext,
 } from "./LocaleProvider";
 
@@ -20,14 +20,14 @@ function Probe() {
 	return (
 		<div>
 			<span data-testid="locale">{locale}</span>
-			<button onClick={() => setLocale("en")}>en</button>
+			<button onClick={() => setLocale("fr")}>fr</button>
 		</div>
 	);
 }
 
-describe("LocaleProvider", () => {
+describe("PreferredLocaleProvider", () => {
 	beforeEach(() => {
-		// Langue de navigateur non supportée : la détection retombe sur le défaut (fr).
+		// Langue de navigateur non supportée : la détection retombe sur l'anglais.
 		Object.defineProperty(navigator, "language", {
 			value: "de-DE",
 			configurable: true,
@@ -43,42 +43,42 @@ describe("LocaleProvider", () => {
 		mockGetPreferredLocale.mockReturnValue("en");
 
 		render(
-			<LocaleProvider>
+			<PreferredLocaleProvider>
 				<Probe />
-			</LocaleProvider>,
+			</PreferredLocaleProvider>,
 		);
 
 		expect(screen.getByTestId("locale")).toHaveTextContent("en");
 		expect(document.documentElement.lang).toBe("en");
 	});
 
-	it("retombe sur le français quand aucune préférence n'est enregistrée", () => {
+	it("retombe sur l'anglais quand aucune préférence n'est enregistrée et que le navigateur n'est ni français ni anglais", () => {
 		mockGetPreferredLocale.mockReturnValue(null);
 
 		render(
-			<LocaleProvider>
+			<PreferredLocaleProvider>
 				<Probe />
-			</LocaleProvider>,
+			</PreferredLocaleProvider>,
 		);
 
-		expect(screen.getByTestId("locale")).toHaveTextContent("fr");
+		expect(screen.getByTestId("locale")).toHaveTextContent("en");
 	});
 
 	it("persiste le changement de langue", () => {
 		mockGetPreferredLocale.mockReturnValue(null);
 
 		render(
-			<LocaleProvider>
+			<PreferredLocaleProvider>
 				<Probe />
-			</LocaleProvider>,
+			</PreferredLocaleProvider>,
 		);
 
 		act(() => {
-			screen.getByRole("button", { name: "en" }).click();
+			screen.getByRole("button", { name: "fr" }).click();
 		});
 
-		expect(mockSetPreferredLocale).toHaveBeenCalledWith("en");
-		expect(screen.getByTestId("locale")).toHaveTextContent("en");
+		expect(mockSetPreferredLocale).toHaveBeenCalledWith("fr");
+		expect(screen.getByTestId("locale")).toHaveTextContent("fr");
 	});
 });
 

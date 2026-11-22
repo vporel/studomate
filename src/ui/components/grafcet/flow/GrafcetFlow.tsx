@@ -1,19 +1,19 @@
 "use client";
-import useCanEdit from "@/ui/components/projects/useCanEdit";
-import usePageEditingEnabled from "@/ui/components/projects/usePageEditingEnabled";
 import ConnectionsValidator from "@/schemas/grafcet/validators/connections.validator";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
+import usePageEditingEnabled from "@/ui/components/projects/usePageEditingEnabled";
 import { FLOW_GRID_CELL_WIDTH } from "@/ui/constants";
+import useCtrlWheelZoom from "@/ui/lib/hooks/useCtrlWheelZoom";
 import {
 	GRAFCET_FLOW_MAX_ZOOM,
 	GRAFCET_FLOW_MIN_ZOOM,
 } from "@/ui/stores/grafcet/managers/view.manager";
 import {
+	getPageFitZoom,
 	GRAFCET_PAGE_DIMENSIONS,
 	GRAFCET_PAGE_EXTENT,
-	getPageFitZoom,
 } from "@/ui/utils/grafcet/grafcet-utils";
-import useCtrlWheelZoom from "@/ui/lib/hooks/useCtrlWheelZoom";
 import { Box, SxProps, Theme } from "@mui/material";
 import {
 	Background,
@@ -45,11 +45,14 @@ import {
 	nodeTypes,
 } from "./grafcet-nodes-definitions";
 import useContextMenuOpeningHandlers from "./useContextMenuOpeningHandlers";
+import useLabelledGrafcetNodes from "./useLabelledGrafcetNodes";
 import useToolDragOverHandlers from "./useToolDragOverHandlers";
 
-import "@xyflow/react/dist/style.css";
 import "@/ui/lib/react-flow/flow-page.css";
+import "@xyflow/react/dist/style.css";
 import "./_grafcet-page.css";
+
+const DELETE_KEY_CODES = ["Backspace", "Delete"];
 
 const DEFAULT_EDGE_OPTIONS = { type: "grafcet-connection" } as const;
 const SNAP_GRID: [number, number] = [
@@ -121,7 +124,9 @@ export function GrafcetFlowContent({
 	} = useContextMenuOpeningHandlers();
 	const { store } = useGrafcetContext();
 	const grafcetId = useGrafcetStore((state) => state.grafcet.id);
-	const nodes = useGrafcetStore(useShallow((state) => state.nodes));
+	const nodes = useLabelledGrafcetNodes(
+		useGrafcetStore(useShallow((state) => state.nodes)),
+	);
 	const edges = useGrafcetStore(useShallow((state) => state.edges));
 	const viewManager = useGrafcetStore((state) => state.viewManager);
 	const workflowManager = useGrafcetStore((state) => state.workflowManager);
@@ -129,7 +134,7 @@ export function GrafcetFlowContent({
 		width: number;
 		height: number;
 	} | null>(null);
-	const canEdit = useCanEdit();
+	const canEdit = useCanEditActivePage();
 	const editingEnabled = usePageEditingEnabled(grafcetId);
 	//A block where the grafcet can be edited shows the page at its real size, scrolling like the
 	//page of the application; otherwise the grafcet is fitted to the block.
@@ -284,6 +289,7 @@ export function GrafcetFlowContent({
 					onConnect={handleConnect}
 					onEdgesChange={handleEdgesChange}
 					onDelete={handleDelete}
+					deleteKeyCode={DELETE_KEY_CODES}
 					fitView={fitContent}
 					fitViewOptions={FIT_VIEW_OPTIONS}
 					nodeTypes={nodeTypes}

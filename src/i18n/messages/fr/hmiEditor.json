@@ -91,8 +91,12 @@
 		"offsetY": "Décalage Y",
 		"reset": "Réinitialiser",
 		"addRow": "Ajouter une ligne",
+		"addAction": "Ajouter une action",
 		"imposedByInputBehavior": "Imposé par le comportement de la variable « {variable} » ({behavior}). Modifiable dans la table des entrées.",
 		"noWidgetSelected": "Aucun widget sélectionné : propriétés de la page.",
+		"multipleSelected": "{count} widgets sélectionnés.",
+		"noObjects": "Aucun objet.",
+		"events": "Événements",
 		"setAsMainPage": "Définir en page principale"
 	},
 	"menu": {
@@ -125,5 +129,15 @@
 		"rectangle": "Rectangle : forme rectangulaire. Options : couleur de remplissage, couleur et épaisseur du contour, rayon des angles.",
 		"ellipse": "Ellipse : forme ovale ou circulaire. Options : couleur de remplissage, couleur et épaisseur du contour. La case « Lier largeur et hauteur » (section Dimensions) fige le ratio courant.",
 		"line": "Trait : segment de couleur unie. Options : couleur, épaisseur et orientation (horizontal / vertical)."
+	},
+	"defaultLabels": {
+		"push-button": "BP",
+		"toggle-switch": "Interrupteur",
+		"indicator": "Voyant",
+		"numeric-display": "Affichage",
+		"gauge": "Jauge",
+		"numeric-input": "Saisie",
+		"slider": "Curseur",
+		"text": "Texte"
 	}
 }

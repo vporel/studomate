@@ -244,8 +244,11 @@ describe("StepReferralSourceAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			// Should have error about missing connection
-			expect(issues.length).toBeGreaterThan(0);
+			const missing = issues.find(
+				(i) => i.code === "STEP_REFERRAL_SOURCE_MISSING_UPSTREAM_CONNECTION",
+			);
+			expect(missing).toBeDefined();
+			expect(missing?.severity).toBe("error");
 		});
 
 		it("detects self-referral", () => {

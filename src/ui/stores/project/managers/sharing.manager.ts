@@ -6,12 +6,13 @@ import {
 	requirePersistence,
 	type ProjectStoreEnvironment,
 } from "../environment/project-store-environment";
-import { toast } from "react-toastify";
-import { getT } from "@/ui/i18n/translateGlobal";
 import {
 	ProjectStoreGetFunction,
 	ProjectStoreSetFunction,
 } from "../project.store.types";
+
+/** Where the user started sharing from, for the usage statistics. */
+export type ShareSource = "menu" | "title-bar" | "properties";
 
 /**
  * Partage d'un projet par token d'URL : création/révocation du token, passage préalable dans le
@@ -32,7 +33,20 @@ export default class ProjectSharingManager {
 		this.getStoreState = get;
 	}
 
-	async shareProject(): Promise<void> {
+	/** `key` is relative to the `toasts` messages. */
+	private translateToast(key: string): string {
+		return this.env.translate("toasts")(key);
+	}
+
+	private notifyError(key: string): void {
+		this.env.notifications.error(this.translateToast(key));
+	}
+
+	/**
+	 * `source` is given when the user starts sharing: the resumptions after sign-in or after the
+	 * move to the cloud call it without one and are not counted as new attempts.
+	 */
+	async shareProject(source?: ShareSource): Promise<void> {
 		const set = this.setStoreState;
 		const get = this.getStoreState;
 		const project = get().project;
@@ -41,6 +55,16 @@ export default class ProjectSharingManager {
 		const authStore = auth.store;
 		const repo = get().projectRepository;
 		if (!isShareable(repo)) return;
+
+		if (source) {
+			this.env.analytics.trackEvent("share-started", {
+				source,
+				signedIn: authStore.getState().user !== null,
+				inCloud:
+					isStorageLocationAware(repo) &&
+					repo.locationOf(project.id) === "cloud",
+			});
+		}
 
 		// Non connecté : on ouvre la modale de connexion et on reprend le partage dès
 		// qu'une session s'ouvre. Si la modale se ferme sans connexion, on abandonne.
@@ -59,7 +83,7 @@ export default class ProjectSharingManager {
 			});
 			authStore
 				.getState()
-				.setAuthModalVisible(true, getT("toasts")("shareLoginPrompt"));
+				.setAuthModalVisible(true, this.translateToast("shareLoginPrompt"));
 			return;
 		}
 
@@ -83,7 +107,7 @@ export default class ProjectSharingManager {
 		}
 		const result = await repo.createShareToken(project.id);
 		if (!result.ok) {
-			toast.error(getT("toasts")("shareLinkFailed"));
+			this.notifyError("shareLinkFailed");
 			return;
 		}
 		this.env.analytics.trackEvent("share-link-created", {
@@ -102,10 +126,10 @@ export default class ProjectSharingManager {
 		if (!isStorageLocationAware(repo)) return;
 		const result = await repo.moveToCloud(project);
 		if (!result.ok) {
-			toast.error(
+			this.notifyError(
 				result.reason === "conflict"
-					? getT("toasts")("moveToCloudConflict")
-					: getT("toasts")("moveToCloudFailed"),
+					? "moveToCloudConflict"
+					: "moveToCloudFailed",
 			);
 			return;
 		}
@@ -124,7 +148,7 @@ export default class ProjectSharingManager {
 		if (!isShareable(repo)) return;
 		const result = await repo.deleteShareToken(project.id);
 		if (!result.ok) {
-			toast.error(getT("toasts")("shareRevokeFailed"));
+			this.notifyError("shareRevokeFailed");
 			return;
 		}
 		set(() => ({ shareToken: null }));

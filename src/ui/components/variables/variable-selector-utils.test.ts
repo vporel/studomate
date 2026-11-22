@@ -1,12 +1,25 @@
 import { BLOCK_OPERAND_LITERALS } from "@/schemas/ladder/block.schema";
 import { Dialect } from "@/expression-language/dialect.enum";
 import Variable from "@/schemas/variable/variable.schema";
+import type { Locale } from "@/i18n/config";
+import { getMessages } from "@/i18n/messages";
+import { createTranslator } from "next-intl";
 import {
 	cellValue,
+	columnLabel,
 	columnsGridTemplate,
 	computeStatus,
 	inputWidthPx,
+	type VariableSelectorTranslator,
 } from "./variable-selector-utils";
+
+const translator = (locale: Locale) =>
+	createTranslator({
+		locale,
+		messages: getMessages(locale),
+		namespace: "pages.variablesGrid",
+	}) as unknown as VariableSelectorTranslator;
+const fr = translator("fr");
 
 function boolInput(mnemonic: string): Variable {
 	return new Variable({
@@ -191,7 +204,7 @@ describe("cellValue", () => {
 		});
 		v.address = "%Q0.0";
 
-		expect(cellValue(v, "address")).toBe("%Q0.0");
+		expect(cellValue(v, "address", fr)).toBe("%Q0.0");
 	});
 
 	it("retourne — quand l'adresse est absente", () => {
@@ -203,7 +216,7 @@ describe("cellValue", () => {
 			dialect: Dialect.FR,
 		});
 
-		expect(cellValue(v, "address")).toBe("—");
+		expect(cellValue(v, "address", fr)).toBe("—");
 	});
 
 	it("retourne le mnémonique", () => {
@@ -215,7 +228,7 @@ describe("cellValue", () => {
 			dialect: Dialect.FR,
 		});
 
-		expect(cellValue(v, "mnemonic")).toBe("moteur");
+		expect(cellValue(v, "mnemonic", fr)).toBe("moteur");
 	});
 
 	it("retourne le type", () => {
@@ -227,7 +240,7 @@ describe("cellValue", () => {
 			dialect: Dialect.FR,
 		});
 
-		expect(cellValue(v, "type")).toBe("INT");
+		expect(cellValue(v, "type", fr)).toBe("INT");
 	});
 
 	it("retourne le libellé de direction", () => {
@@ -241,6 +254,7 @@ describe("cellValue", () => {
 					dialect: Dialect.FR,
 				}),
 				"scope",
+				fr,
 			),
 		).toBe("Entrée");
 		expect(
@@ -253,6 +267,7 @@ describe("cellValue", () => {
 					dialect: Dialect.FR,
 				}),
 				"scope",
+				fr,
 			),
 		).toBe("Sortie");
 		expect(
@@ -265,8 +280,31 @@ describe("cellValue", () => {
 					dialect: Dialect.FR,
 				}),
 				"scope",
+				fr,
 			),
 		).toBe("Mémoire");
+	});
+
+	it("traduit le libellé de direction dans la langue de l'interface", () => {
+		const memory = new Variable({
+			id: "v1",
+			mnemonic: "c",
+			zone: "memory",
+			type: "BOOL",
+			dialect: Dialect.EN,
+		});
+		expect(cellValue(memory, "scope", translator("en"))).toBe("Memory");
+		expect(cellValue(memory, "scope", translator("es"))).toBe("Memoria");
+	});
+});
+
+describe("columnLabel", () => {
+	it("titre chaque colonne dans la langue de l'interface, sauf l'adresse", () => {
+		expect(columnLabel("address", fr)).toBe("");
+		expect(columnLabel("mnemonic", fr)).toBe("Mnémonique");
+		expect(columnLabel("scope", fr)).toBe("Portée");
+		expect(columnLabel("mnemonic", translator("es"))).toBe("Mnemónico");
+		expect(columnLabel("scope", translator("en"))).toBe("Scope");
 	});
 });
 

@@ -7,7 +7,7 @@ import { routing } from "./routing";
 /**
  * Configuration par requête pour les Server Components des pages publiques (`src/app/[locale]/`).
  * L'app `/app` n'en dépend pas : elle monte `NextIntlClientProvider` côté client
- * (`LocaleProvider`) avec la locale de `localStorage`.
+ * (`PreferredLocaleProvider`) avec la locale de `localStorage`.
  */
 export default getRequestConfig(async ({ requestLocale }) => {
 	const requested = await requestLocale;

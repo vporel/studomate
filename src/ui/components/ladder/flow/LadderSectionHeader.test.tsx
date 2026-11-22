@@ -1,18 +1,18 @@
 /**
  * @jest-environment jsdom
  */
-import { act, fireEvent, screen } from "@testing-library/react";
-import { renderWithI18n } from "@tests/utils/i18n";
 import SectionUpdateCommand from "@/schemas/ladder/commands/section-update.command";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Section from "@/schemas/ladder/section.schema";
-import useCanEdit from "@/ui/components/projects/useCanEdit";
-import { useLadderStore } from "../context/LadderContext";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
+import { act, fireEvent, screen } from "@testing-library/react";
+import { renderWithI18n } from "@tests/utils/i18n";
 import { selectorImplementation } from "@tests/utils/store-mocks";
+import { useLadderStore } from "../context/LadderContext";
 import LadderSectionHeader from "./LadderSectionHeader";
 
 jest.mock("../context/LadderContext");
-jest.mock("@/ui/components/projects/useCanEdit");
+jest.mock("@/ui/components/projects/useCanEditActivePage");
 
 function setup({
 	title = "Ma section",
@@ -27,7 +27,7 @@ function setup({
 	selectedSectionIds = [] as string[],
 	canEdit = true,
 } = {}) {
-	(useCanEdit as jest.Mock).mockReturnValue(canEdit);
+	(useCanEditActivePage as jest.Mock).mockReturnValue(canEdit);
 	const section = new Section("s1", title, "", [], []);
 	const ladder = new Ladder("l1", "Ladder");
 	for (let i = 1; i < sectionsCount; i++) ladder.createSection();

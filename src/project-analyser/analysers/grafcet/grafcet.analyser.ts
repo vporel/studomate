@@ -12,6 +12,7 @@ import FinderVisitor from "@/expression-language/ast/visitors/finder.visitor";
 import { Dialect } from "@/expression-language/dialect.enum";
 import { parseExpressionCached } from "@/expression-language/parse-expression-cached";
 import buildAnalysisEnvironment from "@/project-analyser/analysis-environment";
+import analyseContinuousStoredConflicts from "./continuous-stored-conflicts.analyser";
 import GrafcetElementAnalyserFactory from "./element-analyser.factory";
 
 export type GrafcetAnalysisResult = {
@@ -25,10 +26,6 @@ export function getStepVariableId(
 	stepNumber: number,
 ): string {
 	return `grafcet-${grafcetId}-step-${stepNumber}`;
-}
-
-export function getStepVariableMnemonic(stepNumber: number): string {
-	return StepHelper.getStepVariableMnemonic(stepNumber);
 }
 
 export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
@@ -116,10 +113,13 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 		project: Project,
 		generatedVariablesByProgram: Map<string, Variable[]>,
 	): ProjectAnalyserIssue[] {
-		return GrafcetAnalyser.checkDuplicateStepNumbers(
-			generatedVariablesByProgram,
-			project,
-		);
+		return [
+			...GrafcetAnalyser.checkDuplicateStepNumbers(
+				generatedVariablesByProgram,
+				project,
+			),
+			...analyseContinuousStoredConflicts(project),
+		];
 	}
 
 	/**
@@ -188,21 +188,13 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 		const variables: Variable[] = [];
 
 		for (const step of Object.values(grafcet.steps)) {
-			const n = step.data.number;
-			if (
-				n === null ||
-				n === undefined ||
-				n === "" ||
-				!Number.isInteger(n) ||
-				(n as number) < 0
-			)
-				continue;
-			if (seen.has(n as number)) continue;
-			seen.add(n as number);
+			const n = StepHelper.getValidNumber(step.data);
+			if (n === null || seen.has(n)) continue;
+			seen.add(n);
 			variables.push(
 				new Variable({
 					id: getStepVariableId(grafcet.id, n),
-					mnemonic: getStepVariableMnemonic(n),
+					mnemonic: StepHelper.getStepVariableMnemonic(n),
 					zone: "memory",
 					type: "BOOL",
 					dialect,

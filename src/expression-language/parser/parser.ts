@@ -21,6 +21,7 @@ import ParsingEndedBeforeEOFException from "./exceptions/parsing-ended-before-eo
 import UnknownFunctionException from "./exceptions/unknown-function.exception";
 import MalformedTimerException from "./exceptions/malformed-timer.exception";
 import { parseConversionFunctionName } from "../conversions";
+import { UNIT_TO_MS } from "../literals/time";
 
 export default class Parser {
 	private tokens: Token[];
@@ -393,7 +394,10 @@ export default class Parser {
 		}
 		if (this.at(TokenType.IDENTIFIER)) {
 			this.consume(TokenType.IDENTIFIER);
-			return IdentifiersBuilder.buildIdentifierNode(token.value, token.position);
+			return IdentifiersBuilder.buildIdentifierNode(
+				token.value,
+				token.position,
+			);
 		}
 		this.consume(token.type);
 		return LiteralsBuilder.buildBooleanNode(
@@ -465,19 +469,6 @@ export default class Parser {
 		const value = parseFloat(durationStr);
 		const unit = durationStr.replace(/[0-9.]/g, "").toLowerCase();
 
-		switch (unit) {
-			case "ms":
-				return value;
-			case "s":
-				return value * 1000;
-			case "m":
-				return value * 60000;
-			case "h":
-				return value * 3600000;
-			case "d":
-				return value * 86400000;
-			default:
-				return value;
-		}
+		return value * (UNIT_TO_MS[unit] ?? 1);
 	}
 }

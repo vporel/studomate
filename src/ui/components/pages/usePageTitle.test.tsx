@@ -17,6 +17,23 @@ describe("usePageTitle", () => {
 		expect(result.current(SCENE3D_VIEW_PAGE_DATA)).toBe(title);
 	});
 
+	it.each([
+		["fr", "Simulation HMI"],
+		["en", "HMI simulation"],
+		["es", "Simulación HMI"],
+	] as const)("titles the HMI simulation tab in %s", (locale, title) => {
+		const { result } = renderHook(() => usePageTitle(), {
+			wrapper: i18nWrapper(locale),
+		});
+		expect(
+			result.current({
+				id: "hmi-simulation",
+				type: "hmi-simulation",
+				title: "Simulation HMI",
+			}),
+		).toBe(title);
+	});
+
 	it("keeps the name of a program as its title", () => {
 		const { result } = renderHook(() => usePageTitle(), {
 			wrapper: i18nWrapper("fr"),

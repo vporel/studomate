@@ -10,7 +10,7 @@ import { fakeStoreApi, selectorImplementation } from "@tests/utils/store-mocks";
 import CommentNode, { CommentNodeType } from "./CommentNode";
 
 jest.mock("../context/GrafcetContext");
-jest.mock("@/ui/components/projects/useCanEdit", () => ({
+jest.mock("@/ui/components/projects/useCanEditActivePage", () => ({
 	__esModule: true,
 	default: () => true,
 }));

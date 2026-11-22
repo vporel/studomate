@@ -4,6 +4,7 @@ import { useT } from "@/ui/i18n/useT";
 import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { Box, Button } from "@mui/material";
 import { useShallow } from "zustand/shallow";
+import useAnalysisStatus from "../projects/analysis-result/useAnalysisStatus";
 import { useProjectStore } from "../projects/ProjectContext";
 import type { EmbeddedControl } from "./embedded-app.types";
 
@@ -26,19 +27,18 @@ export default function EmbeddedStatusBar({
 	controls: readonly EmbeddedControl[];
 }) {
 	const t = useT("chrome.footerActions");
+	const analysisStatus = useAnalysisStatus();
 	const {
 		mode,
-		analysisHasErrors,
-		analysisHasWarnings,
 		setWatchTablesVisible,
 		setAnalysisResultVisible,
+		analysisShown,
 	} = useProjectStore(
 		useShallow((state) => ({
 			mode: state.mode,
-			analysisHasErrors: state.analysisHasErrors,
-			analysisHasWarnings: state.analysisHasWarnings,
 			setWatchTablesVisible: state.setWatchTablesVisible,
 			setAnalysisResultVisible: state.setAnalysisResultVisible,
+			analysisShown: state.ui.analysisResultVisible,
 		})),
 	);
 
@@ -61,27 +61,16 @@ export default function EmbeddedStatusBar({
 					{t("watchTables")}
 				</Button>
 			)}
-			{controls.includes("analysis") && mode === ProjectMode.DESIGN && (
-				<Button
-					sx={{
-						...BUTTON_SX,
-						color: analysisHasErrors
-							? "red"
-							: analysisHasWarnings
-								? "orange"
-								: "black",
-					}}
-					onClick={() => setAnalysisResultVisible(true)}
-				>
-					{`${t("analysisResults")} ${
-						!analysisHasErrors && !analysisHasWarnings
-							? t("ok")
-							: analysisHasErrors
-								? t("errors")
-								: t("warnings")
-					}`}
-				</Button>
-			)}
+			{controls.includes("analysis") &&
+				mode === ProjectMode.DESIGN &&
+				!analysisShown && (
+					<Button
+						sx={{ ...BUTTON_SX, color: analysisStatus.color }}
+						onClick={() => setAnalysisResultVisible(true)}
+					>
+						{analysisStatus.label}
+					</Button>
+				)}
 		</Box>
 	);
 }

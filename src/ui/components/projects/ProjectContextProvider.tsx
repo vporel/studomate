@@ -21,8 +21,6 @@ import { resolveUiLocale } from "@/persistence/preferences.storage";
 import { PROJECT_TEMPLATES } from "@/templates/index";
 import { getTemplateStatement } from "@/templates/template-text";
 import { ReactNode, useEffect, useState } from "react";
-import AnalysisResult from "./analysis-result/AnalysisResult";
-import CrossReferenceResult from "./cross-reference/CrossReferenceResult";
 import ExportModal from "./ExportModal";
 import NewProjectModal from "./NewProjectModal";
 import ProjectOpenModal from "./ProjectOpenModal";
@@ -218,8 +216,6 @@ export const ProjectContextProvider = ({
 			<SaveAsModal />
 			<ShareProjectModal />
 			<ShareRequiresCloudModal />
-			<AnalysisResult />
-			<CrossReferenceResult />
 			{showDraftDialog && <DraftRecoveryDialog onOpen={handleDraftOpen} />}
 			<DraftConflictDialog />
 			<CloudConflictDialog />

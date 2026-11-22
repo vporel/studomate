@@ -11,7 +11,8 @@
 		"systemVariables": "System variables",
 		"hardwareConfiguration": "Hardware configuration",
 		"scene3dConfiguration": "3D scene configuration",
-		"scene3dView": "3D scene"
+		"scene3dView": "3D scene",
+		"hmiSimulation": "HMI simulation"
 	},
 	"systemVariables": {
 		"heading": "System variables",
@@ -46,7 +47,8 @@
 		"dialectEn": "English — AND, OR, NOT, TRUE, FALSE",
 		"exerciseField": "Exercise brief",
 		"exerciseFieldHelper": "Markdown format. Shown read-only from the Project › Exercise brief menu.",
-		"readOnlyInSimulation": "Editable in Design mode only."
+		"readOnlyInSimulation": "Editable in Design mode only.",
+		"share": "Share the project"
 	},
 	"exercise": {
 		"heading": "Exercise brief",
@@ -92,6 +94,14 @@
 			"addressUsed": "This address is already used by \"{mnemonic}\""
 		},
 		"selectorPlaceholder": "?",
+		"selector": {
+			"scope": "Scope",
+			"directions": {
+				"IN": "Input",
+				"OUT": "Output",
+				"INOUT": "Memory"
+			}
+		},
 		"contextMenu": {
 			"insertVariable": "Insert a variable",
 			"crossReferences": "Cross-references",

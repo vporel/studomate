@@ -10,6 +10,7 @@ import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import { i18nWrapper } from "@tests/utils/i18n";
+import { GrafcetFactory } from "@tests/utils/grafcet-factory";
 import { ProjectFactory } from "@tests/utils/project-factory";
 import VariableSelector, { VariableSelectorHandle } from "./VariableSelector";
 import { createRef } from "react";
@@ -84,6 +85,7 @@ function setup({
 			suppressStatus={suppressStatus}
 			validate={validate}
 		/>,
+		{ wrapper: i18nWrapper() },
 	);
 
 	return { onCommit };
@@ -122,6 +124,7 @@ describe("VariableSelector — validation différée", () => {
 		);
 		const { unmount } = render(
 			<VariableSelector value="" onCommit={onCommit} />,
+			{ wrapper: i18nWrapper() },
 		);
 		fireEvent.change(screen.getByRole("combobox"), {
 			target: { value: "Capteur" },
@@ -142,6 +145,7 @@ describe("VariableSelector — validation différée", () => {
 		);
 		const { unmount } = render(
 			<VariableSelector value="X1" onCommit={onCommit} />,
+			{ wrapper: i18nWrapper() },
 		);
 		unmount();
 		expect(onCommit).not.toHaveBeenCalled();
@@ -270,6 +274,43 @@ describe("VariableSelector — statut affiché", () => {
 		setup({ value: "t_etoile.Q", project });
 
 		expect(input()).toHaveAttribute("data-variable-status", "ok");
+	});
+});
+
+describe("VariableSelector — variables d'étape", () => {
+	const projectWithGrafcet = (excluded = false) => {
+		const grafcet = GrafcetFactory.createSimpleCycle("g1", "VRAI", "VRAI", 0);
+		grafcet.excludedFromExecution = excluded;
+		return ProjectFactory.create([], [grafcet]);
+	};
+	const proposedMnemonics = () => {
+		fireEvent.mouseDown(input());
+		return screen
+			.getAllByRole("option")
+			.map((option) => option.textContent ?? "");
+	};
+
+	it("propose les variables d'étape d'un grafcet exécuté", () => {
+		setup({ project: projectWithGrafcet() });
+
+		const options = proposedMnemonics();
+
+		expect(options.some((text) => text.includes("X0"))).toBe(true);
+		expect(options.some((text) => text.includes("X1"))).toBe(true);
+	});
+
+	it("reconnaît une variable d'étape saisie comme déclarée", () => {
+		setup({ value: "X1", project: projectWithGrafcet() });
+
+		expect(input()).toHaveAttribute("data-variable-status", "ok");
+	});
+
+	it("ne propose pas celles d'un grafcet exclu de l'exécution", () => {
+		setup({ project: projectWithGrafcet(true) });
+
+		const options = proposedMnemonics();
+
+		expect(options.some((text) => /X[01](?!\d)/.test(text))).toBe(false);
 	});
 });
 

@@ -57,6 +57,34 @@ describe("FeedbackBox", () => {
 		expect(screen.queryByRole("button", { name: /fermer|close/i })).toBeNull();
 	});
 
+	it("shows the comment field only once a rating is chosen", () => {
+		renderWithI18n(<FeedbackBox />);
+		open("prompt");
+
+		expect(
+			screen.queryByLabelText("Commentaire (facultatif)"),
+		).not.toBeInTheDocument();
+
+		fireEvent.click(screen.getByLabelText("4 étoiles sur 5"));
+
+		expect(screen.getByLabelText("Commentaire (facultatif)")).toBeVisible();
+	});
+
+	it("keeps the typed comment when the rating changes", () => {
+		renderWithI18n(<FeedbackBox />);
+		open("prompt");
+		fireEvent.click(screen.getByLabelText("4 étoiles sur 5"));
+		fireEvent.change(screen.getByLabelText("Commentaire (facultatif)"), {
+			target: { value: "Très bien" },
+		});
+
+		fireEvent.click(screen.getByLabelText("2 étoiles sur 5"));
+
+		expect(screen.getByLabelText("Commentaire (facultatif)")).toHaveValue(
+			"Très bien",
+		);
+	});
+
 	it("cannot send before a rating is chosen", () => {
 		renderWithI18n(<FeedbackBox />);
 		open("prompt");
@@ -160,6 +188,20 @@ describe("FeedbackBox", () => {
 		await waitFor(() => expect(mockSendFeedback).toHaveBeenCalled());
 		expect(mockSendFeedback).toHaveBeenCalledWith(
 			expect.objectContaining({ locale: "en" }),
+		);
+	});
+
+	it("sends the Spanish locale when the interface is in Spanish", async () => {
+		mockSendFeedback.mockResolvedValue(true);
+		renderWithI18n(<FeedbackBox />, { locale: "es" });
+		open("menu");
+
+		fireEvent.click(screen.getByLabelText("5 estrellas de 5"));
+		fireEvent.click(screen.getByRole("button", { name: "Enviar" }));
+
+		await waitFor(() => expect(mockSendFeedback).toHaveBeenCalled());
+		expect(mockSendFeedback).toHaveBeenCalledWith(
+			expect.objectContaining({ locale: "es" }),
 		);
 	});
 });

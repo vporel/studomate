@@ -39,7 +39,7 @@ function FeedbackForm({ source }: { source: FeedbackBoxSource }) {
 		const sent = await sendFeedback({
 			rating,
 			comment,
-			locale: locale === "en" ? "en" : "fr",
+			locale,
 		});
 		setSending(false);
 		if (!sent) {
@@ -83,28 +83,31 @@ function FeedbackForm({ source }: { source: FeedbackBoxSource }) {
 			<Rating
 				name="feedback-rating"
 				size="large"
+				sx={{ fontSize: "2.5rem" }}
 				value={rating}
 				onChange={(_, value) => setRating(value)}
 				getLabelText={(count) => t("ratingValue", { count })}
 				disabled={sending}
 			/>
-			<TextField
-				value={comment}
-				onChange={(e) => setComment(e.target.value)}
-				label={t("commentLabel")}
-				placeholder={t("commentPlaceholder")}
-				multiline
-				minRows={3}
-				maxRows={6}
-				fullWidth
-				size="small"
-				disabled={sending}
-				slotProps={{
-					inputLabel: { shrink: true },
-					htmlInput: { maxLength: FEEDBACK_COMMENT_MAX_LENGTH },
-				}}
-				sx={{ mt: 1.5 }}
-			/>
+			{rating !== null && (
+				<TextField
+					value={comment}
+					onChange={(e) => setComment(e.target.value)}
+					label={t("commentLabel")}
+					placeholder={t("commentPlaceholder")}
+					multiline
+					minRows={3}
+					maxRows={6}
+					fullWidth
+					size="small"
+					disabled={sending}
+					slotProps={{
+						inputLabel: { shrink: true },
+						htmlInput: { maxLength: FEEDBACK_COMMENT_MAX_LENGTH },
+					}}
+					sx={{ mt: 1.5 }}
+				/>
+			)}
 			<Box
 				sx={{ display: "flex", justifyContent: "flex-end", gap: 1, mt: 1.5 }}
 			>

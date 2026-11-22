@@ -21,7 +21,6 @@ import {
 	useState,
 } from "react";
 import { SNAP_GRID } from "@/ui/components/hmi/logic/constants";
-import { executeHmiAction } from "@/ui/components/hmi/logic/hmi-action.executor";
 import HmiCanvasSidebarSection from "./HmiCanvasSidebarSection";
 import HmiObjectsPanel from "./HmiObjectsPanel";
 import HmiPagePropertiesPanel from "./HmiPagePropertiesPanel";
@@ -81,7 +80,12 @@ const HmiCanvas = ({ isSimulation, zoom }: HmiCanvasProps) => {
 		zoom,
 		Object.values(hmiPage.widgets),
 		(ids) => {
+			//The click that follows the release is dispatched in the same task: it consumes the
+			//flag. A release outside the canvas produces none, and the flag must not outlive it.
 			suppressNextCanvasClickRef.current = true;
+			setTimeout(() => {
+				suppressNextCanvasClickRef.current = false;
+			}, 0);
 			setSelection(ids);
 		},
 		setMarqueeRect,
@@ -142,7 +146,7 @@ const HmiCanvas = ({ isSimulation, zoom }: HmiCanvasProps) => {
 			if (!widget) return;
 			const actions = (widget.data as { events?: Record<string, HmiAction[]> })
 				.events?.[eventName];
-			actions?.forEach((action) => executeHmiAction(action, hmiManager));
+			actions?.forEach((action) => hmiManager.executeAction(action));
 		},
 		[hmiPage.widgets, hmiManager],
 	);
@@ -373,7 +377,7 @@ const HmiCanvas = ({ isSimulation, zoom }: HmiCanvasProps) => {
 							<Typography
 								sx={{ px: 1.5, pb: 1.5, fontSize: "0.8rem", color: "#888" }}
 							>
-								{selectedWidgets.length} widgets sélectionnés.
+								{t("multipleSelected", { count: selectedWidgets.length })}
 							</Typography>
 						) : (
 							<HmiPagePropertiesPanel

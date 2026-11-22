@@ -1,4 +1,4 @@
-import { clamp } from "@/3d-scenes/scene-math";
+import { clamp } from "@/lib/number";
 import type { SceneModel, ScenePointValues } from "@/3d-scenes/scene-model";
 
 /** Number of stalls, which is also the capacity the program is expected to enforce. */

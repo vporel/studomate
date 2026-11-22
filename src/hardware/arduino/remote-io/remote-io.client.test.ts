@@ -1257,6 +1257,104 @@ describe("RemoteIoClient restores remote I/O after a failed exchange", () => {
 	});
 });
 
+describe("RemoteIoClient when the link ends during an exchange", () => {
+	const PORT_CLOSED = { code: "transport", detail: "port closed" };
+
+	it("fails a program upload at once with transport, without retrying", async () => {
+		const { board, client } = setup();
+		await client.connect();
+		holdAnswers(board);
+		const uploadFrames = () =>
+			board.received.filter((frame) => frame.command.startsWith("PROG")).length;
+
+		const upload = client.uploadProgram(new Uint8Array(100), 1);
+		const rejected = expect(upload).rejects.toMatchObject(PORT_CLOSED);
+		await flush();
+		const sentBeforeLoss = uploadFrames();
+		board.unplug();
+
+		await rejected;
+		await new Promise((r) => setTimeout(r, 100));
+		expect(uploadFrames()).toBe(sentBeforeLoss);
+		expect(client.getState()).toBe("disconnected");
+	});
+
+	it("fails a variable write at once with transport", async () => {
+		const { board, client } = setup();
+		await client.connect();
+		board.autonomous = true;
+		holdAnswers(board);
+
+		const write = client.writeVariable(2, 7);
+		const rejected = expect(write).rejects.toMatchObject(PORT_CLOSED);
+		await flush();
+		board.unplug();
+
+		await rejected;
+	});
+
+	it("fails a telemetry request at once with transport", async () => {
+		const { board, client } = setup();
+		await client.connect();
+		holdAnswers(board);
+
+		const watching = client.startWatching({
+			memorySize: 20,
+			imageId: 0x1234abcd,
+			onSnapshot: () => {},
+			onProgramMismatch: () => {},
+		});
+		const rejected = expect(watching).rejects.toMatchObject(PORT_CLOSED);
+		await flush();
+		board.unplug();
+
+		await rejected;
+	});
+
+	it("fails the exchange in progress when the user disconnects", async () => {
+		const { board, client } = setup();
+		await client.connect();
+		holdAnswers(board);
+
+		const upload = client.uploadProgram(new Uint8Array(100), 1);
+		const rejected = expect(upload).rejects.toMatchObject(PORT_CLOSED);
+		await flush();
+		await client.disconnect();
+
+		await rejected;
+		expect(client.getState()).toBe("disconnected");
+	});
+
+	it("reports the loss of the link once, without a late timeout", async () => {
+		const { board, client } = setup();
+		await client.connect();
+		const lost: RemoteIoError[] = [];
+		client.onLinkLost((error) => lost.push(error));
+		holdAnswers(board);
+
+		const upload = client.uploadProgram(new Uint8Array(100), 1);
+		const rejected = expect(upload).rejects.toBeInstanceOf(RemoteIoError);
+		await flush();
+		board.unplug();
+		await rejected;
+		await new Promise((r) => setTimeout(r, 150));
+
+		expect(lost).toHaveLength(1);
+		expect(lost[0]).toMatchObject({ code: "transport" });
+	});
+
+	it("leaves later exchanges unaffected after a clean reconnection", async () => {
+		const first = setup();
+		await first.client.connect();
+		await first.client.disconnect();
+		const { client } = setup();
+
+		await client.connect();
+
+		expect(client.getState()).toBe("linked");
+	});
+});
+
 describe("remoteIoFailureCode", () => {
 	it.each([
 		"exchange-rejected",

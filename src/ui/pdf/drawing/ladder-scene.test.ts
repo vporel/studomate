@@ -11,34 +11,7 @@ import Ladder from "@/schemas/ladder/ladder.schema";
 import { createSectionWith, wireInSeries } from "@tests/utils/ladder-factory";
 import { sceneToSvg } from "@/ui/lib/drawing/backends/svg-backend";
 import { DrawOp } from "@/ui/lib/drawing/draw-op";
-import ladderToSectionScenes, { connectionVertices } from "./ladder-scene";
-
-describe("connectionVertices", () => {
-	it("relie droit un rung horizontal (même ligne)", () => {
-		expect(connectionVertices([70, 100], [600, 100], undefined)).toEqual([
-			[70, 100],
-			[600, 100],
-		]);
-	});
-
-	it("interprète data.points comme [ligne, quartCol] et prend l'ordonnée de la source/cible", () => {
-		// quartCol 8 → x = POWER_RAIL_OFFSET(10) + 8*15 = 130 ; ordonnées = source puis cible.
-		const v = connectionVertices(
-			[70, 100],
-			[600, 200],
-			[
-				[0, 8],
-				[2, 8],
-			],
-		);
-		expect(v).toEqual([
-			[70, 100],
-			[130, 100],
-			[130, 200],
-			[600, 200],
-		]);
-	});
-});
+import ladderToSectionScenes from "./ladder-scene";
 
 function twoSectionLadder(): Ladder {
 	const rail1 = createRailTerminalElement(0);

@@ -1,5 +1,12 @@
-import { HmiWidgetSize } from "@/schemas/hmi/hmi-widget.schema";
-import { resizeRect } from "./useHmiWidgetResize";
+/** @jest-environment jsdom */
+import { HmiWidget, HmiWidgetSize } from "@/schemas/hmi/hmi-widget.schema";
+import { useHmiStore } from "@/ui/components/hmi/HmiContext";
+import { renderHook } from "@testing-library/react";
+import { selectorImplementation } from "@tests/utils/store-mocks";
+import type { MouseEvent as ReactMouseEvent } from "react";
+import useHmiWidgetResize, { resizeRect } from "./useHmiWidgetResize";
+
+jest.mock("@/ui/components/hmi/HmiContext");
 
 const MIN: HmiWidgetSize = { width: 30, height: 30 };
 const start = { x: 100, y: 100, width: 100, height: 80 };
@@ -112,5 +119,92 @@ describe("resizeRect — ratio verrouillé", () => {
 
 	it("borne le côté au canvas en gardant le ratio", () => {
 		expect(sq("se", 5000, 5000).size).toEqual({ width: 540, height: 540 });
+	});
+});
+
+describe("useHmiWidgetResize", () => {
+	const mouse = (
+		type: "mousemove" | "mouseup",
+		clientX: number,
+		clientY: number,
+	) => window.dispatchEvent(new MouseEvent(type, { clientX, clientY }));
+	const widget = () => {
+		const w = HmiWidget.create("rectangle", 100, 100);
+		w.size = { width: 100, height: 80 };
+		return w;
+	};
+
+	function setup() {
+		const updateWidget = jest.fn();
+		const onPreviewChange = jest.fn();
+		(useHmiStore as jest.Mock).mockImplementation(
+			selectorImplementation({ updateWidget }),
+		);
+		const { result, unmount } = renderHook(() =>
+			useHmiWidgetResize(1, onPreviewChange),
+		);
+		const begin = (w: HmiWidget, x = 200, y = 180) =>
+			result.current(
+				{ clientX: x, clientY: y } as unknown as ReactMouseEvent,
+				w,
+				"se",
+			);
+		return { updateWidget, onPreviewChange, begin, unmount };
+	}
+
+	it("écrit le rectangle final au relâchement", () => {
+		const { updateWidget, begin } = setup();
+		const w = widget();
+		begin(w);
+
+		mouse("mouseup", 240, 180);
+
+		expect(updateWidget).toHaveBeenCalledTimes(1);
+		expect(updateWidget).toHaveBeenCalledWith(w.id, {
+			position: { x: 100, y: 100 },
+			size: { width: 140, height: 80 },
+		});
+	});
+
+	it("n'écrit rien dans le store si le composant est démonté en plein redimensionnement", () => {
+		const { updateWidget, begin, unmount } = setup();
+		begin(widget());
+		mouse("mousemove", 230, 180);
+
+		unmount();
+		mouse("mouseup", 260, 180);
+
+		expect(updateWidget).not.toHaveBeenCalled();
+	});
+
+	it("retire ses écouteurs de window au démontage", () => {
+		const add = jest.spyOn(window, "addEventListener");
+		const remove = jest.spyOn(window, "removeEventListener");
+		const { begin, unmount } = setup();
+		begin(widget());
+		const added = add.mock.calls.filter(([type]) =>
+			["mousemove", "mouseup"].includes(type as string),
+		);
+
+		unmount();
+
+		for (const [type, listener] of added) {
+			expect(remove).toHaveBeenCalledWith(type, listener);
+		}
+		add.mockRestore();
+		remove.mockRestore();
+	});
+
+	it("n'empile pas les écouteurs quand un redimensionnement commence avant la fin du précédent", () => {
+		const { updateWidget, begin } = setup();
+		const first = widget();
+		const second = widget();
+		begin(first);
+		begin(second);
+
+		mouse("mouseup", 220, 180);
+
+		expect(updateWidget).toHaveBeenCalledTimes(1);
+		expect(updateWidget.mock.calls[0][0]).toBe(second.id);
 	});
 });

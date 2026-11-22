@@ -250,14 +250,10 @@ export default class ActionAnalyser extends GrafcetElementAnalyser<Action> {
 			}
 
 			const stepVariableMnemonics = new Set(
-				Object.values(grafcet.steps)
-					.filter(
-						(s) =>
-							Number.isInteger(s.data.number) && (s.data.number as number) >= 0,
-					)
-					.map((s) =>
-						StepHelper.getStepVariableMnemonic(s.data.number as number),
-					),
+				Object.values(grafcet.steps).flatMap((s) => {
+					const n = StepHelper.getValidNumber(s.data);
+					return n === null ? [] : [StepHelper.getStepVariableMnemonic(n)];
+				}),
 			);
 			if (stepVariableMnemonics.has(writtenVariableName)) {
 				issues.push(

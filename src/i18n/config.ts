@@ -4,7 +4,7 @@
  * langue ci-dessous est une préférence de l'utilisateur, elle ne touche jamais les données
  * persistées.
  */
-export const LOCALES = ["fr", "en"] as const;
+export const LOCALES = ["fr", "en", "es"] as const;
 
 export type Locale = (typeof LOCALES)[number];
 
@@ -22,8 +22,9 @@ export function toLocale(value: string): Locale {
 }
 
 /**
- * Locale déduite de la langue du navigateur, repli sur `DEFAULT_LOCALE`. Utilisée à la
- * première visite, tant que l'utilisateur n'a pas fait de choix explicite.
+ * Locale déduite de la langue du navigateur, repli sur l'anglais quand aucune langue préférée
+ * n'est supportée (`DEFAULT_LOCALE` hors navigateur). Utilisée à la première visite, tant que
+ * l'utilisateur n'a pas fait de choix explicite.
  */
 export function detectBrowserLocale(): Locale {
 	if (typeof navigator === "undefined") return DEFAULT_LOCALE;
@@ -32,5 +33,5 @@ export function detectBrowserLocale(): Locale {
 		const base = candidate?.toLowerCase().split("-")[0];
 		if (isLocale(base)) return base;
 	}
-	return DEFAULT_LOCALE;
+	return "en";
 }

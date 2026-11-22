@@ -7,6 +7,7 @@ import { ReactFlowProvider } from "@xyflow/react";
 import { useLadderStore } from "@/ui/components/ladder/context/LadderContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { CompareBlockParams } from "@/schemas/ladder/block.schema";
+import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { ThemeProvider as AppThemeProvider } from "@/ui/theme/ThemeContext";
 import {
 	GRID_CELL_HEIGHT,
@@ -20,6 +21,7 @@ jest.mock("@/ui/components/ladder/context/LadderContext");
 
 function setup(
 	params: CompareBlockParams = { in1: "A", in2: "B", operator: ">" },
+	mode: ProjectMode = ProjectMode.DESIGN,
 ) {
 	const executeOperation = jest.fn();
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
@@ -31,6 +33,8 @@ function setup(
 				getExecutedGrafcets: () => [],
 				grafcets: {},
 			},
+			mode,
+			editingEnabled: true,
 			simulationVariablesStates: {},
 		}),
 	);
@@ -65,6 +69,19 @@ describe("CompareBlockNode", () => {
 		expect(screen.getByDisplayValue("capteur1")).toBeInTheDocument();
 		expect(screen.getByDisplayValue("seuil")).toBeInTheDocument();
 		expect(screen.getByText(">=")).toBeInTheDocument();
+	});
+
+	it("désactive le select d'opérateur en simulation", () => {
+		const { container, executeOperation } = setup(
+			{ in1: "A", in2: "B", operator: ">" },
+			ProjectMode.SIMULATION,
+		);
+		const select = container.querySelector(".MuiSelect-select")!;
+
+		expect(select).toHaveAttribute("aria-disabled", "true");
+		fireEvent.mouseDown(select);
+		expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+		expect(executeOperation).not.toHaveBeenCalled();
 	});
 
 	it("est rendu sur une seule cellule de grille (comme un contact)", () => {

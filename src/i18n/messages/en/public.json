@@ -8,6 +8,11 @@
 		"menu": "Menu",
 		"back": "Back"
 	},
+	"languageSuggestion": {
+		"message": "This page is also available in English.",
+		"action": "View in English",
+		"dismiss": "Close"
+	},
 	"breadcrumb": {
 		"label": "Breadcrumb"
 	},
@@ -153,8 +158,8 @@
 				"text": "Variable cross-references, project templates and vector PDF export."
 			},
 			{
-				"title": "French and English",
-				"text": "Interface, manual and expressions available in both languages."
+				"title": "French, English and Spanish",
+				"text": "Interface, manual and training available in all three languages."
 			}
 		],
 		"valueTitle": "Educational value",
@@ -333,7 +338,7 @@
 	},
 	"legal": {
 		"title": "Legal notice",
-		"lastUpdated": "Last updated: 13/10/2024",
+		"lastUpdated": "Last updated: 20/11/2026",
 		"editorTitle": "1. Site publisher",
 		"editorBody": "This site is published by <strong>Studomate</strong>, a teaching project dedicated to automation simulation for education.",
 		"editorResponsible": "Publication manager:",
@@ -342,7 +347,8 @@
 		"liabilityTitle": "3. Liability",
 		"liabilityBody": "The Studomate team does its best to keep the information and simulations reliable and up to date. However, no guarantee is given as to the accuracy of simulation results or the absence of errors. Use of the tool is at the user's sole responsibility.",
 		"dataTitle": "4. Personal data",
-		"dataBody": "No personal data is collected without the user's consent. Projects that are created are stored locally in the browser (localStorage). No data is passed to third parties.",
+		"dataBody": "By default, projects stay in the user's browser and are not sent to any server. Some data is processed by subcontractors, in particular for audience measurement, without cookies, and for optional accounts and cloud backup. No data is sold or used for advertising. The data processed and the user's rights are detailed in the",
+		"dataLink": "privacy policy.",
 		"contactTitle": "5. Contact",
 		"contactBody": "For any question or report:",
 		"contactLink": "Get in touch."
@@ -403,6 +409,10 @@
 		"contactTitle": "8. Contact",
 		"contactBody": "For any question about privacy or data handling:",
 		"contactLink": "Get in touch."
+	},
+	"legalTranslationNotice": {
+		"text": "This page is a translation: only the French version is legally binding.",
+		"link": "Read the French version"
 	},
 	"notFound": {
 		"title": "Page not found",
@@ -538,7 +548,7 @@
 				},
 				"theory-actions": {
 					"title": "GRAFCET action types and execution modes: training",
-					"description": "Actions on boolean or numeric variables and the execution modes of a GRAFCET's actions."
+					"description": "GRAFCET actions on boolean or numeric variables and their execution modes: continuous, on rising or falling edge, Set and Reset, with a chronogram."
 				},
 				"observe-actions": {
 					"title": "Rising-edge action in a GRAFCET: simulation",
@@ -562,7 +572,7 @@
 				},
 				"theory-or-divergence": {
 					"title": "GRAFCET OR divergence and convergence: training",
-					"description": "Choose between several sequences: OR divergence and convergence in a GRAFCET, with examples."
+					"description": "Choose between several sequences in a GRAFCET: OR divergence and convergence, branches, mutually exclusive receptivities and worked examples."
 				},
 				"exercise-or-divergence": {
 					"title": "GRAFCET OR divergence: exercise with solution",

@@ -9,6 +9,7 @@ exports[`grafcetToScene — feu tricolore le backend SVG sérialise la scène (s
 	<polyline points="220,240 220,260" fill="none" stroke="#000000" stroke-width="2"/>
 	<polyline points="220,300 220,310" fill="none" stroke="#000000" stroke-width="2"/>
 	<polyline points="220,340 220,360 180,360 180,40 220,40 220,60" fill="none" stroke="#000000" stroke-width="2"/>
+	<path d="M 180 195 L 184 205 L 176 205 Z" fill="#000000" stroke="#000000" stroke-width="1"/>
 	<polyline points="240,80 280,80" fill="none" stroke="#000000" stroke-width="2"/>
 	<polyline points="240,180 280,180" fill="none" stroke="#000000" stroke-width="2"/>
 	<polyline points="240,280 280,280" fill="none" stroke="#000000" stroke-width="2"/>

@@ -1,0 +1,38 @@
+{
+	"modal": {
+		"close": "Cerrar"
+	},
+	"languageSwitch": {
+		"label": "Idioma",
+		"fr": "Français",
+		"en": "English",
+		"es": "Español"
+	},
+	"language": {
+		"label": "Idioma",
+		"description": "Idioma de la interfaz de la aplicación.",
+		"fr": "Francés",
+		"en": "Inglés",
+		"es": "Español"
+	},
+	"programExecution": {
+		"badge": "No ejecutado",
+		"disable": "Desactivar analizador",
+		"enable": "Activar analizador",
+		"disableTooltip": "Dejar de analizar y simular este programa, para poder escribir texto libre en él",
+		"enableTooltip": "El analizador de este programa está desactivado: no se analiza ni se simula",
+		"noticeTitle": "Analizador desactivado",
+		"noticeBody": "Este programa ya no se puede simular y sus expresiones ya no se validan. Aún se puede dibujar, editar y exportar a PDF.",
+		"noticeFreeText": "Por tanto, puedes escribir frases en lugar de expresiones lógicas, por ejemplo para describir un grafcet en lenguaje natural. Sus variables de etapa (Xn) y de bloque no existen para los demás programas.",
+		"noticeEnable": "Para volver a activar el analizador: botón \"Activar analizador\" de la barra de herramientas, o clic derecho sobre el programa en el explorador.",
+		"dontShowAgain": "No volver a mostrar",
+		"notExecutedTitle": "Programa no ejecutado",
+		"notExecutedBody": "El analizador de este programa está desactivado: sus expresiones no se validan y no se compila ni se simula. Ninguna de sus etapas se activa y no controla ninguna salida.",
+		"notExecutedEnable": "Para volver a activarlo, detén la simulación y haz clic en \"Activar analizador\" en la barra de herramientas del programa.",
+		"close": "Entendido"
+	},
+	"defaultContent": {
+		"projectName": "Nuevo proyecto",
+		"hmiPageName": "Página HMI"
+	}
+}

@@ -175,6 +175,14 @@ describe("LadderSection", () => {
 		});
 	});
 
+	it("supprime la sélection avec Suppr comme avec Retour arrière", () => {
+		setup();
+		expect(reactFlowProps.at(-1)!.deleteKeyCode).toEqual([
+			"Backspace",
+			"Delete",
+		]);
+	});
+
 	it("désactive le clavier a11y natif de React Flow (déplacement flèches fait maison) mais garde onDelete", () => {
 		setup();
 		const props = reactFlowProps.at(-1)!;

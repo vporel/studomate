@@ -11,7 +11,8 @@
 		"systemVariables": "Variables système",
 		"hardwareConfiguration": "Configuration matérielle",
 		"scene3dConfiguration": "Configuration scène 3D",
-		"scene3dView": "Scène 3D"
+		"scene3dView": "Scène 3D",
+		"hmiSimulation": "Simulation HMI"
 	},
 	"systemVariables": {
 		"heading": "Variables système",
@@ -46,7 +47,8 @@
 		"dialectEn": "Anglais — AND, OR, NOT, TRUE, FALSE",
 		"exerciseField": "Énoncé de l'exercice",
 		"exerciseFieldHelper": "Format Markdown. Affiché en lecture seule depuis le menu Projet › Énoncé de l'exercice.",
-		"readOnlyInSimulation": "Modifiable en mode Conception uniquement."
+		"readOnlyInSimulation": "Modifiable en mode Conception uniquement.",
+		"share": "Partager le projet"
 	},
 	"exercise": {
 		"heading": "Énoncé de l'exercice",
@@ -92,6 +94,14 @@
 			"addressUsed": "Cette adresse est déjà utilisée par « {mnemonic} »"
 		},
 		"selectorPlaceholder": "?",
+		"selector": {
+			"scope": "Portée",
+			"directions": {
+				"IN": "Entrée",
+				"OUT": "Sortie",
+				"INOUT": "Mémoire"
+			}
+		},
 		"contextMenu": {
 			"insertVariable": "Insérer une variable",
 			"crossReferences": "Références croisées",

@@ -1,6 +1,5 @@
 "use client";
 
-import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { Chip, Typography } from "@mui/material";
 import { Fragment, useEffect } from "react";
 import { useT } from "@/ui/i18n/useT";
@@ -12,6 +11,8 @@ import { ExplorerContextMenuEventsOutHmiRename } from "./context-menu/explorer-c
 import { explorerContextMenuEventsOut } from "./context-menu/ExplorerContextMenu";
 import { useShallow } from "zustand/shallow";
 import { useRenamableTreeItem } from "./useRenamableTreeItem";
+import useDeleteHmiPageWithConfirm from "./useDeleteHmiPageWithConfirm";
+import useCanEditProject from "@/ui/components/projects/useCanEditProject";
 
 const ExplorerHmiItem = ({
 	hmiPageId,
@@ -27,14 +28,14 @@ const ExplorerHmiItem = ({
 	const t = useT("explorer");
 	const hmiManager = useProjectStore((state) => state.hmiManager);
 	const pagesManager = useProjectStore((state) => state.pagesManager);
-	const designing = useProjectStore(
-		(state) => state.mode === ProjectMode.DESIGN,
-	);
-	const { labelMode, startEditing, onDoubleClick, inputProps } =
+	const designing = useCanEditProject();
+	const deleteHmiPage = useDeleteHmiPageWithConfirm();
+	const { labelMode, startEditing, onDoubleClick, onKeyDown, inputProps } =
 		useRenamableTreeItem({
 			name: hmiPageName,
 			designing,
 			onRename: (name) => hmiManager.renameHmiPage(hmiPageId, name),
+			onDelete: () => deleteHmiPage(hmiPageId),
 		});
 
 	useEffect(() => {
@@ -78,6 +79,7 @@ const ExplorerHmiItem = ({
 				})
 			}
 			onDoubleClick={onDoubleClick}
+			onKeyDown={onKeyDown}
 			inputProps={inputProps}
 			onContextMenu={(e) => {
 				e.preventDefault();

@@ -40,6 +40,25 @@ export const MANUAL_SLUGS: Record<Locale, Record<string, string>> = {
 		troubleshooting: "troubleshooting",
 		shortcuts: "shortcuts",
 	},
+	es: {
+		"getting-started": "primeros-pasos",
+		projects: "proyectos",
+		accounts: "cuentas",
+		explorer: "explorador",
+		variables: "variables",
+		grafcet: "grafcet",
+		ladder: "ladder",
+		toolbar: "barra-de-herramientas",
+		hmi: "interfaces-hmi",
+		"cross-references": "referencias-cruzadas",
+		simulation: "simulacion",
+		analysis: "analisis",
+		hardware: "hardware",
+		scene3d: "escena-3d",
+		limits: "limites",
+		troubleshooting: "solucion-de-problemas",
+		shortcuts: "atajos-de-teclado",
+	},
 };
 
 /** Slug of a manual section in `locale`; the id itself when the section has none. */

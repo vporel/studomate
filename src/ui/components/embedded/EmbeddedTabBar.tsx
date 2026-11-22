@@ -8,12 +8,14 @@ import LadderIcon from "../icons/LadderIcon";
 import LadderMainIcon from "../icons/LadderMainIcon";
 import PageLockIcon from "../pages/tab-bar/PageLockIcon";
 import { TYPE_ICONS } from "../pages/tab-bar/PageTab";
+import { usePageTitle } from "../pages/usePageTitle";
 import { useProjectStore } from "../projects/ProjectContext";
 import getVisibleTabIds from "./visible-tab-ids";
 
 /** One tab per page of the block; unlike the application, tabs can neither be closed nor moved. */
 export default function EmbeddedTabBar() {
 	const t = useT("pages.tabBar");
+	const pageTitle = usePageTitle();
 	const { pagesData, pagesOrder, activePageId, project, pagesManager } =
 		useProjectStore(
 			useShallow((state) => ({
@@ -74,7 +76,7 @@ export default function EmbeddedTabBar() {
 						}}
 					>
 						<Icon fontSize="small" sx={{ fontSize: "1.1rem" }} />
-						{page.title}
+						{pageTitle(page)}
 						<PageLockIcon pageId={id} />
 					</Box>
 				);

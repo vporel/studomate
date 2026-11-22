@@ -1,0 +1,45 @@
+{
+	"ariaLabel": "Explorador del proyecto",
+	"headerTitle": "EXPLORADOR",
+	"close": "Cerrar",
+	"closeAria": "Cerrar el explorador",
+	"sections": {
+		"variables": "Variables",
+		"programs": "Programas",
+		"blockInstances": "Instancias de bloques",
+		"systemBlocks": "Biblioteca",
+		"hmi": "HMI",
+		"configuration": "Configuración"
+	},
+	"configurationItems": {
+		"hardware": "Configuración del hardware",
+		"scene3d": "Configuración de la escena 3D"
+	},
+	"variableGroups": {
+		"inputs": "Entradas",
+		"outputs": "Salidas",
+		"memories": "Marcas de memoria",
+		"constants": "Constantes",
+		"system": "Sistema"
+	},
+	"hmiMain": "Principal",
+	"noHmiPages": "Ninguna página HMI",
+	"noPrograms": "Ningún programa",
+	"menu": {
+		"open": "Abrir",
+		"configure": "Configurar",
+		"rename": "Renombrar",
+		"delete": "Eliminar",
+		"excludeFromExecution": "Desactivar analizador",
+		"includeInExecution": "Activar analizador",
+		"newGrafcet": "Nuevo grafcet",
+		"newLadder": "Nuevo ladder",
+		"newHmiPage": "Nueva página HMI",
+		"hideExplorer": "Ocultar el explorador"
+	},
+	"confirmDelete": {
+		"grafcet": "¿Seguro que quieres eliminar este grafcet?",
+		"ladder": "¿Seguro que quieres eliminar este ladder?",
+		"hmiPage": "¿Seguro que quieres eliminar esta página HMI?"
+	}
+}

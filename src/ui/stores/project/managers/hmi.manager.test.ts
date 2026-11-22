@@ -1,3 +1,4 @@
+import type { Locale } from "@/i18n/config";
 import HmiPage from "@/schemas/hmi/hmi-page.schema";
 import Project from "@/schemas/project/project.schema";
 import { ProjectStoreState } from "../project.store";
@@ -11,6 +12,7 @@ function makeManager(initial: {
 	hmiSimulationActivePageId?: string | null;
 	mode?: ProjectMode;
 	editingEnabled?: boolean;
+	locale?: Locale;
 }) {
 	let state = {
 		project: initial.project ?? null,
@@ -29,7 +31,12 @@ function makeManager(initial: {
 	const get = () => state;
 
 	return {
-		manager: new HmiManager(set, get, { trackEvent: mockTrackEvent }),
+		manager: new HmiManager(
+			set,
+			get,
+			{ trackEvent: mockTrackEvent },
+			() => initial.locale ?? "fr",
+		),
 		getState: () => state,
 	};
 }
@@ -77,6 +84,22 @@ describe("HmiManager", () => {
 			});
 			expect(mockTrackEvent).toHaveBeenCalledWith("hmi-page-created");
 		});
+
+		it.each([
+			["fr", "Page HMI_1"],
+			["en", "HMI page_1"],
+			["es", "Página HMI_1"],
+		] as const)(
+			"nomme une page sans nom dans la langue de l'interface (%s)",
+			(locale, expected) => {
+				const { manager } = makeManager({
+					project: new Project("p1", "Projet", "auteur"),
+					locale,
+				});
+
+				expect(manager.newHmiPage()!.name).toBe(expected);
+			},
+		);
 	});
 
 	describe("setMainHmiPage", () => {
@@ -199,6 +222,26 @@ describe("HmiManager", () => {
 		});
 	});
 
+	describe("updateHmiPageData (copie du projet)", () => {
+		it("adopte la page fournie et garde la référence des autres pages et des programmes", () => {
+			const project = new Project("p1", "Projet", "");
+			const page = project.createHmiPage("Vue 1");
+			const other = project.createHmiPage("Vue 2");
+			const { manager, getState } = makeManager({ project });
+			const edited = page.copy();
+			edited.name = "Modifiée";
+
+			manager.updateHmiPageData(edited);
+
+			const next = getState().project!;
+			expect(next.getHmiPage(page.id)).toBe(edited);
+			expect(next.getHmiPage(other.id)).toBe(other);
+			expect(next.getProgram(project.main.id)).toBe(
+				project.getProgram(project.main.id),
+			);
+		});
+	});
+
 	describe("openHmiSimulationPageIfAny", () => {
 		it("ouvre l'onglet et affiche la page principale si le projet a au moins une page HMI", () => {
 			const project = new Project("p1", "Projet", "");
@@ -255,6 +298,26 @@ describe("HmiManager", () => {
 			});
 
 			manager.navigateHmiSimulation(target.id);
+
+			expect(getState().hmiSimulationActivePageId).toBe(target.id);
+			expect(getState().pagesManager.openPage).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("executeAction", () => {
+		it("navigate-to-page change la page affichée sans toucher aux onglets", () => {
+			const project = new Project("p1", "Projet", "");
+			const page = project.createHmiPage("Vue 1");
+			const target = project.createHmiPage("Vue 2");
+			const { manager, getState } = makeManager({
+				project,
+				hmiSimulationActivePageId: page.id,
+			});
+
+			manager.executeAction({
+				type: "navigate-to-page",
+				targetHmiPageId: target.id,
+			});
 
 			expect(getState().hmiSimulationActivePageId).toBe(target.id);
 			expect(getState().pagesManager.openPage).not.toHaveBeenCalled();

@@ -30,6 +30,7 @@ describe("useProjectMenu", () => {
 				hmiManager,
 				pagesManager,
 				mode,
+				editingEnabled: true,
 				isSharedProject,
 				sharingManager: { shareProject },
 				setShareModalVisible,
@@ -188,7 +189,7 @@ describe("useProjectMenu", () => {
 		it("appelle shareProject au clic sur 'Partager'", () => {
 			const { result } = setup(ProjectMode.DESIGN);
 			act(() => groupOf(result.current.items, "Partager")[0].onClick?.());
-			expect(shareProject).toHaveBeenCalled();
+			expect(shareProject).toHaveBeenCalledWith("menu");
 		});
 
 		it("désactive 'Partager' si le projet est partagé (lecture seule)", () => {

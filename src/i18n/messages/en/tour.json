@@ -23,7 +23,7 @@
 		},
 		"simulation": {
 			"title": "Analysis and simulation",
-			"description": "Analyse the project, then switch to simulation mode to run it: start, stop or step through it."
+			"description": "Analyse the project, then click Simulate to run it: start, stop or step through it."
 		},
 		"crossReference": {
 			"title": "Cross-references",

@@ -1,4 +1,3 @@
-import HybridProjectRepository from "@/persistence/repositories/hybrid.project.repository";
 import { SESSION_LOOKUP_TIMEOUT_MS } from "@/persistence/repositories/session-lookup";
 import { supabase } from "@/persistence/repositories/supabase-client";
 import { User } from "@supabase/supabase-js";
@@ -88,33 +87,6 @@ export type AuthStoreState = {
  */
 let initPromise: Promise<void> | null = null;
 
-function toAuthErrorCode(
-	error: { code?: string; message?: string },
-	mode: "signIn" | "signUp",
-): AuthErrorCode {
-	const code = error.code ?? "";
-	const message = (error.message ?? "").toLowerCase();
-
-	if (
-		code === "invalid_credentials" ||
-		message.includes("invalid login credentials")
-	)
-		return "invalidCredentials";
-	if (code === "user_already_exists" || message.includes("already registered"))
-		return "emailAlreadyExists";
-	if (code === "email_not_confirmed" || message.includes("email not confirmed"))
-		return "emailNotConfirmed";
-	if (code === "over_email_send_rate_limit" || message.includes("rate limit"))
-		return "rateLimit";
-	if (code === "weak_password" || message.includes("weak password"))
-		return "weakPassword";
-	if (code === "invalid_email" || message.includes("invalid email"))
-		return "invalidEmail";
-	if (message.includes("fetch") || message.includes("network"))
-		return "network";
-	return mode === "signIn" ? "signInFailed" : "signUpFailed";
-}
-
 function isAlreadyRegistered(error: {
 	code?: string;
 	message?: string;
@@ -133,6 +105,28 @@ function isInvalidCredentials(error: {
 		error.code === "invalid_credentials" ||
 		(error.message ?? "").toLowerCase().includes("invalid login credentials")
 	);
+}
+
+function toAuthErrorCode(
+	error: { code?: string; message?: string },
+	mode: "signIn" | "signUp",
+): AuthErrorCode {
+	const code = error.code ?? "";
+	const message = (error.message ?? "").toLowerCase();
+
+	if (isInvalidCredentials(error)) return "invalidCredentials";
+	if (isAlreadyRegistered(error)) return "emailAlreadyExists";
+	if (code === "email_not_confirmed" || message.includes("email not confirmed"))
+		return "emailNotConfirmed";
+	if (code === "over_email_send_rate_limit" || message.includes("rate limit"))
+		return "rateLimit";
+	if (code === "weak_password" || message.includes("weak password"))
+		return "weakPassword";
+	if (code === "invalid_email" || message.includes("invalid email"))
+		return "invalidEmail";
+	if (message.includes("fetch") || message.includes("network"))
+		return "network";
+	return mode === "signIn" ? "signInFailed" : "signUpFailed";
 }
 
 export const authStore = createStore<AuthStoreState>((set, get) => ({
@@ -262,6 +256,8 @@ export const authStore = createStore<AuthStoreState>((set, get) => ({
 			return { ok: false, code };
 		}
 
+		const { default: HybridProjectRepository } =
+			await import("@/persistence/repositories/hybrid.project.repository");
 		const repatriation =
 			await new HybridProjectRepository().moveAllCloudToLocal();
 		if (!repatriation.ok) return { ok: false, code: "repatriationFailed" };

@@ -1,6 +1,9 @@
 "use client";
 
 import SectionReorderCommand from "@/schemas/ladder/commands/section-reorder.command";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
+import { useT } from "@/ui/i18n/useT";
+import useCtrlWheelZoom from "@/ui/lib/hooks/useCtrlWheelZoom";
 import {
 	closestCenter,
 	DndContext,
@@ -19,18 +22,15 @@ import {
 import { Box, useTheme } from "@mui/material";
 import { ReactFlowProvider } from "@xyflow/react";
 import { useCallback, useMemo, useRef } from "react";
-import { useT } from "@/ui/i18n/useT";
 import { useLadderStore } from "../context/LadderContext";
 import buildLadderReorderAnnouncements, {
 	ladderReorderScreenReaderInstructions,
 } from "./ladder-reorder-announcements";
 import LadderSection from "./LadderSection";
-import useCanEdit from "@/ui/components/projects/useCanEdit";
-import useCtrlWheelZoom from "@/ui/lib/hooks/useCtrlWheelZoom";
 import useLadderSectionSelection from "./useLadderSectionSelection";
 
-import "@xyflow/react/dist/style.css";
 import "@/ui/lib/react-flow/flow-page.css";
+import "@xyflow/react/dist/style.css";
 import "./_ladder-page.css";
 
 function LadderFlowContent() {
@@ -67,7 +67,7 @@ function LadderFlowContent() {
 		[tReorder],
 	);
 
-	const canEdit = useCanEdit();
+	const canEdit = useCanEditActivePage();
 	const containerRef = useRef<HTMLDivElement>(null);
 	useLadderSectionSelection(containerRef);
 	const viewManager = useLadderStore((state) => state.viewManager);

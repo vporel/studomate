@@ -315,6 +315,7 @@ describe("Parser", () => {
 			expect((parseExpression("t/x/5s") as any).presetTime).toBe(5000);
 			expect((parseExpression("t/x/2m") as any).presetTime).toBe(120000);
 			expect((parseExpression("t/x/1h") as any).presetTime).toBe(3600000);
+			expect((parseExpression("t/x/1d") as any).presetTime).toBe(86400000);
 		});
 
 		it("reads a/b/5s as a timer named a, not as a division", () => {
@@ -444,7 +445,9 @@ describe("Parser", () => {
 		});
 
 		it("rejects the rise-and-fall delay form 5s/X1/2s instead of reading a division", () => {
-			expect(() => parseExpression("5s/X1/2s")).toThrow(MalformedTimerException);
+			expect(() => parseExpression("5s/X1/2s")).toThrow(
+				MalformedTimerException,
+			);
 		});
 
 		it("rejects the duration written after the input without a name (X1/5s)", () => {
@@ -463,7 +466,9 @@ describe("Parser", () => {
 		});
 
 		it("never reads a named timer as the input of an anonymous one (5s/t1/X1/5s)", () => {
-			expect(() => parseExpression("5s/t1/X1/5s")).toThrow(MalformedTimerException);
+			expect(() => parseExpression("5s/t1/X1/5s")).toThrow(
+				MalformedTimerException,
+			);
 		});
 
 		it("rejects a duration glued to the next word instead of silently splitting it", () => {

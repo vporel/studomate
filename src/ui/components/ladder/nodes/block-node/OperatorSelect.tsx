@@ -15,6 +15,7 @@ export default function OperatorSelect<T extends string>({
 	ariaLabel,
 	fontSize = 14,
 	menuFontSize = fontSize,
+	disabled = false,
 }: {
 	value: T;
 	onChange: (operator: T) => void;
@@ -22,11 +23,13 @@ export default function OperatorSelect<T extends string>({
 	ariaLabel: string;
 	fontSize?: number;
 	menuFontSize?: number;
+	disabled?: boolean;
 }) {
 	return (
 		<Select
 			className="nodrag"
 			value={value}
+			disabled={disabled}
 			onChange={(e) => onChange(e.target.value as T)}
 			onMouseDown={(e) => e.stopPropagation()}
 			size="small"

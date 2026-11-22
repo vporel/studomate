@@ -1,17 +1,17 @@
 /**
  * @jest-environment jsdom
  */
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
 import { fireEvent, render } from "@testing-library/react";
 import { useRef } from "react";
-import useCanEdit from "@/ui/components/projects/useCanEdit";
 import { useLadderContext } from "../context/LadderContext";
 import useLadderSectionSelection from "./useLadderSectionSelection";
 
 jest.mock("../context/LadderContext");
-jest.mock("@/ui/components/projects/useCanEdit");
+jest.mock("@/ui/components/projects/useCanEditActivePage");
 
 function setup(sectionIds = ["s1", "s2", "s3"], canEdit = true) {
-	(useCanEdit as jest.Mock).mockReturnValue(canEdit);
+	(useCanEditActivePage as jest.Mock).mockReturnValue(canEdit);
 	const setSelectedSectionIds = jest.fn();
 	const deselectAllElements = jest.fn();
 	const deleteSections = jest.fn();
@@ -163,6 +163,19 @@ describe("useLadderSectionSelection", () => {
 
 		expect(deleteSections).not.toHaveBeenCalled();
 		otherBlock.remove();
+	});
+
+	it("Suppr en cours de saisie dans un contenu éditable → ignoré", () => {
+		const { getByTestId, deleteSections } = setup();
+		pointerDown(getByTestId("h-s1"));
+		const div = document.createElement("div");
+		Object.defineProperty(div, "isContentEditable", { value: true });
+		document.body.appendChild(div);
+
+		fireEvent.keyDown(div, { key: "Delete" });
+
+		expect(deleteSections).not.toHaveBeenCalled();
+		div.remove();
 	});
 
 	it("Suppr en cours de saisie dans un input → ignoré", () => {

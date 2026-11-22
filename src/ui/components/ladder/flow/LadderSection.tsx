@@ -1,9 +1,10 @@
 "use client";
 
-import useCanEdit from "@/ui/components/projects/useCanEdit";
 import { isConnectionAllowed } from "@/schemas/ladder/commands/connections-add.command";
 import Section from "@/schemas/ladder/section.schema";
 import useLadderRailEnergized from "@/ui/components/ladder/useLadderRailEnergized";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
+import EMPTY_ARRAY from "@/ui/lib/empty";
 import {
 	LADDER_FLOW_MAX_ZOOM,
 	LADDER_FLOW_MIN_ZOOM,
@@ -31,9 +32,8 @@ import {
 	Viewport,
 } from "@xyflow/react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import EMPTY_ARRAY from "@/ui/lib/empty";
+import LadderContextMenu from "../context-menu/LadderContextMenu";
 import { useLadderStore } from "../context/LadderContext";
-import useInViewport from "./useInViewport";
 import LadderConnectionLine from "../edges/LadderConnectionLine";
 import LadderSectionDescription from "./LadderSectionDescription";
 import LadderSectionHeader from "./LadderSectionHeader";
@@ -42,15 +42,17 @@ import {
 	LadderNodeType,
 	nodeTypes,
 } from "./ladder-nodes-definitions";
+import useInViewport from "./useInViewport";
 import useLadderConnectHandler from "./useLadderConnectHandler";
 import useLadderConnectionKeyboardHandler from "./useLadderConnectionKeyboardHandler";
-import useLadderNodeMoveKeyboardHandler from "./useLadderNodeMoveKeyboardHandler";
 import useLadderContextMenu from "./useLadderContextMenu";
 import useLadderDeleteHandler from "./useLadderDeleteHandler";
 import useLadderDropHandlers from "./useLadderDropHandlers";
-import LadderContextMenu from "../context-menu/LadderContextMenu";
+import useLadderNodeMoveKeyboardHandler from "./useLadderNodeMoveKeyboardHandler";
 
 import "@xyflow/react/dist/style.css";
+
+const DELETE_KEY_CODES = ["Backspace", "Delete"];
 
 interface LadderSectionProps {
 	section: Section;
@@ -111,7 +113,7 @@ function LadderSection({ section, index }: LadderSectionProps) {
 	const edges = useLadderStore(
 		(state) => state.edgesBySectionId[section.id] ?? EMPTY_ARRAY,
 	);
-	const canEdit = useCanEdit();
+	const canEdit = useCanEditActivePage();
 	const railEnergized = useLadderRailEnergized();
 	const [collapsed, setCollapsed] = useState(false);
 	const hasHighlightedNode = useLadderStore((state) =>
@@ -342,6 +344,7 @@ function LadderSection({ section, index }: LadderSectionProps) {
 								connectionLineComponent={LadderConnectionLine}
 								isValidConnection={isValidConnection}
 								onDelete={handleDelete}
+								deleteKeyCode={DELETE_KEY_CODES}
 								onNodeContextMenu={openNodeContextMenu}
 								onEdgeContextMenu={openEdgeContextMenu}
 								onPaneClick={closeContextMenu}

@@ -66,4 +66,59 @@ describe("getBlockInstanceVariables", () => {
 
 		expect(getBlockInstanceVariables(project)).toEqual([]);
 	});
+	describe("ladders exclus de l'exécution", () => {
+		const timer = (name: string) =>
+			createTimerBlockElement({ name, timerType: "TON", pt: "T#5s" }, 0, 0);
+		const counter = (name: string) =>
+			createCounterBlockElement(
+				{ name, counterType: "CTU", control: "R1", pv: "10" },
+				0,
+				0,
+			);
+
+		it("n'expose aucune variable pour un timer d'un ladder exclu", () => {
+			const project = new Project("p1", "Projet", "");
+			const ladder = project.createLadder("L1");
+			ladder.addElements(ladder.sections[0].id, [timer("Tempo1")]);
+			ladder.excludedFromExecution = true;
+
+			expect(getBlockInstanceVariables(project)).toEqual([]);
+		});
+
+		it("n'expose aucune variable pour un compteur d'un ladder exclu", () => {
+			const project = new Project("p1", "Projet", "");
+			const ladder = project.createLadder("L1");
+			ladder.addElements(ladder.sections[0].id, [counter("Cpt1")]);
+			ladder.excludedFromExecution = true;
+
+			expect(getBlockInstanceVariables(project)).toEqual([]);
+		});
+
+		it("garde les variables du ladder exécuté quand un autre ladder est exclu", () => {
+			const project = new Project("p1", "Projet", "");
+			const executed = project.createLadder("L1");
+			const excluded = project.createLadder("L2");
+			executed.addElements(executed.sections[0].id, [timer("Tempo1")]);
+			excluded.addElements(excluded.sections[0].id, [timer("Tempo2")]);
+			excluded.excludedFromExecution = true;
+
+			expect(
+				getBlockInstanceVariables(project)
+					.map((v) => v.mnemonic)
+					.sort(),
+			).toEqual(["Tempo1.ET", "Tempo1.IN", "Tempo1.Q"]);
+		});
+
+		it("expose de nouveau les variables quand le ladder est réintégré à l'exécution", () => {
+			const project = new Project("p1", "Projet", "");
+			const ladder = project.createLadder("L1");
+			ladder.addElements(ladder.sections[0].id, [timer("Tempo1")]);
+			ladder.excludedFromExecution = true;
+			expect(getBlockInstanceVariables(project)).toEqual([]);
+
+			ladder.excludedFromExecution = false;
+
+			expect(getBlockInstanceVariables(project)).toHaveLength(3);
+		});
+	});
 });

@@ -35,7 +35,7 @@ jest.mock("@/ui/services/analytics", () => ({
 
 function setup(
 	getAllElements: () => unknown[] = () => [{}],
-	{ editingEnabled = true, pdfExport = true } = {},
+	{ editingEnabled = true, canExport = true } = {},
 ) {
 	const ladder = { name: "Pompe", getAllElements };
 	const events = mitt();
@@ -57,7 +57,7 @@ function setup(
 			clipboard: createClipboardStore(),
 			mode: ProjectMode.DESIGN,
 			editingEnabled,
-			capabilities: { pdfExport },
+			capabilities: { export: canExport },
 			project: { name: "Mon projet" },
 			setCrossReferenceFilter: jest.fn(),
 			setCrossReferenceResultVisible: jest.fn(),
@@ -103,14 +103,14 @@ describe("LadderContextMenu — export", () => {
 	});
 
 	it("ne propose pas l'export quand le store ne sait pas exporter", () => {
-		setup(undefined, { pdfExport: false });
+		setup(undefined, { canExport: false });
 
 		expect(screen.queryByText("Exporter")).not.toBeInTheDocument();
 		expect(screen.getByText("Coller")).toBeInTheDocument();
 	});
 
 	it("n'ouvre pas de menu sur un projet en lecture seule sans export", () => {
-		setup(undefined, { editingEnabled: false, pdfExport: false });
+		setup(undefined, { editingEnabled: false, canExport: false });
 
 		expect(screen.queryByRole("menu")).not.toBeInTheDocument();
 	});

@@ -6,9 +6,18 @@ import {
 	Scene,
 } from "../draw-op";
 
+/**
+ * Caractères que XML 1.0 n'autorise pas (production `Char`) : les contrôles hors tabulation et
+ * sauts de ligne, U+FFFE, U+FFFF et les demi-paires de substitution isolées. Un seul d'entre eux
+ * rend tout le document illisible.
+ */
+const XML_INVALID_CHARS =
+	/[^\u0009\u000A\u000D\u0020-\uD7FF\uE000-\uFFFD\u{10000}-\u{10FFFF}]/gu;
+
 /** Échappe le texte destiné à un nœud texte ou à une valeur d'attribut XML. */
 export function escapeXml(value: string): string {
 	return value
+		.replace(XML_INVALID_CHARS, "")
 		.replace(/&/g, "&amp;")
 		.replace(/</g, "&lt;")
 		.replace(/>/g, "&gt;")
@@ -78,7 +87,10 @@ function opToSvg(op: DrawOp): string {
  */
 export function sceneToSvg(
 	scene: Scene,
-	{ scale = 1, background = true }: { scale?: number; background?: boolean } = {},
+	{
+		scale = 1,
+		background = true,
+	}: { scale?: number; background?: boolean } = {},
 ): string {
 	const body = scene.ops.map(opToSvg).join("\n\t");
 	return [

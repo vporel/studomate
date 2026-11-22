@@ -10,7 +10,7 @@ import { selectorImplementation } from "@tests/utils/store-mocks";
 import LadderFlow from "./LadderFlow";
 
 jest.mock("../context/LadderContext");
-jest.mock("@/ui/components/projects/useCanEdit", () => ({
+jest.mock("@/ui/components/projects/useCanEditActivePage", () => ({
 	__esModule: true,
 	default: () => true,
 }));

@@ -37,19 +37,6 @@ export const GRAFCET_ELEMENT_TYPES = [
 
 export type ElementType = (typeof GRAFCET_ELEMENT_TYPES)[number];
 
-export const GRAFCET_ELEMENT_LABELS: Record<ElementType, string> = {
-	step: "Étape",
-	transition: "Transition",
-	action: "Action",
-	"step-referral-source": "Tenant",
-	"step-referral-target": "Aboutissant",
-	"junction-and-start": "Divergence en ET",
-	"junction-and-end": "Convergence en ET",
-	"junction-or-start": "Divergence en OU",
-	"junction-or-end": "Convergence en OU",
-	comment: "Commentaire",
-};
-
 import { Dimensions } from "./shared-types";
 
 export interface ElementConstructor<T extends Element<any>> {
@@ -79,10 +66,6 @@ export default abstract class Element<DataType> implements SharedElement<
 		this.data = data;
 		this.position = position;
 		this.size = size;
-	}
-
-	getLabel(): string {
-		return GRAFCET_ELEMENT_LABELS[this.type] || "Label inconnu";
 	}
 
 	updateData(newData: Partial<DataType>): void {

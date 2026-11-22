@@ -108,6 +108,65 @@ describe("undo-redo — arbitrage de portée", () => {
 		});
 	});
 
+	describe.each(["ladder", "hmi"] as const)("portée %s", (scope) => {
+		function stateFor(documentUndo: boolean, managerMissing = false) {
+			const projectStack = {
+				undoOperation: jest.fn(),
+				redoOperation: jest.fn(),
+			};
+			const documentStack = {
+				undoOperation: jest.fn(),
+				redoOperation: jest.fn(),
+			};
+			const documents = {
+				getActiveStoreValues: () => ({
+					hasCommandsToUndo: documentUndo,
+					hasCommandsToRedo: documentUndo,
+				}),
+				getActiveStoreManagers: () =>
+					managerMissing ? null : { commandsStackManager: documentStack },
+			};
+			const state = {
+				mode: ProjectMode.DESIGN,
+				editingEnabled: true,
+				activeScopeType: scope,
+				hasCommandsToUndo: true,
+				hasCommandsToRedo: true,
+				commandsStackManager: projectStack,
+				laddersManager: documents,
+				hmiManager: documents,
+			} as unknown as ProjectStoreState;
+			return { state, projectStack, documentStack };
+		}
+
+		it("délègue à la pile du document actif et ignore l'historique du projet", () => {
+			const { state, projectStack, documentStack } = stateFor(true);
+
+			performUndo(state);
+			performRedo(state);
+
+			expect(documentStack.undoOperation).toHaveBeenCalledTimes(1);
+			expect(documentStack.redoOperation).toHaveBeenCalledTimes(1);
+			expect(projectStack.undoOperation).not.toHaveBeenCalled();
+			expect(projectStack.redoOperation).not.toHaveBeenCalled();
+		});
+
+		it("n'autorise rien quand le document n'a rien à annuler, même si le projet a de quoi", () => {
+			const { state } = stateFor(false);
+
+			expect(canUndoActiveScope(state)).toBe(false);
+			expect(canRedoActiveScope(state)).toBe(false);
+		});
+
+		it("ne retombe pas sur la pile du projet quand aucun document n'est monté", () => {
+			const { state, projectStack } = stateFor(true, true);
+
+			performUndo(state);
+
+			expect(projectStack.undoOperation).not.toHaveBeenCalled();
+		});
+	});
+
 	describe("mode simulation", () => {
 		it("interdit annuler et rétablir hors du mode conception", () => {
 			const { state } = makeState({

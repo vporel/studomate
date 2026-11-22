@@ -1,8 +1,8 @@
 "use client";
 
-import useCanEdit from "@/ui/components/projects/useCanEdit";
 import { validateBlockName } from "@/schemas/ladder/function-blocks/function-block.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
 import { useT } from "@/ui/i18n/useT";
 import { InputBase } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
@@ -26,7 +26,7 @@ export default function BlockNameField({
 	onCommit: (name: string) => void;
 }) {
 	const project = useProjectStore((state) => state.project);
-	const canEdit = useCanEdit();
+	const canEdit = useCanEditActivePage();
 	const t = useT("ladderEditor.block");
 	const [draft, setDraft] = useState(value);
 	const inputRef = useRef<HTMLInputElement>(null);

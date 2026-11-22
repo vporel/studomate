@@ -30,6 +30,7 @@ import {
 	TRANSITION_HANDLE_TARGET_PREDECESSOR,
 } from "@/schemas/grafcet/transition.schema";
 import ElevatorDescriptor from "@/3d-scenes/elevator/v1/elevator.descriptor";
+import { buildSuggestedScene3d } from "@/3d-scenes/scene3d-wiring";
 import { FLOOR_POSITIONS } from "@/3d-scenes/elevator/v1/elevator.model";
 import {
 	createAssignBlockElement,
@@ -154,19 +155,10 @@ export function createElevatorProject(locale: Locale = "fr"): Project {
 		VariableBuilder.buildMemoryInt(createRandomId(), "etage_courant"),
 	);
 
-	const variableIdByMnemonic = new Map(
-		project.variables.map((variable) => [variable.mnemonic, variable.id]),
+	project.scene3d = buildSuggestedScene3d(
+		ElevatorDescriptor,
+		project.variables,
 	);
-	project.scene3d = {
-		sceneId: ElevatorDescriptor.id,
-		sceneVersion: ElevatorDescriptor.version,
-		bindings: Object.fromEntries(
-			ElevatorDescriptor.points.map((point) => [
-				point.id,
-				variableIdByMnemonic.get(point.suggestedMnemonic)!,
-			]),
-		),
-	};
 
 	const displayLadder = buildDisplayLadder(t);
 	project.addProgram(displayLadder);

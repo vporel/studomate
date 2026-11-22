@@ -70,6 +70,14 @@ Dependencies flow top to bottom in this list: the domain never depends on the UI
 has a `dialect` (FR/EN) that travels with it — this is not a UI preference, it's a property of
 the expressions it contains.
 
+The interface languages are `LOCALES` (`src/i18n/config.ts`: `fr`, `en`, `es`), distinct from the
+two dialects. Only French has its own expression keywords: every other locale suggests the EN
+dialect and the English template mnemonics (`defaultDialectForLocale`, `localizeProject`). Never
+branch on `locale === "en"` to mean "not French": iterate over `LOCALES`, or test
+`locale === "fr"`. A figure whose text is translated has one variant per non-French locale
+(`name-en.svg`, `name-es.svg`) next to the French `name.svg`; a figure without translatable text
+has none.
+
 `src/bridge/` only contains mappers where the UI is one of the two ends (domain/analysis ↔
 UI). A mapper between two internal layers stays in the layer concerned — `PlcVariablesMapper`
 (environment ↔ PLC) lives in `src/simulator/`, and `SchemaVariablesMapper` (schema →
@@ -84,6 +92,11 @@ handles sign-up, sign-in, anonymous accounts (username + password), password res
 project goes through a URL token (`ShareableProjectRepository`, `?shareToken=` handled in
 `src/ui/stores/project/url/project-url.ts`). Error monitoring is wired via Sentry
 (`sentry.{client,server,edge}.config.ts` at the root).
+
+Supabase **email confirmation is disabled** in production: `signUp` returns a session right away.
+Anonymous accounts depend on it (their address, `pseudo@user.studomate.com`, is not a real
+mailbox and could never be confirmed), so the auth store does not handle a sign-up that comes back
+without a session.
 
 This layer is consumed by the UI; it never leaks into the domain (`src/schemas/`).
 Environment variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` for cloud,
@@ -102,11 +115,14 @@ side effect in a manager goes through `env` too, never a direct import of `track
 loading Supabase, the data grid or three.js: keep page constants in `pages-data.ts` and the editors'
 node types as `import type` in the stores.
 
-"Can the project be modified" is one rule, `canEdit(state)` (`stores/project/editability.ts`, hook
-`useCanEdit()`): design mode **and** the `editingEnabled` flag. Use it for anything that edits
-(commands, toolbars, in-place editors, menus); keep `state.mode` for what depends on the simulation
-itself. The clipboard belongs to each store (`state.clipboard`), and what the surrounding interface
-can offer (PDF export, cross-references, board) is read from `state.capabilities`.
+"Can the project be modified" is answered by `stores/project/editability.ts`, in two levels:
+`canEditProject(state)` (hook `useCanEditProject()`) is design mode **and** the `editingEnabled`
+flag, whatever the page: use it for what acts on the project itself (explorer, menus, project
+name and properties). `canEditActivePage(state)` (hook `useCanEditActivePage()`) adds that the
+active page is not locked: use it for what edits the content of that page (commands, toolbars,
+in-place editors). Keep `state.mode` for what depends on the simulation itself. The clipboard
+belongs to each store (`state.clipboard`), and what the surrounding interface can offer (PDF
+export, cross-references, board) is read from `state.capabilities`.
 
 `EmbeddedApp` (`src/ui/components/embedded/`) shows a `Project` with its editors inside a page, in
 memory only (copy of the project, nothing saved, `onDirtyChange`/`warnOnLeave` for the host). It
@@ -218,6 +234,8 @@ Always check `package.json` before quoting a version: this table goes stale at t
   or a store environment. Keys are named `studomate_xxx`. Since `src/persistence/` never
   depends on `src/ui/`, a value typed by a UI enum is stored as a string and checked against the
   enum by the caller.
+  `sessionStorage` follows the same rule. The only exception is `LocalStorageProjectRepository`
+  (with `migrations/local-storage/keys.ts`): it is the storage of the projects themselves.
 - **Modals**: their visibility lives in the relevant zustand store (`openModalVisible`,
   `exportModalVisible`, ...) when its state is shared between components or when it must be
   openable from several places (keyboard shortcuts, menus, ...). A modal that opens and closes
@@ -273,8 +291,11 @@ Always check `package.json` before quoting a version: this table goes stale at t
   séquence linéaire"). For an aside, prefer parentheses, commas or a new sentence. This applies
   above all to text meant to be read: UI strings and i18n files, manuals, docs, training
   content. Do not sprinkle em dashes as a default separator. Exception: the site-name suffix of
-  page titles stays an em dash (`À propos — Studomate`, `About — Studomate`); keep it as is.
-- **User manual content**: every addition to the manual (`manual.json`, FR and EN) is weighed
+  page titles stays an em dash (`À propos — Studomate`, `About — Studomate`); keep it as is. The
+  rule covers prose, not layout: an em dash used as a visual separator between independent fields
+  (a PDF header or footer line such as "Auteur : X — Exporté le …") is not punctuation in a
+  sentence and stays.
+- **User manual content**: every addition to the manual (`manual.json`, in every locale) is weighed
   for its relevance at that exact place before it is written, including when a code change
   seems to "complete" an existing section. Information that helps the user find something,
   understand what they see, or avoid a surprise belongs there, even when it describes something
@@ -302,12 +323,12 @@ particular attention to SEO, and the end-of-task report says what was checked:
 
 - **Metadata**: every page goes through `pageMetadata` / `createGenerateMetadata`
   (`src/app/metadata.ts`), which sets title, description, `canonical`, `hreflang` and Open
-  Graph. Title and description are specific to the page, in both locales, and stay within
+  Graph. Title and description are specific to the page, in every locale, and stay within
   reasonable lengths (title around 60 characters before the site suffix, description around
   150–160).
 - **Indexing**: a new route is reachable from the sitemap (`src/app/sitemap.ts`) and allowed
   by `robots.ts`; a removed or renamed route doesn't leave dead internal links behind.
-- **Locale parity**: FR and EN carry the same content, translated slugs come from
+- **Locale parity**: every locale (FR, EN, ES) carries the same content, translated slugs come from
   `routing.pathnames`, and internal links go through the localized `Link` / `PublicLink`.
 - **Structure**: one `h1` per page, headings in order without skipped levels, meaningful link
   text, an `alt` on every informative image (`alt=""` only for decorative ones).
@@ -420,7 +441,10 @@ the `localStorage` layout up to date (`hasProjects()` does not migrate), records
 compares `WHATS_NEW_VERSION` with the stored one: no stored version, it is written silently, unless
 local projects already exist (`LocalStorageProjectRepository.hasProjects()`), in which case the
 carousel is shown; same version, nothing happens; different version, it is updated and the
-`WhatsNewModal` carousel is shown. A downgrade is not handled specially.
+`WhatsNewModal` carousel is shown. A downgrade is not handled specially. A fresh browser (no
+version key, no project) is detected **before** the layout migration and only gets both versions
+written silently: the `v1-to-v2` layout migration stamps frozen older versions, which would
+otherwise pass for news on the very first visit.
 
 The modal's visibility lives in `whatsNewStore` (`src/ui/stores/whats-new/`): the version shown in
 the startup footer and the Help menu's "Nouveautés" entry reopen it at any time.

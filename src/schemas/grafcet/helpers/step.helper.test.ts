@@ -48,6 +48,28 @@ describe("StepHelper.hasNumber", () => {
 	});
 });
 
+describe("StepHelper.getValidNumber", () => {
+	it.each([0, 1, 3, 100])("returns %i", (n) => {
+		expect(StepHelper.getValidNumber({ number: n })).toBe(n);
+	});
+
+	it.each([-1, 1.5, NaN, "", null, undefined])("returns null for %p", (n) => {
+		expect(
+			StepHelper.getValidNumber({ number: n } as unknown as StepData),
+		).toBeNull();
+	});
+});
+
+describe("StepHelper.getStepVariableMnemonic", () => {
+	it.each([
+		[0, "X0"],
+		[1, "X1"],
+		[100, "X100"],
+	])("builds the mnemonic of step %i", (n, expected) => {
+		expect(StepHelper.getStepVariableMnemonic(n)).toBe(expected);
+	});
+});
+
 describe("StepHelper.parseStepVariableMnemonic", () => {
 	it.each([
 		["X0", 0],

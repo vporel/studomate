@@ -1,0 +1,8 @@
+{
+	"statement": "## Secuencia lineal\n\nEntradas: `cycle_start`, `end1`, `end2`. Salidas: `output1`, `output2`.\n\n### Trabajo a realizar\n\n1. Con `cycle_start`, activa `output1`.\n2. Con `end1`, desactiva `output1` y activa `output2`.\n3. Con `end2`, desactiva `output2`.\n4. Con una nueva pulsación de `cycle_start`, reanuda el ciclo desde el principio.",
+	"texts": {
+		"projectName": "Secuencia lineal",
+		"solutionName": "Secuencia lineal: solución",
+		"grafcetName": "Secuencia"
+	}
+}

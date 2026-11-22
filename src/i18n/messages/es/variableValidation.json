@@ -1,0 +1,20 @@
+{
+	"MNEMONIC_EMPTY": "El mnemónico no puede estar vacío.",
+	"MNEMONIC_TOO_LONG": "El mnemónico debe tener como máximo {max} caracteres.",
+	"MNEMONIC_MUST_START_WITH_LETTER": "El mnemónico debe empezar por una letra.",
+	"MNEMONIC_INVALID_CHARS": "El mnemónico solo puede contener letras, dígitos y guiones bajos.",
+	"MNEMONIC_BLOCK_FORMAT": "El mnemónico de una variable de bloque debe escribirse \"NombreBloque.NombrePuerto\".",
+	"RESERVED_SYSTEM_PREFIX": "El prefijo \"{prefix}\" está reservado para las variables del sistema.",
+	"TYPE_UNKNOWN": "El tipo \"{type}\" no se reconoce.",
+	"TYPE_NOT_ALLOWED_IN_ZONE": "El tipo \"{type}\" no está permitido aquí. Tipos posibles: {allowed}.",
+	"ZONE_TYPE_INCOMPATIBLE": "El tipo \"{type}\" no es compatible con la zona \"{zone}\".",
+	"ADDRESS_MISSING_PERCENT": "La dirección debe empezar por el símbolo %.",
+	"ADDRESS_INVALID": "La dirección no es válida (p. ej. %I0.0, %QW10, %MD100).",
+	"CONSTANT_VALUE_MISSING": "El valor de la constante no puede estar vacío.",
+	"CONSTANT_VALUE_INVALID": "El valor no es un literal {type} válido (enteros: dentro del rango del tipo, sin decimales).",
+	"ADDRESS_NOT_ALLOWED_FOR_CONSTANT": "Una constante no tiene dirección.",
+	"BEHAVIOR_NOT_ALLOWED": "Este comportamiento no está disponible para una variable {type} en esta zona.",
+	"SLIDER_BOUNDS_NOT_INTEGER": "Los límites del deslizador deben ser enteros.",
+	"SLIDER_BOUNDS_ORDER": "El mínimo del deslizador debe ser estrictamente menor que su máximo.",
+	"SLIDER_BOUNDS_OUT_OF_TYPE_RANGE": "Los límites del deslizador deben mantenerse dentro del rango de {type} ({min} … {max})."
+}

@@ -1,4 +1,4 @@
-import { clamp } from "@/3d-scenes/scene-math";
+import { clamp } from "@/lib/number";
 import type { SceneModel, ScenePointValues } from "@/3d-scenes/scene-model";
 
 /** Height of the shaft, from the ground floor (0) to the top floor. */

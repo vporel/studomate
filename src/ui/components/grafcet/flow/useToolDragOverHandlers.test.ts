@@ -6,6 +6,7 @@ import { useReactFlow } from "@xyflow/react";
 import { useGrafcetStore } from "@/ui/components/grafcet/context/GrafcetContext";
 import { useGrafcetToolbarDnD } from "../toolbar/GrafcetToolbarDnDContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
+import { i18nWrapper } from "@tests/utils/i18n";
 import useToolDragOverHandlers from "./useToolDragOverHandlers";
 
 jest.mock("@/ui/components/grafcet/context/GrafcetContext");
@@ -24,6 +25,12 @@ jest.mock("./grafcet-nodes-definitions", () => ({
 					generated: true,
 					extraData,
 				})),
+			},
+		},
+		comment: {
+			elementClass: {
+				DEFAULT_DIMENSIONS: { width: 150, height: 40 },
+				generateDefaultData: jest.fn(() => ({ text: "Commentaire" })),
 			},
 		},
 	},
@@ -47,13 +54,18 @@ describe("useToolDragOverHandlers", () => {
 
 	afterEach(() => jest.clearAllMocks());
 
-	function setup(draggedItem: { type: string; extraData?: unknown } | null) {
+	function setup(
+		draggedItem: { type: string; extraData?: unknown } | null,
+		locale: "fr" | "en" | "es" = "fr",
+	) {
 		(useGrafcetStore as jest.Mock).mockImplementation(
 			selectorImplementation({ workflowManager }),
 		);
 		(useGrafcetToolbarDnD as jest.Mock).mockReturnValue({ draggedItem });
 		(useReactFlow as jest.Mock).mockReturnValue({ screenToFlowPosition });
-		return renderHook(() => useToolDragOverHandlers());
+		return renderHook(() => useToolDragOverHandlers(), {
+			wrapper: i18nWrapper(locale),
+		});
 	}
 
 	it("marks the drag-over as a move and prevents default", () => {
@@ -85,6 +97,19 @@ describe("useToolDragOverHandlers", () => {
 		expect(node.id).toEqual(expect.any(String));
 	});
 
+	it("snaps the top-left corner of the dropped node to the 10px grid", () => {
+		const { result } = setup({ type: "step" });
+		const [, handleToolDrop] = result.current;
+
+		// step is 100x60: raw top-left = (153 - 50, 137 - 30) = (103, 107)
+		act(() => handleToolDrop(fakeDragEvent(153, 137)));
+		// raw top-left = (155 - 50, 134 - 30) = (105, 104)
+		act(() => handleToolDrop(fakeDragEvent(155, 134)));
+
+		expect(addNodes.mock.calls[0][0].position).toEqual({ x: 100, y: 110 });
+		expect(addNodes.mock.calls[1][0].position).toEqual({ x: 110, y: 100 });
+	});
+
 	it("does nothing when no tool is being dragged", () => {
 		const { result } = setup(null);
 		const [, handleToolDrop] = result.current;
@@ -92,5 +117,14 @@ describe("useToolDragOverHandlers", () => {
 		act(() => handleToolDrop(fakeDragEvent(0, 0)));
 
 		expect(addNodes).not.toHaveBeenCalled();
+	});
+
+	it("writes a new comment in the interface language", () => {
+		const { result } = setup({ type: "comment" }, "es");
+		const [, handleToolDrop] = result.current;
+
+		act(() => handleToolDrop(fakeDragEvent(0, 0)));
+
+		expect(addNodes.mock.calls[0][0].data).toEqual({ text: "Comentario" });
 	});
 });

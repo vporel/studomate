@@ -1,0 +1,21 @@
+{
+	"title": "Atajos de teclado",
+	"groups": {
+		"file": "Archivo",
+		"project": "Proyecto",
+		"edit": "Edición"
+	},
+	"openProject": "Abrir un proyecto",
+	"save": "Guardar",
+	"saveAs": "Guardar como",
+	"newGrafcet": "Nuevo grafcet",
+	"newLadder": "Nuevo ladder",
+	"undo": "Deshacer",
+	"redo": "Rehacer",
+	"selectAll": "Seleccionar todo",
+	"copy": "Copiar",
+	"cut": "Cortar",
+	"paste": "Pegar",
+	"deleteHmiSelection": "Eliminar (selección HMI)",
+	"deleteKey": "Supr / Retroceso"
+}

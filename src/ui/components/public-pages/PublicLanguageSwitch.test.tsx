@@ -32,9 +32,10 @@ describe("PublicLanguageSwitch", () => {
 	});
 
 	it("propose chaque langue sur la page courante, avec le slug traduit", () => {
-		const [fr, en] = openMenu();
+		const [fr, en, es] = openMenu();
 		expect(fr).toHaveAttribute("href", "/fr/a-propos");
 		expect(en).toHaveAttribute("href", "/en/about");
+		expect(es).toHaveAttribute("href", "/es/acerca-de");
 	});
 
 	it("garde les liens de langue dans le DOM avant ouverture du menu", () => {
@@ -43,7 +44,7 @@ describe("PublicLanguageSwitch", () => {
 		const hrefs = screen
 			.getAllByRole("menuitem", { hidden: true })
 			.map((el) => el.getAttribute("href"));
-		expect(hrefs).toEqual(["/fr/a-propos", "/en/about"]);
+		expect(hrefs).toEqual(["/fr/a-propos", "/en/about", "/es/acerca-de"]);
 	});
 
 	it("résout les paramètres d'une route dynamique (section du manuel)", () => {

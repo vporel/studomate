@@ -1,0 +1,6 @@
+{
+	"statement": "## Portón con mando a distancia: tres bloques\n\nEl GRAFCET del portón de un solo botón, implementado en tres bloques: las condiciones de franqueo `T0` a `T8`, luego todos los reinicios y todas las activaciones de las etapas `X0` a `X5` (estos dos bloques forman el programa `Automatic_cycle`) y por último las salidas `open` y `close` (el programa `Outputs`).\n\n### A observar\n\n1. Con el portón cerrado (`limit_closed` a verdadero), una pulsación de `remote` lo abre: `open` pasa a verdadero.\n2. Durante la apertura, una segunda pulsación lo detiene: `open` y `close` están a falso.",
+	"texts": {
+		"projectName": "Portón con mando a distancia: tres bloques"
+	}
+}

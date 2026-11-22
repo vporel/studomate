@@ -1,0 +1,47 @@
+{
+	"footerButton": "Referencias cruzadas",
+	"filterPlaceholder": "Filtrar variables…",
+	"noVariables": "Ninguna referencia a variables en este proyecto.",
+	"noMatch": "Ninguna variable coincide con el filtro.",
+	"noReferencesForVariable": "“{name}” no se lee ni se escribe en este proyecto.",
+	"noReferencesForMatch": "Ninguna de las variables que coinciden con el filtro se lee o se escribe.",
+	"readBy": "Leída por",
+	"writtenBy": "Escrita por",
+	"noReaders": "No se lee en ningún sitio",
+	"noWriters": "No se escribe en ningún sitio",
+	"unknownProgram": "Programa desconocido",
+	"blockType": {
+		"timer": "temporizador",
+		"counter": "contador",
+		"compare": "comparación",
+		"assign": "asignación",
+		"arithmetic": "aritmética",
+		"convert": "conversión",
+		"user-program": "subprograma"
+	},
+	"widgetType": {
+		"push-button": "pulsador",
+		"indicator": "indicador",
+		"toggle-switch": "interruptor",
+		"numeric-display": "visualizador",
+		"gauge": "medidor",
+		"numeric-input": "entrada",
+		"slider": "deslizador",
+		"rectangle": "rectángulo",
+		"ellipse": "elipse",
+		"line": "línea",
+		"text": "texto"
+	},
+	"location": {
+		"ladder-contact": "{programName} · red \"{sectionTitle}\" · fila {gridRow} · contacto",
+		"ladder-coil": "{programName} · red \"{sectionTitle}\" · fila {gridRow} · bobina",
+		"ladder-block-pin": "{programName} · red \"{sectionTitle}\" · bloque {blockLabel} · pin {port}",
+		"grafcet-transition": "{programName} · receptividad de la transición",
+		"grafcet-action-boolean": "{programName} · etapa {stepNumber} · acción",
+		"grafcet-action-assign": "{programName} · etapa {stepNumber} · acción",
+		"grafcet-step": "{programName} · etapa {stepNumber} · actividad de la etapa",
+		"hmi-widget-binding": "{programName} · {widgetTypeLabel} \"{widgetName}\"",
+		"hmi-widget-animation": "{programName} · {widgetTypeLabel} \"{widgetName}\" · animación",
+		"scene3d-point": "{programName} · punto \"{pointLabel}\""
+	}
+}

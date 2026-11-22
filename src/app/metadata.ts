@@ -15,6 +15,7 @@ export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || APP_URL;
 const OG_LOCALES: Record<Locale, string> = {
 	fr: "fr_FR",
 	en: "en_US",
+	es: "es_ES",
 };
 
 const TITLE_SEPARATOR = " — ";

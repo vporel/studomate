@@ -10,19 +10,25 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { Box, Button, Tooltip, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useShallow } from "zustand/shallow";
-import AuthModal from "./AuthModal";
-import CloudAccountModal from "./CloudAccountModal";
 import { useT } from "@/ui/i18n/useT";
+import dynamic from "next/dynamic";
+
+const AuthModal = dynamic(() => import("./AuthModal"), { ssr: false });
+const CloudAccountModal = dynamic(() => import("./CloudAccountModal"), {
+	ssr: false,
+});
 
 export default function AccountStatus() {
-	const { user, loading, init, setAuthModalVisible } = useAuthStore(
-		useShallow((state) => ({
-			user: state.user,
-			loading: state.loading,
-			init: state.init,
-			setAuthModalVisible: state.setAuthModalVisible,
-		})),
-	);
+	const { user, loading, init, setAuthModalVisible, authModalVisible } =
+		useAuthStore(
+			useShallow((state) => ({
+				user: state.user,
+				loading: state.loading,
+				init: state.init,
+				setAuthModalVisible: state.setAuthModalVisible,
+				authModalVisible: state.ui.authModalVisible,
+			})),
+		);
 
 	const t = useT("auth.accountStatus");
 	const [cloudAccountModalVisible, setCloudAccountModalVisible] =
@@ -38,11 +44,15 @@ export default function AccountStatus() {
 		return (
 			<Box>
 				<Tooltip title={t("tooltip")}>
-					<Button size="small" onClick={() => setAuthModalVisible(true)}>
+					<Button
+						size="small"
+						startIcon={<AccountCircleIcon fontSize="small" />}
+						onClick={() => setAuthModalVisible(true)}
+					>
 						{t("signIn")}
 					</Button>
 				</Tooltip>
-				<AuthModal />
+				{authModalVisible && <AuthModal />}
 			</Box>
 		);
 	}
@@ -57,7 +67,7 @@ export default function AccountStatus() {
 				size="small"
 				color="inherit"
 				onClick={() => setCloudAccountModalVisible(true)}
-				endIcon={<AccountCircleIcon fontSize="small" />}
+				startIcon={<AccountCircleIcon fontSize="small" />}
 				sx={{ textTransform: "none" }}
 			>
 				<Typography
@@ -69,10 +79,12 @@ export default function AccountStatus() {
 					{displayName}
 				</Typography>
 			</Button>
-			<CloudAccountModal
-				open={cloudAccountModalVisible}
-				onClose={() => setCloudAccountModalVisible(false)}
-			/>
+			{cloudAccountModalVisible && (
+				<CloudAccountModal
+					open
+					onClose={() => setCloudAccountModalVisible(false)}
+				/>
+			)}
 		</Box>
 	);
 }

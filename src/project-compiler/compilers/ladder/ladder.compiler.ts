@@ -1,4 +1,5 @@
 import ControlsBuilder from "@/expression-language/ast/builders/controls.builder";
+import ExpressionsBuilder from "@/expression-language/ast/builders/expressions.builder";
 import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
 import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
 import StatementsBuilder from "@/expression-language/ast/builders/statements.builder";
@@ -7,10 +8,14 @@ import { CounterNode, TimerNode } from "@/expression-language/ast/nodes/blocks";
 import {
 	PreCompiledCallAssignment,
 	PreCompiledCoilAssignment,
+	PreCompiledContactEdgeAssignment,
 	PreCompiledLadder,
 	PreCompiledLadderAssignment,
 } from "@/project-pre-compiler/pre-compilers/ladder/ladder.pre-compiler";
 import { PLCRoutineInstruction } from "@/simulator/core/plc/plc-routine";
+
+type CoilGroupMember =
+	PreCompiledCoilAssignment | PreCompiledContactEdgeAssignment;
 
 export type CompiledLadder = {
 	instructions: PLCRoutineInstruction[];
@@ -42,7 +47,7 @@ export default class LadderCompiler {
 				continue;
 			}
 			const group = this.collectCoilGroup(assignments, index);
-			if (group.length > 1) {
+			if (group.filter((member) => member.kind === "coil").length > 1) {
 				instructions.push({
 					kind: "node",
 					node: this.compileCoilGroup(group),
@@ -65,42 +70,78 @@ export default class LadderCompiler {
 	/**
 	 * Les bobines consécutives qui partagent la même condition d'alimentation (départ de branches
 	 * parallèles d'un réseau) : leur condition est évaluée une seule fois, avant la première
-	 * écriture, pour qu'une bobine ne voie pas ce que la précédente vient d'écrire.
+	 * écriture, pour qu'une bobine ne voie pas ce que la précédente vient d'écrire. Une bobine de
+	 * front emporte avec elle l'affectation de sa mémoire (`contactEdge`) qui la suit.
 	 */
 	private static collectCoilGroup(
 		assignments: PreCompiledLadderAssignment[],
 		start: number,
-	): PreCompiledCoilAssignment[] {
+	): CoilGroupMember[] {
 		const first = assignments[start];
 		if (first.kind !== "coil" || first.reachId === undefined) return [];
-		const group: PreCompiledCoilAssignment[] = [];
+		const group: CoilGroupMember[] = [];
 		for (let index = start; index < assignments.length; index++) {
 			const assignment = assignments[index];
-			if (assignment.kind !== "coil" || assignment.reachId !== first.reachId)
-				break;
-			group.push(assignment);
+			if (assignment.kind === "coil" && assignment.reachId === first.reachId) {
+				group.push(assignment);
+				continue;
+			}
+			const previous = group[group.length - 1];
+			if (
+				assignment.kind === "contactEdge" &&
+				previous.kind === "coil" &&
+				previous.edge &&
+				assignment.contactId === previous.coilId
+			) {
+				group.push(assignment);
+				continue;
+			}
+			break;
 		}
 		return group;
 	}
 
-	private static compileCoilGroup(group: PreCompiledCoilAssignment[]): ASTNode {
-		const write = (assignment: PreCompiledCoilAssignment, value: boolean) =>
+	private static compileCoilGroup(group: CoilGroupMember[]): ASTNode {
+		const write = (variable: string, value: ASTNode) =>
 			StatementsBuilder.buildAssignStatementNode(
-				IdentifiersBuilder.buildIdentifierNode(assignment.variable),
-				LiteralsBuilder.buildBooleanNode(value),
+				IdentifiersBuilder.buildIdentifierNode(variable),
+				value,
 			);
+		const bool = (value: boolean) => LiteralsBuilder.buildBooleanNode(value);
 		const trueBranch: ASTNode[] = [];
 		const falseBranch: ASTNode[] = [];
-		for (const assignment of group) {
-			if (assignment.mode === "normal") {
-				trueBranch.push(write(assignment, !assignment.inverted));
-				falseBranch.push(write(assignment, Boolean(assignment.inverted)));
+		for (const member of group) {
+			if (member.kind === "contactEdge") {
+				trueBranch.push(write(member.mnemonic, bool(true)));
+				falseBranch.push(write(member.mnemonic, bool(false)));
+			} else if (member.edge) {
+				const memo = IdentifiersBuilder.buildIdentifierNode(
+					member.edge.memoMnemonic,
+				);
+				if (member.edge.kind === "rising") {
+					trueBranch.push(
+						write(
+							member.variable,
+							ExpressionsBuilder.buildUnaryExpressionNode("NOT", memo),
+						),
+					);
+					falseBranch.push(write(member.variable, bool(false)));
+				} else {
+					trueBranch.push(write(member.variable, bool(false)));
+					falseBranch.push(write(member.variable, memo));
+				}
+			} else if (member.mode === "normal") {
+				trueBranch.push(write(member.variable, bool(!member.inverted)));
+				falseBranch.push(
+					write(member.variable, bool(Boolean(member.inverted))),
+				);
 			} else {
-				trueBranch.push(write(assignment, assignment.mode === "set"));
+				trueBranch.push(write(member.variable, bool(member.mode === "set")));
 			}
 		}
+		const first = group[0] as PreCompiledCoilAssignment;
 		return ControlsBuilder.buildIfControlNode(
-			group[0].reach!,
+			first.reach!,
 			trueBranch,
 			falseBranch.length > 0 ? falseBranch : null,
 		);

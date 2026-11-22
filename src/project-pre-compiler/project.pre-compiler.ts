@@ -9,6 +9,7 @@ import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.b
 import ReplacerVisitor, {
 	ReplacerVisitorReplacement,
 } from "@/expression-language/ast/visitors/replacer.visitor";
+import { TimerNode } from "@/expression-language/ast/nodes/blocks";
 import { PreCompiledProgram } from "./pre-compiled-program";
 import GrafcetPreCompiler, {
 	isPreCompiledGrafcet,
@@ -77,8 +78,7 @@ export default class ProjectPreCompiler {
 		const errors: ProjectPreCompilerError[] = [];
 		const programs: Record<string, PreCompiledProgram> = {};
 
-		for (const program of project.getExecutedPrograms()) {
-			if (program.isEmpty() && program.isSkippedWhenEmpty()) continue;
+		for (const program of project.getAnalysedPrograms()) {
 			const preCompiler = PROGRAM_PRE_COMPILERS[program.type];
 			if (!preCompiler) {
 				console.error(
@@ -121,20 +121,41 @@ export default class ProjectPreCompiler {
 		}
 		if (memoNameByStepMnemonic.size === 0) return;
 
-		const replacements: ReplacerVisitorReplacement[] = Array.from(
-			memoNameByStepMnemonic,
-		).map(([stepMnemonic, memoName]) => ({
-			predicate: (node) =>
-				node.type === "IDENTIFIER" && node.value === stepMnemonic,
-			replacement: IdentifiersBuilder.buildIdentifierNode(memoName),
-		}));
-		const replacer = new ReplacerVisitor(replacements);
+		const replacementByStepMnemonic = new Map<
+			string,
+			ReplacerVisitorReplacement
+		>(
+			Array.from(memoNameByStepMnemonic, ([stepMnemonic, memoName]) => [
+				stepMnemonic,
+				{
+					predicate: (node) =>
+						node.type === "IDENTIFIER" && node.value === stepMnemonic,
+					replacement: IdentifiersBuilder.buildIdentifierNode(memoName),
+				},
+			]),
+		);
+		const replacer = new ReplacerVisitor(
+			Array.from(replacementByStepMnemonic.values()),
+		);
 
 		for (const program of Object.values(programs)) {
 			if (!isPreCompiledGrafcet(program)) continue;
+			//A timer is evaluated at the head of its own grafcet's routine, where the live value
+			//of the grafcet's own steps already is the situation of the cycle start.
+			const ownMnemonics = new Set(
+				Array.from(program.steps.values(), (step) => step.node.value),
+			);
+			const timerReplacer = new ReplacerVisitor(
+				Array.from(replacementByStepMnemonic)
+					.filter(([stepMnemonic]) => !ownMnemonics.has(stepMnemonic))
+					.map(([, replacement]) => replacement),
+			);
 			for (const transition of program.transitions.values()) {
 				transition.node = replacer.visit(transition.node);
 				transition.pureNode = replacer.visit(transition.pureNode);
+				transition.timers = transition.timers.map(
+					(timer) => timerReplacer.visit(timer) as TimerNode,
+				);
 			}
 		}
 	}

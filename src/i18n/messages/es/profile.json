@@ -1,0 +1,29 @@
+{
+	"prompt": {
+		"userTypeTitle": "Usas Studomate como…",
+		"userTypeHint": "Opcional, para ayudarnos a entender quién usa la aplicación.",
+		"schoolTypeTitle": "Una última pregunta",
+		"schoolTypeQuestion": "¿En qué tipo de centro estudias?",
+		"skip": "Omitir"
+	},
+	"fields": {
+		"userType": "Usas Studomate como",
+		"schoolType": "Tipo de centro",
+		"notProvided": "No indicado"
+	},
+	"userTypes": {
+		"student": "Estudiante",
+		"teacher": "Docente / formador",
+		"professional": "Profesional de la automatización",
+		"self_learner": "Autodidacta / curioso",
+		"other": "Otro"
+	},
+	"schoolTypes": {
+		"high_school": "Instituto (secundaria)",
+		"bts": "BTS (formación profesional superior, Francia)",
+		"iut": "IUT / BUT (instituto universitario de tecnología, Francia)",
+		"university": "Universidad",
+		"engineering_school": "Escuela de ingeniería",
+		"other": "Otro"
+	}
+}

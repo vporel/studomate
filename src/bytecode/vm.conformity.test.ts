@@ -122,6 +122,40 @@ describe("simulator ↔ VM conformity on typed programs", () => {
 		},
 	);
 
+	it("wraps the most negative INT and DINT divided by -1 the same way", () => {
+		const compiled = compiledProject({
+			variables: [
+				plcVariable("a:INT"),
+				plcVariable("b:INT"),
+				plcVariable("r:INT"),
+				plcVariable("d:DINT"),
+				plcVariable("e:DINT"),
+				plcVariable("rd:DINT"),
+				plcVariable("q:BOOL"),
+			],
+			routines: [
+				[
+					"a := -32767 - 1",
+					"b := -1",
+					"r := a / b",
+					"d := -2147483647 - 1",
+					"e := -1",
+					"rd := d / e",
+					"q := r < 0 AND rd < 0",
+				],
+			],
+		});
+		const report = compareSimulatorAndVm(compiled, {
+			cycles: 5,
+			seed: 1,
+			changeProbability: 0,
+		});
+		expect(report.mismatches).toEqual([]);
+		expect(report.simulatorFaultCycle).toBeNull();
+		expect(report.vmFaultCycle).toBeNull();
+		expect(report.comparedVariables).toBeGreaterThan(0);
+	});
+
 	it("faults on the same cycle on a division by zero", () => {
 		const compiled = compiledProject({
 			variables: [

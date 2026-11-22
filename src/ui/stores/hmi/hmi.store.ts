@@ -48,6 +48,8 @@ export interface HmiStoreState {
 		y: number,
 		sizeOverride?: HmiWidgetSize,
 		dataOverride?: Partial<HmiWidgetData>,
+		/** Base of the generated name ("Push button" gives "Push button_1"). */
+		nameBase?: string,
 	) => HmiWidget;
 	/** Un `name` en doublon (ou vide) sur la page est silencieusement ignoré — le reste de
 	 * `partial` s'applique quand même. */
@@ -184,10 +186,10 @@ export const createHmiStore = (
 
 		clearSelection: () => set(() => ({ selectedWidgetIds: [] })),
 
-		addWidget: (type, x, y, sizeOverride, dataOverride) => {
+		addWidget: (type, x, y, sizeOverride, dataOverride, nameBase) => {
 			const { widgets } = get().hmiPage;
 			const stackOrder = HmiWidget.nextStackOrder(Object.values(widgets));
-			const name = HmiWidget.nextName(type, Object.values(widgets));
+			const name = HmiWidget.nextName(type, Object.values(widgets), nameBase);
 			const widget = HmiWidget.create(
 				type,
 				x,

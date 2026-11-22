@@ -1,5 +1,10 @@
 import type { jsPDF } from "jspdf";
-import { DEFAULT_STROKE, DEFAULT_STROKE_WIDTH, Scene } from "../draw-op";
+import {
+	DEFAULT_STROKE,
+	DEFAULT_STROKE_WIDTH,
+	PATH_NUMBER_PATTERN,
+	Scene,
+} from "../draw-op";
 
 /** Placement de la scène sur la page : origine (mm) du point (0,0) de la scène et facteur
  * pixel → mm. */
@@ -26,7 +31,7 @@ type PathSegment =
 
 /** Parseur du sous-ensemble `M`/`L`/`C`/`Z` (coordonnées absolues) accepté par `DrawOp` `path`. */
 export function parsePathData(d: string): PathSegment[] {
-	const tokens = d.match(/[MLCZ]|-?\d*\.?\d+/gi) ?? [];
+	const tokens = d.match(new RegExp(`[MLCZ]|${PATH_NUMBER_PATTERN}`, "gi")) ?? [];
 	const segments: PathSegment[] = [];
 	let i = 0;
 	const nextNum = () => Number(tokens[i++]);

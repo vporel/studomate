@@ -1,4 +1,4 @@
-import { clamp } from "@/3d-scenes/scene-math";
+import { clamp } from "@/lib/number";
 import type { SceneModel, ScenePointValues } from "@/3d-scenes/scene-model";
 
 /** Travel of the drill, from the top limit (0) to the bottom limit. */

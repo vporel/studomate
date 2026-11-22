@@ -1,4 +1,3 @@
-import JunctionHelper from "@/schemas/grafcet/helpers/junction.helper";
 import JunctionAnd from "@/schemas/grafcet/junction.schema";
 import { Environment } from "@/simulator/interpreter/environment/environment";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
@@ -6,6 +5,7 @@ import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
 import GrafcetElementAnalyser, {
 	ElementAnalyseIsolatedOptions,
 } from "./element.analyser";
+import analyseJunctionStructure from "./junction-structure.analyser";
 
 type AndJunctionsCollection = "junctionsAndStarts" | "junctionsAndEnds";
 
@@ -52,32 +52,14 @@ export default abstract class AbstractJunctionAndAnalyser<
 		const issues: ProjectAnalyserIssue[] = [];
 		const source = { sourceType, sourceId: junction.id };
 
-		if (!JunctionHelper.isPivotConnected(junction.id, grafcet)) {
-			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"JUNCTION_PIVOT_NOT_CONNECTED",
-					source,
-				),
-			);
-		}
-
-		if (!JunctionHelper.hasMinimumBranches(junction.data)) {
-			issues.push(
-				new ProjectAnalyserIssue("error", "JUNCTION_AND_MIN_BRANCHES", source),
-			);
-		}
-
-		if (!JunctionHelper.areAllBranchesConnected(junction.id, grafcet)) {
-			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"JUNCTION_BRANCH_NOT_CONNECTED",
-					source,
-				),
-			);
-			return issues;
-		}
+		const structure = analyseJunctionStructure(
+			junction,
+			grafcet,
+			source,
+			"JUNCTION_AND_MIN_BRANCHES",
+		);
+		issues.push(...structure.issues);
+		if (!structure.allBranchesConnected) return issues;
 
 		// All branches are connected: check that they all reach the same matching junction
 		const branchIds = junction.data.branchesOrder;

@@ -287,6 +287,7 @@ export default function ModuleStepper({
 			void new TrainingProgressRepository().saveStepId(
 				moduleId,
 				steps[index].id,
+				steps.map((s) => s.id),
 			);
 		}
 	};

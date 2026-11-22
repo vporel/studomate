@@ -7,6 +7,7 @@ import {
 import CustomModal from "@/ui/components/mui/CustomModal";
 import { useT } from "@/ui/i18n/useT";
 import trackEvent from "@/ui/services/analytics";
+import { getShareTokenFromUrl } from "@/ui/stores/project/url/project-url";
 import { SchoolType } from "@/user-profile/school-type.enum";
 import { EMPTY_USER_PROFILE, UserProfile } from "@/user-profile/user-profile";
 import { UserType } from "@/user-profile/user-type.enum";
@@ -21,7 +22,7 @@ export default function ProfilePromptModal() {
 	const [step, setStep] = useState<Step>("userType");
 
 	useEffect(() => {
-		setVisible(shouldAskUserProfile());
+		setVisible(shouldAskUserProfile(getShareTokenFromUrl() !== null));
 	}, []);
 
 	if (!visible) return null;

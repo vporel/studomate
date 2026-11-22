@@ -34,15 +34,19 @@ describe("Multi-Grafcet Integration Tests", () => {
 			const g1 = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0", 0);
 			const g2 = GrafcetFactory.createSimpleCycle("g2", "I1", "NON I1", 10);
 
-			const project = ProjectFactory.create([i0, i1], [g1, g2], "Multi-Grafcet Test");
+			const project = ProjectFactory.create(
+				[i0, i1],
+				[g1, g2],
+				"Multi-Grafcet Test",
+			);
 			const pipeline = compilePipelineDetailed(project);
 
 			expect(pipeline.analysis.issues).toEqual([]);
 			// 4 step variables: X0, X1 (G1) + X10, X11 (G2)
 			expect(pipeline.analysis.generatedVariables).toHaveLength(4);
-			expect(pipeline.analysis.generatedVariables.map((v) => v.mnemonic)).toEqual(
-				expect.arrayContaining(["X0", "X1", "X10", "X11"]),
-			);
+			expect(
+				pipeline.analysis.generatedVariables.map((v) => v.mnemonic),
+			).toEqual(expect.arrayContaining(["X0", "X1", "X10", "X11"]));
 			expect(pipeline.preCompilation.errors).toEqual([]);
 			expect(pipeline.compilation.errors).toEqual([]);
 			// Une routine par grafcet (2) + la routine des mémos d'étape + la routine
@@ -58,7 +62,9 @@ describe("Multi-Grafcet Integration Tests", () => {
 			const project = ProjectFactory.create([], [g1, g2]);
 			const pipeline = compilePipelineDetailed(project);
 
-			const mnemonics = pipeline.analysis.generatedVariables.map((v) => v.mnemonic);
+			const mnemonics = pipeline.analysis.generatedVariables.map(
+				(v) => v.mnemonic,
+			);
 			// No duplicates across grafcets
 			expect(new Set(mnemonics).size).toBe(mnemonics.length);
 		});
@@ -329,10 +335,18 @@ describe("Multi-Grafcet Integration Tests", () => {
 		 * la valeur vive de X1 au lieu de son mémo figé en début de cycle, la trace dépendrait de
 		 * l'ordre — exactement le bug corrigé par `ProjectPreCompiler.rebindStepReferencesToMemos`.
 		 */
-		function runTrace(order: "g1-first" | "g2-first"): { x1: boolean; x11: boolean }[] {
+		function runTrace(
+			order: "g1-first" | "g2-first",
+			receptivity = "X1",
+		): { x1: boolean; x11: boolean }[] {
 			const i0 = VariableFactory.createLogicInput("I0");
 			const g1 = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0", 0);
-			const g2 = GrafcetFactory.createSimpleCycle("g2", "X1", "NON X1", 10);
+			const g2 = GrafcetFactory.createSimpleCycle(
+				"g2",
+				receptivity,
+				"NON X1",
+				10,
+			);
 			const grafcets = order === "g1-first" ? [g1, g2] : [g2, g1];
 			const project = ProjectFactory.create([i0], grafcets);
 
@@ -369,6 +383,19 @@ describe("Multi-Grafcet Integration Tests", () => {
 
 			expect(traceG1First).toEqual(traceG2First);
 			// La référence croisée doit bien produire un effet : G2 finit par suivre G1.
+			expect(traceG1First.some((c) => c.x11)).toBe(true);
+		});
+
+		it("a timer reading G1's step starts at the same cycle whatever the program order", () => {
+			VariableFactory.reset();
+			ProjectFactory.reset();
+			const traceG1First = runTrace("g1-first", "50ms/X1");
+
+			VariableFactory.reset();
+			ProjectFactory.reset();
+			const traceG2First = runTrace("g2-first", "50ms/X1");
+
+			expect(traceG1First).toEqual(traceG2First);
 			expect(traceG1First.some((c) => c.x11)).toBe(true);
 		});
 	});

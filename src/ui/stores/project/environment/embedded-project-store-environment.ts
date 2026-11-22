@@ -66,8 +66,17 @@ export default function createEmbeddedProjectStoreEnvironment({
 	let simulationMode = SimulationMode.CONTINUOUS;
 	return {
 		getLocale: () => locale,
+		translate: (namespace) => {
+			const translator = createTranslator({
+				locale,
+				messages: getMessages(locale),
+				namespace: namespace as never,
+			});
+			return (key, values) => (translator as any)(key, values);
+		},
+		notifications: { error: () => {} },
 		capabilities: {
-			pdfExport: false,
+			export: false,
 			crossReference: false,
 			programExecutionExclusionToggle: false,
 		},

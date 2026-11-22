@@ -2,6 +2,7 @@ import { elementOps } from "@/ui/pdf/drawing/grafcet-scene";
 import { sceneToSvg } from "@/ui/lib/drawing/backends/svg-backend";
 import { GRAFCET_ELEMENT_CLASSES } from "@/ui/utils/grafcet/grafcet-element-classes";
 import { DraggedGrafcetElement } from "./GrafcetToolbarDnDContext";
+import newElementData from "./new-element-data";
 
 /** Room, in px, left around the element so that its strokes on the edges are not cut. */
 const PREVIEW_MARGIN = 2;
@@ -13,14 +14,13 @@ const PREVIEW_MARGIN = 2;
 export function buildGrafcetDragPreview(
 	element: DraggedGrafcetElement,
 	zoom: number,
+	commentText: string,
 ): { markup: string; width: number; height: number } {
 	const elementClass = GRAFCET_ELEMENT_CLASSES[element.type];
 	const size = { ...elementClass.DEFAULT_DIMENSIONS };
 	const drawn = new elementClass(
 		"drag-preview",
-		elementClass.generateDefaultData(
-			element.type === "step" ? element.extraData : undefined,
-		),
+		newElementData(element, elementClass, commentText),
 		{ x: PREVIEW_MARGIN, y: PREVIEW_MARGIN },
 		size,
 	);
@@ -44,8 +44,13 @@ export default function setGrafcetDragPreview(
 	dataTransfer: DataTransfer,
 	element: DraggedGrafcetElement,
 	zoom: number,
+	commentText: string,
 ): void {
-	const { markup, width, height } = buildGrafcetDragPreview(element, zoom);
+	const { markup, width, height } = buildGrafcetDragPreview(
+		element,
+		zoom,
+		commentText,
+	);
 	const preview = document.createElement("div");
 	Object.assign(preview.style, {
 		position: "fixed",

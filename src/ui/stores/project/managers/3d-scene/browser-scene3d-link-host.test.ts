@@ -15,7 +15,8 @@ jest.mock("@/3d-scenes/link/scene-channel", () => ({
 		mockCreateTransport(sessionId),
 }));
 
-const KEY = "studomate:3d-scene-session";
+const KEY = "studomate_3d_scene_session";
+const LOCK_PREFIX = "studomate:3d-scene-session";
 const getStore = (() => ({})) as unknown as ProjectStoreGetFunction;
 
 type LockCallback = (lock: object | null) => unknown;
@@ -82,20 +83,20 @@ describe("createBrowserScene3dLinkHost session id", () => {
 		await flush();
 		expect(host.getSessionId()).toBe("stored-id");
 		expect(request).toHaveBeenCalledTimes(1);
-		expect(request.mock.calls[0][0]).toBe(`${KEY}:stored-id`);
+		expect(request.mock.calls[0][0]).toBe(`${LOCK_PREFIX}:stored-id`);
 	});
 
 	it("replaces a stored id whose lock is held by another tab", async () => {
 		sessionStorage.setItem(KEY, "dup-id");
-		const request = installLocks(new Set([`${KEY}:dup-id`]));
+		const request = installLocks(new Set([`${LOCK_PREFIX}:dup-id`]));
 		const host = (await loadHost())(getStore);
 		await flush();
 		const id = host.getSessionId();
 		expect(id).not.toBe("dup-id");
 		expect(sessionStorage.getItem(KEY)).toBe(id);
 		expect(request.mock.calls.map((c) => c[0])).toEqual([
-			`${KEY}:dup-id`,
-			`${KEY}:${id}`,
+			`${LOCK_PREFIX}:dup-id`,
+			`${LOCK_PREFIX}:${id}`,
 		]);
 	});
 

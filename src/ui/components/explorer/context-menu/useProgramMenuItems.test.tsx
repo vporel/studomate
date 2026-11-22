@@ -39,14 +39,20 @@ describe.each([
 	const renamePayload =
 		type === "grafcet" ? { grafcetId: id } : { ladderId: id };
 
-	function setup(mode: ProjectMode, project?: Project) {
+	function setup(
+		mode: ProjectMode,
+		project?: Project,
+		state: Record<string, unknown> = {},
+	) {
 		(useProjectStore as jest.Mock).mockImplementation(
 			selectorImplementation({
 				grafcetsManager,
 				laddersManager,
 				pagesManager,
 				mode,
+				editingEnabled: true,
 				project,
+				...state,
 			}),
 		);
 		return renderHook(() => useProgramMenuItems(type), {
@@ -57,7 +63,11 @@ describe.each([
 	afterEach(() => jest.clearAllMocks());
 
 	it(`opens the page for the given ${type}`, () => {
-		manager.getProgramOrThrow.mockReturnValue({ name: "Program 1" });
+		manager.getProgramOrThrow.mockReturnValue({
+			id,
+			type,
+			name: "Program 1",
+		});
 		const { result } = setup(ProjectMode.DESIGN);
 
 		act(() => result.current(id)[0][0].onClick?.());
@@ -90,6 +100,25 @@ describe.each([
 		const items = result.current(id);
 		expect(items[1][0].disabled).toBe(true);
 		expect(items[1][1].disabled).toBe(true);
+	});
+
+	it("disables rename and delete for a project opened read-only", () => {
+		const { result } = setup(ProjectMode.DESIGN, undefined, {
+			editingEnabled: false,
+		});
+		const items = result.current(id);
+		expect(items[1][0].disabled).toBe(true);
+		expect(items[1][1].disabled).toBe(true);
+	});
+
+	it("keeps rename and delete enabled when the active page is locked: they act on another program", () => {
+		const { result } = setup(ProjectMode.DESIGN, undefined, {
+			activePageId: "p1",
+			pagesData: { p1: { id: "p1", type: "grafcet", locked: true } },
+		});
+		const items = result.current(id);
+		expect(items[1][0].disabled).toBe(false);
+		expect(items[1][1].disabled).toBe(false);
 	});
 
 	it("emits a rename event", () => {

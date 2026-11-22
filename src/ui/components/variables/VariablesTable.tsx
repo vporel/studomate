@@ -1,12 +1,15 @@
 "use client";
 
-import useCanEdit from "../projects/useCanEdit";
+import { createRandomId } from "@/ids";
 import { DEFAULT_LOGIC_INPUT_BEHAVIOR } from "@/schemas/variable/input-behavior";
 import {
 	VariableType,
 	VariableZone,
 	ZONES_TO_TYPES,
 } from "@/schemas/variable/variable.schema";
+import { useLocaleContext } from "@/ui/i18n/LocaleProvider";
+import EMPTY_ARRAY from "@/ui/lib/empty";
+import { getVariablesPageDefinitionForZone } from "@/ui/stores/project/variables-pages";
 import { Box } from "@mui/material";
 import {
 	DataGrid,
@@ -17,7 +20,7 @@ import {
 	GridValidRowModel,
 } from "@mui/x-data-grid";
 import { GridApiCommunity } from "@mui/x-data-grid/internals";
-import { enUS, frFR } from "@mui/x-data-grid/locales";
+import { enUS, esES, frFR } from "@mui/x-data-grid/locales";
 import {
 	MouseEvent,
 	useCallback,
@@ -27,12 +30,9 @@ import {
 	useState,
 } from "react";
 import { useShallow } from "zustand/shallow";
-import { createRandomId } from "@/ids";
-import { useLocaleContext } from "@/ui/i18n/LocaleProvider";
-import EMPTY_ARRAY from "@/ui/lib/empty";
 import { useProjectStore } from "../projects/ProjectContext";
+import useCanEditActivePage from "../projects/useCanEditActivePage";
 import GridToolBar from "./GridToolBar";
-import { getVariablesPageDefinitionForZone } from "@/ui/stores/project/variables-pages";
 import VariableRowContextMenu, {
 	VariableRowMenuTarget,
 } from "./VariableRowContextMenu";
@@ -61,7 +61,7 @@ const VariablesTable = ({
 }) => {
 	if (zones.length === 0) throw new Error("At least one zone must be provided");
 	const variablesManager = useProjectStore((state) => state.variablesManager);
-	const canEdit = useCanEdit();
+	const canEdit = useCanEditActivePage();
 	const crossReference = useProjectStore(
 		(state) => state.capabilities.crossReference,
 	);
@@ -77,8 +77,8 @@ const VariablesTable = ({
 		position: { x: number; y: number };
 	}>({ visible: false, target: null, position: { x: 0, y: 0 } });
 	const { locale } = useLocaleContext();
-	const gridLocaleText = (locale === "fr" ? frFR : enUS).components.MuiDataGrid
-		.defaultProps.localeText;
+	const gridLocaleText = { fr: frFR, en: enUS, es: esES }[locale].components
+		.MuiDataGrid.defaultProps.localeText;
 
 	const zoneVariables = useMemo(
 		() =>

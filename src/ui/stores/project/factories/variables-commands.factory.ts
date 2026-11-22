@@ -1,7 +1,9 @@
 import { deepObjectsComparison, extractFields } from "@/lib/object";
 import AbstractProjectCommand from "@/schemas/project/commands/abstract-project.command";
 import VariablesAddCommand from "@/schemas/project/commands/variables-add.command";
-import VariablesRemoveCommand from "@/schemas/project/commands/variables-remove.command";
+import VariablesRemoveCommand, {
+	type VariableRemoval,
+} from "@/schemas/project/commands/variables-remove.command";
 import VariablesUpdateCommand from "@/schemas/project/commands/variables-update.command";
 import Project from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
@@ -138,16 +140,18 @@ export default class VariablesCommandsFactory {
 		variableIds: string[],
 	): {
 		commands: AbstractProjectCommand<any>[];
-		variablesToRemove: VariableUpdatableFieldsWithId[];
+		variablesToRemove: VariableRemoval[];
 	} {
-		const variablesToRemove = project.variables
-			.filter((v) => variableIds.includes(v.id))
-			.map((v) =>
-				extractFields<VariableUpdatableFieldsWithId>(
+		const variablesToRemove: VariableRemoval[] = project.variables
+			.map((variable, index) => ({ variable, index }))
+			.filter(({ variable }) => variableIds.includes(variable.id))
+			.map(({ variable, index }) => ({
+				...extractFields<VariableUpdatableFieldsWithId>(
 					[...VARIABLE_UPDATABLE_FIELDS, "id"],
-					v,
+					variable,
 				),
-			);
+				index,
+			}));
 		const commands: AbstractProjectCommand<any>[] = [];
 		if (variablesToRemove.length > 0) {
 			commands.push(new VariablesRemoveCommand(variablesToRemove));

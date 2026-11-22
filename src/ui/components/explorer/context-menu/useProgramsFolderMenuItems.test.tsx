@@ -16,7 +16,12 @@ describe("useProgramsFolderMenuItems", () => {
 
 	function setup(mode: ProjectMode = ProjectMode.DESIGN) {
 		(useProjectStore as jest.Mock).mockImplementation(
-			selectorImplementation({ grafcetsManager, laddersManager, mode }),
+			selectorImplementation({
+				grafcetsManager,
+				laddersManager,
+				mode,
+				editingEnabled: true,
+			}),
 		);
 		return renderHook(() => useProgramsFolderMenuItems(), {
 			wrapper: i18nWrapper(),

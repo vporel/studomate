@@ -23,7 +23,7 @@
 		},
 		"simulation": {
 			"title": "Analyse et simulation",
-			"description": "Analysez le projet, puis passez en mode simulation pour le faire fonctionner : démarrer, arrêter ou avancer pas à pas."
+			"description": "Analysez le projet, puis cliquez sur Simuler pour le faire fonctionner : démarrer, arrêter ou avancer pas à pas."
 		},
 		"crossReference": {
 			"title": "Références croisées",

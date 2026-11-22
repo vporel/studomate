@@ -41,6 +41,18 @@ describe("NotFound", () => {
 		},
 	);
 
+	it.each(["/es", "/es/pagina-desconocida"])(
+		"affiche l'espagnol et revient à /es pour %s",
+		(pathname) => {
+			mockPathname = pathname;
+
+			render(<NotFound />);
+
+			expect(screen.getByRole("link")).toHaveAttribute("href", "/es");
+			expect(document.documentElement.lang).toBe("es");
+		},
+	);
+
 	it("ne prend pas pour l'anglais un chemin qui commence par /en sans en être le préfixe", () => {
 		mockPathname = "/entreprise";
 

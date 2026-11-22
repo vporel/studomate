@@ -4,7 +4,7 @@
 import { Dialect } from "@/expression-language/dialect.enum";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
-import { LocaleProvider } from "@/ui/i18n/LocaleProvider";
+import { PreferredLocaleProvider } from "@/ui/i18n/LocaleProvider";
 import { useProjectStore } from "../projects/ProjectContext";
 import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import Variable from "@/schemas/variable/variable.schema";
@@ -20,7 +20,7 @@ jest.mock("@/ui/pdf/variables-table-pdf", () => ({
 function setupWithVariables(
 	variables: Variable[],
 	removeVariables = jest.fn(),
-	{ editingEnabled = true, pdfExport = true } = {},
+	{ editingEnabled = true, canExport = true } = {},
 ) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
@@ -33,7 +33,7 @@ function setupWithVariables(
 			project: { variables },
 			mode: ProjectMode.DESIGN,
 			editingEnabled,
-			capabilities: { pdfExport, crossReference: true },
+			capabilities: { export: canExport, crossReference: true },
 		}),
 	);
 	renderWithI18n(
@@ -77,7 +77,7 @@ describe("VariablesTable — projet en lecture seule", () => {
 	});
 
 	it("ne propose pas l'export PDF quand le store ne sait pas exporter", async () => {
-		setupWithVariables([variable], jest.fn(), { pdfExport: false });
+		setupWithVariables([variable], jest.fn(), { canExport: false });
 
 		fireEvent.click(screen.getByRole("button", { name: "Exporter" }));
 
@@ -94,7 +94,7 @@ describe("VariablesTable", () => {
 				project: { variables: [] },
 				mode: ProjectMode.DESIGN,
 				editingEnabled: true,
-				capabilities: { pdfExport: true, crossReference: true },
+				capabilities: { export: true, crossReference: true },
 			}),
 		);
 		expect(() =>
@@ -130,7 +130,7 @@ describe("VariablesTable", () => {
 				},
 				mode: ProjectMode.DESIGN,
 				editingEnabled: true,
-				capabilities: { pdfExport: true, crossReference: true },
+				capabilities: { export: true, crossReference: true },
 			}),
 		);
 
@@ -207,7 +207,7 @@ describe("VariablesTable", () => {
 				project: { variables: [userVar, blockVar] },
 				mode: ProjectMode.DESIGN,
 				editingEnabled: true,
-				capabilities: { pdfExport: true, crossReference: true },
+				capabilities: { export: true, crossReference: true },
 			}),
 		);
 
@@ -259,14 +259,14 @@ describe("VariablesTable", () => {
 				project: { variables: [] },
 				mode: ProjectMode.DESIGN,
 				editingEnabled: true,
-				capabilities: { pdfExport: true, crossReference: true },
+				capabilities: { export: true, crossReference: true },
 			}),
 		);
 
 		renderWithI18n(
-			<LocaleProvider>
+			<PreferredLocaleProvider>
 				<VariablesTable zones={["logic-input"]} pageTitle="Variables" />
-			</LocaleProvider>,
+			</PreferredLocaleProvider>,
 		);
 
 		expect(screen.getByRole("button", { name: "Search" })).toBeInTheDocument();
@@ -314,7 +314,7 @@ describe("VariablesTable", () => {
 					},
 					mode: ProjectMode.DESIGN,
 					editingEnabled: true,
-					capabilities: { pdfExport: true, crossReference: true },
+					capabilities: { export: true, crossReference: true },
 				}),
 			);
 			renderWithI18n(
@@ -355,7 +355,7 @@ describe("VariablesTable", () => {
 					},
 					mode: ProjectMode.DESIGN,
 					editingEnabled: true,
-					capabilities: { pdfExport: true, crossReference: true },
+					capabilities: { export: true, crossReference: true },
 				}),
 			);
 			renderWithI18n(
@@ -411,7 +411,7 @@ describe("VariablesTable", () => {
 				project: { variables: [] },
 				mode: ProjectMode.DESIGN,
 				editingEnabled: true,
-				capabilities: { pdfExport: true, crossReference: true },
+				capabilities: { export: true, crossReference: true },
 			}),
 		);
 		renderWithI18n(<VariablesTable zones={zones} pageTitle="Variables" />);
@@ -535,7 +535,7 @@ describe("VariablesTable", () => {
 					},
 					mode: ProjectMode.DESIGN,
 					editingEnabled: true,
-					capabilities: { pdfExport: true, crossReference: true },
+					capabilities: { export: true, crossReference: true },
 					variableToReveal,
 					setVariableToReveal,
 				}),
@@ -605,7 +605,7 @@ describe("VariablesTable: page des constantes", () => {
 				},
 				mode: ProjectMode.DESIGN,
 				editingEnabled: true,
-				capabilities: { pdfExport: true, crossReference: true },
+				capabilities: { export: true, crossReference: true },
 			}),
 		);
 		renderWithI18n(

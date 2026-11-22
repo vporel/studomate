@@ -1,7 +1,11 @@
 "use client";
 
-import { JsPdfExporter } from "@/ui/lib/pdf/jspdf.pdf-exporter";
-import { PdfCoverPage, PdfExportSection } from "@/ui/lib/pdf/pdf-exporter";
+import { JsPdfExporter } from "@/ui/pdf/jspdf.pdf-exporter";
+import {
+	PdfCoverPage,
+	PdfExportSection,
+	PdfPageFrame,
+} from "@/ui/pdf/pdf-exporter";
 import { buildProgramSection, ProgramExportConfig } from "@/ui/pdf/program-pdf";
 import { LadderRenderContext } from "@/ui/pdf/drawing/ladder-render-context";
 import trackPdfExported from "./track-pdf-exported";
@@ -18,6 +22,8 @@ export type PdfExportState =
 
 export interface PdfExportOptions {
 	cover?: PdfCoverPage;
+	pageFrame?: PdfPageFrame;
+	coverPageFrame?: PdfPageFrame;
 	ladderContext?: LadderRenderContext;
 	/** Tables de variables : placées après la page de garde et avant les programmes. */
 	variableSections?: PdfExportSection[];
@@ -66,7 +72,13 @@ export function usePdfExport(): UsePdfExportResult {
 			filename: string,
 			options: PdfExportOptions = {},
 		) => {
-			const { cover, ladderContext, variableSections = [] } = options;
+			const {
+				cover,
+				pageFrame,
+				coverPageFrame,
+				ladderContext,
+				variableSections = [],
+			} = options;
 			if (programs.length === 0 && variableSections.length === 0) return;
 
 			const total = programs.length;
@@ -101,7 +113,13 @@ export function usePdfExport(): UsePdfExportResult {
 
 			setExportState({ status: "assembling" });
 			try {
-				await new JsPdfExporter().export({ filename, cover, sections });
+				await new JsPdfExporter().export({
+					filename,
+					cover,
+					pageFrame,
+					coverPageFrame,
+					sections,
+				});
 			} catch {
 				setExportState({ status: "error", message: t("errorAssembling") });
 				return;

@@ -1,4 +1,5 @@
 /** @jest-environment jsdom */
+import { LOCALES, type Locale } from "@/i18n/config";
 import { getMessages } from "@/i18n/messages";
 import { hasNoSkippedLevel, headingLevels } from "@tests/utils/headings";
 import { render } from "@testing-library/react";
@@ -10,7 +11,7 @@ jest.mock("next-intl/server", () => ({
 		locale,
 		namespace,
 	}: {
-		locale: "fr" | "en";
+		locale: Locale;
 		namespace: string;
 	}) =>
 		Promise.resolve(
@@ -56,7 +57,7 @@ jest.mock("./ResumeSignInHint", () => ({
 }));
 
 describe("Training hub page", () => {
-	it.each(["fr", "en"] as const)(
+	it.each(LOCALES)(
 		"renders block cards as h3 under h2 sections without skipped heading levels (%s)",
 		async (locale) => {
 			const ui = await Training({ params: Promise.resolve({ locale }) });
@@ -76,17 +77,14 @@ describe("Training hub page", () => {
 	it.each([
 		["fr", "Formation GRAFCET et Ladder"],
 		["en", "GRAFCET and ladder logic training"],
-	] as const)(
-		"names the subject in its h1 (%s)",
-		async (locale, heading) => {
-			const ui = await Training({ params: Promise.resolve({ locale }) });
-			const { container } = render(
-				<NextIntlClientProvider locale={locale} messages={getMessages(locale)}>
-					{ui}
-				</NextIntlClientProvider>,
-			);
+	] as const)("names the subject in its h1 (%s)", async (locale, heading) => {
+		const ui = await Training({ params: Promise.resolve({ locale }) });
+		const { container } = render(
+			<NextIntlClientProvider locale={locale} messages={getMessages(locale)}>
+				{ui}
+			</NextIntlClientProvider>,
+		);
 
-			expect(container.querySelector("h1")?.textContent).toBe(heading);
-		},
-	);
+		expect(container.querySelector("h1")?.textContent).toBe(heading);
+	});
 });

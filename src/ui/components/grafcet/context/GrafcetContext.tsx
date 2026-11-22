@@ -94,6 +94,20 @@ export const GrafcetContextProvider = ({
 
 export const useGrafcetContext = () => useContext(GrafcetContext);
 
+/**
+ * The grafcet store itself, to read its state on demand (in an event handler) without
+ * subscribing the component to it.
+ */
+export function useGrafcetStoreApi(): StoreApi<GrafcetStoreState> {
+	const { store } = useGrafcetContext();
+	if (!store) {
+		throw new Error(
+			"useGrafcetStoreApi must be used within a GrafcetContextProvider",
+		);
+	}
+	return store;
+}
+
 export function useGrafcetStore<T>(selector: (state: GrafcetStoreState) => T) {
 	const { store } = useGrafcetContext();
 	if (!store) {

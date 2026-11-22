@@ -1,0 +1,17 @@
+{
+	"statement": "## Portón motorizado\n\nSolo están declaradas las salidas `open` y `close`. Seis entradas por declarar: `pb_open` y `pb_close` (pulsadores), `stop` (pulsador cableado normalmente cerrado), `limit_open` y `limit_closed` (finales de carrera, verdaderos cuando el portón está al final del recorrido), `photocell` (fotocélula, verdadera cuando se interrumpe el haz).\n\n### Tarea\n\n1. Declara las seis entradas en la tabla de variables (mnemónico, tipo booleano, comportamiento).\n2. `pb_open` abre el portón hasta `limit_open` y `pb_close` lo cierra hasta `limit_closed`.\n3. Los dos sentidos están enclavados: pulsar el otro botón durante un movimiento se ignora.\n4. `stop` corta el movimiento en curso (prioridad de paro).\n5. Si se interrumpe la célula durante el cierre, el portón se detiene y se vuelve a abrir. Durante la apertura o parado, la célula se ignora.\n6. Este tipo de equipo está sujeto a la norma EN 12453.",
+	"texts": {
+		"projectName": "Portón motorizado",
+		"solutionName": "Portón motorizado: solución",
+		"openTitle": "Apertura",
+		"openDescription": "Orden de apertura, enclavada por el cierre.",
+		"closeTitle": "Cierre",
+		"closeDescription": "Orden de cierre, enclavada por la apertura.",
+		"reopenTitle": "Reapertura por fotocélula",
+		"reopenDescription": "Haz de la fotocélula interrumpido durante el cierre: el cierre se detiene y el portón se vuelve a abrir.",
+		"stopOpeningTitle": "Paro de la apertura",
+		"stopOpeningDescription": "Paro (contacto NC) o final de carrera de apertura: el movimiento se detiene, el paro tiene prioridad.",
+		"stopClosingTitle": "Paro del cierre",
+		"stopClosingDescription": "Paro (contacto NC) o final de carrera de cierre."
+	}
+}

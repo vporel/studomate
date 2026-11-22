@@ -149,6 +149,99 @@ describe("WebSerialTransport", () => {
 		expect(calm.mocks.close).toHaveBeenCalled();
 	});
 
+	describe("close() while the port is opening", () => {
+		/** Lets the opening reach the call held by `release`. */
+		const settle = () => jest.advanceTimersByTimeAsync(0);
+
+		it("gives the port back instead of keeping it open and locked", async () => {
+			const fake = fakePort();
+			let release!: () => void;
+			fake.mocks.open.mockImplementationOnce(
+				() => new Promise<void>((resolve) => (release = resolve)),
+			);
+			const getReader = jest.spyOn(fake.mocks.readable, "getReader");
+			const getWriter = jest.spyOn(fake.mocks.writable, "getWriter");
+			const transport = new WebSerialTransport(fake.port, opts);
+
+			const opening = transport.open();
+			const rejected = expect(opening).rejects.toThrow(
+				"Port closed while opening",
+			);
+			await settle();
+			await transport.close();
+			release();
+			await settle();
+
+			await rejected;
+			expect(getReader).not.toHaveBeenCalled();
+			expect(getWriter).not.toHaveBeenCalled();
+			expect(fake.events.size).toBe(0);
+			expect(fake.mocks.setSignals).not.toHaveBeenCalled();
+			expect(fake.mocks.close).toHaveBeenCalledTimes(2);
+		});
+
+		it("does not notify a close for the opening it cancelled", async () => {
+			const fake = fakePort();
+			let release!: () => void;
+			fake.mocks.open.mockImplementationOnce(
+				() => new Promise<void>((resolve) => (release = resolve)),
+			);
+			const transport = new WebSerialTransport(fake.port, opts);
+			const onClose = jest.fn();
+			transport.onClose(onClose);
+
+			const rejected = expect(transport.open()).rejects.toThrow();
+			await settle();
+			await transport.close();
+			release();
+			await settle();
+
+			await rejected;
+			expect(onClose).not.toHaveBeenCalled();
+		});
+
+		it("stops the reset sequence and releases the locks when closed during it", async () => {
+			const fake = fakePort();
+			let release!: () => void;
+			fake.mocks.setSignals.mockImplementationOnce(
+				() => new Promise<void>((resolve) => (release = resolve)),
+			);
+			const transport = new WebSerialTransport(fake.port, opts);
+
+			const rejected = expect(transport.open()).rejects.toThrow(
+				"Port closed while opening",
+			);
+			await settle();
+			await transport.close();
+			release();
+			await jest.advanceTimersByTimeAsync(10);
+
+			await rejected;
+			expect(fake.reader.releaseLock).toHaveBeenCalled();
+			expect(fake.mocks.setSignals).toHaveBeenCalledTimes(1);
+		});
+
+		it("can be opened again afterwards", async () => {
+			const fake = fakePort();
+			let release!: () => void;
+			fake.mocks.open.mockImplementationOnce(
+				() => new Promise<void>((resolve) => (release = resolve)),
+			);
+			const transport = new WebSerialTransport(fake.port, opts);
+			const first = expect(transport.open()).rejects.toThrow();
+			await settle();
+			await transport.close();
+			release();
+			await settle();
+			await first;
+
+			await open(transport);
+
+			await transport.write("PING*00\n");
+			expect(new TextDecoder().decode(fake.written[0])).toBe("PING*00\n");
+		});
+	});
+
 	it("notifies a close on the port disconnect event", async () => {
 		const fake = fakePort();
 		const transport = new WebSerialTransport(fake.port, opts);

@@ -1,0 +1,87 @@
+{
+	"buttons": {
+		"next": "Siguiente",
+		"previous": "Anterior",
+		"done": "Finalizar"
+	},
+	"steps": {
+		"menubar": {
+			"title": "Barra de menús",
+			"description": "Abre, guarda, comparte y exporta tu proyecto, crea nuevos programas (grafcet, ladder) y encuentra el manual, los módulos de formación y los atajos de teclado."
+		},
+		"explorer": {
+			"title": "Explorador",
+			"description": "Las variables, los programas y las páginas HMI del proyecto. El clic derecho abre un menú de acciones."
+		},
+		"pages": {
+			"title": "Espacio de trabajo",
+			"description": "Los editores se abren aquí, en pestañas: grafcets, ladders, variables y páginas HMI."
+		},
+		"hmiPages": {
+			"title": "Páginas HMI",
+			"description": "Dibuja una interfaz de operador animada vinculada a las variables del proyecto. Haz clic derecho en esta carpeta para crear una página."
+		},
+		"simulation": {
+			"title": "Análisis y simulación",
+			"description": "Analiza el proyecto y luego haz clic en Simular para ejecutarlo: inícialo, deténlo o avanza paso a paso."
+		},
+		"crossReference": {
+			"title": "Referencias cruzadas",
+			"description": "Para cada variable, consulta qué programas la leen y cuáles la escriben."
+		},
+		"analysis": {
+			"title": "Resultados del análisis",
+			"description": "Los errores y advertencias encontrados en el proyecto. Haz clic para ver los detalles; el color indica la gravedad."
+		}
+	},
+	"editors": {
+		"grafcet": {
+			"steps": {
+				"toolbar": {
+					"title": "Barra de herramientas",
+					"description": "Arrastra una etapa, una acción, una transición o una unión al lienzo. La primera herramienta crea la etapa inicial."
+				},
+				"canvas": {
+					"title": "Lienzo",
+					"description": "Suelta aquí tus elementos. Haz doble clic en una etapa, una transición o una acción para editar su texto; el clic derecho abre un menú de acciones."
+				}
+			}
+		},
+		"ladder": {
+			"steps": {
+				"toolbar": {
+					"title": "Contactos y bobinas",
+					"description": "Arrastra un contacto o una bobina al lienzo. La flecha a la derecha de las bobinas muestra más (invertidas, flancos)."
+				},
+				"systemBlocks": {
+					"title": "Biblioteca",
+					"description": "Temporizadores, contadores, comparaciones, asignaciones y cálculos: abre la paleta para colocarlos en una red."
+				},
+				"addSection": {
+					"title": "Redes",
+					"description": "Un programa Ladder es una serie de redes. Este botón añade una."
+				},
+				"canvas": {
+					"title": "Lienzo",
+					"description": "Suelta un elemento para insertarlo en una red. Haz doble clic en un contacto o una bobina para elegir su variable."
+				}
+			}
+		},
+		"hmi": {
+			"steps": {
+				"toolbar": {
+					"title": "Paleta de widgets",
+					"description": "Arrastra un widget o una forma a la página para construir la interfaz de operador."
+				},
+				"canvas": {
+					"title": "Página HMI",
+					"description": "Suelta y mueve aquí tus widgets. Haz clic en uno para seleccionarlo."
+				},
+				"properties": {
+					"title": "Propiedades",
+					"description": "Vincula el widget seleccionado a una variable y define su aspecto, animaciones y eventos."
+				}
+			}
+		}
+	}
+}

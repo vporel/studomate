@@ -1,12 +1,21 @@
+import type { Locale } from "@/i18n/config";
 import { deepObjectsComparison } from "@/lib/object";
-import { canEdit } from "../editability";
+import HmiPage from "@/schemas/hmi/hmi-page.schema";
+import type { HmiAction } from "@/schemas/hmi/hmi-widget.schema";
 import Project from "@/schemas/project/project.schema";
-import HmiPage, { HMI_PAGE_NAME_LABEL } from "@/schemas/hmi/hmi-page.schema";
+import defaultContent from "../default-content";
+import { canEditActivePage } from "../editability";
+import type { ProjectStoreAnalytics } from "../environment/project-store-environment";
+import { getHmiPageData } from "../pages-data";
 import {
 	HmiStoreManagers,
 	HmiStoreValues,
 	ProjectStoreState,
 } from "../project.store";
+import type {
+	ProjectStoreGetFunction,
+	ProjectStoreSetFunction,
+} from "../project.store.types";
 import AbstractDocumentsManager from "./abstract-documents.manager";
 
 /** Id fixe de l'unique onglet "Simulation HMI" (voir `HmiSimulationPageView`) — pas lié à une
@@ -19,6 +28,15 @@ export default class HmiManager extends AbstractDocumentsManager<
 	HmiStoreManagers
 > {
 	protected readonly documentType = "hmi" as const;
+
+	constructor(
+		setStoreState: ProjectStoreSetFunction,
+		getStoreState: ProjectStoreGetFunction,
+		analytics: ProjectStoreAnalytics,
+		private readonly getLocale: () => Locale,
+	) {
+		super(setStoreState, getStoreState, analytics);
+	}
 
 	protected getDocument(project: Project, id: string): HmiPage | undefined {
 		return project.getHmiPage(id);
@@ -58,21 +76,20 @@ export default class HmiManager extends AbstractDocumentsManager<
 		return managers.getHmiPage();
 	}
 
-	/** @param name Absent : auto-généré au format "Page HMI_N", unique parmi les pages du projet
-	 * (voir `Project.nextHmiPageName`). */
+	/** @param name When absent, generated as "<default name>_N" in the interface language
+	 * ("Page HMI_1", "HMI page_1"), unique among the project's pages (see
+	 * `Project.nextHmiPageName`). */
 	newHmiPage(name?: string): HmiPage | null {
 		const project = this.getStoreState().project;
 		if (!project) return null;
-		if (!canEdit(this.getStoreState())) return null;
-		const resolvedName = name ?? project.nextHmiPageName(HMI_PAGE_NAME_LABEL);
+		if (!canEditActivePage(this.getStoreState())) return null;
+		const resolvedName =
+			name ??
+			project.nextHmiPageName(defaultContent(this.getLocale()).hmiPageName);
 		const newProject = project.copy();
 		const page = newProject.createHmiPage(resolvedName);
 		this.analytics.trackEvent("hmi-page-created");
-		this.getStoreState().pagesManager.openPage({
-			id: page.id,
-			type: "hmi",
-			title: page.name,
-		});
+		this.getStoreState().pagesManager.openPage(getHmiPageData(page));
 		this.setStoreState(() => ({
 			project: newProject,
 			hasUnsavedChanges: true,
@@ -83,14 +100,14 @@ export default class HmiManager extends AbstractDocumentsManager<
 	deleteHmiPage(hmiPageId: string): void {
 		const project = this.getStoreState().project;
 		if (!project) return;
-		if (!canEdit(this.getStoreState())) return;
+		if (!canEditActivePage(this.getStoreState())) return;
 		this.deleteDocumentById(hmiPageId, (p) => p.deleteHmiPage(hmiPageId));
 	}
 
 	renameHmiPage(hmiPageId: string, newName: string): void {
 		const project = this.getStoreState().project;
 		if (!project) return;
-		if (!canEdit(this.getStoreState())) return;
+		if (!canEditActivePage(this.getStoreState())) return;
 		this.renameDocumentById(hmiPageId, newName);
 	}
 
@@ -137,10 +154,19 @@ export default class HmiManager extends AbstractDocumentsManager<
 	}
 
 	/** Change la page affichée par l'onglet "Simulation HMI" — utilisé par l'action
-	 * "changer de page" déclenchée en simulation (voir `executeHmiAction`). Ne touche pas au
+	 * "changer de page" déclenchée en simulation (voir `executeAction`). Ne touche pas au
 	 * système d'onglets de conception : la navigation reste interne à cet unique onglet. */
 	navigateHmiSimulation(hmiPageId: string): void {
 		this.setStoreState(() => ({ hmiSimulationActivePageId: hmiPageId }));
+	}
+
+	/** Exécute une action déclenchée par un événement de widget (voir `HmiWidgetEvents`). */
+	executeAction(action: HmiAction): void {
+		switch (action.type) {
+			case "navigate-to-page":
+				this.navigateHmiSimulation(action.targetHmiPageId);
+				break;
+		}
 	}
 
 	getHmiPageOrThrow(hmiPageId: string): HmiPage {
@@ -163,11 +189,10 @@ export default class HmiManager extends AbstractDocumentsManager<
 		const existing = project.getHmiPage(page.id);
 		if (!existing) return;
 		if (!deepObjectsComparison(existing, page)) {
-			this.setStoreState(() => {
-				const newProject = project.copy();
-				newProject.hmiPages[page.id] = page.copy();
-				return { project: newProject, hasUnsavedChanges: true };
-			});
+			this.setStoreState(() => ({
+				project: project.copyWithHmiPage(page),
+				hasUnsavedChanges: true,
+			}));
 		}
 	}
 }

@@ -52,20 +52,23 @@ function blockOutputMnemonic(block: BlockElement): string | null {
 	return getBlockPortVariableMnemonic(block.id, ports.output);
 }
 
-let lastSimulationState: Record<string, SimulationVariableState> | null = null;
-let lastLadder: Ladder | null = null;
-let lastEnergizedEdges: Set<string> = new Set();
+const lastResultByLadder = new WeakMap<
+	Ladder,
+	{
+		state: Record<string, SimulationVariableState>;
+		energizedEdges: Set<string>;
+	}
+>();
 
 export function computeEnergizedEdges(
 	ladder: Ladder,
 	variablesState: Record<string, SimulationVariableState>,
 ): Set<string> {
-	if (ladder === lastLadder && variablesState === lastSimulationState) {
-		return lastEnergizedEdges;
-	}
+	const cached = lastResultByLadder.get(ladder);
+	if (cached && cached.state === variablesState) return cached.energizedEdges;
 
-	// Index construits une fois pour ce calcul (l'appelant, un composant par connexion, retombe
-	// sur le cache mono-entrée pour les suivantes du même rendu).
+	// Indexes built once for this computation (the caller, one component per connection, falls
+	// back on the ladder's cache for the following ones of the same render).
 	const elementsById = new Map<string, LadderElement>();
 	for (const element of ladder.getAllElements()) {
 		elementsById.set(element.id, element);
@@ -127,8 +130,6 @@ export function computeEnergizedEdges(
 		}
 	}
 
-	lastLadder = ladder;
-	lastSimulationState = variablesState;
-	lastEnergizedEdges = energizedEdges;
+	lastResultByLadder.set(ladder, { state: variablesState, energizedEdges });
 	return energizedEdges;
 }

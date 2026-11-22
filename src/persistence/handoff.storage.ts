@@ -1,3 +1,4 @@
+import { isRecord } from "@/lib/object";
 import { isLocale, type Locale } from "@/i18n/config";
 import Project from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
@@ -55,7 +56,7 @@ export function saveHandoff({
  */
 export function getHandoff(id: string): HandoffProject | null {
 	const stored = readJson(STORAGE_KEY);
-	if (typeof stored !== "object" || stored === null) return null;
+	if (!isRecord(stored)) return null;
 	const {
 		id: storedId,
 		templateId,
@@ -72,8 +73,8 @@ export function getHandoff(id: string): HandoffProject | null {
 	} catch {
 		return null;
 	}
-	if (typeof raw !== "object" || raw === null) return null;
-	const result = deserializeProject(raw as Record<string, any>);
+	if (!isRecord(raw)) return null;
+	const result = deserializeProject(raw);
 	if (!result.ok) return null;
 	return {
 		project: result.project,

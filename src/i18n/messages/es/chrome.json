@@ -1,0 +1,150 @@
+{
+	"toolbar": {
+		"home": "Inicio",
+		"save": "Guardar",
+		"saveCopy": "Guardar una copia",
+		"undo": "Deshacer",
+		"redo": "Rehacer",
+		"scene3d": "Escena 3D"
+	},
+	"analyse": "Analizar",
+	"mode": {
+		"start": "Simular",
+		"startHint": "Iniciar la simulación del proyecto",
+		"stop": "Detener",
+		"stopHint": "Detener la simulación y volver al diseño",
+		"design": "Diseño",
+		"simulation": "Simulación",
+		"simulationHardwareIo": "Simulación con E/S reales",
+		"observation": "Observación de la placa"
+	},
+	"simulationMode": {
+		"continuous": "Continuo",
+		"stepByStep": "Paso a paso"
+	},
+	"simulationControls": {
+		"resume": "Reanudar la simulación",
+		"pause": "Pausa",
+		"step": "Avanzar un ciclo"
+	},
+	"unsavedChanges": "Haz clic aquí para guardar",
+	"autoSaveUnavailable": "Copia de seguridad automática no disponible: guarda manualmente",
+	"statusBar": {
+		"author": "Autor: {name}",
+		"unknownAuthor": "Desconocido",
+		"offline": "Sin conexión",
+		"offlineHint": "Los proyectos en la nube, los enlaces para compartir y el inicio de sesión no están disponibles sin red."
+	},
+	"footerActions": {
+		"watchTables": "Tablas de observación",
+		"hmiSimulation": "Simulación HMI",
+		"scene3d": "Escena 3D",
+		"analysisResults": "Resultados del análisis",
+		"ok": "(OK)",
+		"errors": "(Errores)",
+		"warnings": "(Advertencias)"
+	},
+	"hardwareLink": {
+		"connecting": "Conectando...",
+		"flashing": "Instalando el firmware...",
+		"link": "Enlace en línea",
+		"unlink": "Cerrar el enlace",
+		"upload": "Cargar el programa en la placa",
+		"uploading": "Cargando el programa... {percent}%",
+		"online": "En línea",
+		"remoteIo": "Modo E/S reales",
+		"observing": "Observada",
+		"running": "Programa en ejecución",
+		"stopped": "Programa detenido",
+		"start": "Iniciar el programa de la placa",
+		"stop": "Detener el programa de la placa",
+		"unsupported": "El enlace USB con la placa requiere un navegador basado en Chromium (Google Chrome, Microsoft Edge...). Aun así puedes diseñar y simular tu proyecto.",
+		"unsupportedAria": "Enlace USB no disponible en este navegador"
+	},
+	"hardwareObservationDialog": {
+		"title": "¿Iniciar el programa de la placa?",
+		"message": "El programa de la placa está detenido. Para observarlo, tiene que ejecutarse: volverá a empezar desde su estado inicial.",
+		"cancel": "Cancelar",
+		"start": "Iniciar"
+	},
+	"hardwareFirmwareDialog": {
+		"missing": {
+			"title": "¿Instalar el firmware de Studomate?",
+			"message": "Esta placa no contiene el firmware de Studomate. ¿Instalarlo? Se borrará el programa que hay actualmente en la placa."
+		},
+		"outdated": {
+			"title": "¿Actualizar el firmware de Studomate?",
+			"message": "El firmware de la placa está desactualizado. ¿Actualizarlo? Se borrará el programa que hay actualmente en la placa."
+		},
+		"cancel": "Cancelar",
+		"install": "Instalar",
+		"flashing": {
+			"title": "Instalando el firmware de Studomate en el Arduino...",
+			"preparing": "Preparando...",
+			"write": "Escritura: página {done} de {total}",
+			"verify": "Verificación: página {done} de {total}",
+			"doNotUnplug": "No desconectes la placa durante la instalación."
+		}
+	},
+	"startup": {
+		"homeAria": "Studomate: inicio",
+		"welcomeTitle": "¿Por dónde empezar?",
+		"welcomeSubtitle": "Abre un ejemplo completo y míralo funcionar, o empieza desde una página en blanco.",
+		"resumeTitle": "Retoma un proyecto",
+		"newProject": "Nuevo proyecto",
+		"openProject": "Abrir un proyecto",
+		"recentProjects": "Proyectos recientes",
+		"allProjects": "Todos los proyectos ({count})",
+		"noProjects": "Aún no hay proyectos guardados. Crea uno nuevo o abre un archivo de proyecto.",
+		"modifiedAgo": "Modificado {ago}",
+		"cloudProject": "Guardado en la nube",
+		"contents": {
+			"grafcet": "GRAFCET",
+			"ladder": "Ladder",
+			"hmi": "HMI",
+			"scene3d": "Escena 3D"
+		},
+		"featuredOverline": "Ejemplo para simular",
+		"examplesTitle": "Ejemplos",
+		"otherExamplesTitle": "Más ejemplos",
+		"continueTraining": "Continúa tu formación",
+		"trainingStep": "Paso {current}/{total}: {step}",
+		"trainingNextModule": "Módulo completado, aquí tienes el siguiente",
+		"trainingResume": "Reanudar",
+		"trainingCompleted": "Completado: {module}, paso {current}/{total} ({step})",
+		"trainingStart": "Empezar",
+		"allTemplates": "Todas las plantillas",
+		"simulateSolution": "Simular la solución",
+		"seeSolution": "Ver la solución",
+		"doExercise": "Hacer el ejercicio",
+		"examples": {
+			"crossroads": "Alterna dos ejes de tráfico sin provocar nunca un choque.",
+			"carton-sorting": "Dirige cada caja a la cinta correcta según su altura.",
+			"drilling": "Secuencia el descenso, el taladrado y la subida de un taladro automático.",
+			"elevator": "Lleva la cabina al piso correcto y gestiona las puertas."
+		},
+		"resources": "Recursos",
+		"userManual": "Manual de usuario",
+		"training": "Formación",
+		"footer": {
+			"copyright": "© {year} Studomate",
+			"about": "Acerca de",
+			"legalMentions": "Aviso legal",
+			"terms": "Condiciones de uso",
+			"privacy": "Política de privacidad",
+			"reportIssue": "Informar de un problema",
+			"whatsNew": "Ver las novedades de la versión {version}"
+		},
+		"sceneLabels": {
+			"crossroads": "Animación 3D de un cruce: llegan coches por las cuatro vías y se detienen en rojo mientras los dos ejes se turnan en verde.",
+			"carton-sorting": "Animación 3D de una estación de clasificación de cajas: una cinta trae cada caja y unos cilindros la clasifican según su altura."
+		}
+	},
+	"mobileGuard": {
+		"title": "Solo aplicación de escritorio",
+		"body": "Esta aplicación solo está disponible en escritorio. Ábrela desde un equipo."
+	},
+	"share": {
+		"label": "Compartir"
+	}
+}

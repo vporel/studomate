@@ -1,5 +1,10 @@
-import { serializeProjectToFile } from "@/persistence/project-file";
+import {
+	PROJECT_FILE_EXTENSION,
+	PROJECT_FILE_MIME_TYPE,
+	serializeProjectToFile,
+} from "@/persistence/project-file";
 import Project from "@/schemas/project/project.schema";
+import { downloadFile } from "@/ui/lib/download";
 
 /**
  * Export a project in a JSON format
@@ -7,14 +12,9 @@ import Project from "@/schemas/project/project.schema";
  * @param fileName
  */
 export const exportProject = (project: Project, fileName: string) => {
-	const projectData = serializeProjectToFile(project);
-	const blob = new Blob([projectData], { type: "application/json" });
-	const url = URL.createObjectURL(blob);
-	const a = document.createElement("a");
-	a.href = url;
-	a.download = `${fileName}.json`;
-	a.click();
-	//Différé : le téléchargement n'a pas forcément démarré au retour de click() (ex. boîte de
-	//dialogue "Enregistrer sous"), un revoke immédiat peut l'annuler.
-	setTimeout(() => URL.revokeObjectURL(url), 10_000);
+	downloadFile(
+		serializeProjectToFile(project),
+		`${fileName}${PROJECT_FILE_EXTENSION}`,
+		PROJECT_FILE_MIME_TYPE,
+	);
 };

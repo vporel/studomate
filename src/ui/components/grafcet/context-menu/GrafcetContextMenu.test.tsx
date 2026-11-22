@@ -29,7 +29,7 @@ const grafcet = { id: "g1", name: "Feu tricolore" };
 function setup({
 	editingEnabled = true,
 	mode = ProjectMode.DESIGN,
-	pdfExport = true,
+	canExport = true,
 	element = { type: "pane" } as { type: string },
 } = {}) {
 	const events = mitt();
@@ -49,7 +49,7 @@ function setup({
 			clipboard: createClipboardStore(),
 			mode,
 			editingEnabled,
-			capabilities: { pdfExport },
+			capabilities: { export: canExport },
 			simulationManager: null,
 			forcedVariables: undefined,
 			project: { name: "Mon projet" },
@@ -87,14 +87,14 @@ describe("GrafcetContextMenu — export", () => {
 	});
 
 	it("ne propose pas l'export quand le store ne sait pas exporter", () => {
-		setup({ pdfExport: false });
+		setup({ canExport: false });
 
 		expect(screen.queryByText("Exporter")).not.toBeInTheDocument();
 		expect(screen.getByText("Coller")).toBeInTheDocument();
 	});
 
 	it("n'ouvre pas de menu sur un projet en lecture seule sans export", () => {
-		setup({ editingEnabled: false, pdfExport: false });
+		setup({ editingEnabled: false, canExport: false });
 
 		expect(screen.queryByRole("menu")).not.toBeInTheDocument();
 	});

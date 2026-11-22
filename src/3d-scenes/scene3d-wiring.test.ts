@@ -2,6 +2,7 @@ import type { Scene3d } from "@/schemas/3d-scene/scene3d.schema";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import { getSceneDescriptor } from "./scene.registry";
 import {
+	buildSuggestedScene3d,
 	getCandidateVariables,
 	getExpectedZones,
 	isVariableCompatible,
@@ -45,6 +46,31 @@ describe("scene3d-wiring", () => {
 			getCandidateVariables(point("cabinPosition"), variables).map((v) => v.id),
 		).toEqual(["c"]);
 		expect(isVariableCompatible(point("up"), variables[2])).toBe(false);
+	});
+
+	describe("buildSuggestedScene3d", () => {
+		const variables = elevator.points.map((p) =>
+			VariableBuilder.buildLogicInput(`id-${p.id}`, p.suggestedMnemonic),
+		);
+
+		it("pins the scene to the descriptor and binds each point by suggested mnemonic", () => {
+			const scene = buildSuggestedScene3d(elevator, variables);
+
+			expect(scene.sceneId).toBe(elevator.id);
+			expect(scene.sceneVersion).toBe(elevator.version);
+			expect(Object.keys(scene.bindings).sort()).toEqual(
+				elevator.points.map((p) => p.id).sort(),
+			);
+			for (const p of elevator.points) {
+				expect(scene.bindings[p.id]).toBe(`id-${p.id}`);
+			}
+		});
+
+		it("does not depend on the order of the variables", () => {
+			expect(buildSuggestedScene3d(elevator, [...variables].reverse())).toEqual(
+				buildSuggestedScene3d(elevator, variables),
+			);
+		});
 	});
 
 	describe("planMissingVariables", () => {

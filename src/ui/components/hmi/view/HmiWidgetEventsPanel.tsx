@@ -143,7 +143,7 @@ const HmiWidgetEventsPanel = ({ widget }: { widget: HmiWidget }) => {
 							}
 							sx={{ alignSelf: "flex-start" }}
 						>
-							Ajouter une action
+							{t("panel.addAction")}
 						</Button>
 					</Box>
 				);

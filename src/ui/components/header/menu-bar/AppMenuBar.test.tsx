@@ -45,6 +45,10 @@ jest.mock("./help/useHelpMenu", () => ({
 
 const stub = { __esModule: true, default: () => null };
 jest.mock("@/ui/components/header/title-bar/AnalyseButton", () => stub);
+jest.mock(
+	"@/ui/components/header/title-bar/SimulationToggleButton",
+	() => stub,
+);
 jest.mock("@/ui/components/header/title-bar/ProjectModeSwitcher", () => stub);
 jest.mock("@/ui/components/header/title-bar/SimulationModeSelect", () => stub);
 jest.mock("@/ui/components/header/title-bar/SimulationControls", () => stub);

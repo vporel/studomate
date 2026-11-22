@@ -56,6 +56,7 @@ function setup({
 				grafcets: {},
 			},
 			mode,
+			editingEnabled: true,
 			simulationVariablesStates: {},
 			simulationVariablesStatesByMnemonic,
 		}),
@@ -164,6 +165,51 @@ describe("BlockNode", () => {
 			expect(container.firstChild).toHaveStyle({
 				width: `${GRID_CELL_WIDTH * 2}px`,
 			});
+		});
+	});
+
+	describe("hors mode édition", () => {
+		it("désactive les selects d'un bloc convert en simulation", () => {
+			const convert = setup({
+				mode: ProjectMode.SIMULATION,
+				data: {
+					blockType: "convert",
+					params: { in: "", out: "", inType: "INT", outType: "REAL" },
+				},
+			});
+			const convertSelects =
+				convert.container.querySelectorAll(".MuiSelect-select");
+			expect(convertSelects).toHaveLength(2);
+			convertSelects.forEach((select) =>
+				expect(select).toHaveAttribute("aria-disabled", "true"),
+			);
+		});
+
+		it("désactive le select d'un bloc arithmetic en simulation", () => {
+			const arithmetic = setup({
+				mode: ProjectMode.SIMULATION,
+				data: {
+					blockType: "arithmetic",
+					params: { in1: "a", in2: "b", out: "c", operator: "*" },
+				},
+			});
+			const select = arithmetic.container.querySelector(".MuiSelect-select");
+			expect(select).toHaveAttribute("aria-disabled", "true");
+			fireEvent.mouseDown(select!);
+			expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+			expect(arithmetic.executeOperation).not.toHaveBeenCalled();
+		});
+
+		it("garde les selects actifs en mode conception", () => {
+			const { container } = setup({
+				data: {
+					blockType: "arithmetic",
+					params: { in1: "a", in2: "b", out: "c", operator: "*" },
+				},
+			});
+			expect(container.querySelector(".MuiSelect-select")).not.toHaveAttribute(
+				"aria-disabled",
+			);
 		});
 	});
 

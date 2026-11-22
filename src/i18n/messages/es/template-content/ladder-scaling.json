@@ -1,0 +1,17 @@
+{
+	"statement": "## Escalado\n\n`level` ya no es una entrada: es una marca entera (INT) que se calcula a partir de `raw` (control deslizante de 0 a 27648). El Main contiene la solución del depósito. Variables intermedias proporcionadas: `calc_int` (INT), `calc_dint` (DINT), `calc_real` (REAL).\n\n### Tarea\n\n1. Calcula `calc_int := raw * 100`: para `raw` = 13824, observa el desbordamiento (6144 en lugar de 1382400). Luego `calc_int := calc_int / 27648` y `level := calc_int`.\n2. Prueba a dividir primero (`calc_int := raw / 27648`, y luego `* 100`): observa el truncamiento.\n3. Corrígelo calculando en `calc_real` (copia de `raw`, `* 100`, `/ 27648`) y convirtiendo después a `level`.\n4. Variante: el mismo cálculo en `calc_dint`.\n\nResultados esperados para `level`: `raw` = 0, 13824 y 27648 deben dar 0, 50 y 100.",
+	"texts": {
+		"projectName": "Escalado",
+		"solutionName": "Escalado: solución",
+		"startCountTitle": "Contador de arranques",
+		"startCountDescription": "Un contacto P incrementa solo una vez por arranque.",
+		"copyTitle": "Copia del valor bruto",
+		"copyDescription": "La ampliación de INT a REAL es implícita.",
+		"multiplyTitle": "Multiplicación",
+		"multiplyDescription": "Cálculo en REAL: sin desbordamiento.",
+		"divideTitle": "División",
+		"divideDescription": "División en REAL: sin truncamiento.",
+		"backToIntTitle": "Vuelta a INT",
+		"backToIntDescription": "La reducción debe ser explícita."
+	}
+}

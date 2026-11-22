@@ -1,0 +1,9 @@
+{
+	"statement": "## Lectura de temporizadores\n\nUn botón `pb` (pulsador, verdadero mientras se pulsa) gobierna en paralelo un `TON`, un `TOF` y un `TP`, todos ajustados a 2 s: sus salidas son `q_ton`, `q_tof` y `q_tp`. No hay nada que escribir ni modificar.\n\n### Secuencia de pulsaciones de `pb`\n\n| Pulsación | Inicio | Fin |\n| --- | --- | --- |\n| 1 (larga) | 1 s | 5 s |\n| 2 (corta: menos que PT) | 8 s | 9 s |\n| 3 (durante el impulso del `TP`) | 9,5 s | 12 s |\n\n### Tarea\n\n1. Sin iniciar la simulación, dibuja en papel el cronograma de las tres salidas para esta secuencia.\n2. Inicia la simulación, reproduce la secuencia con `pb` (con un segundo de margen) y compara con las salidas.",
+	"texts": {
+		"projectName": "Lectura de temporizadores",
+		"tonDescription": "Retardo a la conexión de 2 s.",
+		"tofDescription": "Retardo a la desconexión de 2 s.",
+		"tpDescription": "Impulso de 2 s, no redisparable."
+	}
+}

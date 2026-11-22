@@ -188,6 +188,23 @@ describe("HmiWidget.nextName", () => {
 		expect(HmiWidget.nextName("rectangle", [])).toBe("Rectangle_1");
 	});
 
+	it("part du libellé fourni plutôt que de celui du type", () => {
+		const widgets = [
+			HmiWidget.create(
+				"push-button",
+				0,
+				0,
+				undefined,
+				undefined,
+				0,
+				"Push button_1",
+			),
+		];
+		expect(HmiWidget.nextName("push-button", widgets, "Push button")).toBe(
+			"Push button_2",
+		);
+	});
+
 	it("avance au premier numéro libre", () => {
 		const widgets = [
 			HmiWidget.create(
@@ -470,6 +487,50 @@ describe("HMI_WIDGET_DEFINITIONS", () => {
 		);
 		expect(writers.sort()).toEqual(
 			["numeric-input", "push-button", "slider", "toggle-switch"].sort(),
+		);
+	});
+});
+
+describe("HmiWidget.renameVariableReferences", () => {
+	it.each(["constructor", "toString", "valueOf"])(
+		"laisse intactes une liaison et des animations sur %s quand une autre variable est renommée",
+		(name) => {
+			const widget = HmiWidget.create("indicator", 0, 0);
+			const data = widget.data as unknown as Record<string, unknown>;
+			data.variable = name;
+			data.animations = {
+				position: { xVariable: name, yVariable: "niveau" },
+				style: { variable: name },
+			};
+
+			widget.renameVariableReferences({ niveau: "level" });
+
+			const renamed = widget.data as unknown as {
+				variable: string;
+				animations: {
+					position: { xVariable: string; yVariable: string };
+					style: { variable: string };
+				};
+			};
+			expect(renamed.variable).toBe(name);
+			expect(renamed.animations.position).toEqual({
+				xVariable: name,
+				yVariable: "level",
+			});
+			expect(renamed.animations.style.variable).toBe(name);
+		},
+	);
+
+	it("renomme une liaison nommée toString quand c'est elle qui est renommée", () => {
+		const widget = HmiWidget.create("indicator", 0, 0);
+		(widget.data as unknown as Record<string, unknown>).variable = "toString";
+		const renames: Record<string, string> = {};
+		renames["toString"] = "autre";
+
+		widget.renameVariableReferences(renames);
+
+		expect((widget.data as unknown as { variable: string }).variable).toBe(
+			"autre",
 		);
 	});
 });

@@ -5,7 +5,7 @@ import {
 	getPreferredLocale,
 	setPreferredLocale,
 } from "@/persistence/preferences.storage";
-import { LocaleProvider } from "@/ui/i18n/LocaleProvider";
+import { PreferredLocaleProvider } from "@/ui/i18n/LocaleProvider";
 import { fireEvent, render, screen } from "@testing-library/react";
 import AppLanguageSwitch from "./AppLanguageSwitch";
 
@@ -15,9 +15,9 @@ describe("AppLanguageSwitch", () => {
 	it("change la langue de l'app et mémorise le choix", () => {
 		setPreferredLocale("fr");
 		render(
-			<LocaleProvider>
+			<PreferredLocaleProvider>
 				<AppLanguageSwitch />
-			</LocaleProvider>,
+			</PreferredLocaleProvider>,
 		);
 		fireEvent.click(screen.getByRole("button"));
 		fireEvent.click(screen.getByRole("menuitem", { name: "English" }));

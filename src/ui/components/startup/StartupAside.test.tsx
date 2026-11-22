@@ -2,15 +2,15 @@
  * @jest-environment jsdom
  */
 import { setPreferredLocale } from "@/persistence/preferences.storage";
-import { LocaleProvider } from "@/ui/i18n/LocaleProvider";
+import { PreferredLocaleProvider } from "@/ui/i18n/LocaleProvider";
 import { render, screen, waitFor } from "@testing-library/react";
 import StartupAside from "./StartupAside";
 
 function renderAside() {
 	render(
-		<LocaleProvider>
+		<PreferredLocaleProvider>
 			<StartupAside />
-		</LocaleProvider>,
+		</PreferredLocaleProvider>,
 	);
 }
 

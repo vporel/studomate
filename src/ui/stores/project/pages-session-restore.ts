@@ -19,6 +19,8 @@ import {
 	SCENE3D_CONFIGURATION_PAGE_ID,
 	SCENE3D_VIEW_PAGE_DATA,
 	SCENE3D_VIEW_PAGE_ID,
+	getHmiPageData,
+	getProgramPageData,
 	getVariablesPageData,
 } from "@/ui/stores/project/pages-data";
 
@@ -48,10 +50,9 @@ function resolvePageData(pageId: string, project: Project): PageData | null {
 		return project.scene3d ? SCENE3D_VIEW_PAGE_DATA : null;
 	if (isVariablesPageId(pageId)) return getVariablesPageData(pageId);
 	const program = project.getProgram(pageId);
-	if (program)
-		return { id: program.id, title: program.name, type: program.type };
+	if (program) return getProgramPageData(program);
 	const hmiPage = project.getHmiPage(pageId);
-	if (hmiPage) return { id: hmiPage.id, title: hmiPage.name, type: "hmi" };
+	if (hmiPage) return getHmiPageData(hmiPage);
 	return null;
 }
 

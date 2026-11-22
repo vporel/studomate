@@ -15,6 +15,7 @@ import {
 	ConsoleDisplay,
 	consoleButtonStyle,
 	PushButtonIllustration,
+	StartHoldButton,
 } from "@/ui/components/3d-scene/parts/ConsoleParts";
 import ConsoleGroup from "@/ui/components/3d-scene/parts/ConsoleGroup";
 import ConsolePanels from "@/ui/components/3d-scene/parts/ConsolePanels";
@@ -22,7 +23,6 @@ import CartonSortingLamps from "./CartonSortingLamps";
 
 const PRESS_FEEDBACK_MS = 200;
 const HANDLE_TILT_DEG = 45;
-const START_GREEN = "#2e7d32";
 const FEED_GREY = "#37474f";
 
 const selectCanPlace = (state: CartonSortingState) => canPlaceCarton(state);
@@ -64,7 +64,6 @@ export default function CartonSortingControls({
 	const counter = useSampledValue(sample, selectCounter, null);
 	const [placeFeedback, setPlaceFeedback] = useState(false);
 	const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-	const startHeld = useRef(false);
 	useEffect(
 		() => () => {
 			if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
@@ -72,20 +71,6 @@ export default function CartonSortingControls({
 		[],
 	);
 
-	useEffect(() => {
-		if (!interactive) startHeld.current = false;
-	}, [interactive]);
-
-	const pressStart = () => {
-		if (!interactive || startHeld.current) return;
-		startHeld.current = true;
-		send({ type: "pressStart" });
-	};
-	const releaseStart = () => {
-		if (!startHeld.current) return;
-		startHeld.current = false;
-		send({ type: "releaseStart" });
-	};
 	const placeDisabled = !interactive || !canPlace;
 
 	return (
@@ -148,34 +133,12 @@ export default function CartonSortingControls({
 					style={{ flex: 1, display: "flex", flexDirection: "column", gap: 12 }}
 				>
 					<div style={{ display: "flex", alignItems: "stretch", gap: 16 }}>
-						<button
-							type="button"
-							disabled={!interactive}
-							style={{
-								...consoleButtonStyle,
-								cursor: interactive ? "pointer" : "default",
-							}}
-							onPointerDown={(event) => {
-								if (event.button === 0) pressStart();
-							}}
-							onPointerUp={releaseStart}
-							onPointerLeave={releaseStart}
-							onPointerCancel={releaseStart}
-							onBlur={releaseStart}
-							onKeyDown={(event) => {
-								if (event.key === " " || event.key === "Enter") pressStart();
-							}}
-							onKeyUp={(event) => {
-								if (event.key === " " || event.key === "Enter") releaseStart();
-							}}
-						>
-							<PushButtonIllustration
-								color={START_GREEN}
-								pressed={startPressed}
-								disabled={!interactive}
-							/>
-							{t("startCycle")}
-						</button>
+						<StartHoldButton
+							interactive={interactive}
+							pressed={startPressed}
+							label={t("startCycle")}
+							send={send}
+						/>
 						<ConsoleDisplay value={counter} label={t("sortedCounter")} />
 					</div>
 					<CartonSortingLamps sample={sample} />

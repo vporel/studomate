@@ -1,0 +1,9 @@
+{
+	"statement": "## Bomba: autorretención\n\nEntradas: `start` y `stop` (dos pulsadores normalmente abiertos (NO): 0 en reposo, 1 mientras se pulsan). Salida: `pump`.\n\n### Tarea\n\n1. Al pulsar `start`, la bomba arranca y sigue funcionando al soltar el botón.\n2. Al pulsar `stop`, se detiene.\n3. Si se pulsan los dos a la vez, la bomba permanece apagada (prioridad de paro).",
+	"texts": {
+		"projectName": "Bomba: autorretención",
+		"solutionName": "Bomba: autorretención: solución",
+		"pumpSectionTitle": "Mando de la bomba",
+		"pumpSectionDescription": "Autorretención con prioridad de paro: el contacto de paro está en serie, después de la rama en paralelo."
+	}
+}

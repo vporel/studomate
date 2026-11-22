@@ -25,6 +25,8 @@ const ALL_TOOLS: DraggedGrafcetElement[] = [
 const describeTool = (tool: DraggedGrafcetElement) =>
 	tool.type === "step" && tool.extraData.initial ? "initial step" : tool.type;
 
+const COMMENT = "Comentario";
+
 // The element is drawn with a 2px margin on each side.
 const MARGIN = 2;
 
@@ -32,7 +34,11 @@ describe("buildGrafcetDragPreview", () => {
 	it.each(ALL_TOOLS.map((tool) => [describeTool(tool), tool] as const))(
 		"draws the %s in the space of its node, plus a margin",
 		(_, tool) => {
-			const { markup, width, height } = buildGrafcetDragPreview(tool, 1);
+			const { markup, width, height } = buildGrafcetDragPreview(
+				tool,
+				1,
+				COMMENT,
+			);
 			const { width: nodeWidth, height: nodeHeight } =
 				GRAFCET_ELEMENT_CLASSES[tool.type as ElementType].DEFAULT_DIMENSIONS;
 
@@ -45,21 +51,25 @@ describe("buildGrafcetDragPreview", () => {
 
 	it("draws a different image for every tool", () => {
 		const markups = ALL_TOOLS.map(
-			(tool) => buildGrafcetDragPreview(tool, 1).markup,
+			(tool) => buildGrafcetDragPreview(tool, 1, COMMENT).markup,
 		);
 
 		expect(new Set(markups).size).toBe(ALL_TOOLS.length);
 	});
 
 	it("paints no background around the element", () => {
-		const { markup } = buildGrafcetDragPreview({ type: "transition" }, 1);
+		const { markup } = buildGrafcetDragPreview(
+			{ type: "transition" },
+			1,
+			COMMENT,
+		);
 
 		expect(markup).not.toContain("<rect");
 	});
 
 	it("scales the drawing with the zoom, keeping the node coordinates", () => {
-		const base = buildGrafcetDragPreview({ type: "action" }, 1);
-		const zoomed = buildGrafcetDragPreview({ type: "action" }, 2);
+		const base = buildGrafcetDragPreview({ type: "action" }, 1, COMMENT);
+		const zoomed = buildGrafcetDragPreview({ type: "action" }, 2, COMMENT);
 
 		expect(zoomed.width).toBe(base.width * 2);
 		expect(zoomed.height).toBe(base.height * 2);
@@ -71,20 +81,27 @@ describe("buildGrafcetDragPreview", () => {
 
 	it("draws the element like the PDF export: double border for an initial step, dashes for a comment", () => {
 		const rects = (tool: DraggedGrafcetElement) =>
-			buildGrafcetDragPreview(tool, 1).markup.match(/<rect/g) ?? [];
+			buildGrafcetDragPreview(tool, 1, COMMENT).markup.match(/<rect/g) ?? [];
 
 		expect(rects({ type: "step", extraData: {} })).toHaveLength(1);
 		expect(rects({ type: "step", extraData: { initial: true } })).toHaveLength(
 			2,
 		);
-		expect(buildGrafcetDragPreview({ type: "comment" }, 1).markup).toContain(
-			"stroke-dasharray",
-		);
+		expect(
+			buildGrafcetDragPreview({ type: "comment" }, 1, COMMENT).markup,
+		).toContain("stroke-dasharray");
+	});
+
+	it("writes the given text in a new comment", () => {
+		expect(
+			buildGrafcetDragPreview({ type: "comment" }, 1, COMMENT).markup,
+		).toContain(COMMENT);
 	});
 
 	it("draws the junction with a double bar for AND and a single bar for OR", () => {
 		const lines = (type: "junction-and-start" | "junction-or-start") =>
-			buildGrafcetDragPreview({ type }, 1).markup.match(/<line/g) ?? [];
+			buildGrafcetDragPreview({ type }, 1, COMMENT).markup.match(/<line/g) ??
+			[];
 
 		// bars + pivot + 2 branches
 		expect(lines("junction-and-start")).toHaveLength(5);
@@ -102,6 +119,7 @@ describe("setGrafcetDragPreview", () => {
 			{ setDragImage } as unknown as DataTransfer,
 			tool,
 			zoom,
+			COMMENT,
 		);
 		const [element, offsetX, offsetY] = setDragImage.mock.calls[0];
 		return { element: element as HTMLElement, offsetX, offsetY };
@@ -126,6 +144,7 @@ describe("setGrafcetDragPreview", () => {
 			{ setDragImage } as unknown as DataTransfer,
 			{ type: "action" },
 			1,
+			COMMENT,
 		);
 		const [element] = setDragImage.mock.calls[0];
 

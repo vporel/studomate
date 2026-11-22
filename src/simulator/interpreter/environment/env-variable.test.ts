@@ -35,6 +35,22 @@ describe("EnvVariable", () => {
 		expect(v.getValue()).toBe(12);
 	});
 
+	it("sature une valeur non finie au lieu de la stocker dans un entier", () => {
+		const v = new EnvVariable("id", "pos", "number", "INOUT", {
+			min: -32768,
+			max: 32767,
+			integer: true,
+			wrap: true,
+		});
+
+		v.setValue(Infinity);
+		expect(v.getValue()).toBe(32767);
+		v.setValue(-Infinity);
+		expect(v.getValue()).toBe(-32768);
+		v.setValue(NaN);
+		expect(v.getValue()).toBe(0);
+	});
+
 	it("ne borne pas quand aucun domaine n'est fourni (REAL, TIME…)", () => {
 		const v = new EnvVariable("id", "r", "number", "INOUT");
 		v.setValue(1e9);

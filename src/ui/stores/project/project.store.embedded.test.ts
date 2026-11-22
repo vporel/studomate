@@ -230,3 +230,30 @@ describe("project store with the embedded environment", () => {
 		expect(a.getState().clipboard.getState().entry).not.toBeNull();
 	});
 });
+
+describe("drafts in an embedded block", () => {
+	it("refuses to write a draft instead of touching the browser storage", () => {
+		const { store } = openedStore();
+		store.setState({ hasUnsavedChanges: true });
+
+		expect(() => store.getState().lifecycleManager.flushDraft()).toThrow(
+			PersistenceUnavailableError,
+		);
+		expect(localStorage.getItem("studomate_drafts")).toBeNull();
+	});
+
+	it("refuses to read a draft when reopening a project", async () => {
+		const { store } = openedStore();
+
+		await expect(
+			store.getState().lifecycleManager.openProject("p1", true),
+		).rejects.toThrow(PersistenceUnavailableError);
+	});
+
+	it("has nothing to write when there are no pending changes", () => {
+		const { store } = openedStore();
+		store.setState({ hasUnsavedChanges: false });
+
+		expect(store.getState().lifecycleManager.flushDraft()).toBe(true);
+	});
+});

@@ -1,0 +1,22 @@
+{
+	"statement": "## Cruce con semáforos\n\nUn cruce une dos ejes: Norte-Sur (semáforos `NS1`, `NS2`) y Este-Oeste (semáforos `EW1`, `EW2`).\nCada semáforo tiene sus tres salidas `red…`, `amber…`, `green…` (por ejemplo `greenNS1`).\n\nUna escena 3D (menú Ver → Escena 3D) muestra el cruce: los coches llegan de forma continua por las cuatro ramas y obedecen a los semáforos.\nSi los dos ejes se ponen en verde a la vez, o sin un tiempo de despeje suficiente, los coches **chocan**: se muestra la colisión, el contador de accidentes aumenta y el flujo de coches se reinicia.\n\n### Trabajo a realizar\n\n1. Haz funcionar **en paralelo** los dos semáforos de un mismo eje (el mismo color al mismo tiempo).\n2. Alterna los dos ejes con una fase de **todo rojo** entre cada cambio.\n3. Temporiza las fases y valida el ciclo completo en simulación, comprobando en la escena 3D que no se produce ninguna colisión.",
+	"texts": {
+		"projectName": "Cruce con semáforos",
+		"hmiPageName": "Cruce",
+		"roadWidgetName": "Calzada",
+		"titleText": "Cruce con semáforos",
+		"titleWidgetName": "Título",
+		"directionNorth": "Norte",
+		"directionSouth": "Sur",
+		"directionEast": "Este",
+		"directionWest": "Oeste",
+		"backgroundWidgetName": "Fondo {label}",
+		"labelWidgetName": "Etiqueta {label}",
+		"colorRed": "rojo",
+		"colorAmber": "ámbar",
+		"colorGreen": "verde",
+		"indicatorWidgetName": "{color} {label}",
+		"solutionName": "Cruce con semáforos: solución",
+		"grafcetName": "Cruce con semáforos"
+	}
+}

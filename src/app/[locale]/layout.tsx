@@ -5,6 +5,7 @@ import { rootMetadata, rootViewport } from "@/app/root-metadata";
 import { routing } from "@/i18n/routing";
 import Footer from "@/ui/components/public-pages/Footer";
 import Header from "@/ui/components/public-pages/Header";
+import LanguageSuggestion from "@/ui/components/public-pages/LanguageSuggestion";
 import StandaloneBackButton from "@/ui/components/public-pages/StandaloneBackButton";
 import WhatsNew from "@/ui/components/whats-new/WhatsNew";
 import PUBLIC_PAGES_CLASS from "@/ui/components/public-pages/public-pages-class";
@@ -59,6 +60,7 @@ export default async function LocaleLayout({
 					<main>{children}</main>
 					<Footer />
 					<StandaloneBackButton />
+					<LanguageSuggestion locale={locale} />
 					<WhatsNew />
 				</div>
 			</ClientMessagesProvider>

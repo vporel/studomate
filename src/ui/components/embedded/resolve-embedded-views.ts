@@ -1,5 +1,9 @@
 import type Project from "@/schemas/project/project.schema";
-import { getVariablesPageData } from "@/ui/stores/project/pages-data";
+import {
+	getHmiPageData,
+	getProgramPageData,
+	getVariablesPageData,
+} from "@/ui/stores/project/pages-data";
 import type { PageData } from "@/ui/stores/project/project.store.types";
 import type { EmbeddedView } from "./embedded-app.types";
 
@@ -56,26 +60,17 @@ export default function resolveEmbeddedViews(
 			case "grafcet": {
 				const grafcet = project.getGrafcet(view.id);
 				if (!grafcet) return unavailable({ reason: "grafcet", id: view.id });
-				return push(
-					{ page: { id: grafcet.id, type: "grafcet", title: grafcet.name } },
-					view,
-				);
+				return push({ page: getProgramPageData(grafcet) }, view);
 			}
 			case "ladder": {
 				const ladder = project.getLadder(view.id);
 				if (!ladder) return unavailable({ reason: "ladder", id: view.id });
-				return push(
-					{ page: { id: ladder.id, type: "ladder", title: ladder.name } },
-					view,
-				);
+				return push({ page: getProgramPageData(ladder) }, view);
 			}
 			case "hmi": {
 				const hmiPage = project.getHmiPage(view.pageId);
 				if (!hmiPage) return unavailable({ reason: "hmi", id: view.pageId });
-				return push(
-					{ page: { id: hmiPage.id, type: "hmi", title: hmiPage.name } },
-					view,
-				);
+				return push({ page: getHmiPageData(hmiPage) }, view);
 			}
 			case "scene3d": {
 				if (!project.scene3d) return unavailable({ reason: "scene3d" });

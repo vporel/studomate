@@ -1,20 +1,20 @@
 /**
  * @jest-environment jsdom
  */
+import SectionUpdateCommand from "@/schemas/ladder/commands/section-update.command";
+import Section from "@/schemas/ladder/section.schema";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
 import { act, fireEvent, screen } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
-import Section from "@/schemas/ladder/section.schema";
-import SectionUpdateCommand from "@/schemas/ladder/commands/section-update.command";
-import useCanEdit from "@/ui/components/projects/useCanEdit";
-import { useLadderStore } from "../context/LadderContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
+import { useLadderStore } from "../context/LadderContext";
 import LadderSectionDescription from "./LadderSectionDescription";
 
 jest.mock("../context/LadderContext");
-jest.mock("@/ui/components/projects/useCanEdit");
+jest.mock("@/ui/components/projects/useCanEditActivePage");
 
 function setup(description = "", executeOperation = jest.fn(), canEdit = true) {
-	(useCanEdit as jest.Mock).mockReturnValue(canEdit);
+	(useCanEditActivePage as jest.Mock).mockReturnValue(canEdit);
 	const section = new Section("s1", "Section", description);
 	(useLadderStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({ commandsStackManager: { executeOperation } }),

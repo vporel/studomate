@@ -40,6 +40,8 @@ export function usePageTitle() {
 				);
 			case "system-variables":
 				return t("systemVariables");
+			case "hmi-simulation":
+				return t("hmiSimulation");
 			default:
 				return page.title;
 		}

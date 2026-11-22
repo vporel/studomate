@@ -1,4 +1,3 @@
-import JunctionHelper from "@/schemas/grafcet/helpers/junction.helper";
 import JunctionOrEnd, {
 	JUNCTION_OR_END_HANDLE_BRANCH_TYPES,
 } from "@/schemas/grafcet/junction-or-end.schema";
@@ -8,6 +7,7 @@ import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
 import GrafcetElementAnalyser, {
 	ElementAnalyseIsolatedOptions,
 } from "./element.analyser";
+import analyseJunctionStructure from "./junction-structure.analyser";
 
 export default class JunctionOrEndAnalyser extends GrafcetElementAnalyser<JunctionOrEnd> {
 	/**
@@ -36,32 +36,14 @@ export default class JunctionOrEndAnalyser extends GrafcetElementAnalyser<Juncti
 			sourceId: junctionOrEnd.id,
 		};
 
-		if (!JunctionHelper.isPivotConnected(junctionOrEnd.id, grafcet)) {
-			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"JUNCTION_PIVOT_NOT_CONNECTED",
-					source,
-				),
-			);
-		}
-
-		if (!JunctionHelper.hasMinimumBranches(junctionOrEnd.data)) {
-			issues.push(
-				new ProjectAnalyserIssue("error", "JUNCTION_OR_MIN_BRANCHES", source),
-			);
-		}
-
-		if (!JunctionHelper.areAllBranchesConnected(junctionOrEnd.id, grafcet)) {
-			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"JUNCTION_BRANCH_NOT_CONNECTED",
-					source,
-				),
-			);
-			return issues;
-		}
+		const structure = analyseJunctionStructure(
+			junctionOrEnd,
+			grafcet,
+			source,
+			"JUNCTION_OR_MIN_BRANCHES",
+		);
+		issues.push(...structure.issues);
+		if (!structure.allBranchesConnected) return issues;
 
 		for (const branchId of junctionOrEnd.data.branchesOrder) {
 			const conns = grafcet.getConnectionsByElementIdAndHandle(

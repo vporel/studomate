@@ -132,6 +132,16 @@ describe("ProjectLifecycleManager", () => {
 			expect(store.getState().ui.newProjectModalVisible).toBe(false);
 		});
 
+		it("nomme le projet vierge dans la langue de l'interface", async () => {
+			const store = createProjectStore(
+				createAppProjectStoreEnvironment({ getLocale: () => "es" }),
+			);
+
+			await lifecycle(store).newProjectFromTemplate(null);
+
+			expect(store.getState().project?.name).toBe("Nuevo proyecto");
+		});
+
 		it("injecte l'énoncé du template dans le projet, exercice comme solution", async () => {
 			const store = createProjectStore(createAppProjectStoreEnvironment());
 
@@ -367,6 +377,171 @@ describe("ProjectLifecycleManager", () => {
 			expect(store.getState().hasUnsavedChanges).toBe(true);
 			expect(store.getState().savingProject).toBe(false);
 			expect(toast.error).toHaveBeenCalled();
+		});
+
+		describe("messages d'échec passant par l'environnement", () => {
+			beforeEach(() => (toast.error as jest.Mock).mockClear());
+
+			const envWithSpies = () => {
+				const error = jest.fn();
+				const env = createAppProjectStoreEnvironment({
+					notifications: { error },
+					translate: (namespace) => (key) => `${namespace}:${key}`,
+				});
+				return { env, error };
+			};
+
+			it("annonce l'échec d'un enregistrement par l'environnement, pas par un toast direct", async () => {
+				const { env, error } = envWithSpies();
+				const store = createProjectStore(env);
+				await openBlankProject(store);
+				jest
+					.spyOn(store.getState().projectRepository, "save")
+					.mockResolvedValue({ ok: false, reason: "network", cause: null });
+
+				await lifecycle(store).saveProject();
+
+				expect(error).toHaveBeenCalledWith("toasts.save:cloudUnreachable");
+				expect(toast.error).not.toHaveBeenCalled();
+			});
+
+			it("annonce l'échec d'un enregistrement sous par l'environnement", async () => {
+				const { env, error } = envWithSpies();
+				const store = createProjectStore(env);
+				await openBlankProject(store);
+				jest
+					.spyOn(store.getState().projectRepository, "save")
+					.mockResolvedValue({ ok: false, reason: "unknown", cause: null });
+
+				await lifecycle(store).saveProjectAs("Copie");
+
+				expect(error).toHaveBeenCalledWith("toasts.save:generic");
+			});
+
+			it("annonce l'échec du rechargement cloud par l'environnement", async () => {
+				const { env, error } = envWithSpies();
+				const store = createProjectStore(env);
+				await openBlankProject(store);
+				jest
+					.spyOn(store.getState().projectRepository, "get")
+					.mockResolvedValue(null);
+
+				await lifecycle(store).resolveCloudConflict("reload");
+
+				expect(error).toHaveBeenCalledWith("toasts:cloudReloadFailed");
+			});
+		});
+
+		describe("sauvegardes concurrentes", () => {
+			it("ignore un second saveProject lancé pendant le premier : un seul appel au repository", async () => {
+				const store = createProjectStore(createAppProjectStoreEnvironment());
+				await openBlankProject(store);
+				store.getState().setProjectName("Projet concurrent");
+				const save = jest.spyOn(store.getState().projectRepository, "save");
+
+				const [first, second] = await Promise.all([
+					lifecycle(store).saveProject(),
+					lifecycle(store).saveProject(),
+				]);
+
+				expect(first).toBe(true);
+				expect(second).toBe(false);
+				expect(save).toHaveBeenCalledTimes(1);
+			});
+
+			it("autorise une nouvelle sauvegarde une fois la première terminée", async () => {
+				const store = createProjectStore(createAppProjectStoreEnvironment());
+				await openBlankProject(store);
+				const save = jest.spyOn(store.getState().projectRepository, "save");
+
+				expect(await lifecycle(store).saveProject()).toBe(true);
+				expect(await lifecycle(store).saveProject()).toBe(true);
+
+				expect(save).toHaveBeenCalledTimes(2);
+			});
+
+			it("remet savingProject à false quand le repository rejette, et permet de réessayer", async () => {
+				const store = createProjectStore(createAppProjectStoreEnvironment());
+				await openBlankProject(store);
+				const save = jest
+					.spyOn(store.getState().projectRepository, "save")
+					.mockRejectedValueOnce(new Error("réseau coupé"));
+
+				await expect(lifecycle(store).saveProject()).rejects.toThrow(
+					"réseau coupé",
+				);
+
+				expect(store.getState().savingProject).toBe(false);
+				expect(await lifecycle(store).saveProject()).toBe(true);
+				expect(save).toHaveBeenCalledTimes(2);
+			});
+
+			it("remet savingProject à false quand la modale d'emplacement est annulée", async () => {
+				localStorage.clear();
+				setDefaultDialect(Dialect.FR);
+				const store = createProjectStore(createAppProjectStoreEnvironment());
+				await openBlankProject(store);
+				const saveResult = lifecycle(store).saveProject();
+				await flushMicrotasks();
+				expect(store.getState().savingProject).toBe(true);
+
+				store.getState().ui.onSaveLocationChosen?.(null);
+
+				expect(await saveResult).toBe(false);
+				expect(store.getState().savingProject).toBe(false);
+			});
+
+			it("un second saveProject pendant la modale d'emplacement ne la rouvre pas et laisse le premier aboutir", async () => {
+				localStorage.clear();
+				setDefaultDialect(Dialect.FR);
+				const store = createProjectStore(createAppProjectStoreEnvironment());
+				await openBlankProject(store);
+				const first = lifecycle(store).saveProject();
+				await flushMicrotasks();
+				const chooser = store.getState().ui.onSaveLocationChosen;
+
+				expect(await lifecycle(store).saveProject()).toBe(false);
+				expect(store.getState().ui.onSaveLocationChosen).toBe(chooser);
+
+				chooser?.("local");
+				expect(await first).toBe(true);
+			});
+
+			it("saveProjectAs lancé pendant saveProject est ignoré, et réciproquement", async () => {
+				const store = createProjectStore(createAppProjectStoreEnvironment());
+				await openBlankProject(store);
+				const save = jest.spyOn(store.getState().projectRepository, "save");
+
+				const [saved, savedAs] = await Promise.all([
+					lifecycle(store).saveProject(),
+					lifecycle(store).saveProjectAs("Copie"),
+				]);
+
+				expect(saved).toBe(true);
+				expect(savedAs).toBe(false);
+				expect(save).toHaveBeenCalledTimes(1);
+
+				const [asFirst, saveSecond] = await Promise.all([
+					lifecycle(store).saveProjectAs("Copie 2"),
+					lifecycle(store).saveProject(),
+				]);
+				expect(asFirst).toBe(true);
+				expect(saveSecond).toBe(false);
+			});
+
+			it("saveProjectAs remet savingProject à false quand le repository rejette", async () => {
+				const store = createProjectStore(createAppProjectStoreEnvironment());
+				await openBlankProject(store);
+				jest
+					.spyOn(store.getState().projectRepository, "save")
+					.mockRejectedValueOnce(new Error("réseau coupé"));
+
+				await expect(lifecycle(store).saveProjectAs("Copie")).rejects.toThrow(
+					"réseau coupé",
+				);
+
+				expect(store.getState().savingProject).toBe(false);
+			});
 		});
 
 		it("projet partagé (lecture seule) : ouvre la modale Save As au lieu d'enregistrer", async () => {
@@ -1202,6 +1377,61 @@ describe("ProjectLifecycleManager", () => {
 
 			expect(store.getState().ui.draftConflictModal.visible).toBe(false);
 			expect(toast.error).toHaveBeenCalled();
+		});
+	});
+
+	describe("guardUnsavedChanges", () => {
+		it("runs the action right away without opening the dialog when there is nothing unsaved", async () => {
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+			const proceed = jest.fn();
+			const onDiscard = jest.fn();
+
+			await lifecycle(store).guardUnsavedChanges(proceed, { onDiscard });
+
+			expect(proceed).toHaveBeenCalledTimes(1);
+			expect(onDiscard).not.toHaveBeenCalled();
+			expect(store.getState().ui.unsavedChangesDialogVisible).toBe(false);
+		});
+
+		it("shows the dialog with the given message and holds the action back", async () => {
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+			store.setState({ hasUnsavedChanges: true });
+			const proceed = jest.fn();
+
+			await lifecycle(store).guardUnsavedChanges(proceed, {
+				message: "Export en cours",
+			});
+
+			const { ui } = store.getState();
+			expect(ui.unsavedChangesDialogVisible).toBe(true);
+			expect(ui.unsavedChangesDialogMessage).toBe("Export en cours");
+			expect(ui.onUnsavedChangesDialogCancel).toBeNull();
+			expect(proceed).not.toHaveBeenCalled();
+		});
+
+		it("has no message by default", async () => {
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+			store.setState({ hasUnsavedChanges: true });
+
+			await lifecycle(store).guardUnsavedChanges(jest.fn());
+
+			expect(store.getState().ui.unsavedChangesDialogMessage).toBeNull();
+		});
+
+		it("discards then proceeds when the user continues without saving", async () => {
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+			store.setState({ hasUnsavedChanges: true });
+			const calls: string[] = [];
+
+			await lifecycle(store).guardUnsavedChanges(
+				() => {
+					calls.push("proceed");
+				},
+				{ onDiscard: () => calls.push("discard") },
+			);
+			store.getState().ui.onUnsavedChangesDialogContinue?.();
+
+			expect(calls).toEqual(["discard", "proceed"]);
 		});
 	});
 

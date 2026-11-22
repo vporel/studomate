@@ -1,3 +1,4 @@
+import { clamp } from "@/lib/number";
 export type TimedState<T> = { simTimeMs: number; state: T };
 
 /**
@@ -26,10 +27,7 @@ export default class StateInterpolator<T> {
 		if (!this.previous) return this.latest.state;
 		const span = this.latest.simTimeMs - this.previous.simTimeMs;
 		if (span <= 0) return this.latest.state;
-		const ratio = Math.min(
-			1,
-			Math.max(0, (nowMs - this.latestReceivedAtMs) / span),
-		);
+		const ratio = clamp((nowMs - this.latestReceivedAtMs) / span, 0, 1);
 		return this.lerp(this.previous.state, this.latest.state, ratio);
 	}
 }

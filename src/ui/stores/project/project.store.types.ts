@@ -204,7 +204,7 @@ export interface ProjectStoreState {
 	bootStatus: ProjectBootStatus;
 	/** Presse-papiers propre à ce projet ouvert (voir `clipboard.store.ts`). */
 	clipboard: ClipboardStore;
-	/** False: the project is shown but cannot be modified, whatever the mode (see `canEdit`). */
+	/** False: the project is shown but cannot be modified, whatever the mode (see `canEditActivePage`). */
 	/** What this project store can do beyond editing and simulating. */
 	capabilities: ProjectCapabilities;
 	editingEnabled: boolean;

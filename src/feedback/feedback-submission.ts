@@ -1,3 +1,4 @@
+import { isRecord } from "@/lib/object";
 import { isLocale, type Locale } from "@/i18n/config";
 import {
 	FEEDBACK_COMMENT_MAX_LENGTH,
@@ -15,8 +16,8 @@ export type FeedbackSubmission = {
 export function parseFeedbackSubmission(
 	raw: unknown,
 ): FeedbackSubmission | null {
-	if (typeof raw !== "object" || raw === null) return null;
-	const { rating, comment, locale } = raw as Record<string, unknown>;
+	if (!isRecord(raw)) return null;
+	const { rating, comment, locale } = raw;
 
 	if (
 		typeof rating !== "number" ||

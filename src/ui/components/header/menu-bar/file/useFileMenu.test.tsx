@@ -19,7 +19,7 @@ describe("useFileMenu", () => {
 	const saveProject = jest.fn();
 	const openPage = jest.fn();
 
-	function setup(mode: ProjectMode) {
+	function setup(mode: ProjectMode, extraState: Record<string, unknown> = {}) {
 		const state = {
 			setOpenModalVisible,
 			setExportModalVisible,
@@ -27,6 +27,8 @@ describe("useFileMenu", () => {
 			lifecycleManager: { newProject, closeProject, saveProject },
 			pagesManager: { openPage },
 			mode,
+			editingEnabled: true,
+			...extraState,
 		};
 		(useProjectStore as jest.Mock).mockImplementation(
 			selectorImplementation(state),
@@ -83,6 +85,24 @@ describe("useFileMenu", () => {
 
 		act(() => result.current.items[3][0].onClick?.());
 		expect(openPage).toHaveBeenCalled();
+	});
+
+	it("disables project-editing actions for a project opened read-only", () => {
+		const { result } = setup(ProjectMode.DESIGN, { editingEnabled: false });
+
+		expect(result.current.items[0][0].disabled).toBe(true);
+		expect(result.current.items[0][1].disabled).toBe(true);
+		expect(result.current.items[2][0].disabled).toBe(true);
+	});
+
+	it("keeps them enabled when the active page is locked", () => {
+		const { result } = setup(ProjectMode.DESIGN, {
+			activePageId: "p1",
+			pagesData: { p1: { id: "p1", type: "grafcet", locked: true } },
+		});
+
+		expect(result.current.items[0][0].disabled).toBe(false);
+		expect(result.current.items[0][1].disabled).toBe(false);
 	});
 
 	it("does not trigger design-only actions outside design mode", () => {

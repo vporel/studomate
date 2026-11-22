@@ -30,9 +30,22 @@ export default function SeveritySection({
 }) {
 	const t = useT("projects.analysisResult");
 	const isError = severity === "error";
+	const hasIssues = hasProgramIssues || issues.project.length > 0;
+	const accentColor = isError ? "error.main" : "warning.main";
 	return (
-		<>
-			<Typography variant="h5">{">> " + title}</Typography>
+		<Box
+			sx={{
+				borderLeft: "4px solid",
+				borderLeftColor: hasIssues ? accentColor : "divider",
+				pl: 1.5,
+			}}
+		>
+			<Typography
+				variant="h5"
+				sx={{ color: hasIssues ? accentColor : undefined }}
+			>
+				{title}
+			</Typography>
 			{!hasProgramIssues && issues.project.length === 0 && (
 				<Typography sx={{ p: 2 }}>
 					{isError ? t("noErrors") : t("noWarnings")}
@@ -94,6 +107,6 @@ export default function SeveritySection({
 					))}
 				</Box>
 			)}
-		</>
+		</Box>
 	);
 }

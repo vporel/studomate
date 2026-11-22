@@ -1,0 +1,24 @@
+{
+	"statement": "## Conteo\n\nTodas las variables se proporcionan. El conteo se hace en el flanco ascendente. En cada contador, solo la entrada de conteo está conectada a la barra; PV, R, LD y CD (de un CTUD) se introducen en los pines.\n\n### Tarea\n\n1. Cinta (`CTU`, preselección 5): entrada `part_sensor`, puesta a cero con `clear`. La cinta (`conveyor`) funciona y se detiene en la 5.ª pieza.\n2. Zona de almacenamiento intermedio (`CTUD`, capacidad 3): `entry_sensor` cuenta hacia arriba, `exit_sensor` cuenta hacia abajo, `clear_buffer` pone a cero y `buffer_load` carga PV. Indicador `buffer_full` en `QU` (el almacenamiento contiene PV piezas), indicador `buffer_empty` en `QD`.\n3. Opcional: stock de piezas (`CTD`, 4 piezas al inicio): `stock_load` carga PV en LD, `pickup_sensor` cuenta hacia abajo, indicador `stock_empty` en `Q`.",
+	"texts": {
+		"projectName": "Conteo",
+		"solutionName": "Conteo: solución",
+		"piecesCounter": "piece_counter",
+		"bufferCounter": "buffer",
+		"stockCounter": "stock",
+		"piecesTitle": "Conteo de piezas",
+		"piecesDescription": "El CTU cuenta en el flanco ascendente del sensor y se pone a cero con clear.",
+		"conveyorTitle": "Cinta",
+		"conveyorDescription": "Se detiene en la preselección.",
+		"bufferTitle": "Zona de almacenamiento intermedio",
+		"bufferDescription": "El sensor de entrada cuenta hacia arriba y el de salida hacia abajo.",
+		"bufferFullTitle": "Almacenamiento lleno",
+		"bufferFullDescription": "QU es igual a CV >= PV.",
+		"bufferEmptyTitle": "Almacenamiento vacío",
+		"bufferEmptyDescription": "QD es igual a CV <= 0.",
+		"stockTitle": "Stock de piezas",
+		"stockDescription": "El CTD se carga a PV con LD y cuenta hacia abajo por cada pieza retirada.",
+		"stockEmptyTitle": "Stock agotado",
+		"stockEmptyDescription": "Q es igual a CV <= 0."
+	}
+}

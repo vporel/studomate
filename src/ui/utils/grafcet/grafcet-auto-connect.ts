@@ -1,3 +1,4 @@
+import { clamp } from "@/lib/number";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import Element, { ElementType } from "@/schemas/grafcet/element.schema";
 import {
@@ -24,7 +25,10 @@ import { Box, bottom, centerX, centerY, right } from "./grafcet-geometry";
  * positive when the elements are apart and negative when they overlap; an overlap is corrected
  * back to a gap of 0.
  */
-export const AUTO_CONNECT_TOLERANCE = 10;
+export const AUTO_CONNECT_GAP_TOLERANCE = 20;
+
+/** Maximum offset, in px, between the centres of two elements for them to count as aligned. */
+export const AUTO_CONNECT_ALIGN_TOLERANCE = 10;
 
 /**
  * Maximum horizontal gap, in px, between a placed action and the step or action on its left for
@@ -51,7 +55,6 @@ export type AutoPlacement = {
 };
 
 type Neighbour = { element: Element<any>; gap: number };
-
 
 const SUCCESSOR_HANDLES: Partial<Record<ElementType, string>> = {
 	step: STEP_HANDLE_SOURCE_SUCCESSOR,
@@ -88,7 +91,7 @@ function nearest(candidates: Neighbour[]): Neighbour | undefined {
 }
 
 const isWithinTolerance = ({ gap }: Neighbour) =>
-	gap >= -AUTO_CONNECT_TOLERANCE && gap <= AUTO_CONNECT_TOLERANCE;
+	gap >= -AUTO_CONNECT_GAP_TOLERANCE && gap <= AUTO_CONNECT_GAP_TOLERANCE;
 
 function isHandleFree(grafcet: Grafcet, id: string, handle: string): boolean {
 	return grafcet.getConnectionsByElementIdAndHandle(id, handle).length === 0;
@@ -108,14 +111,14 @@ function shiftForNeighbours(
 	let hi = Infinity;
 	if (gapAbove !== undefined) {
 		lo = Math.max(lo, -gapAbove);
-		hi = Math.min(hi, AUTO_CONNECT_TOLERANCE - gapAbove);
+		hi = Math.min(hi, AUTO_CONNECT_GAP_TOLERANCE - gapAbove);
 	}
 	if (gapBelow !== undefined) {
-		lo = Math.max(lo, gapBelow - AUTO_CONNECT_TOLERANCE);
+		lo = Math.max(lo, gapBelow - AUTO_CONNECT_GAP_TOLERANCE);
 		hi = Math.min(hi, gapBelow);
 	}
 	if (lo > hi) return null;
-	return Math.min(Math.max(0, lo), hi);
+	return clamp(0, lo, hi);
 }
 
 /** A step, a transition or a step referral placed above or below an element it can be linked to. */
@@ -127,7 +130,7 @@ function computeVerticalPlacement(
 		(types ?? [])
 			.flatMap((type) => grafcet.getElementsByType<Element<any>>(type))
 			.filter(
-				(e) => Math.abs(centerX(e) - centerX(placed)) <= AUTO_CONNECT_TOLERANCE,
+				(e) => Math.abs(centerX(e) - centerX(placed)) <= AUTO_CONNECT_ALIGN_TOLERANCE,
 			);
 	const placedPredecessor = PREDECESSOR_HANDLES[placed.type];
 	const placedSuccessor = SUCCESSOR_HANDLES[placed.type];
@@ -257,7 +260,7 @@ function computeActionPlacement(
 		return none;
 
 	const isAligned = (e: Box) =>
-		Math.abs(centerY(e) - centerY(placed)) <= AUTO_CONNECT_TOLERANCE;
+		Math.abs(centerY(e) - centerY(placed)) <= AUTO_CONNECT_ALIGN_TOLERANCE;
 	const gapTo = (e: Box) => placed.position.x - right(e);
 	const isWithinXTolerance = ({ gap }: Neighbour) =>
 		Math.abs(gap) <= ACTION_AUTO_CONNECT_X_TOLERANCE;

@@ -1,0 +1,14 @@
+{
+	"statement": "## Lectura de un programa Ladder\n\nEntradas: `a`, `b`, `c` (tres selectores que mantienen su posición, a 0 en reposo). Salidas: `s1`, `s2`, `s3`, `s4`.\n\n### Tarea\n\n1. Abre el programa Main: cuatro redes, una debajo de la otra.\n2. Sin iniciar la simulación, predice el estado de `s1` a `s4` para cada combinación de entradas:\n\n   | a | b | c | s1 | s2 | s3 | s4 |\n   |---|---|---|----|----|----|----|\n   | 0 | 0 | 0 |    |    |    |    |\n   | 1 | 0 | 0 |    |    |    |    |\n   | 1 | 1 | 0 |    |    |    |    |\n   | 1 | 1 | 1 |    |    |    |    |\n\n3. Comprueba tus predicciones en simulación, con la tabla de seguimiento.\n4. Si alguna predicción difiere, vuelve a leer la red correspondiente contacto a contacto.\n5. Explica por qué `s3` se apaga cuando se acciona `b`.",
+	"texts": {
+		"projectName": "Lectura de un programa Ladder",
+		"network1Title": "Red 1",
+		"network2Title": "Red 2",
+		"network3Title": "Red 3",
+		"network4Title": "Red 4",
+		"network1Description": "Predice s1 para cada combinación de a y b.",
+		"network2Description": "Predice s2 para cada combinación de a y b.",
+		"network3Description": "Predice s3 para cada combinación de a y b.",
+		"network4Description": "Predice s4 para cada combinación de a, b y c."
+	}
+}

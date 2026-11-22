@@ -1,6 +1,9 @@
 import Project from "@/schemas/project/project.schema";
 import { setProjectEverSaved } from "../preferences.storage";
-import { readJson } from "../safe-local-storage";
+import {
+	getStoredCloudProjectIds,
+	setStoredCloudProjectIds,
+} from "../cloud-project-ids.storage";
 import LocalStorageProjectRepository from "./local-storage.project.repository";
 import SupabaseProjectRepository from "./supabase.project.repository";
 import lookupSession from "./session-lookup";
@@ -12,8 +15,6 @@ import ProjectRepository, {
 	ShareResult,
 	StorageLocation,
 } from "./project.repository";
-
-const CLOUD_INDEX_KEY = "studomate_cloud_project_ids";
 
 /**
  * Combine stockage local et stockage cloud (Supabase) : chaque projet vit **soit** en local
@@ -42,7 +43,7 @@ export default class HybridProjectRepository
 				failed: true,
 			};
 		}
-		const indexBeforeListing = this.readIndex();
+		const indexBeforeListing = getStoredCloudProjectIds();
 		const cloud = await this.cloud.list();
 		if (!cloud.failed) this.pruneIndex(indexBeforeListing, cloud);
 		// Le serveur fait foi : un projet cloud absent de l'index (créé depuis un autre navigateur,
@@ -80,7 +81,9 @@ export default class HybridProjectRepository
 		]);
 		const stale = new Set(candidates.filter((id) => !cloudIds.has(id)));
 		if (stale.size === 0) return;
-		this.writeIndex(this.readIndex().filter((id) => !stale.has(id)));
+		setStoredCloudProjectIds(
+			getStoredCloudProjectIds().filter((id) => !stale.has(id)),
+		);
 	}
 
 	async get(projectId: string): Promise<Project | null> {
@@ -245,34 +248,18 @@ export default class HybridProjectRepository
 	}
 
 	private isCloud(projectId: string): boolean {
-		return this.readIndex().includes(projectId);
+		return getStoredCloudProjectIds().includes(projectId);
 	}
 
 	private addToIndex(projectId: string): boolean {
-		const ids = this.readIndex();
+		const ids = getStoredCloudProjectIds();
 		if (ids.includes(projectId)) return true;
-		return this.writeIndex([...ids, projectId]);
+		return setStoredCloudProjectIds([...ids, projectId]);
 	}
 
 	private removeFromIndex(projectId: string): boolean {
-		return this.writeIndex(this.readIndex().filter((id) => id !== projectId));
-	}
-
-	private readIndex(): string[] {
-		const parsed = readJson(CLOUD_INDEX_KEY);
-		return Array.isArray(parsed) ? parsed : [];
-	}
-
-	private writeIndex(ids: string[]): boolean {
-		try {
-			localStorage.setItem(CLOUD_INDEX_KEY, JSON.stringify(ids));
-			return true;
-		} catch (e) {
-			console.error(
-				"Impossible de mettre à jour l'index des projets cloud :",
-				e,
-			);
-			return false;
-		}
+		return setStoredCloudProjectIds(
+			getStoredCloudProjectIds().filter((id) => id !== projectId),
+		);
 	}
 }

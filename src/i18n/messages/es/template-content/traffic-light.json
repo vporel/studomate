@@ -1,0 +1,15 @@
+{
+	"statement": "## Semáforo\n\nQueremos controlar un semáforo de tres colores. Las salidas disponibles son\n`red`, `amber` y `green`; solo una debe estar activa a la vez.\n\n### Trabajo a realizar\n\n1. Escribe el GRAFCET que recorre las fases en el orden **verde → ámbar → rojo**, en bucle.\n2. Temporiza cada fase: verde 5 s, ámbar 2 s, rojo 5 s.\n3. Comprueba el funcionamiento en simulación con los indicadores de la interfaz HMI.",
+	"texts": {
+		"projectName": "Semáforo",
+		"hmiPageName": "Semáforo",
+		"titleText": "Semáforo",
+		"titleWidgetName": "Título",
+		"backgroundWidgetName": "Fondo",
+		"redIndicatorName": "Indicador rojo",
+		"amberIndicatorName": "Indicador ámbar",
+		"greenIndicatorName": "Indicador verde",
+		"solutionName": "Semáforo: solución",
+		"grafcetName": "Semáforo"
+	}
+}

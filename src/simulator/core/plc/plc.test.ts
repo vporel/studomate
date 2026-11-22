@@ -949,4 +949,51 @@ describe("PLC", () => {
 			plc.stop();
 		});
 	});
+
+	describe("getVariableNameById", () => {
+		it("returns the name of a physical input and of a memory", () => {
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [],
+				variables: [inputVar, outputVar, memoryVar],
+			});
+			expect(plc.getVariableNameById("id1")).toBe("x");
+			expect(plc.getVariableNameById("id3")).toBe("count");
+		});
+
+		it("returns undefined for an output or an unknown id", () => {
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [],
+				variables: [inputVar, outputVar, memoryVar],
+			});
+			expect(plc.getVariableNameById("id2")).toBeUndefined();
+			expect(plc.getVariableNameById("nope")).toBeUndefined();
+		});
+	});
+
+	describe("forceVariable on a constant", () => {
+		it("throws and does not register the forcing", () => {
+			const constant = new PLCVariable(
+				"id4",
+				"LIMIT",
+				"memory",
+				"number",
+				null,
+				null,
+				true,
+				5,
+			);
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [],
+				variables: [constant],
+			});
+
+			expect(() => plc.forceVariable("id4", 9)).toThrow(
+				'"LIMIT" is a constant',
+			);
+			expect(plc.getForcedVariables().size).toBe(0);
+		});
+	});
 });

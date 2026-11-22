@@ -1,3 +1,4 @@
+import activeDocumentsManager from "./active-documents.selector";
 import { ProjectStoreState } from "./project.store";
 
 /**
@@ -19,22 +20,8 @@ export type CopyCutPasteController = {
 export function activeCopyCutPasteManager(
 	state: ProjectStoreState,
 ): CopyCutPasteController | null {
-	switch (state.activeScopeType) {
-		case "grafcet":
-			return (
-				state.grafcetsManager.getActiveStoreManagers()?.copyCutPasteManager ??
-				null
-			);
-		case "ladder":
-			return (
-				state.laddersManager.getActiveStoreManagers()?.copyCutPasteManager ??
-				null
-			);
-		case "hmi":
-			return (
-				state.hmiManager.getActiveStoreManagers()?.copyCutPasteManager ?? null
-			);
-		default:
-			return null;
-	}
+	return (
+		activeDocumentsManager(state)?.getActiveStoreManagers()
+			?.copyCutPasteManager ?? null
+	);
 }

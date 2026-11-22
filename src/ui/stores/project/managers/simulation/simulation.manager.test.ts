@@ -507,6 +507,24 @@ describe("SimulationManager", () => {
 			);
 		});
 
+		it("remplace l'onglet des références croisées par celui de l'analyse", () => {
+			const project = projectWithOneErrorAndOneWarning();
+			const { get, set } = makeStore(project);
+			set(() => ({
+				ui: { ...get().ui, crossReferenceResultVisible: true },
+			}));
+			const manager = new SimulationManager(
+				set,
+				get,
+				simulationEnv(stubNotifier()),
+			);
+
+			manager.analyze();
+
+			expect(get().ui.analysisResultVisible).toBe(true);
+			expect(get().ui.crossReferenceResultVisible).toBe(false);
+		});
+
 		it("ne rouvre pas le panneau quand le projet n'a aucune issue", () => {
 			const inputVar = VariableFactory.createLogicInput("I0");
 			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");

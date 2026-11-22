@@ -5,21 +5,18 @@ import {
 	isStartPressed,
 	type DrillingState,
 } from "@/3d-scenes/drilling/v1/drilling.model";
-import { useTranslations } from "next-intl";
-import { useEffect, useRef } from "react";
-import {
-	consoleButtonStyle,
-	Lamp,
-	PushButtonIllustration,
-} from "@/ui/components/3d-scene/parts/ConsoleParts";
 import ConsoleGroup from "@/ui/components/3d-scene/parts/ConsoleGroup";
 import ConsolePanels from "@/ui/components/3d-scene/parts/ConsolePanels";
+import {
+	COMMAND_COLOR,
+	LampWithLegend,
+	SENSOR_COLOR,
+	StartHoldButton,
+} from "@/ui/components/3d-scene/parts/ConsoleParts";
 import type { SceneComponentProps } from "@/ui/components/3d-scene/scene-views";
 import useSampledValue from "@/ui/components/3d-scene/useSampledValue";
+import { useTranslations } from "next-intl";
 
-const COMMAND_COLOR = "#ef6c00";
-const SENSOR_COLOR = "#2e7d32";
-const START_GREEN = "#2e7d32";
 /** Lamps flow by column: the three commands, then the two limit switches. */
 const LAMP_ROWS = 3;
 const LAMPS = [
@@ -50,22 +47,6 @@ export default function DrillingControls({
 	const tLamps = useTranslations("scene3d.drilling.lamps");
 	const startPressed = useSampledValue(sample, selectStartPressed, false);
 	const lit = useSampledValue(sample, selectLamps, "").split(",");
-	const startHeld = useRef(false);
-
-	useEffect(() => {
-		if (!interactive) startHeld.current = false;
-	}, [interactive]);
-
-	const pressStart = () => {
-		if (!interactive || startHeld.current) return;
-		startHeld.current = true;
-		send({ type: "pressStart" });
-	};
-	const releaseStart = () => {
-		if (!startHeld.current) return;
-		startHeld.current = false;
-		send({ type: "releaseStart" });
-	};
 
 	return (
 		<ConsolePanels>
@@ -78,34 +59,12 @@ export default function DrillingControls({
 						gap: 12,
 					}}
 				>
-					<button
-						type="button"
-						disabled={!interactive}
-						style={{
-							...consoleButtonStyle,
-							cursor: interactive ? "pointer" : "default",
-						}}
-						onPointerDown={(event) => {
-							if (event.button === 0) pressStart();
-						}}
-						onPointerUp={releaseStart}
-						onPointerLeave={releaseStart}
-						onPointerCancel={releaseStart}
-						onBlur={releaseStart}
-						onKeyDown={(event) => {
-							if (event.key === " " || event.key === "Enter") pressStart();
-						}}
-						onKeyUp={(event) => {
-							if (event.key === " " || event.key === "Enter") releaseStart();
-						}}
-					>
-						<PushButtonIllustration
-							color={START_GREEN}
-							pressed={startPressed}
-							disabled={!interactive}
-						/>
-						{t("startCycle")}
-					</button>
+					<StartHoldButton
+						interactive={interactive}
+						pressed={startPressed}
+						label={t("startCycle")}
+						send={send}
+					/>
 					<div
 						style={{
 							display: "grid",
@@ -115,19 +74,12 @@ export default function DrillingControls({
 						}}
 					>
 						{LAMPS.map(({ id, color }, i) => (
-							<span
+							<LampWithLegend
 								key={id}
-								style={{
-									display: "flex",
-									alignItems: "center",
-									gap: 6,
-									font: "12px system-ui, sans-serif",
-									color: "#37474f",
-								}}
-							>
-								<Lamp on={lit[i] === "true"} color={color} label={tLamps(id)} />
-								{tLamps(id)}
-							</span>
+								on={lit[i] === "true"}
+								color={color}
+								label={tLamps(id)}
+							/>
 						))}
 					</div>
 				</div>

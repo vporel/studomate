@@ -313,6 +313,32 @@ describe("StepReferralTargetAnalyser", () => {
 			return { referralTarget, downstreamStep, referralSource, referralToStep };
 		}
 
+		it("signale une erreur si aucune source de renvoi ne vise l'étape aval", () => {
+			const { referralTarget, downstreamStep, referralToStep } =
+				buildReferralPair("referral-err", 1);
+			const step1 = new StepBuilder().id("step-1").number(1).build();
+			const grafcet = new GrafcetBuilder()
+				.addSteps(step1, downstreamStep)
+				.addStepReferralTarget(referralTarget)
+				.addConnection(referralToStep)
+				.build();
+
+			const issues = analyser.analyseInContext(
+				referralTarget,
+				grafcet,
+				analyserEnvironment(),
+			);
+
+			const noTenant = issues.find(
+				(i) => i.code === "STEP_REFERRAL_NO_UPSTREAM_TENANT",
+			);
+			expect(noTenant).toBeDefined();
+			expect(noTenant?.severity).toBe("error");
+			expect(
+				issues.find((i) => i.code === "STEP_REFERRAL_TENANT_NO_PREDECESSOR"),
+			).toBeUndefined();
+		});
+
 		it("signale une erreur si le tenant n'a aucun prédécesseur", () => {
 			const { referralTarget, downstreamStep, referralSource, referralToStep } =
 				buildReferralPair("referral-err", 1);

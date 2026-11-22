@@ -5,13 +5,15 @@
 	"languageSwitch": {
 		"label": "Language",
 		"fr": "Français",
-		"en": "English"
+		"en": "English",
+		"es": "Español"
 	},
 	"language": {
 		"label": "Language",
 		"description": "Language of the application interface.",
 		"fr": "French",
-		"en": "English"
+		"en": "English",
+		"es": "Spanish"
 	},
 	"programExecution": {
 		"badge": "Not executed",
@@ -28,5 +30,9 @@
 		"notExecutedBody": "The analyser of this program has been disabled: its expressions are not validated and it is neither compiled nor simulated. None of its steps becomes active and it drives no output.",
 		"notExecutedEnable": "To enable it again, stop the simulation, then click \"Enable analyser\" in the program's toolbar.",
 		"close": "Got it"
+	},
+	"defaultContent": {
+		"projectName": "New project",
+		"hmiPageName": "HMI page"
 	}
 }

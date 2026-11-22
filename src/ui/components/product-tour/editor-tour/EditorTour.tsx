@@ -4,12 +4,12 @@ import {
 	setEditorTourSeen,
 	type EditorTourKind,
 } from "@/persistence/preferences.storage";
-import useCanEdit from "@/ui/components/projects/useCanEdit";
-import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import { shouldStartEditorTour } from "@/ui/components/product-tour/engine/tour-eligibility";
 import useAutoStartTour from "@/ui/components/product-tour/engine/useAutoStartTour";
 import useStartTour from "@/ui/components/product-tour/engine/useStartTour";
+import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
 import { useCallback } from "react";
-import shouldStartEditorTour from "./editor-tour-eligibility";
 import EDITOR_TOUR_STEP_BUILDERS, {
 	isEditorTourKind,
 } from "./editor-tour-step-builders";
@@ -40,7 +40,7 @@ const EditorTour = () => {
 	const pageType = useProjectStore((state) =>
 		state.activePageId ? state.pagesData[state.activePageId]?.type : undefined,
 	);
-	const canEdit = useCanEdit();
+	const canEdit = useCanEditActivePage();
 
 	if (!activePageId || !canEdit || !isEditorTourKind(pageType)) return null;
 	return (

@@ -21,10 +21,12 @@ export default function CrossroadsScene({ sample }: SceneComponentProps) {
 	const crashRef = useRef<CrossroadsState["crash"]>(null);
 	const [accidents, setAccidents] = useState(0);
 	const accidentsRef = useRef(0);
-	const read = () => sample() as CrossroadsState | null;
+	const frameState = useRef<CrossroadsState | null>(null);
 
+	// Negative priority: runs before the children's frame callbacks, which read `frameState`.
 	useFrame(() => {
-		const state = read();
+		const state = sample() as CrossroadsState | null;
+		frameState.current = state;
 		if (!state) return;
 		if (crashMarker.current) {
 			crashMarker.current.visible = !!state.crash;
@@ -38,13 +40,13 @@ export default function CrossroadsScene({ sample }: SceneComponentProps) {
 			accidentsRef.current = state.accidents;
 			setAccidents(state.accidents);
 		}
-	});
+	}, -1);
 
 	return (
 		<group position={SCENE_ORIGIN}>
 			<CrossroadsRoad />
-			<CrossroadsLights read={() => read()?.lights ?? null} />
-			<CrossroadsCars read={() => read()?.lanes ?? null} />
+			<CrossroadsLights read={() => frameState.current?.lights ?? null} />
+			<CrossroadsCars read={() => frameState.current?.lanes ?? null} />
 
 			<group
 				ref={crashMarker}

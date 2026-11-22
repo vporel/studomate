@@ -37,7 +37,7 @@ export function glossaryFigureSrc(
 	translatable: boolean,
 	locale: Locale,
 ): string {
-	const suffix = translatable && locale === "en" ? "-en" : "";
+	const suffix = translatable && locale !== "fr" ? `-${locale}` : "";
 	return `/glossary/${section}/${name}${suffix}.svg`;
 }
 

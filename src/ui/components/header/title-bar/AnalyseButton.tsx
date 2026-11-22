@@ -3,6 +3,7 @@ import AnalyseIcon from "@mui/icons-material/Rule";
 import { Button } from "@mui/material";
 import { useMemo } from "react";
 import { useT } from "@/ui/i18n/useT";
+import { MODE_CONTROL_HEIGHT } from "./mode-control-style";
 
 const AnalyseButton = () => {
 	const analysisHasErrors = useProjectStore((state) => state.analysisHasErrors);
@@ -21,7 +22,7 @@ const AnalyseButton = () => {
 		<Button
 			variant="text"
 			startIcon={<AnalyseIcon />}
-			sx={{ color, height: 25 }}
+			sx={{ color, height: MODE_CONTROL_HEIGHT }}
 			onClick={() => simulationManager.analyze()}
 		>
 			{t("analyse")}

@@ -154,41 +154,158 @@ describe("TrainingProgressRepository", () => {
 	});
 
 	describe("saveStepId", () => {
-		it("sans utilisateur connecté, écrit dans le localStorage uniquement", async () => {
-			mockAuthGetUser.mockResolvedValue({ data: { user: null } });
-			setLocal({ other: "s1" });
+		const localProgress = () =>
+			JSON.parse(localStorage.getItem(TRAINING_PROGRESS_LOCAL_KEY)!);
 
-			await new TrainingProgressRepository().saveStepId("m1", "s3");
-
-			expect(
-				JSON.parse(localStorage.getItem(TRAINING_PROGRESS_LOCAL_KEY)!),
-			).toEqual({
-				other: { stepId: "s1", updatedAt: null },
-				m1: { stepId: "s3", updatedAt: expect.any(String) },
+		/** Cloud table holding `saved` as the module's step (`null`: no row) and recording upserts. */
+		function cloudWith(saved: string | null, readError: object | null = null) {
+			const upsert = jest.fn(() => resolved({ data: null, error: null }));
+			mockFrom.mockReturnValue({
+				select: () =>
+					resolved({
+						data: saved ? { step_id: saved } : null,
+						error: readError,
+					}),
+				upsert,
 			});
-			expect(mockFrom).not.toHaveBeenCalled();
+			return upsert;
+		}
+
+		describe("sans utilisateur connecté", () => {
+			beforeEach(() =>
+				mockAuthGetUser.mockResolvedValue({ data: { user: null } }),
+			);
+
+			it("écrit dans le localStorage uniquement", async () => {
+				setLocal({ other: "s1" });
+
+				await new TrainingProgressRepository().saveStepId("m1", "s3", STEPS);
+
+				expect(localProgress()).toEqual({
+					other: { stepId: "s1", updatedAt: null },
+					m1: { stepId: "s3", updatedAt: expect.any(String) },
+				});
+				expect(mockFrom).not.toHaveBeenCalled();
+			});
+
+			it("remplace une étape locale moins avancée", async () => {
+				setLocal({ m1: "s2" });
+
+				await new TrainingProgressRepository().saveStepId("m1", "s3", STEPS);
+
+				expect(localProgress().m1.stepId).toBe("s3");
+			});
+
+			it("ne redescend pas sous une étape locale plus avancée", async () => {
+				setLocal({ m1: "s4" });
+
+				await new TrainingProgressRepository().saveStepId("m1", "s2", STEPS);
+
+				expect(localProgress()).toEqual({ m1: "s4" });
+			});
+
+			it("ne touche pas à une étape locale identique", async () => {
+				setLocal({ m1: "s3" });
+
+				await new TrainingProgressRepository().saveStepId("m1", "s3", STEPS);
+
+				expect(localProgress().m1.stepId).toBe("s3");
+			});
+
+			it("ignore une étape qui ne fait pas partie du module", async () => {
+				setLocal({ m1: "s2" });
+
+				await new TrainingProgressRepository().saveStepId(
+					"m1",
+					"inconnue",
+					STEPS,
+				);
+
+				expect(localProgress()).toEqual({ m1: "s2" });
+			});
+
+			it("remplace une étape locale inconnue du module", async () => {
+				setLocal({ m1: "retiree" });
+
+				await new TrainingProgressRepository().saveStepId("m1", "s2", STEPS);
+
+				expect(localProgress().m1.stepId).toBe("s2");
+			});
 		});
 
-		it("avec un utilisateur connecté, écrit dans le localStorage et upsert dans le cloud", async () => {
-			signedIn();
-			const upsert = jest.fn(() => resolved({ data: null, error: null }));
-			mockFrom.mockReturnValue({ upsert });
+		describe("avec un utilisateur connecté", () => {
+			beforeEach(() => signedIn());
 
-			await new TrainingProgressRepository().saveStepId("m1", "s3");
+			it("écrit dans le localStorage et upsert dans le cloud", async () => {
+				const upsert = cloudWith(null);
 
-			expect(
-				JSON.parse(localStorage.getItem(TRAINING_PROGRESS_LOCAL_KEY)!),
-			).toEqual({
-				m1: { stepId: "s3", updatedAt: expect.any(String) },
+				await new TrainingProgressRepository().saveStepId("m1", "s3", STEPS);
+
+				expect(localProgress()).toEqual({
+					m1: { stepId: "s3", updatedAt: expect.any(String) },
+				});
+				expect(mockFrom).toHaveBeenCalledWith("training_progress");
+				expect(upsert).toHaveBeenCalledWith(
+					expect.objectContaining({
+						user_id: "u1",
+						module_id: "m1",
+						step_id: "s3",
+					}),
+				);
 			});
-			expect(mockFrom).toHaveBeenCalledWith("training_progress");
-			expect(upsert).toHaveBeenCalledWith(
-				expect.objectContaining({
-					user_id: "u1",
-					module_id: "m1",
-					step_id: "s3",
-				}),
-			);
+
+			it("n'écrit nulle part quand le cloud est plus avancé", async () => {
+				setLocal({ m1: "s1" });
+				const upsert = cloudWith("s4");
+
+				await new TrainingProgressRepository().saveStepId("m1", "s2", STEPS);
+
+				expect(localProgress()).toEqual({ m1: "s1" });
+				expect(upsert).not.toHaveBeenCalled();
+			});
+
+			it("n'écrit nulle part quand le local est plus avancé, sans interroger le cloud", async () => {
+				setLocal({ m1: "s4" });
+				const upsert = cloudWith("s1");
+
+				await new TrainingProgressRepository().saveStepId("m1", "s2", STEPS);
+
+				expect(localProgress()).toEqual({ m1: "s4" });
+				expect(upsert).not.toHaveBeenCalled();
+				expect(mockFrom).not.toHaveBeenCalled();
+			});
+
+			it("écrit des deux côtés quand l'étape dépasse le local et le cloud", async () => {
+				setLocal({ m1: "s1" });
+				const upsert = cloudWith("s2");
+
+				await new TrainingProgressRepository().saveStepId("m1", "s3", STEPS);
+
+				expect(localProgress().m1.stepId).toBe("s3");
+				expect(upsert).toHaveBeenCalledWith(
+					expect.objectContaining({ step_id: "s3" }),
+				);
+			});
+
+			it("en cas d'erreur de lecture du cloud, écrit le local sans tenter le cloud", async () => {
+				setLocal({ m1: "s1" });
+				const upsert = cloudWith(null, { message: "réseau" });
+
+				await new TrainingProgressRepository().saveStepId("m1", "s3", STEPS);
+
+				expect(localProgress().m1.stepId).toBe("s3");
+				expect(upsert).not.toHaveBeenCalled();
+			});
+
+			it("en cas d'erreur de lecture du cloud, ne redescend pas sous le local", async () => {
+				setLocal({ m1: "s4" });
+				const upsert = cloudWith(null, { message: "réseau" });
+
+				await new TrainingProgressRepository().saveStepId("m1", "s2", STEPS);
+
+				expect(localProgress()).toEqual({ m1: "s4" });
+				expect(upsert).not.toHaveBeenCalled();
+			});
 		});
 	});
 

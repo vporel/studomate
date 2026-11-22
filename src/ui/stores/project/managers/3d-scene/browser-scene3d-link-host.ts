@@ -1,29 +1,17 @@
 import { createBrowserSceneTransport } from "@/3d-scenes/link/scene-channel";
 import { createRandomId } from "@/ids";
+import {
+	getStoredScene3dSessionId,
+	setStoredScene3dSessionId,
+} from "@/persistence/scene3d-session.storage";
 import routes from "@/app/routes";
 import trackEvent from "@/ui/services/analytics";
 import type { ProjectStoreGetFunction } from "@/ui/stores/project/project.store.types";
 import type { Scene3dLinkHost } from "./scene3d-link.manager";
 
-const SESSION_STORAGE_KEY = "studomate:3d-scene-session";
+const LOCK_NAME_PREFIX = "studomate:3d-scene-session";
 
-const lockName = (id: string) => `${SESSION_STORAGE_KEY}:${id}`;
-
-function readStoredSessionId(): string | null {
-	try {
-		return sessionStorage.getItem(SESSION_STORAGE_KEY);
-	} catch {
-		return null;
-	}
-}
-
-function storeSessionId(id: string): void {
-	try {
-		sessionStorage.setItem(SESSION_STORAGE_KEY, id);
-	} catch {
-		// the id then only lives in memory for this page
-	}
-}
+const lockName = (id: string) => `${LOCK_NAME_PREFIX}:${id}`;
 
 /** Holds the lock until the page is destroyed, when the browser releases it. */
 function holdSessionLock(id: string, options?: LockOptions): void {
@@ -43,10 +31,10 @@ let pageSessionId: string | null = null;
  */
 function claimPageSession(): string {
 	if (pageSessionId) return pageSessionId;
-	const stored = readStoredSessionId();
+	const stored = getStoredScene3dSessionId();
 	const candidate = stored ?? createRandomId();
 	pageSessionId = candidate;
-	if (!stored) storeSessionId(candidate);
+	if (!stored) setStoredScene3dSessionId(candidate);
 	if (typeof navigator === "undefined" || !navigator.locks) return candidate;
 	void navigator.locks.request(
 		lockName(candidate),
@@ -55,7 +43,7 @@ function claimPageSession(): string {
 			if (lock) return new Promise<void>(() => {});
 			const fresh = createRandomId();
 			pageSessionId = fresh;
-			storeSessionId(fresh);
+			setStoredScene3dSessionId(fresh);
 			holdSessionLock(fresh);
 			return undefined;
 		},

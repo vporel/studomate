@@ -46,6 +46,25 @@ describe("ArithmeticBlockAnalyser", () => {
 		]);
 	});
 
+	it("signale un opérateur invalide avec sa valeur", () => {
+		const issues = ArithmeticBlockAnalyser.analyse(
+			createArithmeticBlockElement(0, 0, {
+				in1: "a",
+				in2: "b",
+				out: "c",
+				operator: "%" as ArithmeticBlockParams["operator"],
+			}),
+			source,
+			Dialect.FR,
+			buildAnalysisEnvironment(ints("a", "b", "c"), Dialect.FR),
+		);
+
+		expect(issues.map((i) => i.code)).toEqual([
+			"BLOCK_ARITHMETIC_OPERATOR_INVALID",
+		]);
+		expect(issues[0].params).toEqual({ operator: "%" });
+	});
+
 	it("accepte out := in1 + in2 sur des entiers", () => {
 		expect(
 			analyse(

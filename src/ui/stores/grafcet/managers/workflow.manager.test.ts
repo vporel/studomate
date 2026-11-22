@@ -4,6 +4,7 @@ import ActionBuilder from "@/schemas/grafcet/builders/action.builder";
 import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import JunctionAndStartBuilder from "@/schemas/grafcet/builders/junction-and-start.builder";
+import Step from "@/schemas/grafcet/step.schema";
 import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import StepReferralSourceBuilder from "@/schemas/grafcet/builders/step-referral-source.builder";
 import StepReferralTargetBuilder from "@/schemas/grafcet/builders/step-referral-target.builder";
@@ -414,7 +415,7 @@ describe("GrafcetWorkflowManager.addActionToStep", () => {
 });
 
 describe("GrafcetWorkflowManager.addTransitionAfterStep", () => {
-	it("ajoute une transition à y+50 (même x) et la connecte à l'étape", () => {
+	it("ajoute une transition à 10px sous l'étape (même x) et la connecte à l'étape", () => {
 		const store = buildStore(); // step-1 en (0, 0), sans aval
 
 		store.getState().workflowManager.addTransitionAfterStep("step-1");
@@ -495,7 +496,7 @@ describe("GrafcetWorkflowManager.addStepAfterTransition", () => {
 		);
 	}
 
-	it("ajoute une étape à y+50 (même x), numéro suivant disponible, connectée à la transition", () => {
+	it("ajoute une étape à 10px sous la transition (même x), numéro suivant disponible, connectée à la transition", () => {
 		const store = buildStoreWithTransition();
 
 		store.getState().workflowManager.addStepAfterTransition("tr-1");
@@ -505,7 +506,8 @@ describe("GrafcetWorkflowManager.addStepAfterTransition", () => {
 			.getElementsByType("step")
 			.find((s) => s.id !== "step-1")!;
 		expect(newStep).toBeDefined();
-		expect(newStep.position).toEqual({ x: 0, y: 100 });
+		// transition at y=50, height 30
+		expect(newStep.position).toEqual({ x: 0, y: 90 });
 		expect(newStep.data.number).toBe(2);
 
 		const connection = grafcet.getConnection("tr-1", newStep.id);
@@ -1218,6 +1220,44 @@ describe("GrafcetWorkflowManager.handleNodesChange: actions follow their step", 
 
 		expect(elementPosition(store, "a1")).toEqual({ x: 180, y: 1300 });
 		expect(elementPosition(store, "a2").y).toBe(1358);
+	});
+
+	it("pins an action taller than the page to the top edge", () => {
+		const grafcet = new GrafcetBuilder()
+			.addStep(
+				new StepBuilder()
+					.id("s")
+					.number(1)
+					.initial()
+					.position(100, 100)
+					.build(),
+			)
+			.addAction(
+				new ActionBuilder()
+					.id("tall")
+					.position(180, 100 + Step.DEFAULT_DIMENSIONS.height / 2 - 750)
+					.dimensions(80, 1500)
+					.build(),
+			)
+			.addConnection(
+				new ConnectionBuilder()
+					.id("c")
+					.source("step", "s", "source:action")
+					.target("action", "tall", "target:predecessor")
+					.build(),
+			)
+			.build();
+		const store = createGrafcetStore(
+			grafcet,
+			new CommandsStack<Grafcet>(100),
+			() => Dialect.FR,
+		);
+		const { workflowManager } = store.getState();
+
+		workflowManager.handleNodesChange([move("s", 100, 130, true)]);
+		workflowManager.handleNodesChange([move("s", 100, 130, false)]);
+
+		expect(elementPosition(store, "tall").y).toBe(0);
 	});
 
 	it("moves the actions with the step corrected by the automatic link", () => {

@@ -22,8 +22,8 @@ export default function useFlowContextMenu<TElement>(
 		(
 			event: React.MouseEvent | MouseEvent,
 			element: TElement,
-			//Champs supplémentaires fusionnés dans l'événement `show` — le ladder y met le
-			//`sectionId` pour que seule la section cliquée affiche son menu (bus mitt partagé).
+			//Extra fields merged into the `show` event: lets the emitter identify itself, for
+			//example, so that only its own menu opens (shared mitt bus).
 			extra?: Record<string, unknown>,
 		) => {
 			event.preventDefault();
@@ -31,7 +31,7 @@ export default function useFlowContextMenu<TElement>(
 			contextMenuEvents.emit("show", {
 				element,
 				position: screenToFlowPosition({ x: event.clientX, y: event.clientY }),
-				//Coordonnées écran brutes : le collage (grafcet/ladder) en a besoin tel quel
+				//Raw screen coordinates: pasting needs them as they are
 				//(`elementsFromPoint`, `rfInstance.screenToFlowPosition`).
 				screenPosition: { x: event.clientX, y: event.clientY },
 				...extra,

@@ -82,10 +82,14 @@ describe("SidePanel", () => {
 
 	it("gives the scene the share of the height remembered by the browser", () => {
 		localStorage.setItem("studomate_side_panel_scene_share", "70");
+		const rectSpy = jest
+			.spyOn(Element.prototype, "getBoundingClientRect")
+			.mockReturnValue({ width: 400, height: 1000 } as DOMRect);
 		setup({ sidePanelVisible: true, watchTablesVisible: true });
 		expect(screen.getByTestId("scene").parentElement).toHaveStyle({
 			height: "70%",
 		});
+		rectSpy.mockRestore();
 	});
 
 	it("keeps the scene mounted when the watch tables open", () => {

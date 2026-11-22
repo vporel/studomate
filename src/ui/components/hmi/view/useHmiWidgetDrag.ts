@@ -9,6 +9,7 @@ import {
 import { useHmiStore } from "@/ui/components/hmi/HmiContext";
 import { MouseEvent as ReactMouseEvent, useCallback, useRef } from "react";
 import { snapToGrid } from "@/ui/components/hmi/logic/constants";
+import useGestureCleanup from "./useGestureCleanup";
 
 export interface HmiDragPreview {
 	widgetIds: string[];
@@ -28,6 +29,7 @@ export default function useHmiWidgetDrag(
 	onPreviewChange: (preview: HmiDragPreview | null) => void,
 ) {
 	const moveWidgets = useHmiStore((s) => s.moveWidgets);
+	const cleanup = useGestureCleanup();
 
 	const dragState = useRef<{
 		widgetIds: string[];
@@ -43,6 +45,7 @@ export default function useHmiWidgetDrag(
 
 	return useCallback(
 		(e: ReactMouseEvent, group: HmiWidget[]) => {
+			cleanup.current?.();
 			const minX = Math.min(...group.map((w) => w.position.x));
 			const minY = Math.min(...group.map((w) => w.position.y));
 			const maxX = Math.max(...group.map((w) => w.position.x + w.size.width));
@@ -89,6 +92,7 @@ export default function useHmiWidgetDrag(
 				dragState.current = null;
 				window.removeEventListener("mousemove", onMouseMove);
 				window.removeEventListener("mouseup", onMouseUp);
+				cleanup.current = null;
 				onPreviewChange(null);
 				if (!drag) return;
 				const { dx, dy } = clampedDelta(upEvent.clientX, upEvent.clientY, drag);
@@ -97,7 +101,12 @@ export default function useHmiWidgetDrag(
 
 			window.addEventListener("mousemove", onMouseMove);
 			window.addEventListener("mouseup", onMouseUp);
+			cleanup.current = () => {
+				dragState.current = null;
+				window.removeEventListener("mousemove", onMouseMove);
+				window.removeEventListener("mouseup", onMouseUp);
+			};
 		},
-		[zoom, onPreviewChange, moveWidgets],
+		[zoom, onPreviewChange, moveWidgets, cleanup],
 	);
 }

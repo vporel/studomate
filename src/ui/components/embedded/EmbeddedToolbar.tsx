@@ -1,17 +1,18 @@
 "use client";
 
 import { useT } from "@/ui/i18n/useT";
-import { canEdit } from "@/ui/stores/project/editability";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
+import { canEditActivePage } from "@/ui/stores/project/editability";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
+import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { Box, IconButton, Tooltip } from "@mui/material";
 import RedoTool from "../app-toolbar/RedoTool";
 import UndoTool from "../app-toolbar/UndoTool";
 import AnalyseButton from "../header/title-bar/AnalyseButton";
-import ProjectModeSwitcher from "../header/title-bar/ProjectModeSwitcher";
 import SimulationControls from "../header/title-bar/SimulationControls";
+import SimulationIndicator from "../header/title-bar/SimulationIndicator";
 import SimulationModeSelect from "../header/title-bar/SimulationModeSelect";
+import SimulationToggleButton from "../header/title-bar/SimulationToggleButton";
 import { useProjectContext, useProjectStore } from "../projects/ProjectContext";
 import EmbeddedDialectSelect from "./EmbeddedDialectSelect";
 import type { EmbeddedAppProps, EmbeddedControl } from "./embedded-app.types";
@@ -41,7 +42,7 @@ export default function EmbeddedToolbar({
 }: EmbeddedToolbarProps) {
 	const t = useT("embedded.fullscreen");
 	const tApp = useT("embedded.app");
-	const editable = useProjectStore(canEdit);
+	const editable = useProjectStore(canEditActivePage);
 	const editingEnabled = useProjectStore((state) => state.editingEnabled);
 	const store = useProjectContext();
 	const has = (control: EmbeddedControl) => controls.includes(control);
@@ -70,12 +71,8 @@ export default function EmbeddedToolbar({
 			}}
 		>
 			{has("analysis") && editingEnabled && <AnalyseButton />}
-			{has("mode") && (
-				<ProjectModeSwitcher
-					withBoardModes={false}
-					designAvailable={editingEnabled}
-				/>
-			)}
+			{has("mode") && editingEnabled && <SimulationToggleButton />}
+			{has("mode") && !editingEnabled && <SimulationIndicator />}
 			{has("simulation") && (
 				<Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
 					<SimulationModeSelect />

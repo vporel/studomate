@@ -172,6 +172,48 @@ describe("SemanticAnalyserVisitor", () => {
 		});
 	});
 
+	describe("operand type error details", () => {
+		const message = (expression: string) => {
+			try {
+				parseAndCheck(expression);
+			} catch (e) {
+				return (e as Error).message;
+			}
+			return "";
+		};
+
+		it("names the left side for an arithmetic left operand", () => {
+			expect(message("flag + 5")).toContain(
+				"on the left side: expected number",
+			);
+		});
+
+		it("names the right side for an arithmetic right operand", () => {
+			expect(message("5 + flag")).toContain(
+				"on the right side: expected number",
+			);
+		});
+
+		it("reports the left side first when both operands are wrong", () => {
+			expect(message("flag + VRAI")).toContain("on the left side");
+		});
+
+		it("expects numbers for an ordered comparison", () => {
+			expect(message("flag < VRAI")).toContain(
+				"on the left side: expected number",
+			);
+		});
+
+		it("expects booleans for a logical operator, left then right", () => {
+			expect(message("x ET VRAI")).toContain(
+				"on the left side: expected boolean",
+			);
+			expect(message("VRAI ET x")).toContain(
+				"on the right side: expected boolean",
+			);
+		});
+	});
+
 	describe("comparison expressions", () => {
 		it("throws on incompatible types", () => {
 			expect(() => parseAndCheck("x = flag")).toThrow(
@@ -401,8 +443,7 @@ describe("SemanticAnalyserVisitor", () => {
 						down.lastInput ?? IdentifiersBuilder.buildIdentifierNode("flag"),
 					load: IdentifiersBuilder.buildIdentifierNode(down.load ?? "flag"),
 					output:
-						down.output ??
-						IdentifiersBuilder.buildIdentifierNode("boolResult"),
+						down.output ?? IdentifiersBuilder.buildIdentifierNode("boolResult"),
 				},
 			);
 
@@ -479,7 +520,9 @@ describe("SemanticAnalyserVisitor : typage IEC 61131-3", () => {
 		});
 
 		it("refuse DINT avec REAL sans conversion", () => {
-			expect(() => analyse("r := d * r")).toThrow(IncompatibleNumericTypesException);
+			expect(() => analyse("r := d * r")).toThrow(
+				IncompatibleNumericTypesException,
+			);
 		});
 
 		it("refuse une constante réelle avec un entier", () => {
@@ -489,12 +532,16 @@ describe("SemanticAnalyserVisitor : typage IEC 61131-3", () => {
 		});
 
 		it("refuse une constante hors de la plage du type de l'autre opérande", () => {
-			expect(() => analyse("i := i + 40000")).toThrow(ConstantOutOfRangeException);
+			expect(() => analyse("i := i + 40000")).toThrow(
+				ConstantOutOfRangeException,
+			);
 		});
 
 		it("refuse l'arithmétique sur une chaîne de bits, y compris la négation", () => {
 			expect(() => analyse("w := w + 1")).toThrow(BitStringArithmeticException);
-			expect(() => analyse("b := -w = 0")).toThrow(BitStringArithmeticException);
+			expect(() => analyse("b := -w = 0")).toThrow(
+				BitStringArithmeticException,
+			);
 		});
 
 		it("TIME : additionne deux durées, multiplie une durée par un nombre", () => {
@@ -521,8 +568,12 @@ describe("SemanticAnalyserVisitor : typage IEC 61131-3", () => {
 		});
 
 		it("refuse des types incompatibles", () => {
-			expect(() => analyse("b := i = w")).toThrow(IncompatibleNumericTypesException);
-			expect(() => analyse("b := d < r")).toThrow(IncompatibleNumericTypesException);
+			expect(() => analyse("b := i = w")).toThrow(
+				IncompatibleNumericTypesException,
+			);
+			expect(() => analyse("b := d < r")).toThrow(
+				IncompatibleNumericTypesException,
+			);
 			expect(() => analyse("b := t > 2000")).toThrow(
 				IncompatibleNumericTypesException,
 			);
@@ -538,14 +589,24 @@ describe("SemanticAnalyserVisitor : typage IEC 61131-3", () => {
 		});
 
 		it("exige une conversion explicite pour rétrécir", () => {
-			expect(() => analyse("i := d")).toThrow(ExplicitConversionRequiredException);
-			expect(() => analyse("i := r")).toThrow(ExplicitConversionRequiredException);
-			expect(() => analyse("r := d")).toThrow(ExplicitConversionRequiredException);
-			expect(() => analyse("i := w")).toThrow(ExplicitConversionRequiredException);
+			expect(() => analyse("i := d")).toThrow(
+				ExplicitConversionRequiredException,
+			);
+			expect(() => analyse("i := r")).toThrow(
+				ExplicitConversionRequiredException,
+			);
+			expect(() => analyse("r := d")).toThrow(
+				ExplicitConversionRequiredException,
+			);
+			expect(() => analyse("i := w")).toThrow(
+				ExplicitConversionRequiredException,
+			);
 		});
 
 		it("évalue le type d'une expression, pas seulement celui des variables", () => {
-			expect(() => analyse("i := i * d")).toThrow(ExplicitConversionRequiredException);
+			expect(() => analyse("i := i * d")).toThrow(
+				ExplicitConversionRequiredException,
+			);
 		});
 
 		it("refuse une constante hors plage, y compris repliée", () => {
@@ -557,7 +618,9 @@ describe("SemanticAnalyserVisitor : typage IEC 61131-3", () => {
 		});
 
 		it("refuse une constante réelle dans un entier", () => {
-			expect(() => analyse("i := 2.5")).toThrow(ExplicitConversionRequiredException);
+			expect(() => analyse("i := 2.5")).toThrow(
+				ExplicitConversionRequiredException,
+			);
 		});
 	});
 

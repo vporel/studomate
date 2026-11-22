@@ -20,6 +20,7 @@ import {
 import HmiPage from "@/schemas/hmi/hmi-page.schema";
 import { HmiWidget, IndicatorData } from "@/schemas/hmi/hmi-widget.schema";
 import CrossroadsDescriptor from "@/3d-scenes/crossroads/v1/crossroads.descriptor";
+import { buildSuggestedScene3d } from "@/3d-scenes/scene3d-wiring";
 import Project from "@/schemas/project/project.schema";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import { createRandomId } from "@/ids";
@@ -94,19 +95,10 @@ export function createCrossroadsProject(locale: Locale = "fr"): Project {
 		);
 	}
 
-	const variableIdByMnemonic = new Map(
-		project.variables.map((variable) => [variable.mnemonic, variable.id]),
+	project.scene3d = buildSuggestedScene3d(
+		CrossroadsDescriptor,
+		project.variables,
 	);
-	project.scene3d = {
-		sceneId: CrossroadsDescriptor.id,
-		sceneVersion: CrossroadsDescriptor.version,
-		bindings: Object.fromEntries(
-			CrossroadsDescriptor.points.map((point) => [
-				point.id,
-				variableIdByMnemonic.get(point.suggestedMnemonic)!,
-			]),
-		),
-	};
 
 	// — Page HMI ——————————————————————————————————————————————————————————
 	const page = new HmiPage(createRandomId(), t("hmiPageName"), true);

@@ -16,6 +16,12 @@ describe("parseFeedbackSubmission", () => {
 		).toEqual({ rating: 5, comment: "top", locale: "en" });
 	});
 
+	it("keeps the Spanish locale", () => {
+		expect(
+			parseFeedbackSubmission({ rating: 4, comment: "bien", locale: "es" }),
+		).toEqual({ rating: 4, comment: "bien", locale: "es" });
+	});
+
 	it("turns a blank comment into no comment and drops an unknown locale", () => {
 		expect(
 			parseFeedbackSubmission({ rating: 1, comment: "   ", locale: "de" }),

@@ -33,6 +33,15 @@ describe("Project — programme Main", () => {
 		expect(project.getProgram(ladder.id)).toBeUndefined();
 	});
 
+	it("deleteProgram ignore un identifiant inconnu et laisse le Main en place", () => {
+		const project = new Project("p1", "Projet", "");
+		const mainId = project.main.id;
+
+		expect(() => project.deleteProgram("inconnu")).not.toThrow();
+
+		expect(project.getProgram(mainId)).toBeDefined();
+	});
+
 	it("le Main apparaît dans project.ladders au même titre qu'un ladder standard", () => {
 		const project = new Project("p1", "Projet", "");
 

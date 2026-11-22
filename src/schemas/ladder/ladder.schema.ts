@@ -1,5 +1,6 @@
 import Program, { ProgramType } from "../program/program.schema";
 import { createRandomId } from "@/ids";
+import { getOwnPropertyValue } from "@/lib/object";
 import Connection, { ConnectionData } from "./connection.schema";
 import {
 	CoilData,
@@ -330,14 +331,17 @@ export default class Ladder extends Program {
 					const params = element.data.params as Record<string, unknown>;
 					for (const key of BLOCK_PIN_PARAM_KEYS) {
 						const pin = params[key];
-						if (typeof pin === "string" && renames[pin])
-							params[key] = renames[pin];
+						const newPin =
+							typeof pin === "string"
+								? getOwnPropertyValue(renames, pin)
+								: undefined;
+						if (newPin) params[key] = newPin;
 					}
 					return;
 				}
 				if (element.type !== "contact" && element.type !== "coil") return;
 				const data = element.data as ContactData | CoilData;
-				const newName = renames[data.variable];
+				const newName = getOwnPropertyValue(renames, data.variable);
 				if (newName) data.variable = newName;
 			});
 		});

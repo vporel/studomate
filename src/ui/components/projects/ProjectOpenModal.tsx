@@ -2,6 +2,8 @@
 
 import {
 	importProjectFromFile,
+	PROJECT_FILE_EXTENSION,
+	PROJECT_FILE_MIME_TYPE,
 	ProjectFileError,
 	type ProjectFileErrorReason,
 } from "@/persistence/project-file";
@@ -59,7 +61,7 @@ export default function ProjectOpenModal() {
 		if (typeof window !== "undefined" && window.showOpenFilePicker) {
 			try {
 				const handle = await openFileDialog(t("fileDialogName"), {
-					"application/json": [".json"],
+					[PROJECT_FILE_MIME_TYPE]: [PROJECT_FILE_EXTENSION],
 				});
 				if (!handle) return;
 				text = await readFile(handle);
@@ -68,7 +70,7 @@ export default function ProjectOpenModal() {
 				setError("read-failed");
 			}
 		} else {
-			text = await openFileViaInput(".json");
+			text = await openFileViaInput(PROJECT_FILE_EXTENSION);
 		}
 		if (!text) return;
 		let project: Project;

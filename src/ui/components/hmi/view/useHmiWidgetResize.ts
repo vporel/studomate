@@ -13,6 +13,7 @@ import {
 } from "@/schemas/hmi/hmi-widget.schema";
 import { useHmiStore } from "@/ui/components/hmi/HmiContext";
 import { MouseEvent as ReactMouseEvent, useCallback, useRef } from "react";
+import useGestureCleanup from "./useGestureCleanup";
 import {
 	HMI_WIDGET_DEFAULT_MIN_SIZE,
 	snapToGrid,
@@ -117,6 +118,7 @@ export default function useHmiWidgetResize(
 	onPreviewChange: (rect: HmiWidgetRect | null) => void,
 ) {
 	const updateWidget = useHmiStore((s) => s.updateWidget);
+	const cleanup = useGestureCleanup();
 
 	const resizeState = useRef<{
 		widgetId: string;
@@ -130,6 +132,7 @@ export default function useHmiWidgetResize(
 
 	return useCallback(
 		(e: ReactMouseEvent, widget: HmiWidget, direction: HmiResizeDirection) => {
+			cleanup.current?.();
 			const { minSize = HMI_WIDGET_DEFAULT_MIN_SIZE } =
 				HMI_WIDGET_DEFINITIONS[widget.type];
 			resizeState.current = {
@@ -171,6 +174,7 @@ export default function useHmiWidgetResize(
 				resizeState.current = null;
 				window.removeEventListener("mousemove", onMouseMove);
 				window.removeEventListener("mouseup", onMouseUp);
+				cleanup.current = null;
 				onPreviewChange(null);
 				if (!resize) return;
 				const { position, size } = rectAt(
@@ -182,7 +186,12 @@ export default function useHmiWidgetResize(
 			};
 			window.addEventListener("mousemove", onMouseMove);
 			window.addEventListener("mouseup", onMouseUp);
+			cleanup.current = () => {
+				resizeState.current = null;
+				window.removeEventListener("mousemove", onMouseMove);
+				window.removeEventListener("mouseup", onMouseUp);
+			};
 		},
-		[zoom, onPreviewChange, updateWidget],
+		[zoom, onPreviewChange, updateWidget, cleanup],
 	);
 }

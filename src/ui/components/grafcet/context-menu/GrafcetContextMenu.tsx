@@ -1,20 +1,20 @@
 "use client";
 
 import { getStepVariableId } from "@/project-analyser/analysers/grafcet/grafcet.analyser";
+import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
+import useProjectClipboard from "@/ui/components/projects/useProjectClipboard";
+import { useT } from "@/ui/i18n/useT";
+import type { MenuTranslate } from "@/ui/lib/context-menu/context-menu";
 import { ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";
 import ContextMenu from "@/ui/lib/context-menu/ContextMenu";
 import useContextMenuBus from "@/ui/lib/context-menu/useContextMenuBus";
 import useBooleanState from "@/ui/lib/hooks/useBooleanState";
+import useExportProgramPdf from "@/ui/pdf/useExportProgramPdf";
+import type { PdfExportProgramConfig } from "@/ui/pdf/usePdfExport";
 import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { XYPosition } from "@xyflow/react";
 import { useCallback, useMemo, useState } from "react";
-import { toast } from "react-toastify";
-import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import trackPdfExported from "@/ui/pdf/track-pdf-exported";
-import { useT } from "@/ui/i18n/useT";
-import useCanEdit from "@/ui/components/projects/useCanEdit";
-import useProjectClipboard from "@/ui/components/projects/useProjectClipboard";
-import type { MenuTranslate } from "@/ui/lib/context-menu/context-menu";
 import { useGrafcetContext, useGrafcetStore } from "../context/GrafcetContext";
 import {
 	GrafcetNodeType,
@@ -22,6 +22,7 @@ import {
 } from "../flow/grafcet-nodes-definitions";
 import { ActionNodeType } from "../nodes/ActionNode";
 import { StepNodeType } from "../nodes/StepNode";
+import { TransitionNodeType } from "../nodes/TransitionNode";
 import actionContextMenuItems from "./action-context-menu-items";
 import defaultContextMenuItems from "./default-context-menu-items";
 import {
@@ -32,7 +33,6 @@ import junctionContextMenuItems from "./junction-context-menu-items";
 import paneContextMenuItems from "./pane-context-menu-items";
 import stepContextMenuItems from "./step-context-menu-items";
 import transitionContextMenuItems from "./transition-context-menu-items";
-import { TransitionNodeType } from "../nodes/TransitionNode";
 
 /**
  *
@@ -62,30 +62,18 @@ const GrafcetContextMenu = ({
 	const canPaste = useProjectClipboard((s) => s.entry?.scope === "grafcet");
 	const grafcet = useGrafcetStore((state) => state.grafcet);
 	const grafcetId = grafcet.id;
+	const getExportConfig = useCallback(
+		(): PdfExportProgramConfig => ({ type: "grafcet", program: grafcet }),
+		[grafcet],
+	);
 	const inSimulation = useProjectStore(
 		(state) => state.mode === ProjectMode.SIMULATION,
 	);
-	const canEdit = useCanEdit();
-	const pdfExport = useProjectStore((state) => state.capabilities.pdfExport);
+	const canEdit = useCanEditActivePage();
+	const canExport = useProjectStore((state) => state.capabilities.export);
 	const simulationManager = useProjectStore((state) => state.simulationManager);
 	const forcedVariables = useProjectStore((state) => state.forcedVariables);
-	const projectName = useProjectStore(
-		(state) => state.project?.name ?? "export",
-	);
-
-	const tExport = useT("projects.export");
-	const onExport = useCallback(() => {
-		void import("@/ui/pdf/program-pdf")
-			.then(({ exportProgramPdf }) =>
-				exportProgramPdf({
-					config: { type: "grafcet", program: grafcet },
-					filename: `${projectName} - ${grafcet.name}`,
-					sectionTitle: tExport("sectionTitleGrafcet", { name: grafcet.name }),
-				}),
-			)
-			.then(() => trackPdfExported({ programs: 1, withVariablesTable: false }))
-			.catch(() => toast.error(tExport("errorAssembling")));
-	}, [grafcet, projectName, tExport]);
+	const onExport = useExportProgramPdf(getExportConfig);
 
 	const tMenuRaw = useT("grafcetEditor.menu");
 	const tActionTypesRaw = useT("grafcetEditor.actionTypes");
@@ -114,7 +102,7 @@ const GrafcetContextMenu = ({
 					screenPosition,
 					canPaste,
 					tMenu,
-					pdfExport ? onExport : null,
+					canExport ? onExport : null,
 				),
 			);
 		} else {
@@ -187,7 +175,7 @@ const GrafcetContextMenu = ({
 		screenPosition,
 		contextMenuEvents,
 		onExport,
-		pdfExport,
+		canExport,
 		inSimulation,
 		grafcet,
 		grafcetId,
@@ -204,7 +192,7 @@ const GrafcetContextMenu = ({
 		(props: GrafcetContextMenuProps) => {
 			const offersSomething =
 				props.element.type === "pane"
-					? canEdit || pdfExport
+					? canEdit || canExport
 					: canEdit || inSimulation;
 			if (!offersSomething) return;
 			setElement(props.element);
@@ -212,7 +200,7 @@ const GrafcetContextMenu = ({
 			setScreenPosition(props.screenPosition);
 			show();
 		},
-		[show, canEdit, pdfExport, inSimulation],
+		[show, canEdit, canExport, inSimulation],
 	);
 	useContextMenuBus(contextMenuEvents, showMenu, hide);
 

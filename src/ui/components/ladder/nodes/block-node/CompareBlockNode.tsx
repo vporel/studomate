@@ -7,8 +7,9 @@ import {
 } from "@/schemas/ladder/block.schema";
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
 import { useLadderStore } from "@/ui/components/ladder/context/LadderContext";
-import { useT } from "@/ui/i18n/useT";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
 import VariableSelector from "@/ui/components/variables/VariableSelector";
+import { useT } from "@/ui/i18n/useT";
 import {
 	GRID_CELL_HEIGHT,
 	GRID_CELL_WIDTH,
@@ -37,6 +38,7 @@ export default function CompareBlockNode({
 }) {
 	const th = useTheme();
 	const t = useT("ladderEditor.block");
+	const canEdit = useCanEditActivePage();
 	const highlighted = useLadderStore((state) =>
 		state.highlightedNodesIds?.includes(id),
 	);
@@ -129,6 +131,7 @@ export default function CompareBlockNode({
 					value={operator}
 					onChange={(next) => commit({ operator: next })}
 					operators={COMPARE_OPERATORS}
+					disabled={!canEdit}
 					ariaLabel={t("compareOperatorAria")}
 				/>
 			</Box>

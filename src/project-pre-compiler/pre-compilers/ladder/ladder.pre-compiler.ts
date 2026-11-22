@@ -45,15 +45,20 @@ export type PreCompiledCoilAssignment = {
 	mode: CoilType;
 	condition: ASTNode;
 	/**
-	 * Renseigné pour une bobine qui n'est ni de front ni sans connexion entrante : `reachId`
-	 * identifie les connexions entrantes, donc la condition d'alimentation `reach` que partagent
-	 * les bobines d'un même départ de branches parallèles ; `inverted` indique que `condition`
-	 * est la négation de `reach`. `LadderCompiler` évalue `reach` une seule fois pour toutes les
-	 * bobines consécutives de même `reachId`, comme le résultat d'un réseau sur un automate.
+	 * Renseigné pour une bobine qui a une connexion entrante : `reachId` identifie ces
+	 * connexions, donc la condition d'alimentation `reach` que partagent les bobines d'un même
+	 * départ de branches parallèles ; `inverted` indique que `condition` est la négation de
+	 * `reach`. `LadderCompiler` évalue `reach` une seule fois pour toutes les bobines
+	 * consécutives de même `reachId`, comme le résultat d'un réseau sur un automate.
 	 */
 	reachId?: string;
 	reach?: ASTNode;
 	inverted?: boolean;
+	/**
+	 * Renseigné pour une bobine de front : la mémoire de `reach` du scan précédent est écrite par
+	 * l'affectation `contactEdge` qui suit immédiatement la bobine (`contactId` = `coilId`).
+	 */
+	edge?: { kind: "rising" | "falling"; memoMnemonic: string };
 };
 
 /**
@@ -253,7 +258,16 @@ function buildCoilAssignments(
 					memoNode,
 				);
 	return [
-		{ ...base, mode: "normal", condition: edge },
+		{
+			...base,
+			...shared,
+			edge: {
+				kind: type === "rising" ? "rising" : "falling",
+				memoMnemonic,
+			},
+			mode: "normal",
+			condition: edge,
+		},
 		{
 			kind: "contactEdge",
 			contactId: coil.id,

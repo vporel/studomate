@@ -59,6 +59,15 @@ describe("feedback-prompt service", () => {
 	});
 
 	describe("notifyFeedbackMilestone", () => {
+		it("does not ask on the first visit, even after a program and a simulation", () => {
+			visitOnDays(1);
+			notifyFeedbackMilestone("program-created");
+			notifyFeedbackMilestone("simulation-ended");
+			waitForPrompt();
+
+			expect(feedbackStore.getState().source).toBeNull();
+		});
+
 		it("stays silent while the user has done little", () => {
 			notifyFeedbackMilestone("program-created");
 
@@ -67,6 +76,7 @@ describe("feedback-prompt service", () => {
 		});
 
 		it("asks once a program exists and a simulation ended", () => {
+			visitOnDays(2);
 			notifyFeedbackMilestone("program-created");
 			notifyFeedbackMilestone("simulation-ended");
 			waitForPrompt();
@@ -75,6 +85,7 @@ describe("feedback-prompt service", () => {
 		});
 
 		it("waits a few seconds before opening the box", () => {
+			visitOnDays(2);
 			notifyFeedbackMilestone("program-created");
 			notifyFeedbackMilestone("simulation-ended");
 
@@ -108,6 +119,7 @@ describe("feedback-prompt service", () => {
 		});
 
 		it("asks after a PDF export for someone who never simulates", () => {
+			visitOnDays(2);
 			notifyFeedbackMilestone("program-created");
 			notifyFeedbackMilestone("pdf-exported");
 			waitForPrompt();
@@ -123,6 +135,55 @@ describe("feedback-prompt service", () => {
 			waitForPrompt();
 
 			expect(feedbackStore.getState().source).toBe("prompt");
+		});
+
+		it("tracks that the box was shown, as a first request", () => {
+			visitOnDays(2);
+			notifyFeedbackMilestone("program-created");
+			notifyFeedbackMilestone("simulation-ended");
+			waitForPrompt();
+
+			expect(mockTrackEvent).toHaveBeenCalledWith("feedback-shown", {
+				reminder: false,
+			});
+		});
+
+		it("tracks that the box was shown, as the reminder after a postponement", () => {
+			notifyFeedbackMilestone("program-created");
+			notifyFeedbackMilestone("simulation-ended");
+			waitForPrompt();
+			postponeFeedbackPrompt();
+			mockTrackEvent.mockClear();
+
+			visitOnDays(10);
+			notifyFeedbackMilestone("pdf-exported");
+			waitForPrompt();
+
+			expect(mockTrackEvent).toHaveBeenCalledWith("feedback-shown", {
+				reminder: true,
+			});
+		});
+
+		it("does not track a display when the box is not opened", () => {
+			notifyFeedbackMilestone("program-created");
+			waitForPrompt();
+
+			expect(mockTrackEvent).not.toHaveBeenCalledWith(
+				"feedback-shown",
+				expect.anything(),
+			);
+		});
+
+		it("does not track a display for someone who opened a shared link", () => {
+			visitOnDays(3);
+			mockGetShareToken.mockReturnValue("token");
+			notifyFeedbackMilestone("program-created");
+			waitForPrompt();
+
+			expect(mockTrackEvent).not.toHaveBeenCalledWith(
+				"feedback-shown",
+				expect.anything(),
+			);
 		});
 
 		it("does not ask someone who opened a shared link", () => {

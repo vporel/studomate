@@ -9,6 +9,7 @@ import {
 	setPreferredSaveLocation,
 } from "@/persistence/preferences.storage";
 import { Dialect } from "@/expression-language/dialect.enum";
+import defaultDialectForLocale from "@/i18n/default-dialect-for-locale";
 import { StorageLocation } from "@/persistence/repositories/project.repository";
 import { useLocaleContext } from "@/ui/i18n/LocaleProvider";
 import { useT } from "@/ui/i18n/useT";
@@ -28,7 +29,7 @@ const PreferencesPage = () => {
 		() => getPreferredSaveLocation() ?? "local",
 	);
 	const [dialect, setDialect] = useState<Dialect>(
-		() => getDefaultDialect() ?? (locale === "en" ? Dialect.EN : Dialect.FR),
+		() => getDefaultDialect() ?? defaultDialectForLocale(locale),
 	);
 	const [autoOpenHmi, setAutoOpenHmi] = useState<boolean>(() =>
 		getAutoOpenHmiSimulationOnStart(),

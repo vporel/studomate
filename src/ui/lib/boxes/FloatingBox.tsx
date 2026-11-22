@@ -3,6 +3,7 @@
 import CloseIcon from "@mui/icons-material/Close";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import { Box, IconButton, Paper, Typography } from "@mui/material";
+import { clamp } from "@/lib/number";
 import {
 	type KeyboardEvent,
 	type PointerEvent,
@@ -19,10 +20,7 @@ export type FloatingBoxSize = { width: number; height: number };
 
 /** The corner of its parent a box is positioned from. */
 export type FloatingBoxAnchor =
-	| "top-left"
-	| "top-right"
-	| "bottom-left"
-	| "bottom-right";
+	"top-left" | "top-right" | "bottom-left" | "bottom-right";
 
 type ResizeDirection = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
 
@@ -114,9 +112,6 @@ type Closable =
 	| { onClose: () => void; closeLabel: string }
 	| { onClose?: undefined; closeLabel?: undefined };
 
-const between = (value: number, min: number, max: number) =>
-	Math.max(min, Math.min(max, value));
-
 /**
  * The frame a drag from `direction` leads to: the edges being dragged follow the pointer, the
  * opposite ones stay put, and the frame stays within a parent of `parent` size.
@@ -131,15 +126,15 @@ function resizeFrame(
 ): Frame {
 	const frame = { ...start };
 	if (direction.includes("e")) {
-		frame.width = between(start.width + dx, min.width, parent.width - start.x);
+		frame.width = clamp(start.width + dx, min.width, parent.width - start.x);
 	}
 	if (direction.includes("w")) {
 		const right = start.x + start.width;
-		frame.width = between(start.width - dx, min.width, right);
+		frame.width = clamp(start.width - dx, min.width, right);
 		frame.x = right - frame.width;
 	}
 	if (direction.includes("s")) {
-		frame.height = between(
+		frame.height = clamp(
 			start.height + dy,
 			min.height,
 			parent.height - start.y,
@@ -147,7 +142,7 @@ function resizeFrame(
 	}
 	if (direction.includes("n")) {
 		const bottom = start.y + start.height;
-		frame.height = between(start.height - dy, min.height, bottom);
+		frame.height = clamp(start.height - dy, min.height, bottom);
 		frame.y = bottom - frame.height;
 	}
 	return frame;
@@ -308,8 +303,8 @@ const FloatingBox = ({
 		const maxX = Math.max(0, parent.clientWidth - boxWidth);
 		const maxY = Math.max(0, parent.clientHeight - boxHeight);
 		return {
-			x: Math.min(maxX, Math.max(0, x)),
-			y: Math.min(maxY, Math.max(0, y)),
+			x: clamp(x, 0, maxX),
+			y: clamp(y, 0, maxY),
 		};
 	};
 

@@ -125,7 +125,7 @@
 			"Barre d'outils (haut) : accès rapide aux actions courantes et outils de création Grafcet ou Ladder",
 			"Explorateur (gauche) : arborescence des variables, grafcets, ladders et interfaces HMI du projet",
 			"Zone principale (centre) : onglets des pages ouvertes (grafcets, ladders, variables, propriétés).",
-			"Barre inférieure (bas) : boutons qui ouvrent les panneaux « Résultats de l'analyse » et « Références croisées » ; en simulation, aussi « Tables de visualisation » et, si le projet a des pages HMI, « Simulation HMI » (ouvre l'onglet de la simulation HMI)"
+			"Barre inférieure (bas) : boutons « Références croisées » et « Résultats de l'analyse », qui ouvrent le panneau à onglets placé sous les éditeurs (ils disparaissent de la barre tant que ce panneau est ouvert, ses onglets prenant le relais) ; en simulation, aussi « Tables de visualisation » et, si le projet a des pages HMI, « Simulation HMI » (ouvre l'onglet de la simulation HMI)"
 		],
 		"helpMenuTitle": "Menu Aide",
 		"helpMenuBody": "Le menu Aide contient : Manuel utilisateur (ouvre ce manuel dans un nouvel onglet), Formations (ouvre le parcours d'apprentissage dans un nouvel onglet), Raccourcis clavier (ouvre la liste des raccourcis), Revoir la visite guidée (relance la présentation de l'interface) et Signaler un problème (ouvre la page Contact dans un nouvel onglet, sur le sujet « Signaler un problème »).",
@@ -180,18 +180,20 @@
 		"addProgramOutro": "Le menu Projet regroupe aussi « Énoncé de l'exercice » (si le projet en a un), « Partager » / « Gérer le partage » (voir la section Comptes & partage) et « Propriétés ».",
 		"exportTitle": "Exporter un projet",
 		"exportSubtitle": "Fichier → Exporter (Ctrl+E)",
-		"exportIntro": "Une fenêtre s'ouvre vous proposant deux formats :",
+		"exportIntro": "Une fenêtre s'ouvre vous proposant trois formats :",
 		"exportFormats": [
 			"Fichier projet (JSON) : sauvegarde externe du projet entier, réimportable via Fichier → Ouvrir projet → « Ouvrir depuis un fichier… ».",
-			"PDF : un document visuel des grafcets, des ladders et, en option, des tables de variables (les pages HMI n'y figurent pas)."
+			"PDF : un document visuel des grafcets, des ladders et, en option, des tables de variables (les pages HMI n'y figurent pas).",
+			"Export image (PNG ou SVG) : une image par grafcet et par ladder, sans page de garde ni tables de variables."
 		],
 		"exportScopeIntro": "Pour le PDF, deux portées :",
 		"exportScopes": [
 			"Projet complet : une page de garde (nom du projet, auteur, date, statistiques, énoncé s'il y en a un) puis une page par grafcet/ladder coché, chaque page titrée. La page de garde peut être décochée. La case « Tables de variables » (cochée par défaut) ajoute les tables de variables, regroupées par zone, après les programmes.",
 			"Page active uniquement : une seule page, titrée, pour le grafcet, le ladder ou la page de variables actuellement ouvert (sans page de garde). Indisponible si aucun programme n'est ouvert."
 		],
+		"exportImageBody": "Pour l'export image, choisissez PNG ou SVG, puis « Plusieurs programmes » (cochez ceux à exporter) ou « Programme actif uniquement ». Un grafcet donne une image à sa taille réelle. Un ladder est découpé en images au format d'une page A4 paysage, suffixées _1, _2… dès qu'il en faut plusieurs. Plusieurs programmes, ou un ladder sur plusieurs images, sont regroupés dans une archive ZIP.",
 		"exportOutro": "Le fichier est téléchargé automatiquement à la fin.",
-		"exportContextMenu": "Raccourci : un clic droit sur le fond du canvas d'un grafcet ou d'un ladder propose « Exporter », qui génère directement le PDF de ce seul programme, sans passer par cette fenêtre et sans page de garde.",
+		"exportContextMenu": "Raccourcis : le bouton d'export de la barre d'outils d'un grafcet ou d'un ladder propose « Exporter en PDF », « Exporter en PNG » et « Exporter en SVG » pour ce seul programme. Un clic droit sur le fond du canvas propose aussi « Exporter », qui génère directement le PDF, sans page de garde.",
 		"closeTitle": "Fermer un projet",
 		"closeBody": "Fichier → Fermer le projet (Ctrl+F4 sur Windows/Linux, Cmd+W sur macOS). Si des modifications non sauvegardées existent, une confirmation est demandée."
 	},
@@ -210,7 +212,7 @@
 		"storageTitle": "Emplacement de sauvegarde",
 		"storageBody": "Une fois connecté, chaque projet de la liste des projets peut être basculé entre stockage local et stockage cloud. L'emplacement par défaut des nouveaux projets se règle dans Fichier → Préférences.",
 		"sharingTitle": "Partager un projet",
-		"sharingIntro": "Projet → Partager crée un lien de partage contenant un jeton. Toute personne disposant du lien peut ouvrir une copie du projet.",
+		"sharingIntro": "Projet → Partager (ou le bouton « Partager » de la barre de titre, ou celui des propriétés du projet) crée un lien de partage contenant un jeton. Toute personne disposant du lien peut ouvrir une copie du projet.",
 		"sharingItems": [
 			"Le partage exige un compte cloud : si vous n'êtes pas connecté, la fenêtre de connexion s'ouvre et le partage reprend ensuite ; si le projet est encore stocké en local, une fenêtre propose de le déplacer dans le cloud au préalable.",
 			"La fenêtre de partage permet de copier le lien et de révoquer le partage : le lien cesse alors de fonctionner.",
@@ -573,7 +575,8 @@
 		"analysisTitle": "Analyse et mode",
 		"analysisItems": [
 			"Bouton Analyser : lance l'analyse statique du projet. Devient rouge en cas d'erreurs, orange en cas d'avertissements seulement.",
-			"Sélecteur de mode : permet de basculer entre le mode Conception (édition) et le mode Simulation. Le fond clignote en orange-gris en mode Simulation. Avec une carte configurée, le menu des modes propose aussi « Simulation avec E/S réelles » et « Observation de la carte » (voir la section Matériel)."
+			"Bouton Simuler / Arrêter : lance la simulation depuis le mode Conception, puis la stoppe et ramène à la conception. Il est vert pendant une simulation, et clignote pendant une simulation continue.",
+			"Sélecteur de mode : permet de basculer entre le mode Conception (édition) et le mode Simulation. Avec une carte configurée, le menu des modes propose aussi « Simulation avec E/S réelles » et « Observation de la carte » (voir la section Matériel)."
 		],
 		"grafcetToolsTitle": "Outils de création Grafcet",
 		"grafcetToolsIntro": "Lorsqu'un grafcet est ouvert, des outils supplémentaires apparaissent. Faites glisser l'outil choisi sur le canvas pour créer l'élément correspondant :",
@@ -604,7 +607,7 @@
 		"title": "Références croisées",
 		"p1": "Les références croisées indiquent, pour n'importe quelle variable du projet, tous les endroits où elle est lue et tous les endroits où elle est écrite (grafcets, ladders et interfaces HMI confondus).",
 		"openTitle": "Ouvrir le panneau",
-		"openBody": "Cliquez sur le bouton « Références croisées » dans la barre inférieure, ou utilisez le menu Affichage → Références croisées. L'entrée de menu bascule l'affichage du panneau.",
+		"openBody": "Cliquez sur le bouton « Références croisées » dans la barre inférieure, ou utilisez le menu Affichage → Références croisées. L'entrée de menu bascule l'affichage du panneau. Il s'ouvre sous les éditeurs, dans un panneau à onglets partagé avec les résultats de l'analyse : un clic sur l'autre onglet passe de l'un à l'autre, et la croix ferme le panneau.",
 		"panelTitle": "Contenu du panneau",
 		"panelIntro": "Le panneau liste les variables du projet avec un champ de filtre. Pour la variable sélectionnée, il affiche deux listes :",
 		"panelItems": [
@@ -700,7 +703,7 @@
 			"Observation de la carte (carte configurée) : c'est la carte qui exécute, Studomate affiche ce qu'elle rapporte. L'édition est verrouillée, il n'y a ni pause ni pas-à-pas ; les entrées non câblées, les mémoires et le forçage restent possibles depuis Studomate."
 		],
 		"startTitle": "Démarrer la simulation",
-		"startIntro": "Sélectionnez « Simulation » dans le sélecteur de mode (en haut à droite). Avant le démarrage :",
+		"startIntro": "Cliquez sur « Simuler » (en haut à droite). Avant le démarrage :",
 		"startItems": [
 			"Le projet est analysé.",
 			"Le projet est compilé en programmes exécutables par l'automate simulé.",
@@ -736,7 +739,7 @@
 			"À l'entrée en simulation, l'onglet « Simulation HMI » s'ouvre automatiquement si le projet contient des pages HMI ; sans page HMI, c'est la scène 3D qui s'ouvre si le projet en a une (voir la section Scène 3D). Cette ouverture automatique se désactive dans Fichier → Préférences."
 		],
 		"watchTitle": "Tables de visualisation et de modification des variables",
-		"watchIntro": "Le panneau inférieur affiche les tables de visualisation et de modification des variables avec quatre onglets :",
+		"watchIntro": "Le panneau latéral droit affiche les tables de visualisation et de modification des variables avec quatre onglets :",
 		"watchItems": [
 			"Entrées : valeurs actuelles des variables d'entrée",
 			"Sorties : valeurs actuelles des variables de sortie",
@@ -745,7 +748,7 @@
 		],
 		"watchOutro": "Les valeurs se mettent à jour après chaque cycle PLC. Vous pouvez modifier directement les valeurs des variables d'entrée et mémoire depuis la table pour simuler des signaux externes ou forcer un état interne. Les sorties sont affichées en lecture seule.",
 		"stopTitle": "Arrêter la simulation",
-		"stopBody": "Repassez en mode « Conception » via le sélecteur de mode. Le cycle PLC s'arrête et l'édition du grafcet est à nouveau disponible."
+		"stopBody": "Cliquez sur « Arrêter » (ou repassez en mode « Conception » via le sélecteur de mode). Le cycle PLC s'arrête et l'édition du grafcet est à nouveau disponible."
 	},
 	"analysis": {
 		"title": "Analyse",
@@ -807,7 +810,10 @@
 			"Flèches : Déplacer les widgets sélectionnés d'un pas de grille (canvas HMI actif, mode conception)"
 		],
 		"explorerTitle": "Explorateur",
-		"explorerItems": ["F2 : Renommer le grafcet ou le ladder sélectionné"],
+		"explorerItems": [
+			"F2 : Renommer le grafcet, le ladder ou la page HMI sélectionné",
+			"Suppr : Supprimer le grafcet, le ladder ou la page HMI sélectionné (confirmation demandée, non déclenché par Retour arrière)"
+		],
 		"inlineTitle": "Édition sur place",
 		"inlineItems": [
 			"Entrée : Valider la modification",
@@ -880,7 +886,7 @@
 			"« Créer les variables manquantes » crée les variables des points non liés avec le nom suggéré par la scène (ou réutilise une variable compatible portant déjà ce nom) et les lie, en une seule opération annulable."
 		],
 		"openTitle": "Afficher la scène",
-		"openBody": "Dès qu'une scène est choisie, l'entrée « Scène 3D » du menu Affichage, le bouton « Scène 3D » de la barre d'état (à gauche de « Références croisées ») et celui de la barre d'outils montrent la scène, avant ou pendant la simulation. Elle s'affiche selon quatre modes, au choix dans le sous-menu « Scène 3D » du menu Affichage (cliquer sur le mode où la scène est affichée la ferme), le dernier choisi étant mémorisé par le navigateur :",
+		"openBody": "Dès qu'une scène est choisie, l'entrée « Scène 3D » du menu Affichage, le bouton « Scène 3D » de la barre d'état et celui de la barre d'outils montrent la scène, avant ou pendant la simulation. Elle s'affiche selon quatre modes, au choix dans le sous-menu « Scène 3D » du menu Affichage (cliquer sur le mode où la scène est affichée la ferme), le dernier choisi étant mémorisé par le navigateur :",
 		"openItems": [
 			"panneau latéral (mode par défaut) : la scène s'affiche dans une colonne à droite des éditeurs, qui se rétrécissent pour lui laisser la place : rien n'est masqué, et on suit le grafcet et la partie opérative en même temps, par exemple en projection. On règle la largeur de la colonne en faisant glisser son bord gauche. En simulation, les tables d'observation s'affichent sous la scène dans la même colonne, et le séparateur entre les deux règle leur hauteur. Le navigateur mémorise ces réglages ;",
 			"cadre flottant : la scène s'affiche dans un cadre au-dessus de l'éditeur, qu'on déplace par sa barre de titre et qu'on redimensionne par ses bords et ses coins, comme une fenêtre. Il reste visible quand on change de page ;",

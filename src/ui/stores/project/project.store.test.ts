@@ -103,19 +103,12 @@ describe("createProjectStore", () => {
 		});
 	});
 
-	describe("panneaux analyse / références croisées mutuellement exclusifs", () => {
-		it("ferme les références croisées à l'ouverture du panneau d'analyse", () => {
-			const store = createProjectStore(createAppProjectStoreEnvironment());
-			store.getState().setCrossReferenceResultVisible(true);
+	describe("onglets du panneau du bas (analyse / références croisées)", () => {
+		const newStore = () =>
+			createProjectStore(createAppProjectStoreEnvironment());
 
-			store.getState().setAnalysisResultVisible(true);
-
-			expect(store.getState().ui.analysisResultVisible).toBe(true);
-			expect(store.getState().ui.crossReferenceResultVisible).toBe(false);
-		});
-
-		it("ferme le panneau d'analyse à l'ouverture des références croisées", () => {
-			const store = createProjectStore(createAppProjectStoreEnvironment());
+		it("affiche les références croisées à la place de l'analyse", () => {
+			const store = newStore();
 			store.getState().setAnalysisResultVisible(true);
 
 			store.getState().setCrossReferenceResultVisible(true);
@@ -124,8 +117,18 @@ describe("createProjectStore", () => {
 			expect(store.getState().ui.analysisResultVisible).toBe(false);
 		});
 
-		it("fermer un panneau ne touche pas à l'autre", () => {
-			const store = createProjectStore(createAppProjectStoreEnvironment());
+		it("affiche l'analyse à la place des références croisées", () => {
+			const store = newStore();
+			store.getState().setCrossReferenceResultVisible(true);
+
+			store.getState().setAnalysisResultVisible(true);
+
+			expect(store.getState().ui.analysisResultVisible).toBe(true);
+			expect(store.getState().ui.crossReferenceResultVisible).toBe(false);
+		});
+
+		it("fermer un onglet qui n'est pas affiché ne touche pas à l'autre", () => {
+			const store = newStore();
 			store.getState().setAnalysisResultVisible(true);
 
 			store.getState().setCrossReferenceResultVisible(false);
@@ -413,6 +416,41 @@ describe("createProjectStore", () => {
 			store.getState().commandsStackManager.redoOperation();
 			expect(store.getState().project?.scene3d).toEqual(scene);
 			expect(onSceneChanged).toHaveBeenCalledTimes(3);
+		});
+
+		it("puts a removed variable back at its position when the removal is undone, and again after redo", async () => {
+			const store = createProjectStore(createAppProjectStoreEnvironment());
+			await openBlankProject(store);
+			store.getState().variablesManager.addVariables(
+				["A", "B", "C", "D"].map(
+					(mnemonic) =>
+						({
+							mnemonic,
+							zone: "memory",
+							type: "BOOL",
+							address: "",
+							comment: "",
+						}) as never,
+				),
+			);
+			const mnemonics = () =>
+				store.getState().project!.variables.map((v) => v.mnemonic);
+			const idOf = (mnemonic: string) =>
+				store
+					.getState()
+					.project!.variables.find((v) => v.mnemonic === mnemonic)!.id;
+
+			store.getState().variablesManager.removeVariables([idOf("B"), idOf("D")]);
+			expect(mnemonics()).toEqual(["A", "C"]);
+
+			store.getState().commandsStackManager.undoOperation();
+			expect(mnemonics()).toEqual(["A", "B", "C", "D"]);
+
+			store.getState().commandsStackManager.redoOperation();
+			expect(mnemonics()).toEqual(["A", "C"]);
+
+			store.getState().commandsStackManager.undoOperation();
+			expect(mnemonics()).toEqual(["A", "B", "C", "D"]);
 		});
 
 		it("does not notify the scene tab link when a variable operation is undone", async () => {

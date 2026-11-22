@@ -89,6 +89,20 @@ export const LadderContextProvider = ({
 
 export const useLadderContext = () => useContext(LadderContext);
 
+/**
+ * The ladder store itself, to read its state on demand (in an event handler) without
+ * subscribing the component to it.
+ */
+export function useLadderStoreApi(): StoreApi<LadderStoreState> {
+	const { store } = useLadderContext();
+	if (!store) {
+		throw new Error(
+			"useLadderStoreApi must be used within a LadderContextProvider",
+		);
+	}
+	return store;
+}
+
 export function useLadderStore<T>(selector: (state: LadderStoreState) => T) {
 	const { store } = useLadderContext();
 	if (!store) {

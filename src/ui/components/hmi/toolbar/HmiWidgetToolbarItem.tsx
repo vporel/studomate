@@ -2,6 +2,9 @@
 
 import { HMI_WIDGET_DEFINITIONS } from "@/schemas/hmi/hmi-widget.schema";
 import { HmiWidgetTool } from "@/ui/components/hmi/logic/constants";
+import localizedWidgetDefaults, {
+	type HmiEditorTranslator,
+} from "@/ui/components/hmi/logic/localized-widget-defaults";
 import { HMI_WIDGET_UI } from "@/ui/components/hmi/widgets/hmi-widget-ui";
 import { useT } from "@/ui/i18n/useT";
 import { Box, Tooltip } from "@mui/material";
@@ -29,6 +32,7 @@ const HmiWidgetToolbarItem = ({
 	const { type } = tool;
 	const { setDraggedItem } = useHmiWidgetDnD();
 	const t = useT("hmiEditor.widgetNames");
+	const tEditor = useT("hmiEditor") as unknown as HmiEditorTranslator;
 	const ui = HMI_WIDGET_UI[type];
 	const label = t((tool.label ?? type) as never);
 	const previewWidth = tool.previewWidth ?? ui.previewWidth;
@@ -71,7 +75,10 @@ const HmiWidgetToolbarItem = ({
 						<SymbolComponent />
 					) : (
 						<RealComponent
-							data={HMI_WIDGET_DEFINITIONS[type].defaultData}
+							data={{
+								...HMI_WIDGET_DEFINITIONS[type].defaultData,
+								...localizedWidgetDefaults(type, tEditor).data,
+							}}
 							value={ui.previewValue}
 							hideLabel={type !== "push-button"}
 						/>

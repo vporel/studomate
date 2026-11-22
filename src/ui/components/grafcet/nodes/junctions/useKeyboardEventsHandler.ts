@@ -1,12 +1,13 @@
 "use client";
 
 import { JunctionData } from "@/schemas/grafcet/junction.schema";
+import { useGrafcetStore } from "@/ui/components/grafcet/context/GrafcetContext";
+import useCanEditActivePage from "@/ui/components/projects/useCanEditActivePage";
 import { FLOW_GRID_CELL_WIDTH } from "@/ui/constants";
 import { GRAFCET_PAGE_DIMENSIONS } from "@/ui/utils/grafcet/grafcet-utils";
 import resolveExtremeBranchDrag from "@/ui/utils/grafcet/junction-extreme-branch-drag";
 import { useUpdateNodeInternals } from "@xyflow/react";
 import React, { useCallback } from "react";
-import { useGrafcetStore } from "@/ui/components/grafcet/context/GrafcetContext";
 import { resolveBranchPosition, resolvePivotPosition } from "./branch-position";
 
 export default function useKeyboardEventsHandler(
@@ -22,6 +23,7 @@ export default function useKeyboardEventsHandler(
 ): (e: React.KeyboardEvent<HTMLDivElement>) => void {
 	const workflowManager = useGrafcetStore((state) => state.workflowManager);
 	const updatenodeInternals = useUpdateNodeInternals();
+	const canEdit = useCanEditActivePage();
 
 	return useCallback(
 		(e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -39,7 +41,7 @@ export default function useKeyboardEventsHandler(
 				// sélectionné, c'est la branche qui part.
 				e.preventDefault();
 				e.stopPropagation();
-				if (pivotSelected || selectedBranchId == null) return;
+				if (!canEdit || pivotSelected || selectedBranchId == null) return;
 				workflowManager.deleteJunctionBranch(nodeId, selectedBranchId);
 				return;
 			}
@@ -53,6 +55,7 @@ export default function useKeyboardEventsHandler(
 					else selectNextBranch();
 					return;
 				}
+				if (!canEdit) return;
 				const step = FLOW_GRID_CELL_WIDTH * (toLeft ? -1 : 1);
 
 				const order = data.branchesOrder;
@@ -116,6 +119,7 @@ export default function useKeyboardEventsHandler(
 			}
 		},
 		[
+			canEdit,
 			clearSelection,
 			nodeId,
 			pivotSelected,

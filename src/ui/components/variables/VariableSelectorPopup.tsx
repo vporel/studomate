@@ -4,11 +4,13 @@ import Variable from "@/schemas/variable/variable.schema";
 import { Box, Paper, PaperProps } from "@mui/material";
 import { useTheme } from "@mui/material";
 import { createContext, useContext } from "react";
+import { useT } from "@/ui/i18n/useT";
 import {
 	cellValue,
-	COLUMNS,
+	columnLabel,
 	columnsGridTemplate,
 	VariableColumn,
+	type VariableSelectorTranslator,
 } from "./variable-selector-utils";
 
 interface VariableSelectorPaperContextValue {
@@ -36,6 +38,9 @@ export const VariableSelectorPaperContext =
 export function VariableSelectorPaper({ children, ...paperProps }: PaperProps) {
 	const th = useTheme();
 	const { activeColumns, isEmpty } = useContext(VariableSelectorPaperContext);
+	const t = useT(
+		"pages.variablesGrid",
+	) as unknown as VariableSelectorTranslator;
 	if (isEmpty) return null;
 	return (
 		<Paper {...paperProps}>
@@ -51,7 +56,7 @@ export function VariableSelectorPaper({ children, ...paperProps }: PaperProps) {
 				}}
 			>
 				{activeColumns.map((c) => (
-					<span key={c}>{COLUMNS[c].label}</span>
+					<span key={c}>{columnLabel(c, t)}</span>
 				))}
 			</Box>
 			{children}
@@ -72,6 +77,9 @@ export const VariableSelectorOption = ({
 	activeColumns,
 }: VariableSelectorOptionProps) => {
 	const gridTemplateColumns = columnsGridTemplate(activeColumns);
+	const t = useT(
+		"pages.variablesGrid",
+	) as unknown as VariableSelectorTranslator;
 	const { key, style, ...rest } = optionProps;
 	return (
 		<li key={key} {...rest} style={{ ...style, padding: 0 }}>
@@ -86,7 +94,7 @@ export const VariableSelectorOption = ({
 				}}
 			>
 				{activeColumns.map((c) => (
-					<span key={c}>{cellValue(option, c)}</span>
+					<span key={c}>{cellValue(option, c, t)}</span>
 				))}
 			</Box>
 		</li>

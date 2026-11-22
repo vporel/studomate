@@ -1,0 +1,206 @@
+{
+	"titles": {
+		"preferences": "Preferencias",
+		"projectProperties": "Propiedades del proyecto",
+		"exercise": "Enunciado del ejercicio",
+		"projectStartup": "Inicio",
+		"inputVariables": "Variables de entrada",
+		"outputVariables": "Variables de salida",
+		"memoryVariables": "Variables de memoria",
+		"constantVariables": "Constantes",
+		"systemVariables": "Variables del sistema",
+		"hardwareConfiguration": "Configuración del hardware",
+		"scene3dConfiguration": "Configuración de la escena 3D",
+		"scene3dView": "Escena 3D",
+		"hmiSimulation": "Simulación HMI"
+	},
+	"systemVariables": {
+		"heading": "Variables del sistema",
+		"intro": "Las proporciona el motor y se inyectan en la compilación. Son de solo lectura: el prefijo \"_SYS_\" está reservado. Las bases de tiempo \"_SYS_TB_…\" son ondas cuadradas, verdaderas durante la primera mitad de cada periodo de tiempo simulado.",
+		"columns": {
+			"name": "Nombre",
+			"type": "Tipo",
+			"description": "Descripción"
+		},
+		"items": {
+			"_SYS_FIRST_SCAN": "Verdadera durante el primer escaneo tras iniciar la simulación, falsa después.",
+			"_SYS_TB_100ms": "Onda cuadrada, periodo de 100 ms.",
+			"_SYS_TB_200ms": "Onda cuadrada, periodo de 200 ms.",
+			"_SYS_TB_500ms": "Onda cuadrada, periodo de 500 ms.",
+			"_SYS_TB_1s": "Onda cuadrada, periodo de 1 s.",
+			"_SYS_TB_2s": "Onda cuadrada, periodo de 2 s."
+		}
+	},
+	"tabBar": {
+		"ariaLabel": "Pestañas abiertas",
+		"close": "Cerrar",
+		"closeAria": "Cerrar la pestaña",
+		"readOnly": "Solo lectura"
+	},
+	"properties": {
+		"heading": "Propiedades del proyecto",
+		"name": "Nombre",
+		"author": "Autor",
+		"expressionLanguage": "Lenguaje de expresiones",
+		"expressionLanguageHelper": "Las expresiones ya escritas se traducen automáticamente.",
+		"dialectFr": "Francés: ET, OU, NON, VRAI, FAUX",
+		"dialectEn": "Inglés: AND, OR, NOT, TRUE, FALSE",
+		"exerciseField": "Enunciado del ejercicio",
+		"exerciseFieldHelper": "Formato Markdown. Se muestra en solo lectura desde el menú Proyecto › Enunciado del ejercicio.",
+		"readOnlyInSimulation": "Editable solo en modo diseño.",
+		"share": "Compartir el proyecto"
+	},
+	"exercise": {
+		"heading": "Enunciado del ejercicio",
+		"empty": "Este proyecto aún no tiene enunciado. El enunciado se escribe en las propiedades del proyecto.",
+		"openProperties": "Abrir las propiedades del proyecto"
+	},
+	"startup": {
+		"variables": "Variables",
+		"programs": "Programas",
+		"noPrograms": "Aún no tienes ningún programa.",
+		"actions": "Acciones",
+		"newGrafcet": "Nuevo grafcet",
+		"newLadder": "Nuevo ladder",
+		"hardwareConfiguration": "Configuración del hardware",
+		"scene3dConfiguration": "Configuración de la escena 3D"
+	},
+	"variablesGrid": {
+		"toolbar": {
+			"delete": "Eliminar",
+			"deleteSelectedAria": "Eliminar las variables seleccionadas",
+			"newVariable": "Nueva variable",
+			"filters": "Filtros",
+			"export": "Exportar",
+			"exportPdf": "Exportar como PDF",
+			"exportPdfError": "Falló la exportación a PDF.",
+			"exportCsv": "Exportar como CSV",
+			"search": "Buscar",
+			"searchPlaceholder": "Buscar...",
+			"clearSearch": "Borrar la búsqueda"
+		},
+		"columns": {
+			"mnemonic": "Mnemónico",
+			"type": "Tipo",
+			"address": "Dirección",
+			"value": "Valor",
+			"declaredValue": "Valor declarado",
+			"comment": "Comentario",
+			"behavior": "Comportamiento"
+		},
+		"errors": {
+			"mnemonicExists": "Este mnemónico ya existe",
+			"mnemonicUsedByBlock": "Este nombre ya lo usa un bloque",
+			"addressUsed": "Esta dirección ya la usa \"{mnemonic}\""
+		},
+		"selectorPlaceholder": "?",
+		"selector": {
+			"scope": "Ámbito",
+			"directions": {
+				"IN": "Entrada",
+				"OUT": "Salida",
+				"INOUT": "Memoria"
+			}
+		},
+		"contextMenu": {
+			"insertVariable": "Insertar una variable",
+			"crossReferences": "Referencias cruzadas",
+			"delete": "Eliminar"
+		},
+		"behavior": {
+			"none": "Ninguno",
+			"pushButtonNo": "Pulsador NA",
+			"pushButtonNc": "Pulsador NC",
+			"toggleSwitchNo": "Interruptor NA",
+			"toggleSwitchNc": "Interruptor NC",
+			"slider": "Deslizador",
+			"sliderSummary": "Deslizador ({min} … {max})",
+			"kind": "Comportamiento",
+			"min": "Mín.",
+			"max": "Máx.",
+			"apply": "Aplicar",
+			"cancel": "Cancelar",
+			"editAria": "Editar el comportamiento de {mnemonic}"
+		}
+	},
+	"watchTables": {
+		"heading": "Tablas de observación",
+		"close": "Cerrar",
+		"inputs": "Entradas",
+		"outputs": "Salidas",
+		"memories": "Marcas de memoria",
+		"grafcets": "Grafcets",
+		"noGrafcets": "Ningún grafcet en el proyecto",
+		"drivenInputsReadOnly": "Las entradas controladas por un pin de la placa o por un sensor de la escena 3D no se pueden cambiar desde esta tabla."
+	},
+	"noPage": {
+		"openProject": "Abrir un proyecto",
+		"saveProject": "Guardar el proyecto",
+		"newGrafcet": "Nuevo grafcet"
+	},
+	"hardware": {
+		"heading": "Configuración del hardware",
+		"intro": "Vincula el proyecto a una placa real. Sin placa, el proyecto se simula por completo.",
+		"target": "Placa de destino",
+		"targetNone": "Ninguna (proyecto simulado)",
+		"readOnlyInSimulation": "Editable solo en modo diseño.",
+		"unknownModel": "Esta versión de Studomate no conoce la placa \"{modelId}\".",
+		"pinsHeading": "Pines",
+		"pinsIntro": "Un pin se vincula a una variable mediante la dirección de la variable.",
+		"columns": {
+			"pin": "Pin",
+			"capabilities": "Capacidades",
+			"variable": "Variable"
+		},
+		"reserved": "Reservado (enlace USB)",
+		"capabilities": {
+			"digital-input": "Entrada digital",
+			"digital-output": "Salida digital",
+			"analog-input": "Entrada analógica",
+			"pwm-output": "Salida PWM"
+		},
+		"arduinoUnoR3": {
+			"intro": "Ejemplo: %PD2 para el pin D2. El modo y la inversión se pueden definir para los pines que llevan una variable de entrada digital.",
+			"wiringHelp": "El modo indica si la resistencia pull-up interna está activada. La inversión indica con qué nivel la variable es verdadera: si está marcada, es verdadera cuando el pin está a 0 V (cableado habitual de un pulsador entre el pin y GND, con pull-up); si no está marcada, es verdadera a 5 V (sensor activo en alto).",
+			"columns": {
+				"mode": "Modo de entrada",
+				"inverted": "Invertida"
+			},
+			"pinModes": {
+				"INPUT_PULLUP": "Con pull-up interna",
+				"INPUT": "Entrada flotante"
+			},
+			"pinModeAria": "Modo de entrada del pin {pin}",
+			"pinInvertedAria": "Invertir el pin {pin} (verdadera cuando el pin está a 0 V)"
+		},
+		"webSerialUnsupported": "El enlace USB directo con el Arduino requiere un navegador basado en Chromium (Google Chrome, Microsoft Edge...). Aun así puedes diseñar y simular tu proyecto."
+	},
+	"scene3d": {
+		"heading": "Configuración de la escena 3D",
+		"intro": "Vincula el proyecto a una escena de simulación 3D: un modelo físico (cinta transportadora, ascensor, cruce...) recibe las salidas del programa y devuelve los sensores. Sin escena, el proyecto se simula solo con sus programas.",
+		"scene": "Escena",
+		"sceneVersion": "Versión",
+		"chooseScene": "Elige una escena",
+		"changeScene": "Cambiar",
+		"sceneNoneDescription": "El proyecto no usa ninguna escena 3D.",
+		"sceneImageAlt": "Captura de la escena {scene}",
+		"sceneNone": "Ninguna",
+		"readOnlyInSimulation": "Editable solo en modo diseño.",
+		"unknownScene": "Esta versión de Studomate no conoce la escena \"{sceneId}\".",
+		"pointsHeading": "Puntos de la escena",
+		"pointsIntro": "Cada sensor es una entrada del proyecto y cada actuador una salida. Un punto sin vincular permanece inactivo.",
+		"createMissing": "Crear las variables que faltan",
+		"columns": {
+			"point": "Punto",
+			"kind": "Tipo",
+			"variable": "Variable"
+		},
+		"kinds": {
+			"sensor": "Sensor",
+			"actuator": "Actuador",
+			"display": "Visualizador"
+		},
+		"variableAria": "Variable vinculada al punto {point}",
+		"openScene": "Abrir la escena"
+	}
+}
