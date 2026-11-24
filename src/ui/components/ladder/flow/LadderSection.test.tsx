@@ -167,11 +167,12 @@ describe("LadderSection", () => {
 		reactFlowProps.length = 0;
 	});
 
-	it("désactive l'auto-pan de React Flow pendant un glisser de nœud (viewport verrouillé à 0,0)", () => {
+	it("désactive l'auto-pan de React Flow pendant un glisser de nœud ou de connexion (viewport verrouillé à 0,0)", () => {
 		setup();
 		expect(reactFlowProps.at(-1)).toMatchObject({
 			panOnDrag: false,
 			autoPanOnNodeDrag: false,
+			autoPanOnConnect: false,
 		});
 	});
 

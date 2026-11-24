@@ -28,8 +28,7 @@ function setup(
 		selectorImplementation({
 			project: {
 				variables: [],
-				getAllTimerBlockElements: () => [],
-				getAllCounterBlockElements: () => [],
+				getExecutedLadders: () => [],
 				getExecutedGrafcets: () => [],
 				grafcets: {},
 			},

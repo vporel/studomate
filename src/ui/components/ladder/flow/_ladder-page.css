@@ -3,8 +3,11 @@
    s'appliqueraient aussi aux flows du GRAFCET (les deux pages sont importées ensemble par
    PagesView.tsx, donc leurs CSS globales sont toujours chargées côte à côte). */
 
-/* Taille des bornes de connexion (leur affichage au survol est dans `flow-page.css`). */
+/* Taille des bornes de connexion (leur affichage au survol est dans `flow-page.css`).
+   z-index : la zone cliquable (::before) déborde sur le symbole du nœud, positionné lui aussi ;
+   une borne rendue avant le symbole dans le DOM serait sinon peinte, et donc saisie, sous lui. */
 .ladder-page .react-flow__node .react-flow__handle {
+  z-index: 1;
   width: 1px;
   height: 1px;
   min-width: 1px;

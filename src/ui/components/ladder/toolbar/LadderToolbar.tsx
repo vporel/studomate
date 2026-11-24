@@ -3,6 +3,7 @@
 import { createRandomId } from "@/ids";
 import SectionAddCommand from "@/schemas/ladder/commands/section-add.command";
 import { DEFAULT_SECTION_TITLE } from "@/schemas/ladder/ladder.schema";
+import type { CoilType, ContactType } from "@/schemas/ladder/element.schema";
 import ZoomControls from "@/ui/components/app-toolbar/ZoomControls";
 import { SYSTEM_BLOCK_CATALOG } from "@/ui/components/ladder/system-blocks/system-block-catalog";
 import AnalyserToolbarItem from "@/ui/components/programs/AnalyserToolbarItem";
@@ -29,6 +30,7 @@ import CoilSymbol from "../nodes/CoilSymbol";
 import ContactSymbol from "../nodes/ContactSymbol";
 import LadderSystemBlockTool from "./LadderSystemBlockTool";
 import LadderTool from "./LadderTool";
+import useLadderToolAvailable from "./useLadderToolAvailable";
 
 /** Icône des outils "bloc système" (compare, assign, arithmetic) : un rectangle avec le nom du
  * bloc, faute de symbole graphique dédié comme pour un contact/une bobine. */
@@ -49,15 +51,34 @@ const SystemBlockToolLabel = ({ children }: { children: React.ReactNode }) => (
 	</Box>
 );
 
+const CONTACT_TOOLS = [
+	{ type: "NO", labelKey: "contactNO" },
+	{ type: "NF", labelKey: "contactNF" },
+	{ type: "P", labelKey: "contactP" },
+	{ type: "N", labelKey: "contactN" },
+] as const satisfies { type: ContactType; labelKey: string }[];
+
+const MAIN_COIL_TOOLS = [
+	{ type: "normal", labelKey: "coilNormal" },
+	{ type: "set", labelKey: "coilSet" },
+	{ type: "reset", labelKey: "coilReset" },
+] as const satisfies { type: CoilType; labelKey: string }[];
+
+const EXTRA_COIL_TOOLS = [
+	{ type: "inverted", labelKey: "coilInverted" },
+	{ type: "rising", labelKey: "coilRising" },
+	{ type: "falling", labelKey: "coilFalling" },
+] as const satisfies { type: CoilType; labelKey: string }[];
+
 /**
- * Outils de dépose (contact NO/NF/P/N, bobine normal/inversée/set/reset/front, compare, assign, arithmetic) :
- * on drague l'icône, on la lâche sur le canevas — la cible (insertion, branche parallèle, nouveau
- * réseau) est résolue par accrochage à la grille, pas de zone de dépôt dédiée. Un réseau ne peut
- * pas être vide : il n'existe qu'à partir du moment où un premier élément y est déposé, d'où
- * l'absence de bouton dédié pour en créer un. Compare/assign/arithmetic sont des blocs système
- * (voir `LadderSystemBlockTool`) : une deuxième façon de les poser, en plus du glisser-déposer
- * depuis "Bibliothèque" de l'explorateur — même comportement (insertion d'un bloc vide,
- * configuré ensuite sur le canevas).
+ * Drop tools (contacts NO/NF/P/N, coils normal/inverted/set/reset/edge, system blocks, CALL): the
+ * icon is dragged and released on the canvas, and the target (insertion, parallel branch, new
+ * network) is resolved by snapping to the grid, with no dedicated drop zone. A network cannot be
+ * empty: it only exists once a first element is dropped in it, hence no button to create one. The
+ * system blocks and CALL are placed through `LadderSystemBlockTool`: a second way to place them,
+ * besides dragging from the explorer's "Library". The blocks without a configuration window are
+ * inserted empty and configured on the canvas; the CALL block opens a window to pick the ladder
+ * it calls.
  */
 const LadderToolbar = ({
 	style,
@@ -102,6 +123,25 @@ const LadderToolbar = ({
 	const toolbarRef = useRef<HTMLElement>(null);
 	//Too narrow for the system block tools: they move into the floating box of system blocks.
 	const compact = useCollapseOnOverflow(toolbarRef);
+	const isToolAvailable = useLadderToolAvailable();
+	const contactTools = CONTACT_TOOLS.filter(({ type }) =>
+		isToolAvailable(`contact-${type}`),
+	);
+	const mainCoilTools = MAIN_COIL_TOOLS.filter(({ type }) =>
+		isToolAvailable(`coil-${type}`),
+	);
+	const extraCoilTools = EXTRA_COIL_TOOLS.filter(({ type }) =>
+		isToolAvailable(`coil-${type}`),
+	);
+	const coilToolsVisible = mainCoilTools.length + extraCoilTools.length > 0;
+	const elementToolsVisible = contactTools.length > 0 || coilToolsVisible;
+	const systemBlockTools = SYSTEM_BLOCK_CATALOG.filter(
+		(entry) => entry.toolbar && isToolAvailable(entry.blockType),
+	);
+	const callToolVisible = isToolAvailable("user-program");
+	const paletteButtonVisible = SYSTEM_BLOCK_CATALOG.some((entry) =>
+		isToolAvailable(entry.blockType),
+	);
 
 	const addSection = () => {
 		commandsStackManager.executeOperation([
@@ -135,95 +175,62 @@ const LadderToolbar = ({
 				centerVertical
 				sx={{ gap: "5px", height: "100%", flexShrink: 0 }}
 			>
-				<FlexBox
-					data-tour="toolbar"
-					centerVertical
-					sx={{ gap: "5px", height: "100%" }}
-				>
-					<LadderTool
-						element={{ kind: "contact", type: "NO" }}
-						label={t("contactNO")}
-					>
-						<ContactSymbol type="NO" />
-					</LadderTool>
-					<LadderTool
-						element={{ kind: "contact", type: "NF" }}
-						label={t("contactNF")}
-					>
-						<ContactSymbol type="NF" />
-					</LadderTool>
-					<LadderTool
-						element={{ kind: "contact", type: "P" }}
-						label={t("contactP")}
-					>
-						<ContactSymbol type="P" />
-					</LadderTool>
-					<LadderTool
-						element={{ kind: "contact", type: "N" }}
-						label={t("contactN")}
-					>
-						<ContactSymbol type="N" />
-					</LadderTool>
-					<Divider orientation="vertical" style={{ margin: "5px" }} />
-					<LadderTool
-						element={{ kind: "coil", type: "normal" }}
-						label={t("coilNormal")}
-					>
-						<CoilSymbol type="normal" />
-					</LadderTool>
-					<LadderTool
-						element={{ kind: "coil", type: "set" }}
-						label={t("coilSet")}
-					>
-						<CoilSymbol type="set" />
-					</LadderTool>
-					<LadderTool
-						element={{ kind: "coil", type: "reset" }}
-						label={t("coilReset")}
-					>
-						<CoilSymbol type="reset" />
-					</LadderTool>
-					{extraCoilsVisible && (
-						<>
-							<LadderTool
-								element={{ kind: "coil", type: "inverted" }}
-								label={t("coilInverted")}
-							>
-								<CoilSymbol type="inverted" />
-							</LadderTool>
-							<LadderTool
-								element={{ kind: "coil", type: "rising" }}
-								label={t("coilRising")}
-							>
-								<CoilSymbol type="rising" />
-							</LadderTool>
-							<LadderTool
-								element={{ kind: "coil", type: "falling" }}
-								label={t("coilFalling")}
-							>
-								<CoilSymbol type="falling" />
-							</LadderTool>
-						</>
-					)}
-					<IconButton
-						size="small"
-						aria-label={t(
-							extraCoilsVisible ? "hideExtraCoils" : "showExtraCoils",
-						)}
-						title={t(extraCoilsVisible ? "hideExtraCoils" : "showExtraCoils")}
-						onClick={() => setExtraCoilsVisible((visible) => !visible)}
-						sx={{ p: 0.25 }}
-					>
-						{extraCoilsVisible ? (
-							<ChevronLeftIcon fontSize="small" />
-						) : (
-							<ChevronRightIcon fontSize="small" />
-						)}
-					</IconButton>
-				</FlexBox>
-				<Divider orientation="vertical" style={{ margin: "5px" }} />
+				{elementToolsVisible && (
+					<>
+						<FlexBox
+							data-tour="toolbar"
+							centerVertical
+							sx={{ gap: "5px", height: "100%" }}
+						>
+							{contactTools.map(({ type, labelKey }) => (
+								<LadderTool
+									key={type}
+									element={{ kind: "contact", type }}
+									label={t(labelKey)}
+								>
+									<ContactSymbol type={type} />
+								</LadderTool>
+							))}
+							{contactTools.length > 0 && coilToolsVisible && (
+								<Divider orientation="vertical" style={{ margin: "5px" }} />
+							)}
+							{[
+								...mainCoilTools,
+								...(extraCoilsVisible ? extraCoilTools : []),
+							].map(({ type, labelKey }) => (
+								<LadderTool
+									key={type}
+									element={{ kind: "coil", type }}
+									label={t(labelKey)}
+								>
+									<CoilSymbol type={type} />
+								</LadderTool>
+							))}
+							{extraCoilTools.length > 0 && (
+								<IconButton
+									size="small"
+									aria-label={t(
+										extraCoilsVisible ? "hideExtraCoils" : "showExtraCoils",
+									)}
+									title={t(
+										extraCoilsVisible ? "hideExtraCoils" : "showExtraCoils",
+									)}
+									onClick={() => setExtraCoilsVisible((visible) => !visible)}
+									sx={{ p: 0.25 }}
+								>
+									{extraCoilsVisible ? (
+										<ChevronLeftIcon fontSize="small" />
+									) : (
+										<ChevronRightIcon fontSize="small" />
+									)}
+								</IconButton>
+							)}
+						</FlexBox>
+						<Divider orientation="vertical" style={{ margin: "5px" }} />
+					</>
+				)}
 				{!compact &&
-					SYSTEM_BLOCK_CATALOG.filter((entry) => entry.toolbar).map((entry) => (
+					systemBlockTools.map((entry) => (
 						<LadderSystemBlockTool
 							key={entry.blockType}
 							blockType={entry.blockType}
@@ -235,18 +242,31 @@ const LadderToolbar = ({
 							</SystemBlockToolLabel>
 						</LadderSystemBlockTool>
 					))}
-				<Button
-					data-tour="systemBlocks"
-					size="small"
-					startIcon={<WidgetsOutlinedIcon />}
-					aria-pressed={systemBlocksPaletteOpen}
-					onClick={onToggleSystemBlocksPalette}
-					disabled={!canEdit}
-					sx={{ whiteSpace: "nowrap" }}
-				>
-					{t("systemBlocksButton")}
-				</Button>
-				<Divider orientation="vertical" style={{ margin: "5px" }} />
+				{callToolVisible && (
+					<LadderSystemBlockTool
+						blockType="user-program"
+						width={50}
+						label={tsb("callToolbarLabel")}
+					>
+						<SystemBlockToolLabel>CALL</SystemBlockToolLabel>
+					</LadderSystemBlockTool>
+				)}
+				{paletteButtonVisible && (
+					<Button
+						data-tour="systemBlocks"
+						size="small"
+						startIcon={<WidgetsOutlinedIcon />}
+						aria-pressed={systemBlocksPaletteOpen}
+						onClick={onToggleSystemBlocksPalette}
+						disabled={!canEdit}
+						sx={{ whiteSpace: "nowrap" }}
+					>
+						{t("systemBlocksButton")}
+					</Button>
+				)}
+				{(callToolVisible || paletteButtonVisible) && (
+					<Divider orientation="vertical" style={{ margin: "5px" }} />
+				)}
 				<Button
 					data-tour="addSection"
 					size="small"

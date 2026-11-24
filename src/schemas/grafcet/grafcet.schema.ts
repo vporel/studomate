@@ -361,7 +361,7 @@ export default class Grafcet extends Program {
 	 * @param renames Map of old identifier name → new identifier name
 	 * @param dialect Dialect of the expressions, so that keywords are not mistaken for identifiers
 	 */
-	renameIdentifiersInExpressions(
+	renameVariableReferences(
 		renames: Record<string, string>,
 		dialect: Dialect,
 	): void {
@@ -383,6 +383,11 @@ export default class Grafcet extends Program {
 				dialect,
 			);
 		});
+	}
+
+	/** The step activity variables (`Xn`) are deliberately left free for user variables. */
+	claimsMnemonic(): boolean {
+		return false;
 	}
 
 	/**

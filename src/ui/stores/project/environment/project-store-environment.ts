@@ -16,6 +16,7 @@ import type {
 	ProjectStoreGetFunction,
 } from "../project.store.types";
 import type { SimulationMode } from "../simulation-mode.enum";
+import type { EditorTools } from "../editor-tools";
 
 /** What the interface around the project can offer. */
 export type ProjectCapabilities = {
@@ -30,6 +31,8 @@ export type ProjectCapabilities = {
 	 * stay excluded and are shown as such either way.
 	 */
 	programExecutionExclusionToggle: boolean;
+	/** Restricts the tools of the editors; every tool is offered when absent. */
+	tools?: EditorTools;
 };
 
 /** Looks up a message in the language of the environment, `key` being relative to `namespace`. */

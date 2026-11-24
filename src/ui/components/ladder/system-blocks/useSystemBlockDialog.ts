@@ -17,10 +17,10 @@ export type SystemBlockDialogState = {
 };
 
 /**
- * Câblage commun aux dialogs de blocs système à fenêtre de configuration (timer/counter) :
- * lecture des stores `pendingSystemBlockCreation`/`pendingSystemBlockEdit`, ouverture/fermeture.
- * Chaque dialog garde son propre état local de champs et sa propre logique de soumission
- * (insert/update). Les blocs compare/assign/arithmetic se configurent sur le canevas, sans dialog.
+ * Shared wiring of the system block dialogs (timer, counter, call): reads the
+ * `pendingSystemBlockCreation`/`pendingSystemBlockEdit` stores and handles opening/closing.
+ * Each dialog keeps its own local field state and its own submit logic (insert/update). The
+ * compare, assign and arithmetic blocks are configured on the canvas, without a dialog.
  */
 export function useSystemBlockDialog(
 	blockType: PendingSystemBlockCreation["blockType"],

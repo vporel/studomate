@@ -8,6 +8,7 @@ import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { useGrafcetStore, useGrafcetStoreApi } from "../context/GrafcetContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import { GrafcetToolbarDnDProvider } from "./GrafcetToolbarDnDContext";
+import type { EditorTools } from "@/ui/stores/project/editor-tools";
 import GrafcetToolbar from "./GrafcetToolbar";
 
 jest.mock("@/ui/components/projects/ProjectContext");
@@ -83,6 +84,7 @@ describe("GrafcetToolbar", () => {
 		canBeExcludedFromExecution = true,
 		mode = ProjectMode.DESIGN,
 		programExecutionExclusionToggle = true,
+		tools = undefined as EditorTools | undefined,
 	} = {}) {
 		const grafcetsManager = { setExcludedFromExecution: jest.fn() };
 		(useProjectStore as unknown as jest.Mock).mockImplementation(
@@ -90,7 +92,7 @@ describe("GrafcetToolbar", () => {
 				mode,
 				editingEnabled: true,
 				grafcetsManager,
-				capabilities: { programExecutionExclusionToggle },
+				capabilities: { programExecutionExclusionToggle, tools },
 			}),
 		);
 		(useGrafcetStore as unknown as jest.Mock).mockImplementation(
@@ -193,6 +195,66 @@ describe("GrafcetToolbar", () => {
 		expect(
 			screen.queryByText("Désactiver l'analyseur"),
 		).not.toBeInTheDocument();
+	});
+
+	describe("restricted tools", () => {
+		const tool = (name: string) =>
+			document.querySelector(`.grafcet-toolbar__${name}`);
+		const dividers = () =>
+			document.querySelectorAll("[data-tour='toolbar'] > .MuiDivider-vertical")
+				.length;
+
+		it("offers only the listed tools", () => {
+			renderToolbar({
+				tools: { grafcet: ["step-initial", "step", "transition"] },
+			});
+
+			expect(tool("step")).toBeInTheDocument();
+			expect(tool("transition")).toBeInTheDocument();
+			expect(tool("action")).not.toBeInTheDocument();
+			expect(tool("comment")).not.toBeInTheDocument();
+			expect(tool("junction-or-start")).not.toBeInTheDocument();
+			expect(tool("step-referral-source")).not.toBeInTheDocument();
+		});
+
+		it("tells the initial step from the other steps", () => {
+			renderToolbar({ tools: { grafcet: ["step"] } });
+
+			expect(document.querySelectorAll(".grafcet-toolbar__step")).toHaveLength(
+				1,
+			);
+			expect(screen.getByText("E")).toHaveStyle({
+				border: "1px solid black",
+			});
+		});
+
+		it("separates only the groups that are shown", () => {
+			renderToolbar({
+				tools: { grafcet: ["step", "junction-or-start", "comment"] },
+			});
+
+			expect(dividers()).toBe(2);
+		});
+
+		it("shows no separator when a single group is shown", () => {
+			renderToolbar({ tools: { grafcet: ["step", "action"] } });
+
+			expect(dividers()).toBe(0);
+		});
+
+		it("keeps the other buttons of the toolbar without any tool", () => {
+			renderToolbar({ tools: { grafcet: [] } });
+
+			expect(document.querySelector(".grafcet-toolbar__tool")).toBeNull();
+			expect(screen.getByText("100%")).toBeInTheDocument();
+		});
+
+		it("keeps every tool when only the ladder is restricted", () => {
+			renderToolbar({ tools: { ladder: [] } });
+
+			expect(tool("comment")).toBeInTheDocument();
+			expect(tool("junction-and-end")).toBeInTheDocument();
+		});
 	});
 
 	it("hands the export the grafcet as it is in the store when the export starts", () => {

@@ -24,7 +24,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 export const APP_NAME = "Studomate";
 /** Version of the application, shown in the startup footer. Bumped, by the developer, with each release. */
-export const APP_VERSION = "v1.8.0";
+export const APP_VERSION = "v1.8.1";
 export const APP_SLOGAN = "Créer, Simuler, Automatiser";
 export const APP_SHORT_DESCRIPTION =
 	"Concevez et simulez GRAFCET, Ladder et HMI animées dans le même navigateur : sans installation, sans compte.";

@@ -24,6 +24,12 @@
 	"shareRevokeFailed": "Impossible de révoquer le partage.",
 	"shareLoginPrompt": "Connectez-vous pour partager ce projet.",
 	"pasteWrongScope": "Impossible de coller ici : le presse-papiers contient des éléments d'un autre type de page.",
+	"programCallRefused": {
+		"main": "Le Main ne peut pas être appelé par un autre ladder.",
+		"self": "Un ladder ne peut pas s'appeler lui-même.",
+		"excluded": "Ce ladder est exclu de l'exécution : il ne peut être appelé que depuis un ladder lui aussi exclu.",
+		"not-a-ladder": "Ce programme ne peut pas être appelé ici : seul un ladder peut l'être."
+	},
 	"hardwareLinked": "Liaison en ligne établie avec la carte Arduino.",
 	"hardwareLinkLost": "Liaison avec la carte perdue. Ses sorties sont revenues à l'état de repli.",
 	"hardwareLinkFailed": {

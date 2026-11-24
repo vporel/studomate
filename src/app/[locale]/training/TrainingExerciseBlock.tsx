@@ -2,6 +2,7 @@
 
 import type { Locale } from "@/i18n/config";
 import { Box, Tab, Tabs } from "@mui/material";
+import type { EditorTools } from "@/ui/stores/project/editor-tools";
 import { useState } from "react";
 import TrainingEmbeddedBlock, {
 	type TrainingInitialView,
@@ -20,6 +21,7 @@ export default function TrainingExerciseBlock({
 	solutionTab,
 	initialView,
 	watchOpen,
+	tools,
 }: {
 	templateId: string;
 	locale: Locale;
@@ -29,6 +31,7 @@ export default function TrainingExerciseBlock({
 	initialView?: TrainingInitialView;
 	/** The watch table is open when the solution starts. */
 	watchOpen?: boolean;
+	tools?: EditorTools;
 }) {
 	const [view, setView] = useState<View>("exercise");
 	const [solutionShown, setSolutionShown] = useState(false);
@@ -45,6 +48,7 @@ export default function TrainingExerciseBlock({
 				locale={locale}
 				variant="exercise"
 				initialView={initialView}
+				tools={tools}
 			/>
 		);
 	}
@@ -65,6 +69,7 @@ export default function TrainingExerciseBlock({
 					locale={locale}
 					variant="exercise"
 					initialView={initialView}
+					tools={tools}
 				/>
 			</Box>
 			{solutionShown && (

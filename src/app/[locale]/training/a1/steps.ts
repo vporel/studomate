@@ -1,5 +1,10 @@
 import type { StepData } from "../ModuleStepper";
 import type { TrainingTranslator } from "../training-translator";
+import {
+	GRAFCET_AND_DIVERGENCE_TOOLS,
+	GRAFCET_OR_DIVERGENCE_TOOLS,
+	GRAFCET_SEQUENCE_TOOLS,
+} from "../training-tools";
 import A1_STEP_IDS from "@/training/step-ids/a1";
 
 export default function buildA1Steps(t: TrainingTranslator): StepData[] {
@@ -61,6 +66,7 @@ export default function buildA1Steps(t: TrainingTranslator): StepData[] {
 				solutionTab: t("ctaSolution"),
 				initialView: { type: "grafcet" },
 			},
+			embeddedTools: GRAFCET_SEQUENCE_TOOLS,
 			embeddedWatchOpen: true,
 			cta: {
 				templateId: "linear-sequence",
@@ -97,6 +103,7 @@ export default function buildA1Steps(t: TrainingTranslator): StepData[] {
 				solutionTab: t("ctaSolution"),
 				initialView: { type: "grafcet" },
 			},
+			embeddedTools: GRAFCET_SEQUENCE_TOOLS,
 			cta: {
 				templateId: "traffic-light",
 				exerciseLabel: t("openEditorCta"),
@@ -119,6 +126,7 @@ export default function buildA1Steps(t: TrainingTranslator): StepData[] {
 				solutionTab: t("ctaSolution"),
 				initialView: { type: "grafcet" },
 			},
+			embeddedTools: GRAFCET_OR_DIVERGENCE_TOOLS,
 			cta: {
 				templateId: "or-divergence",
 				exerciseLabel: t("openEditorCta"),
@@ -141,6 +149,7 @@ export default function buildA1Steps(t: TrainingTranslator): StepData[] {
 				solutionTab: t("ctaSolution"),
 				initialView: { type: "grafcet" },
 			},
+			embeddedTools: GRAFCET_AND_DIVERGENCE_TOOLS,
 			cta: {
 				templateId: "and-divergence",
 				exerciseLabel: t("openEditorCta"),

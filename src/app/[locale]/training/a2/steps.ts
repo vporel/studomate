@@ -1,5 +1,11 @@
 import type { StepData } from "../ModuleStepper";
 import type { TrainingTranslator } from "../training-translator";
+import {
+	LADDER_BASIC_TOOLS,
+	LADDER_EDGES_TOOLS,
+	LADDER_MEMORY_TOOLS,
+	LADDER_READING_TOOLS,
+} from "../training-tools";
 import A2_STEP_IDS from "@/training/step-ids/a2";
 
 export default function buildA2Steps(t: TrainingTranslator): StepData[] {
@@ -31,6 +37,7 @@ export default function buildA2Steps(t: TrainingTranslator): StepData[] {
 			body: t.raw("a2ExerciseReadingBody") as string[],
 			embeddedTemplateId: "ladder-reading",
 			embeddedExercise: { initialView: { type: "ladder" } },
+			embeddedTools: LADDER_READING_TOOLS,
 			cta: {
 				templateId: "ladder-reading",
 				exerciseLabel: t("openEditorCta"),
@@ -47,6 +54,7 @@ export default function buildA2Steps(t: TrainingTranslator): StepData[] {
 				solutionTab: t("ctaSolution"),
 				initialView: { type: "ladder" },
 			},
+			embeddedTools: LADDER_BASIC_TOOLS,
 			cta: {
 				templateId: "ladder-logic",
 				exerciseLabel: t("openEditorCta"),
@@ -69,6 +77,7 @@ export default function buildA2Steps(t: TrainingTranslator): StepData[] {
 				solutionTab: t("ctaSolution"),
 				initialView: { type: "ladder" },
 			},
+			embeddedTools: LADDER_BASIC_TOOLS,
 			cta: {
 				templateId: "ladder-self-holding",
 				exerciseLabel: t("openEditorCta"),
@@ -85,6 +94,7 @@ export default function buildA2Steps(t: TrainingTranslator): StepData[] {
 				solutionTab: t("ctaSolution"),
 				initialView: { type: "ladder" },
 			},
+			embeddedTools: LADDER_BASIC_TOOLS,
 			cta: {
 				templateId: "ladder-interlock",
 				exerciseLabel: t("openEditorCta"),
@@ -107,6 +117,7 @@ export default function buildA2Steps(t: TrainingTranslator): StepData[] {
 				solutionTab: t("ctaSolution"),
 				initialView: { type: "ladder" },
 			},
+			embeddedTools: LADDER_MEMORY_TOOLS,
 			cta: {
 				templateId: "ladder-memory",
 				exerciseLabel: t("openEditorCta"),
@@ -143,6 +154,7 @@ export default function buildA2Steps(t: TrainingTranslator): StepData[] {
 				solutionTab: t("ctaSolution"),
 				initialView: { type: "ladder" },
 			},
+			embeddedTools: LADDER_EDGES_TOOLS,
 			cta: {
 				templateId: "ladder-toggle",
 				exerciseLabel: t("openEditorCta"),

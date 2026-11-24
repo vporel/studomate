@@ -10,6 +10,7 @@ import { ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";
 import { platformShortcut } from "@/ui/lib/platform";
 import LadderCopyCutPasteManager from "@/ui/stores/ladder/managers/copy-cut-paste.manager";
 import LadderWorkflowManager from "@/ui/stores/ladder/managers/workflow.manager";
+import type { LadderToolId } from "@/ui/stores/project/editor-tools";
 import { LADDER_CONNECTION_EDGE_TYPE } from "@/ui/utils/ladder/ladder-flow-builder";
 import { Edge, Node, OnDelete } from "@xyflow/react";
 import { LadderContextMenuElement } from "./ladder-context-menu";
@@ -38,6 +39,7 @@ export default function nodeOrEdgeContextMenuItems(
 	copyCutPasteManager: LadderCopyCutPasteManager,
 	workflowManager: LadderWorkflowManager,
 	openCrossReferences: (variable: string) => void,
+	isToolAvailable: (id: LadderToolId) => boolean,
 	t: MenuTranslate,
 ): ContextMenuItemType[][] {
 	const groups: ContextMenuItemType[][] = [];
@@ -47,7 +49,9 @@ export default function nodeOrEdgeContextMenuItems(
 		groups.push([
 			{
 				label: t("type"),
-				subItems: CONTACT_TYPES.map((type) => ({
+				subItems: CONTACT_TYPES.filter(
+					(type) => type === current || isToolAvailable(`contact-${type}`),
+				).map((type) => ({
 					label: t(CONTACT_TYPE_KEYS[type]),
 					checked: type === current,
 					onClick: () =>
@@ -62,7 +66,9 @@ export default function nodeOrEdgeContextMenuItems(
 		groups.push([
 			{
 				label: t("type"),
-				subItems: COIL_TYPES.map((type) => ({
+				subItems: COIL_TYPES.filter(
+					(type) => type === current || isToolAvailable(`coil-${type}`),
+				).map((type) => ({
 					label: t(COIL_TYPE_KEYS[type]),
 					checked: type === current,
 					onClick: () =>

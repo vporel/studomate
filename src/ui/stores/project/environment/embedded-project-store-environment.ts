@@ -9,6 +9,7 @@ import createInProcessScene3dLinkHost from "../managers/3d-scene/in-process-scen
 import type HardwareLinkNotifier from "../managers/hardware-link/hardware-link.notifier";
 import type SimulationNotifier from "../managers/simulation/simulation.notifier";
 import type { ProjectStoreEnvironment } from "./project-store-environment";
+import type { EditorTools } from "../editor-tools";
 
 function createEmbeddedSimulationNotifier(locale: Locale): SimulationNotifier {
 	return {
@@ -60,8 +61,10 @@ const silentHardwareNotifier: HardwareLinkNotifier = {
  */
 export default function createEmbeddedProjectStoreEnvironment({
 	locale,
+	tools,
 }: {
 	locale: Locale;
+	tools?: EditorTools;
 }): ProjectStoreEnvironment {
 	let simulationMode = SimulationMode.CONTINUOUS;
 	return {
@@ -79,6 +82,7 @@ export default function createEmbeddedProjectStoreEnvironment({
 			export: false,
 			crossReference: false,
 			programExecutionExclusionToggle: false,
+			tools,
 		},
 		analytics: { trackEvent: () => {} },
 		simulationNotifier: createEmbeddedSimulationNotifier(locale),

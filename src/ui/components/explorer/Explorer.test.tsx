@@ -18,8 +18,7 @@ jest.mock("./context-menu/ExplorerContextMenu", () => () => null);
 
 function setup(activeScopeType: string) {
 	const project = {
-		getAllTimerBlockElements: () => [],
-		getAllCounterBlockElements: () => [],
+		ladders: {},
 		grafcets: {},
 	};
 	(useProjectStore as jest.Mock).mockImplementation(

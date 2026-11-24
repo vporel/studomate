@@ -35,19 +35,19 @@ const buildCreation = jest.fn(
 function setup({
 	pendingSystemBlockCreation = null,
 	pendingSystemBlockEdit = null,
-	isNameTaken = jest.fn(() => false),
+	isMnemonicTaken = jest.fn(() => false),
 	showNote,
 }: {
 	pendingSystemBlockCreation?: PendingSystemBlockCreation | null;
 	pendingSystemBlockEdit?: PendingSystemBlockEdit | null;
-	isNameTaken?: jest.Mock;
+	isMnemonicTaken?: jest.Mock;
 	showNote?: boolean;
 } = {}) {
 	const executeOperation = jest.fn();
 	const setPendingSystemBlockCreation = jest.fn();
 	const setPendingSystemBlockEdit = jest.fn();
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
-		selectorImplementation({ project: { isNameTaken } }),
+		selectorImplementation({ project: { isMnemonicTaken } }),
 	);
 	(useLadderStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
@@ -150,7 +150,7 @@ describe("SystemBlockDialog", () => {
 	it("disables Créer and shows an error for a name already used", () => {
 		setup({
 			pendingSystemBlockCreation: creation(),
-			isNameTaken: jest.fn(() => true),
+			isMnemonicTaken: jest.fn(() => true),
 		});
 
 		typeName("Cpt1");
@@ -193,7 +193,7 @@ describe("SystemBlockDialog", () => {
 				elementId: "b1",
 				initial: { name: "Cpt1", counterType: "CTU", control: "", pv: "" },
 			},
-			isNameTaken: jest.fn(() => true),
+			isMnemonicTaken: jest.fn(() => true),
 		});
 
 		expect(screen.getByText("Enregistrer")).toBeEnabled();
@@ -209,7 +209,7 @@ describe("SystemBlockDialog", () => {
 				elementId: "b1",
 				initial: { name: "Cpt1", counterType: "CTU", control: "", pv: "" },
 			},
-			isNameTaken: jest.fn(() => true),
+			isMnemonicTaken: jest.fn(() => true),
 		});
 
 		typeName("Cpt2");

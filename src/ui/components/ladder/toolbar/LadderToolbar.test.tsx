@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { fireEvent, screen } from "@testing-library/react";
+import { cleanup, fireEvent, screen } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
@@ -12,6 +12,7 @@ import {
 	LADDER_FLOW_MAX_ZOOM,
 	LADDER_FLOW_MIN_ZOOM,
 } from "@/ui/stores/ladder/managers/view.manager";
+import type { EditorTools } from "@/ui/stores/project/editor-tools";
 import LadderToolbar from "./LadderToolbar";
 
 jest.mock("@/ui/components/projects/ProjectContext");
@@ -41,6 +42,7 @@ function setup({
 	compact = false,
 	systemBlocksPaletteOpen = false,
 	onToggleSystemBlocksPalette = jest.fn(),
+	tools = undefined as EditorTools | undefined,
 } = {}) {
 	const laddersManager = { setExcludedFromExecution: jest.fn() };
 	(useCollapseOnOverflow as jest.Mock).mockReturnValue(compact);
@@ -49,7 +51,7 @@ function setup({
 			mode,
 			editingEnabled,
 			laddersManager,
-			capabilities: { programExecutionExclusionToggle },
+			capabilities: { programExecutionExclusionToggle, tools },
 		}),
 	);
 	(useLadderStore as unknown as jest.Mock).mockImplementation(
@@ -141,6 +143,15 @@ describe("LadderToolbar", () => {
 			expect(screen.getByText("Bibliothèque")).toBeInTheDocument();
 		});
 
+		it("garde l'outil CALL, quelle que soit la largeur de la barre", () => {
+			setup({ compact: false });
+			expect(screen.getByText("CALL")).toBeInTheDocument();
+			cleanup();
+
+			setup({ compact: true });
+			expect(screen.getByText("CALL")).toBeInTheDocument();
+		});
+
 		it("ouvre et ferme la boîte au clic, et reflète son état", () => {
 			const { onToggleSystemBlocksPalette, unmount } = setup({
 				compact: true,
@@ -179,6 +190,71 @@ describe("LadderToolbar", () => {
 			setup();
 			const toolbar = document.querySelector(".ladder-toolbar") as HTMLElement;
 			expect(toolbar).toHaveStyle({ overflowX: "auto" });
+		});
+	});
+
+	describe("outils restreints", () => {
+		const toolLabels = () =>
+			Array.from(document.querySelectorAll("[aria-label]")).map((element) =>
+				element.getAttribute("aria-label"),
+			);
+
+		it("n'affiche que les contacts et bobines autorisés", () => {
+			setup({ tools: { ladder: ["contact-NO", "coil-set"] } });
+
+			const labels = toolLabels();
+			expect(labels).toContain("Contact normalement ouvert (NO)");
+			expect(labels).toContain("Bobine Set (mémorisation à 1)");
+			expect(labels).not.toContain("Contact normalement fermé (NF)");
+			expect(labels).not.toContain("Bobine normale");
+		});
+
+		it("masque le bouton des bobines supplémentaires quand aucune n'est autorisée", () => {
+			setup({ tools: { ladder: ["coil-normal"] } });
+			expect(
+				screen.queryByLabelText("Afficher d'autres bobines"),
+			).not.toBeInTheDocument();
+		});
+
+		it("garde le bouton des bobines supplémentaires pour celles qui sont autorisées", () => {
+			setup({ tools: { ladder: ["coil-rising"] } });
+
+			fireEvent.click(screen.getByLabelText("Afficher d'autres bobines"));
+
+			expect(toolLabels()).toContain(
+				"Bobine de front montant (impulsion à l'activation)",
+			);
+			expect(toolLabels()).not.toContain(
+				"Bobine de front descendant (impulsion à la désactivation)",
+			);
+		});
+
+		it("masque CALL quand il n'est pas autorisé", () => {
+			setup({ tools: { ladder: ["contact-NO", "compare"] } });
+
+			expect(screen.queryByText("CALL")).not.toBeInTheDocument();
+			expect(screen.getByText("COMPARE")).toBeInTheDocument();
+			expect(screen.queryByText("ASSIGN")).not.toBeInTheDocument();
+		});
+
+		it("masque le bouton Bibliothèque quand aucun bloc système n'est autorisé", () => {
+			setup({ tools: { ladder: ["contact-NO", "user-program"] } });
+
+			expect(screen.queryByText("Bibliothèque")).not.toBeInTheDocument();
+			expect(screen.getByText("CALL")).toBeInTheDocument();
+		});
+
+		it("garde le bouton Bibliothèque pour un bloc système sans outil dédié", () => {
+			setup({ tools: { ladder: ["timer"] } });
+			expect(screen.getByText("Bibliothèque")).toBeInTheDocument();
+		});
+
+		it("garde 'Réseau' même sans aucun outil de dépose", () => {
+			setup({ tools: { ladder: [] } });
+
+			expect(screen.getByText("Réseau")).toBeInTheDocument();
+			expect(screen.queryByText("CALL")).not.toBeInTheDocument();
+			expect(document.querySelector("[data-tour='toolbar']")).toBeNull();
 		});
 	});
 

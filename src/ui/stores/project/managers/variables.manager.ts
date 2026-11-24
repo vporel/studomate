@@ -57,10 +57,14 @@ export default class VariablesManager {
 
 	/**
 	 * @param mnemonic
-	 * @returns True if a timer or counter block of the current project already uses this name
+	 * @returns True if a program of the current project (a timer or counter block) already
+	 * declares this name
 	 */
 	isMnemonicUsedByBlock(mnemonic: string): boolean {
-		return this.getStoreState().project?.isBlockNameTaken(mnemonic) ?? false;
+		return (
+			this.getStoreState().project?.isMnemonicClaimedByAnyProgram(mnemonic) ??
+			false
+		);
 	}
 
 	/**

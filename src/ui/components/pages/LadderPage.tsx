@@ -4,6 +4,7 @@ import Ladder from "@/schemas/ladder/ladder.schema";
 import { LadderContextProvider } from "@/ui/components/ladder/context/LadderContext";
 import LadderFlow from "@/ui/components/ladder/flow/LadderFlow";
 import CounterBlockDialog from "@/ui/components/ladder/system-blocks/CounterBlockDialog";
+import CallBlockDialog from "@/ui/components/ladder/system-blocks/CallBlockDialog";
 import TimerBlockDialog from "@/ui/components/ladder/system-blocks/TimerBlockDialog";
 import LadderToolbar from "@/ui/components/ladder/toolbar/LadderToolbar";
 import { LadderToolbarDnDProvider } from "@/ui/components/ladder/toolbar/LadderToolbarDnDContext";
@@ -39,6 +40,7 @@ const LadderPage = ({ initialLadder }: { initialLadder: Ladder }) => {
 					<LadderFlow />
 					<TimerBlockDialog />
 					<CounterBlockDialog />
+					<CallBlockDialog />
 					{systemBlocksPaletteOpen && (
 						<SystemBlocksPalette
 							position={systemBlocksPalettePosition}

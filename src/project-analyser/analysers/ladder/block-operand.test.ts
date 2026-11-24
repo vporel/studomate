@@ -13,9 +13,9 @@ describe("parseOperandNode", () => {
 		expect(parseOperandNode("42", Dialect.FR, OPERAND_NODE_TYPES)?.type).toBe(
 			"NUMBER_LITERAL",
 		);
-		expect(
-			parseOperandNode("vrai", Dialect.FR, OPERAND_NODE_TYPES)?.type,
-		).toBe("BOOLEAN_LITERAL");
+		expect(parseOperandNode("vrai", Dialect.FR, OPERAND_NODE_TYPES)?.type).toBe(
+			"BOOLEAN_LITERAL",
+		);
 	});
 
 	it("refuse une expression composée", () => {

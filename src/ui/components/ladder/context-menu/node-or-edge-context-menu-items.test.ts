@@ -1,5 +1,6 @@
 import { identityT } from "@tests/utils/i18n";
 import { LADDER_CONNECTION_EDGE_TYPE } from "@/ui/utils/ladder/ladder-flow-builder";
+import type { LadderToolId } from "@/ui/stores/project/editor-tools";
 import nodeOrEdgeContextMenuItems from "./node-or-edge-context-menu-items";
 
 const fakeCopyCutPasteManager = () =>
@@ -19,6 +20,7 @@ function itemsFor(
 	handleDelete: jest.Mock = jest.fn(),
 	workflowManager = fakeWorkflowManager(),
 	openCrossReferences: jest.Mock = jest.fn(),
+	isToolAvailable: (id: LadderToolId) => boolean = () => true,
 ) {
 	return nodeOrEdgeContextMenuItems(
 		element,
@@ -27,6 +29,7 @@ function itemsFor(
 		fakeCopyCutPasteManager(),
 		workflowManager,
 		openCrossReferences,
+		isToolAvailable,
 		identityT,
 	);
 }
@@ -83,6 +86,7 @@ describe("nodeOrEdgeContextMenuItems", () => {
 			ccp,
 			fakeWorkflowManager(),
 			jest.fn(),
+			() => true,
 			identityT,
 		);
 
@@ -234,6 +238,57 @@ describe("nodeOrEdgeContextMenuItems", () => {
 				"coil-1",
 				"reset",
 			);
+		});
+	});
+
+	describe("restriction des outils", () => {
+		const only =
+			(...ids: LadderToolId[]) =>
+			(id: LadderToolId) =>
+				ids.includes(id);
+		const typeLabels = (node: any, isToolAvailable: any) =>
+			(
+				itemsFor(
+					node,
+					jest.fn(),
+					fakeWorkflowManager(),
+					jest.fn(),
+					isToolAvailable,
+				)
+					.flat()
+					.find((item) => item.label === "type")!.subItems as any[]
+			).map((sub) => sub.label);
+
+		it("ne propose pour un contact que les types autorisés", () => {
+			const node = { id: "c1", type: "contact", data: { type: "NO" } };
+
+			expect(typeLabels(node, only("contact-NO", "contact-NF"))).toEqual([
+				"contactNO",
+				"contactNF",
+			]);
+		});
+
+		it("ne propose pour une bobine que les types autorisés", () => {
+			const node = { id: "k1", type: "coil", data: { type: "normal" } };
+
+			expect(typeLabels(node, only("coil-normal"))).toEqual(["coilNormal"]);
+		});
+
+		it("garde le type courant, coché, même s'il n'est plus autorisé", () => {
+			const node = { id: "c1", type: "contact", data: { type: "P" } };
+
+			const subs = itemsFor(
+				node,
+				jest.fn(),
+				fakeWorkflowManager(),
+				jest.fn(),
+				only("contact-NO"),
+			)
+				.flat()
+				.find((item) => item.label === "type")!.subItems as any[];
+
+			expect(subs.map((s) => s.label)).toEqual(["contactNO", "contactP"]);
+			expect(subs.find((s) => s.checked).label).toBe("contactP");
 		});
 	});
 });

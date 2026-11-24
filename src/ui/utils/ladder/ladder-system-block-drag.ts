@@ -1,6 +1,7 @@
 import {
 	CounterBlockParams,
 	TimerBlockParams,
+	UserProgramBlockParams,
 } from "@/schemas/ladder/block.schema";
 
 /**
@@ -16,12 +17,16 @@ export const LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE =
 /**
  * État d'une création de bloc système en attente de validation (voir `LadderStoreState.
  * pendingSystemBlockCreation`) — une entrée par famille de bloc **à fenêtre de configuration**
- * (tempo, compteur), discriminée par `blockType`. Les blocs `"compare"`/`"assign"`/`"arithmetic"`/`"convert"`
+ * (tempo, compteur, appel de programme), discriminée par `blockType`. Les blocs `"compare"`/`"assign"`/`"arithmetic"`/`"convert"`
  * n'y figurent pas : leur dépose insère directement un bloc vide, configuré ensuite sur le canevas.
  */
 export type PendingSystemBlockCreation =
 	| { blockType: "timer"; insert: (params: TimerBlockParams) => void }
-	| { blockType: "counter"; insert: (params: CounterBlockParams) => void };
+	| { blockType: "counter"; insert: (params: CounterBlockParams) => void }
+	| {
+			blockType: "user-program";
+			insert: (params: UserProgramBlockParams) => void;
+	  };
 
 /**
  * État d'une édition de bloc système en attente de validation (voir `LadderStoreState.

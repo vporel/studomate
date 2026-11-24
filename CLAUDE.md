@@ -252,6 +252,11 @@ Always check `package.json` before quoting a version: this table goes stale at t
     rule spans several entities;
   - a **`src/ui/utils/<editor>/` function** when it's editing geometry (grid footprints,
     collisions), not a domain rule.
+    `Project` only holds what belongs to the collection itself (the single Main, a mnemonic
+    unique across the project, renaming everywhere): a question about a program's content (its blocks,
+    whether it can be called) is a method of that program, and an abstract one on `Program`
+    when `Project` must ask it without knowing the program's type (`claimsMnemonic`,
+    `renameVariableReferences`). `Project` never imports the internals of a notation.
     A simple field read or a TypeScript union discriminant (`element.type === "block"`) is not a
     rule and needs no method. Migrations never call schema methods: they work on raw data frozen
     at their version.

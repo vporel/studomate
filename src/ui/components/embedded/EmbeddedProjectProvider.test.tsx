@@ -196,6 +196,21 @@ describe("EmbeddedProjectProvider", () => {
 		});
 	});
 
+	describe("tools", () => {
+		it("restricts no tool by default", () => {
+			const { probe } = mount();
+
+			expect(probe.store!.getState().capabilities.tools).toBeUndefined();
+		});
+
+		it("hands the tools asked for to the editors", () => {
+			const tools = { ladder: ["contact-NO" as const] };
+			const { probe } = mount({ tools });
+
+			expect(probe.store!.getState().capabilities.tools).toEqual(tools);
+		});
+	});
+
 	describe("onDirtyChange", () => {
 		it("reports the project becoming modified once", () => {
 			const onDirtyChange = jest.fn();

@@ -41,7 +41,7 @@ export default function WhatsNewModal({ onClose }: { onClose: () => void }) {
 			onClose={onClose}
 			closeButton={false}
 			compact
-			width={480}
+			width="min(480px, 90%)"
 			aria-label={title}
 			sx={{ overflow: "hidden" }}
 		>

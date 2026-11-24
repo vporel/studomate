@@ -518,7 +518,7 @@
 		],
 		"coilsOutro": "Comme pour les contacts, la variable se choisit par double-clic sur la bobine. En simulation, une bobine alimentée est mise en évidence. Dans la barre d'outils ladder, seules les bobines normale, Set et Reset sont visibles par défaut : le bouton « Afficher d'autres bobines » révèle l'inversée et les deux bobines de front, et « Masquer les bobines supplémentaires » les cache de nouveau.",
 		"blocksTitle": "Blocs",
-		"blocksIntro1": "Les blocs sont des éléments fonctionnels avancés qui s'insèrent dans un réseau comme un contact ou une bobine. Deux façons de les poser : en faisant glisser le bloc depuis la section « Bibliothèque » de l'explorateur vers le canvas d'un ladder, ou (pour la Comparaison, l'Affectation, le Calcul et la Conversion) depuis l'outil dédié de la barre d'outils ladder.",
+		"blocksIntro1": "Les blocs sont des éléments fonctionnels avancés qui s'insèrent dans un réseau comme un contact ou une bobine. Deux façons de les poser : en faisant glisser le bloc depuis la section « Bibliothèque » de l'explorateur vers le canvas d'un ladder, ou (pour la Comparaison, l'Affectation, le Calcul, la Conversion et l'Appel de programme) depuis l'outil dédié de la barre d'outils ladder.",
 		"timerBlockFigureAlt": "Réseau avec un contact S1 relié à l'entrée IN d'un bloc temporisation T1 de variante TON. La broche PT porte la constante T#5s, la broche ET la variable T1_ET, et la sortie Q alimente une bobine H1.",
 		"blocksIntro2": "La Temporisation et le Compteur ouvrent une fenêtre de configuration à la dépose (nom et variante) ; on la rouvre ensuite en double-cliquant sur le bloc ou par clic droit → Paramétrer sur l'instance dans l'explorateur. La Comparaison, l'Affectation, le Calcul et la Conversion sont insérés vides et se configurent directement sur le canvas : opérandes saisis sur les broches (variable ou constante), opérateur choisi dans le menu qui s'ouvre au clic sur le bloc. L'Affectation, le Calcul et la Conversion recopient leur entrée EN sur leur sortie ENO : plusieurs de ces blocs peuvent s'enchaîner sur un même réseau.",
 		"timerTitle": "Temporisation",
@@ -547,7 +547,7 @@
 		"convertTitle": "Conversion",
 		"convertBody": "Convertit la valeur de la variable in vers le type de la variable out lorsque le circuit qui l'alimente (EN) est vrai. Les deux listes sous le libellé CONV choisissent le type de départ et le type d'arrivée (INT vers REAL par défaut), ce qui donne la conversion normalisée appliquée, par exemple DINT_TO_INT ; seules les paires prises en charge sont proposées. Une variable dont le type diffère de celui choisi pour sa broche est signalée en rouge, et l'analyse la refuse. Un entier trop grand pour le type de destination y est ramené par rebouclage, comme sur un automate ; un REAL est arrondi à l'entier le plus proche. in et out se renseignent sur les broches du bloc (variables uniquement).",
 		"programCallTitle": "Appel de programme",
-		"programCallBody": "Appelle un autre ladder depuis le ladder Main. Le ladder ciblé s'exécute à chaque cycle où l'entrée EN est vraie, à l'endroit du bloc : avant les réseaux placés en dessous, qui voient donc ses écritures du même cycle. C'est le mécanisme par lequel le Main orchestre les autres ladders du projet : un ladder non appelé par le Main ne sera jamais exécuté (l'analyse le signale comme avertissement).",
+		"programCallBody": "Appelle un autre ladder, depuis le Main ou depuis n'importe quel autre ladder. Faites glisser l'outil CALL de la barre d'outils sur un réseau, puis choisissez le ladder à appeler dans la fenêtre qui s'ouvre. Ce choix est définitif : pour viser un autre ladder, supprimez le bloc et recréez-le. Le ladder ciblé s'exécute à chaque cycle où l'entrée EN est vraie, à l'endroit du bloc : avant les réseaux placés en dessous, qui voient donc ses écritures du même cycle. C'est le mécanisme par lequel les ladders s'enchaînent à partir du Main : un ladder qu'aucun bloc n'appelle ne sera jamais exécuté (l'analyse le signale comme avertissement).",
 		"connectionsTitle": "Connexions",
 		"connectionsIntro": "Un réseau est alimenté par le rail à gauche (trait vertical). Les éléments se relient entre eux en glissant depuis un point de connexion vers l'élément cible ; le validateur de connexions empêche les liaisons invalides (ex. relier deux bobines entre elles).",
 		"connectionsItems": [
@@ -598,7 +598,7 @@
 		"ladderTools": [
 			"Contact NO, NF, P (front montant) et N (front descendant)",
 			"Bobine normale, Set et Reset ; inversée et fronts montant/descendant via le bouton « Afficher d'autres bobines »",
-			"Blocs Comparaison, Affectation, Calcul et Conversion (les autres blocs systèmes se glissent depuis l'explorateur)",
+			"Blocs Comparaison, Affectation, Calcul et Conversion, et bloc CALL (les autres blocs systèmes se glissent depuis l'explorateur)",
 			"Bouton « Réseau » : ajoute un nouveau réseau au ladder"
 		],
 		"ladderToolsOutro": "Voir la section Ladder pour le détail de ces éléments."

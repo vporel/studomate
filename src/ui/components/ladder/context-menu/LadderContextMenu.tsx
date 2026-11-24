@@ -13,6 +13,7 @@ import useExportProgramPdf from "@/ui/pdf/useExportProgramPdf";
 import type { PdfExportProgramConfig } from "@/ui/pdf/usePdfExport";
 import { OnDelete, XYPosition } from "@xyflow/react";
 import { useCallback, useMemo, useState } from "react";
+import useLadderToolAvailable from "../toolbar/useLadderToolAvailable";
 import { useLadderContext, useLadderStore } from "../context/LadderContext";
 import {
 	LadderContextMenuElement,
@@ -43,6 +44,7 @@ const LadderContextMenu = ({
 			s.entry?.scope === "ladder" &&
 			(s.entry.data as { kind?: string })?.kind === "elements",
 	);
+	const isToolAvailable = useLadderToolAvailable();
 	const canEdit = useCanEditActivePage();
 	const canExport = useProjectStore((s) => s.capabilities.export);
 	const getExportConfig = useCallback(
@@ -100,6 +102,7 @@ const LadderContextMenu = ({
 				copyCutPasteManager,
 				workflowManager,
 				openCrossReferences,
+				isToolAvailable,
 				t,
 			),
 		);
@@ -116,6 +119,7 @@ const LadderContextMenu = ({
 		onExport,
 		canExport,
 		openCrossReferences,
+		isToolAvailable,
 		t,
 	]);
 

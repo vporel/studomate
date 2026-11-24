@@ -3,7 +3,7 @@
 	"PROJECT_MISSING_ANALYSER_FOR_NOTATION": "No analyser is available for the \"{notation}\" notation (program \"{programName}\"). This program was not analysed.",
 	"PROJECT_MISSING_MAIN": "The project has no Main program.",
 	"PROJECT_MULTIPLE_MAINS": "The project has {count} Main programs; it should have exactly one.",
-	"LADDER_NOT_REFERENCED": "The \"{ladderName}\" ladder is not referenced by any block in the project: it will never run.",
+	"LADDER_NOT_REFERENCED": "The \"{ladderName}\" ladder is not referenced by any block in the project: it will never run. To call it, use the CALL tool in the ladder toolbar, or drag it from the explorer into a network of Main or of another ladder.",
 
 	"HARDWARE_MODEL_UNKNOWN": "The hardware target \"{modelId}\" is unknown to this version of Studomate: its addresses cannot be checked.",
 	"HARDWARE_PIN_UNKNOWN": "Variable \"{variableName}\" has address {address}, which does not exist on the {device} target.",

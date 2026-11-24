@@ -1,6 +1,7 @@
 import type { PagesSession } from "@/persistence/pages-session.storage";
 import type { VariablesPageId } from "@/ui/stores/project/variables-pages";
 import type Project from "@/schemas/project/project.schema";
+import type { EditorTools } from "@/ui/stores/project/editor-tools";
 
 export type EmbeddedControl =
 	| "mode"
@@ -36,6 +37,8 @@ export type EmbeddedAppProps = {
 	initialMode?: "design" | "simulation";
 	editable?: boolean;
 	controls?: EmbeddedControl[];
+	/** The only tools offered by each editor listed, read at mount only; an editor left out keeps all of its tools. */
+	tools?: EditorTools;
 	views: EmbeddedView[];
 	/** The view displayed first, one of `views`; the first of them by default. */
 	initialView?: EmbeddedView;

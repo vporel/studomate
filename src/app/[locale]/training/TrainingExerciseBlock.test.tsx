@@ -12,12 +12,20 @@ jest.mock("./TrainingEmbeddedBlock", () => ({
 	default: function EmbeddedBlock({
 		variant = "solution",
 		watchOpen,
+		tools,
 	}: {
 		variant?: string;
 		watchOpen?: boolean;
+		tools?: unknown;
 	}) {
 		useEffect(() => () => mockUnmounted(variant), [variant]);
-		return <div data-testid={variant} data-watch-open={String(watchOpen)} />;
+		return (
+			<div
+				data-testid={variant}
+				data-watch-open={String(watchOpen)}
+				data-tools={JSON.stringify(tools ?? null)}
+			/>
+		);
 	},
 }));
 
@@ -66,6 +74,46 @@ describe("TrainingExerciseBlock", () => {
 		expect(screen.getByTestId("solution")).toHaveAttribute(
 			"data-watch-open",
 			"true",
+		);
+	});
+
+	it("hands its tools to the exercise only", () => {
+		const tools = { ladder: ["contact-NO" as const] };
+		render(
+			<TrainingExerciseBlock
+				templateId="linear-sequence"
+				locale="fr"
+				exerciseTab="Exercice"
+				solutionTab="Corrigé"
+				tools={tools}
+			/>,
+		);
+
+		fireEvent.click(screen.getByRole("tab", { name: "Corrigé" }));
+
+		expect(screen.getByTestId("exercise")).toHaveAttribute(
+			"data-tools",
+			JSON.stringify(tools),
+		);
+		expect(screen.getByTestId("solution")).toHaveAttribute(
+			"data-tools",
+			"null",
+		);
+	});
+
+	it("hands its tools to the exercise shown alone", () => {
+		const tools = { ladder: ["contact-NO" as const] };
+		render(
+			<TrainingExerciseBlock
+				templateId="ladder-and-or"
+				locale="fr"
+				tools={tools}
+			/>,
+		);
+
+		expect(screen.getByTestId("exercise")).toHaveAttribute(
+			"data-tools",
+			JSON.stringify(tools),
 		);
 	});
 

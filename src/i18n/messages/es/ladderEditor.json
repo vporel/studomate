@@ -31,7 +31,8 @@
 		"compareToolbarLabel": "Bloque Compare: compara dos valores",
 		"assignToolbarLabel": "Bloque Assign: asigna un valor a una variable",
 		"arithmeticToolbarLabel": "Bloque Calc: operación aritmética",
-		"convertToolbarLabel": "Bloque CONV: convierte un valor al tipo de la variable OUT (DINT_TO_INT…)"
+		"convertToolbarLabel": "Bloque CONV: convierte un valor al tipo de la variable OUT (DINT_TO_INT…)",
+		"callToolbarLabel": "Bloque CALL: llama a otro ladder del proyecto"
 	},
 	"sectionHeader": {
 		"reorderAria": "Reordenar la red",
@@ -99,6 +100,13 @@
 		"typeTP": "TP: pulso calibrado",
 		"create": "Crear",
 		"save": "Guardar"
+	},
+	"callDialog": {
+		"title": "Llamar a un ladder",
+		"program": "Ladder a llamar",
+		"noProgram": "No hay ningún otro ladder en el proyecto. Cree uno en el explorador y vuelva a colocar un bloque CALL.",
+		"noProgramExcludedOnly": "Los demás ladders del proyecto están excluidos de la ejecución: un ladder ejecutado no puede llamarlos. Reactive la ejecución de uno de ellos o cree un nuevo ladder, y vuelva a colocar un bloque CALL.",
+		"create": "Añadir"
 	},
 	"counterDialog": {
 		"createTitle": "Nuevo contador",

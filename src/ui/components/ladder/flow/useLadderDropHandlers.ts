@@ -7,6 +7,8 @@ import ElementsAddCommand from "@/schemas/ladder/commands/elements-add.command";
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
 import { BLOCK_DEFINITIONS } from "@/schemas/ladder/block-definition";
 import { createUserProgramBlockElement } from "@/schemas/ladder/block.schema";
+import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import { useT } from "@/ui/i18n/useT";
 import { SYSTEM_BLOCK_CATALOG } from "@/ui/components/ladder/system-blocks/system-block-catalog";
 import {
 	createContactElement,
@@ -18,6 +20,7 @@ import { createCounterBlockElement } from "@/schemas/ladder/function-blocks/coun
 import { createTimerBlockElement } from "@/schemas/ladder/function-blocks/timer.schema";
 import { useReactFlow } from "@xyflow/react";
 import { useCallback } from "react";
+import { toast } from "react-toastify";
 import { useLadderStore } from "../context/LadderContext";
 import {
 	DraggedLadderElement,
@@ -97,6 +100,9 @@ export default function useLadderDropHandlers(
 	const setPendingSystemBlockCreation = useLadderStore(
 		(state) => state.setPendingSystemBlockCreation,
 	);
+	const ladderId = useLadderStore((state) => state.ladder.id);
+	const project = useProjectStore((state) => state.project);
+	const t = useT("toasts");
 
 	const handleDragOver = useCallback(
 		(e: React.DragEvent) => {
@@ -146,6 +152,14 @@ export default function useLadderDropHandlers(
 			if (dropRow < 0 || dropCol < 0) return;
 
 			if (programId) {
+				const caller = project?.getLadder(ladderId);
+				const target = project?.getLadder(programId);
+				const refusal =
+					caller && target ? target.getCallRefusalFrom(caller) : "not-a-ladder";
+				if (refusal) {
+					toast.warn(t(`programCallRefused.${refusal}`));
+					return;
+				}
 				const newElement = createUserProgramBlockElement(
 					programId,
 					dropRow,
@@ -180,6 +194,24 @@ export default function useLadderDropHandlers(
 					insert: (params) =>
 						dispatchInsertion(
 							createCounterBlockElement(params, dropRow, dropCol),
+						),
+				});
+				return;
+			}
+
+			if (systemBlockType === "user-program") {
+				if (
+					collidesWith(
+						section,
+						createUserProgramBlockElement("", dropRow, dropCol),
+					)
+				)
+					return;
+				setPendingSystemBlockCreation({
+					blockType: "user-program",
+					insert: ({ programId }) =>
+						dispatchInsertion(
+							createUserProgramBlockElement(programId, dropRow, dropCol),
 						),
 				});
 				return;
@@ -277,6 +309,9 @@ export default function useLadderDropHandlers(
 			section,
 			commandsStackManager,
 			setPendingSystemBlockCreation,
+			project,
+			ladderId,
+			t,
 		],
 	);
 

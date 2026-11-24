@@ -12,8 +12,7 @@ import { ExplorerItemsProps } from "./explorer-items-props";
 
 /**
  * Toutes les instances de blocs système du projet (tempo, compteur), tous ladders confondus —
- * pas de registre dédié, recalculé par parcours (voir `Project.getAllTimerBlockElements`/
- * `getAllCounterBlockElements`). Feuilles simples : le détail (PT/ET, PV/CV, variables
+ * pas de registre dédié, recalculé par parcours (voir `Ladder.getBlockElements`). Feuilles simples : le détail (PT/ET, PV/CV, variables
  * générées) se lit sur le nœud lui-même dans le ladder, pas ici — sauf via "Paramétrer" du menu
  * contextuel, qui ouvre la même fenêtre de configuration que le double-clic sur le bloc (voir
  * `useBlockInstanceMenuItems`). Le parent (`Explorer`) ne monte ce composant que s'il existe au
@@ -26,8 +25,9 @@ const ExplorerSystemBlockInstancesItems = ({
 	const project = useProjectStore((state) => state.project);
 	const onGotoProgram = useGotoProgram();
 
-	const timerInstances = (project?.getAllTimerBlockElements() ?? []).flatMap(
-		({ ladder, element }) => {
+	const ladders = Object.values(project?.ladders ?? {});
+	const timerInstances = ladders.flatMap((ladder) =>
+		ladder.getBlockElements("timer").flatMap((element) => {
 			const params = getTimerBlockParams(element);
 			return params
 				? [
@@ -39,23 +39,23 @@ const ExplorerSystemBlockInstancesItems = ({
 						},
 					]
 				: [];
-		},
+		}),
 	);
-	const counterInstances = (
-		project?.getAllCounterBlockElements() ?? []
-	).flatMap(({ ladder, element }) => {
-		const params = getCounterBlockParams(element);
-		return params
-			? [
-					{
-						ladder,
-						element,
-						name: params.name,
-						IconComponent: CounterBlockIcon as ElementType,
-					},
-				]
-			: [];
-	});
+	const counterInstances = ladders.flatMap((ladder) =>
+		ladder.getBlockElements("counter").flatMap((element) => {
+			const params = getCounterBlockParams(element);
+			return params
+				? [
+						{
+							ladder,
+							element,
+							name: params.name,
+							IconComponent: CounterBlockIcon as ElementType,
+						},
+					]
+				: [];
+		}),
+	);
 	const instances = [...timerInstances, ...counterInstances];
 
 	return (

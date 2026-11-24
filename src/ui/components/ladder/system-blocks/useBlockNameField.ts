@@ -22,7 +22,7 @@ export function useBlockNameField(
 		const errors = validateBlockName(name).map((i) =>
 			tv(i.code as never, i.params as never),
 		);
-		if (errors.length === 0 && project?.isNameTaken(name)) {
+		if (errors.length === 0 && project?.isMnemonicTaken(name)) {
 			errors.push(t("nameTaken"));
 		}
 		return errors;
