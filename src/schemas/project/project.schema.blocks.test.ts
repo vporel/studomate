@@ -4,34 +4,8 @@ import { createTimerBlockElement } from "@/schemas/ladder/function-blocks/timer.
 import Variable from "@/schemas/variable/variable.schema";
 import Project from "./project.schema";
 
-describe("Project — blocs timer", () => {
-	it("getAllTimerBlockElements parcourt tous les ladders et ignore les autres types de bloc/élément", () => {
-		const project = new Project("p1", "Projet", "");
-		const ladder1 = project.createLadder("L1");
-		const ladder2 = project.createLadder("L2");
-		const timerBlock = createTimerBlockElement(
-			{ name: "Tempo1", timerType: "TON", pt: "T#5s" },
-			0,
-			0,
-		);
-		ladder1.addElements(ladder1.sections[0].id, [timerBlock]);
-		ladder2.addElements(ladder2.sections[0].id, [
-			{
-				id: "b2",
-				type: "block",
-				data: { blockType: "user-program", params: { programId: "prog1" } },
-				position: { row: 0, col: 0 },
-			},
-		]);
-
-		const found = project.getAllTimerBlockElements();
-
-		expect(found).toHaveLength(1);
-		expect(found[0].element.id).toBe(timerBlock.id);
-		expect(found[0].ladder.id).toBe(ladder1.id);
-	});
-
-	it("isNameTaken détecte une collision avec une variable existante", () => {
+describe("Project — noms et blocs", () => {
+	it("isMnemonicTaken détecte une collision avec une variable existante", () => {
 		const project = new Project("p1", "Projet", "");
 		project.variables.push(
 			new Variable({
@@ -43,8 +17,8 @@ describe("Project — blocs timer", () => {
 			}),
 		);
 
-		expect(project.isNameTaken("Tempo1")).toBe(true);
-		expect(project.isNameTaken("Autre")).toBe(false);
+		expect(project.isMnemonicTaken("Tempo1")).toBe(true);
+		expect(project.isMnemonicTaken("Autre")).toBe(false);
 	});
 
 	it("findVariableByMnemonic résout un mnémonique exact et ignore la casse différente et les variables système", () => {
@@ -88,7 +62,7 @@ describe("Project — blocs timer", () => {
 		]);
 	});
 
-	it("isNameTaken détecte une collision avec un bloc timer existant, tous ladders confondus", () => {
+	it("isMnemonicTaken détecte une collision avec un bloc timer existant, tous ladders confondus", () => {
 		const project = new Project("p1", "Projet", "");
 		const ladder = project.createLadder("L1");
 		const timerBlock = createTimerBlockElement(
@@ -98,10 +72,10 @@ describe("Project — blocs timer", () => {
 		);
 		ladder.addElements(ladder.sections[0].id, [timerBlock]);
 
-		expect(project.isNameTaken("Tempo1")).toBe(true);
+		expect(project.isMnemonicTaken("Tempo1")).toBe(true);
 	});
 
-	it("isBlockNameTaken détecte un bloc timer ou compteur, pas une variable ni un nom libre", () => {
+	it("isMnemonicClaimedByAnyProgram détecte un bloc timer ou compteur, pas une variable ni un nom libre", () => {
 		const project = new Project("p1", "Projet", "");
 		const ladder = project.createLadder("L1");
 		ladder.addElements(ladder.sections[0].id, [
@@ -126,11 +100,26 @@ describe("Project — blocs timer", () => {
 			}),
 		);
 
-		expect(project.isBlockNameTaken("Tempo1")).toBe(true);
-		expect(project.isBlockNameTaken("Cpt1")).toBe(true);
-		expect(project.isBlockNameTaken("Libre")).toBe(false);
-		expect(project.isBlockNameTaken("Moteur")).toBe(false);
-		expect(project.isNameTaken("Cpt1")).toBe(true);
-		expect(project.isNameTaken("Moteur")).toBe(true);
+		expect(project.isMnemonicClaimedByAnyProgram("Tempo1")).toBe(true);
+		expect(project.isMnemonicClaimedByAnyProgram("Cpt1")).toBe(true);
+		expect(project.isMnemonicClaimedByAnyProgram("Libre")).toBe(false);
+		expect(project.isMnemonicClaimedByAnyProgram("Moteur")).toBe(false);
+		expect(project.isMnemonicTaken("Cpt1")).toBe(true);
+		expect(project.isMnemonicTaken("Moteur")).toBe(true);
+	});
+
+	it("isMnemonicClaimedByAnyProgram compte aussi les ladders exclus de l'exécution", () => {
+		const project = new Project("p1", "Projet", "");
+		const ladder = project.createLadder("L1");
+		ladder.excludedFromExecution = true;
+		ladder.addElements(ladder.sections[0].id, [
+			createTimerBlockElement(
+				{ name: "Tempo1", timerType: "TON", pt: "T#5s" },
+				0,
+				0,
+			),
+		]);
+
+		expect(project.isMnemonicClaimedByAnyProgram("Tempo1")).toBe(true);
 	});
 });

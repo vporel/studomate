@@ -1,6 +1,7 @@
 import { GRAFCET_ELEMENT_TYPES } from "./element.schema";
 import Connection from "./connection.schema";
 import Grafcet from "./grafcet.schema";
+import Program from "../program/program.schema";
 
 /**
  * Ces tests portent sur l'invariant introduit en §1.6 : une table unique pilote la
@@ -356,4 +357,13 @@ describe("Grafcet.getStepByNumber", () => {
 			expect(grafcet.getStepByNumber(value)).toBeUndefined();
 		},
 	);
+});
+
+describe("Grafcet — claimsMnemonic", () => {
+	it("ne réserve aucun nom, pas même celui d'une variable d'étape", () => {
+		const grafcet: Program = new Grafcet("g1", "Grafcet");
+
+		expect(grafcet.claimsMnemonic("X1")).toBe(false);
+		expect(grafcet.claimsMnemonic("Tempo")).toBe(false);
+	});
 });

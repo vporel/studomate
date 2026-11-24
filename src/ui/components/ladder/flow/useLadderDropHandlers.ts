@@ -152,9 +152,10 @@ export default function useLadderDropHandlers(
 			if (dropRow < 0 || dropCol < 0) return;
 
 			if (programId) {
-				const refusal = project
-					? project.getLadderCallRefusal(ladderId, programId)
-					: "not-a-ladder";
+				const caller = project?.getLadder(ladderId);
+				const target = project?.getLadder(programId);
+				const refusal =
+					caller && target ? target.getCallRefusalFrom(caller) : "not-a-ladder";
 				if (refusal) {
 					toast.warn(t(`programCallRefused.${refusal}`));
 					return;

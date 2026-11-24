@@ -6,7 +6,7 @@ import { useBlockNameField } from "./useBlockNameField";
 
 function projectWith(taken: string[]) {
 	return {
-		isNameTaken: jest.fn((name: string) => taken.includes(name)),
+		isMnemonicTaken: jest.fn((name: string) => taken.includes(name)),
 	} as unknown as Project;
 }
 
@@ -45,7 +45,7 @@ describe("useBlockNameField", () => {
 		const project = projectWith(["Tempo1"]);
 
 		expect(errorsFor("Tempo1", "Tempo1", project)).toEqual([]);
-		expect(project.isNameTaken).not.toHaveBeenCalled();
+		expect(project.isMnemonicTaken).not.toHaveBeenCalled();
 	});
 
 	it("still reports a conflict with another name when editing", () => {
@@ -59,6 +59,6 @@ describe("useBlockNameField", () => {
 		const errors = errorsFor("1abc", undefined, project);
 
 		expect(errors.length).toBeGreaterThan(0);
-		expect(project.isNameTaken).not.toHaveBeenCalled();
+		expect(project.isMnemonicTaken).not.toHaveBeenCalled();
 	});
 });

@@ -9,9 +9,6 @@ import { createRandomId } from "@/ids";
 import { nextAvailableName } from "@/lib/naming";
 import { isRecord, getOwnPropertyValue } from "@/lib/object";
 import Variable from "../variable/variable.schema";
-import { getCounterBlockParams } from "../ladder/function-blocks/counter.schema";
-import { getTimerBlockParams } from "../ladder/function-blocks/timer.schema";
-import { BlockElement, BlockType } from "../ladder/block.schema";
 import HmiPage from "../hmi/hmi-page.schema";
 import type { HardwareTarget } from "../hardware/hardware-target.schema";
 import type { Scene3d } from "../3d-scene/scene3d.schema";
@@ -60,8 +57,6 @@ export type Exercise = {
  * peuvent ainsi cohabiter, et une version ancienne de l'application peut lister tous les
  * projets tout en refusant proprement d'ouvrir ceux qui la dépassent.
  */
-export type LadderCallRefusal = "not-a-ladder" | "main" | "self" | "excluded";
-
 export const PROJECT_SCHEMA_VERSION = 6;
 
 export default class Project {
@@ -146,30 +141,6 @@ export default class Project {
 	getExecutedLadders(): Ladder[] {
 		return Object.values(this.ladders).filter(
 			(ladder) => !ladder.excludedFromExecution,
-		);
-	}
-
-	/** Why a call block placed in `callerLadderId` cannot reference `targetProgramId`, or
-	 * `undefined` when it can: never the Main nor the caller itself, and a ladder excluded from
-	 * execution only from a caller that is excluded too. */
-	getLadderCallRefusal(
-		callerLadderId: string,
-		targetProgramId: string,
-	): LadderCallRefusal | undefined {
-		const target = this.ladders[targetProgramId];
-		if (!target) return "not-a-ladder";
-		if (target.isMain()) return "main";
-		if (target.id === callerLadderId) return "self";
-		const callerExcluded =
-			this.ladders[callerLadderId]?.excludedFromExecution === true;
-		if (target.excludedFromExecution && !callerExcluded) return "excluded";
-		return undefined;
-	}
-
-	/** Ladders a call block placed in `callerLadderId` can reference (see `getLadderCallRefusal`). */
-	getLaddersCallableFrom(callerLadderId: string): Ladder[] {
-		return Object.values(this.ladders).filter(
-			(ladder) => !this.getLadderCallRefusal(callerLadderId, ladder.id),
 		);
 	}
 
@@ -332,37 +303,7 @@ export default class Project {
 		return main;
 	}
 
-	//=============== BLOCS SYSTÈME ===============
-
-	/**
-	 * Tous les blocs timer du projet, tous ladders confondus — pas de registre dédié, la config
-	 * vivant directement dans chaque `BlockElement` (voir `TimerBlockParams`).
-	 */
-	getAllTimerBlockElements(): { ladder: Ladder; element: BlockElement }[] {
-		return this.getAllBlockElements("timer");
-	}
-
-	/**
-	 * Tous les blocs compteur du projet, tous ladders confondus — même principe que
-	 * `getAllTimerBlockElements`.
-	 */
-	getAllCounterBlockElements(): { ladder: Ladder; element: BlockElement }[] {
-		return this.getAllBlockElements("counter");
-	}
-
-	private getAllBlockElements(
-		blockType: BlockType,
-	): { ladder: Ladder; element: BlockElement }[] {
-		return Object.values(this.ladders).flatMap((ladder) =>
-			ladder
-				.getAllElements()
-				.filter(
-					(element): element is BlockElement =>
-						element.type === "block" && element.data.blockType === blockType,
-				)
-				.map((element) => ({ ladder, element })),
-		);
-	}
+	//=============== NOMS ===============
 
 	/** Variable déclarée dans le projet portant ce mnémonique (comparaison exacte). Les variables
 	 * système `_SYS_*` n'ont pas d'instance dans le projet et ne sont donc jamais trouvées. */
@@ -376,26 +317,18 @@ export default class Project {
 		return !this.findVariableByMnemonic(mnemonic)?.isReadOnly();
 	}
 
-	/** Un nom de bloc partage son espace de noms avec les mnémoniques de variable : il doit être
-	 * unique parmi les deux. */
-	isNameTaken(name: string): boolean {
+	/** Taken by a variable or claimed by a program (a timer block's name, for example). */
+	isMnemonicTaken(mnemonic: string): boolean {
 		return (
-			this.findVariableByMnemonic(name) !== undefined ||
-			this.isBlockNameTaken(name)
+			this.findVariableByMnemonic(mnemonic) !== undefined ||
+			this.isMnemonicClaimedByAnyProgram(mnemonic)
 		);
 	}
 
-	/** Nom déjà porté par un bloc timer ou compteur du projet. */
-	isBlockNameTaken(name: string): boolean {
-		if (
-			this.getAllTimerBlockElements().some(
-				({ element }) => getTimerBlockParams(element)?.name === name,
-			)
-		) {
-			return true;
-		}
-		return this.getAllCounterBlockElements().some(
-			({ element }) => getCounterBlockParams(element)?.name === name,
+	/** Every program counts, those excluded from execution included. */
+	isMnemonicClaimedByAnyProgram(mnemonic: string): boolean {
+		return Object.values(this.programs).some((program) =>
+			program.claimsMnemonic(mnemonic),
 		);
 	}
 
@@ -436,11 +369,8 @@ export default class Project {
 	 */
 	renameMnemonicReferences(renames: Record<string, string>): void {
 		if (Object.keys(renames).length === 0) return;
-		Object.values(this.grafcets).forEach((grafcet) => {
-			grafcet.renameIdentifiersInExpressions(renames, this.dialect);
-		});
-		Object.values(this.ladders).forEach((ladder) => {
-			ladder.renameVariableReferences(renames);
+		Object.values(this.programs).forEach((program) => {
+			program.renameVariableReferences(renames, this.dialect);
 		});
 		Object.values(this.hmiPages).forEach((page) => {
 			page.renameVariableReferences(renames);

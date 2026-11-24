@@ -39,7 +39,8 @@ export default function BlockNameField({
 	const changed = draft !== "" && draft !== value;
 	const invalid =
 		changed &&
-		(validateBlockName(draft).length > 0 || !!project?.isNameTaken?.(draft));
+		(validateBlockName(draft).length > 0 ||
+			!!project?.isMnemonicTaken?.(draft));
 
 	const commit = () => {
 		if (cancelledRef.current) {

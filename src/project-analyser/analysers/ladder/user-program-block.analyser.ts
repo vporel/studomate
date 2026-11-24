@@ -1,7 +1,10 @@
 import ProjectAnalyserIssue, {
 	ProjectAnalyserIssueSource,
 } from "@/project-analyser/project.analyser.issue";
-import { BlockElement } from "@/schemas/ladder/block.schema";
+import {
+	BlockElement,
+	UserProgramBlockParams,
+} from "@/schemas/ladder/block.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Project from "@/schemas/project/project.schema";
 
@@ -54,12 +57,10 @@ export default class UserProgramBlockAnalyser {
 		}
 
 		const duplicateCount = ladder
-			.getAllElements()
+			.getBlockElements("user-program")
 			.filter(
 				(el) =>
-					el.type === "block" &&
-					el.data.blockType === "user-program" &&
-					el.data.params.programId === programId,
+					(el.data.params as UserProgramBlockParams).programId === programId,
 			).length;
 		if (duplicateCount > 1) {
 			issues.push(

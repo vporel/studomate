@@ -19,16 +19,16 @@ jest.mock("@/ui/components/ladder/context/LadderContext");
 function setup({
 	pendingSystemBlockCreation = null,
 	pendingSystemBlockEdit = null,
-	isNameTaken = jest.fn(() => false),
+	isMnemonicTaken = jest.fn(() => false),
 	executeOperation = jest.fn(),
 }: {
 	pendingSystemBlockCreation?: PendingSystemBlockCreation | null;
 	pendingSystemBlockEdit?: PendingSystemBlockEdit | null;
-	isNameTaken?: jest.Mock;
+	isMnemonicTaken?: jest.Mock;
 	executeOperation?: jest.Mock;
 } = {}) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
-		selectorImplementation({ project: { isNameTaken } }),
+		selectorImplementation({ project: { isMnemonicTaken } }),
 	);
 	(useLadderStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({

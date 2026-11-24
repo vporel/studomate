@@ -50,8 +50,7 @@ function setup({
 			project: {
 				ladders,
 				variables,
-				getAllTimerBlockElements: () => [],
-				getAllCounterBlockElements: () => [],
+				getExecutedLadders: () => [],
 				getExecutedGrafcets: () => [],
 				grafcets: {},
 			},

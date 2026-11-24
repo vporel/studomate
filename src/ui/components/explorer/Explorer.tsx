@@ -43,8 +43,11 @@ const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 	);
 	const hasSystemBlockInstances = useMemo(
 		() =>
-			(project?.getAllTimerBlockElements().length ?? 0) > 0 ||
-			(project?.getAllCounterBlockElements().length ?? 0) > 0,
+			Object.values(project?.ladders ?? {}).some(
+				(ladder) =>
+					ladder.getBlockElements("timer").length > 0 ||
+					ladder.getBlockElements("counter").length > 0,
+			),
 		[project],
 	);
 	const {

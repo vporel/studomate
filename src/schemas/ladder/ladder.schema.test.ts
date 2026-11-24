@@ -255,6 +255,104 @@ describe("Ladder", () => {
 		});
 	});
 
+	describe("getBlockElements", () => {
+		it("renvoie les blocs du type demandé, toutes sections confondues", () => {
+			const ladder = new Ladder("l1", "L");
+			const sectionB = ladder.createSection("B");
+			const timerA = createTimerBlockElement(
+				{ name: "TA", timerType: "TON", pt: "T#1s" },
+				0,
+				0,
+			);
+			const timerB = createTimerBlockElement(
+				{ name: "TB", timerType: "TON", pt: "T#1s" },
+				0,
+				0,
+			);
+			ladder.addElements(ladder.sections[0].id, [
+				timerA,
+				createCounterBlockElement(
+					{ name: "C", counterType: "CTU", control: "CU", pv: "10" },
+					1,
+					0,
+				),
+				createUserProgramBlockElement("prog1", 2, 0),
+				createContactElement("A", "NO", 3, 0),
+			]);
+			ladder.addElements(sectionB.id, [timerB]);
+
+			expect(ladder.getBlockElements("timer")).toEqual([timerA, timerB]);
+			expect(ladder.getBlockElements("compare")).toEqual([]);
+		});
+	});
+
+	describe("claimsMnemonic", () => {
+		it("réserve les noms de ses blocs timer et compteur, pas les autres", () => {
+			const ladder = new Ladder("l1", "L");
+			ladder.addElements(ladder.sections[0].id, [
+				createTimerBlockElement(
+					{ name: "Tempo", timerType: "TON", pt: "T#1s" },
+					0,
+					0,
+				),
+				createContactElement("Moteur", "NO", 1, 0),
+			]);
+
+			expect(ladder.claimsMnemonic("Tempo")).toBe(true);
+			expect(ladder.claimsMnemonic("Moteur")).toBe(false);
+			expect(ladder.claimsMnemonic("Libre")).toBe(false);
+		});
+	});
+
+	describe("getCallRefusalFrom", () => {
+		function setup() {
+			const caller = new Ladder("caller", "Appelant");
+			const other = new Ladder("other", "Autre");
+			const excluded = new Ladder("excluded", "Exclu");
+			excluded.excludedFromExecution = true;
+			return { caller, other, excluded };
+		}
+
+		it("accepte un ladder exécuté", () => {
+			const { caller, other } = setup();
+
+			expect(other.getCallRefusalFrom(caller)).toBeUndefined();
+		});
+
+		it("refuse le Main", () => {
+			const { caller } = setup();
+			const main = new Ladder("main", "Main", undefined, "main");
+
+			expect(main.getCallRefusalFrom(caller)).toBe("main");
+		});
+
+		it("refuse l'appelant lui-même", () => {
+			const { caller } = setup();
+
+			expect(caller.getCallRefusalFrom(caller)).toBe("self");
+		});
+
+		it("refuse un ladder exclu depuis un appelant exécuté", () => {
+			const { caller, excluded } = setup();
+
+			expect(excluded.getCallRefusalFrom(caller)).toBe("excluded");
+		});
+
+		it("accepte un ladder exclu depuis un appelant exclu", () => {
+			const { caller, excluded } = setup();
+			caller.excludedFromExecution = true;
+
+			expect(excluded.getCallRefusalFrom(caller)).toBeUndefined();
+		});
+
+		it("refuse l'appelant lui-même, même exclu", () => {
+			const { caller } = setup();
+			caller.excludedFromExecution = true;
+
+			expect(caller.getCallRefusalFrom(caller)).toBe("self");
+		});
+	});
+
 	describe("connections", () => {
 		it("addConnections relie deux éléments existants, removeConnections les délie", () => {
 			const ladder = new Ladder("l1", "Mon ladder");

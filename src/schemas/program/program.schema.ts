@@ -48,4 +48,17 @@ export default abstract class Program {
 	 * textuelle (Ladder) fournit une implémentation vide explicite.
 	 */
 	abstract translateExpressionsKeywords(from: Dialect, to: Dialect): void;
+
+	/**
+	 * Rewrites the references to the renamed variables (`{ from: to }`) held by the program (see
+	 * `Project.renameMnemonicReferences`). `dialect` is the one the expressions are written in.
+	 */
+	abstract renameVariableReferences(
+		renames: Record<string, string>,
+		dialect: Dialect,
+	): void;
+
+	/** Whether the program declares a name in the mnemonics' namespace (a timer block, for
+	 * example): no variable nor other declaration of the project may then take `mnemonic`. */
+	abstract claimsMnemonic(mnemonic: string): boolean;
 }

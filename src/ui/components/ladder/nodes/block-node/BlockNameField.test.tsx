@@ -12,18 +12,18 @@ jest.mock("@/ui/components/projects/ProjectContext");
 
 function setup({
 	value = "Tempo1",
-	isNameTaken = () => false,
+	isMnemonicTaken = () => false,
 	onCommit = jest.fn(),
 	editingEnabled = true,
 }: {
 	value?: string;
-	isNameTaken?: (name: string) => boolean;
+	isMnemonicTaken?: (name: string) => boolean;
 	onCommit?: jest.Mock;
 	editingEnabled?: boolean;
 } = {}) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
-			project: { isNameTaken },
+			project: { isMnemonicTaken },
 			mode: ProjectMode.DESIGN,
 			editingEnabled,
 		}),
@@ -63,7 +63,7 @@ describe("BlockNameField", () => {
 
 	it("ignore un nom déjà utilisé dans le projet", () => {
 		const { input, onCommit } = setup({
-			isNameTaken: (name) => name === "Pris",
+			isMnemonicTaken: (name) => name === "Pris",
 		});
 		fireEvent.change(input, { target: { value: "Pris" } });
 		fireEvent.blur(input);

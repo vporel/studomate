@@ -40,6 +40,14 @@ describe("useProgramsFolderMenuItems", () => {
 		expect(items[0][1].disabled).toBe(false);
 	});
 
+	it("affiche les raccourcis clavier de création", () => {
+		const { result } = setup();
+		const items = result.current();
+
+		expect(items[0][0].shortcut).toMatch(/^(Ctrl|Cmd)\+G$/);
+		expect(items[0][1].shortcut).toMatch(/^(Ctrl|Cmd)\+L$/);
+	});
+
 	it("désactive les items en mode simulation", () => {
 		const { result } = setup(ProjectMode.SIMULATION);
 		const items = result.current();

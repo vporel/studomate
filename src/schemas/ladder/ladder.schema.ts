@@ -9,7 +9,7 @@ import {
 	LadderElement,
 	LadderElementDataChanges,
 } from "./element.schema";
-import { BLOCK_PIN_PARAM_KEYS } from "./block.schema";
+import { BLOCK_PIN_PARAM_KEYS, BlockElement, BlockType } from "./block.schema";
 import Section from "./section.schema";
 import { getTimerBlockParams } from "./function-blocks/timer.schema";
 import { getCounterBlockParams } from "./function-blocks/counter.schema";
@@ -33,6 +33,10 @@ export type LadderRole = (typeof LADDER_ROLES)[number];
 export const DEFAULT_LADDER_ROLE: LadderRole = "standard";
 
 export const DEFAULT_MAIN_NAME = "Main";
+
+/** Why a ladder cannot be referenced by a call block of another ladder (see
+ * `Ladder.getCallRefusalFrom`). */
+export type LadderCallRefusal = "main" | "self" | "excluded";
 
 export default class Ladder extends Program {
 	readonly type: ProgramType = "ladder";
@@ -291,6 +295,29 @@ export default class Ladder extends Program {
 	 */
 	getAllElements(): LadderElement[] {
 		return this.sections.flatMap((section) => section.elements);
+	}
+
+	/** Blocks of this type, all sections included. */
+	getBlockElements(blockType: BlockType): BlockElement[] {
+		return this.getAllElements().filter(
+			(element): element is BlockElement =>
+				element.type === "block" && element.data.blockType === blockType,
+		);
+	}
+
+	claimsMnemonic(mnemonic: string): boolean {
+		return this.getBlockNames().has(mnemonic);
+	}
+
+	/** Why a call block placed in `caller` cannot reference this ladder, or `undefined` when it
+	 * can: never the Main nor the caller itself, and a ladder excluded from execution only from
+	 * a caller that is excluded too. */
+	getCallRefusalFrom(caller: Ladder): LadderCallRefusal | undefined {
+		if (this.isMain()) return "main";
+		if (this.id === caller.id) return "self";
+		if (this.excludedFromExecution && !caller.excludedFromExecution)
+			return "excluded";
+		return undefined;
 	}
 
 	/** Noms des blocs timer/compteur du ladder (toutes sections). */

@@ -7,7 +7,6 @@ import {
 	createTimerBlockVariables,
 	getTimerBlockParams,
 } from "@/schemas/ladder/function-blocks/timer.schema";
-import type Ladder from "@/schemas/ladder/ladder.schema";
 import Project from "@/schemas/project/project.schema";
 import Variable from "@/schemas/variable/variable.schema";
 
@@ -23,20 +22,17 @@ import Variable from "@/schemas/variable/variable.schema";
  * reported as undeclared.
  */
 export function getBlockInstanceVariables(project: Project): Variable[] {
-	const isExecuted = ({ ladder }: { ladder: Ladder }) =>
-		!ladder.excludedFromExecution;
-	const timerVariables = project
-		.getAllTimerBlockElements()
-		.filter(isExecuted)
-		.flatMap(({ element }) => {
+	const ladders = project.getExecutedLadders();
+	const timerVariables = ladders
+		.flatMap((ladder) => ladder.getBlockElements("timer"))
+		.flatMap((element) => {
 			const params = getTimerBlockParams(element);
 			if (!params || validateBlockName(params.name).length > 0) return [];
 			return createTimerBlockVariables(element.id, params.name);
 		});
-	const counterVariables = project
-		.getAllCounterBlockElements()
-		.filter(isExecuted)
-		.flatMap(({ element }) => {
+	const counterVariables = ladders
+		.flatMap((ladder) => ladder.getBlockElements("counter"))
+		.flatMap((element) => {
 			const params = getCounterBlockParams(element);
 			if (!params || validateBlockName(params.name).length > 0) return [];
 			return createCounterBlockVariables(

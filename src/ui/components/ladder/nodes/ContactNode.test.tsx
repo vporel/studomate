@@ -53,8 +53,7 @@ function setup({
 			simulationVariablesStatesByMnemonic,
 			project: {
 				variables: projectVariables,
-				getAllTimerBlockElements: () => [],
-				getAllCounterBlockElements: () => [],
+				getExecutedLadders: () => [],
 				getExecutedGrafcets: () => [],
 				grafcets: {},
 			},

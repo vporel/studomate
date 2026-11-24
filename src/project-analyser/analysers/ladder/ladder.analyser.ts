@@ -3,10 +3,7 @@ import {
 	BLOCK_DEFINITIONS,
 	resolveStructuralPorts,
 } from "@/schemas/ladder/block-definition";
-import {
-	BlockElement,
-	UserProgramBlockParams,
-} from "@/schemas/ladder/block.schema";
+import { UserProgramBlockParams } from "@/schemas/ladder/block.schema";
 import buildAnalysisEnvironment from "@/project-analyser/analysis-environment";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import { isEdgeCoilType } from "@/schemas/ladder/element.schema";
@@ -216,7 +213,7 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 
 	/**
 	 * Un nom de bloc tempo/compteur partage son espace de noms avec les mnémoniques de variable
-	 * (voir `Project.isNameTaken`) — cette vérification côté UI n'empêche pas une collision dans un
+	 * (voir `Project.isMnemonicTaken`) — cette vérification côté UI n'empêche pas une collision dans un
 	 * projet importé/édité à la main. Deux blocs de même nom généreraient des variables au même
 	 * mnémonique (`<Nom>.IN`...), l'une écrasant l'autre silencieusement dans
 	 * `variablesByMnemonic` (voir `analyse`). Statique : porte sur l'ensemble des ladders du projet.
@@ -224,20 +221,21 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 	 * ou l'absence de nom n'a pas de sens à comparer entre blocs.
 	 */
 	static checkBlockNameConflicts(project: Project): ProjectAnalyserIssue[] {
-		const namedBlocks = [
-			...project.getAllTimerBlockElements().map(({ ladder, element }) => ({
-				ladder,
-				element,
-				name: getTimerBlockParams(element)?.name ?? "",
-			})),
-			...project.getAllCounterBlockElements().map(({ ladder, element }) => ({
-				ladder,
-				element,
-				name: getCounterBlockParams(element)?.name ?? "",
-			})),
-		].filter(
-			(block) => block.name !== "" && !block.ladder.excludedFromExecution,
-		);
+		const namedBlocks = project
+			.getExecutedLadders()
+			.flatMap((ladder) => [
+				...ladder.getBlockElements("timer").map((element) => ({
+					ladder,
+					element,
+					name: getTimerBlockParams(element)?.name ?? "",
+				})),
+				...ladder.getBlockElements("counter").map((element) => ({
+					ladder,
+					element,
+					name: getCounterBlockParams(element)?.name ?? "",
+				})),
+			])
+			.filter((block) => block.name !== "");
 
 		const projectMnemonics = new Set(project.variables.map((v) => v.mnemonic));
 		const issues: ProjectAnalyserIssue[] = [];
@@ -281,12 +279,7 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 		const graph = new Map<string, string[]>();
 		for (const ladder of project.getExecutedLadders()) {
 			const targets = ladder
-				.getAllElements()
-				.filter(
-					(element): element is BlockElement =>
-						element.type === "block" &&
-						element.data.blockType === "user-program",
-				)
+				.getBlockElements("user-program")
 				.map(
 					(element) =>
 						(element.data.params as UserProgramBlockParams).programId,

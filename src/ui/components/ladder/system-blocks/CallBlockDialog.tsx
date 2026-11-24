@@ -19,10 +19,18 @@ export default function CallBlockDialog() {
 	const t = useT("ladderEditor.callDialog");
 	const [selectedId, setSelectedId] = useState("");
 
-	const callable = project?.getLaddersCallableFrom(ladderId) ?? [];
-	const onlyExcludedLeft = Object.values(project?.ladders ?? {}).some(
-		(ladder) =>
-			project?.getLadderCallRefusal(ladderId, ladder.id) === "excluded",
+	const caller = project?.getLadder(ladderId);
+	const refusals = caller
+		? Object.values(project?.ladders ?? {}).map((ladder) => ({
+				ladder,
+				refusal: ladder.getCallRefusalFrom(caller),
+			}))
+		: [];
+	const callable = refusals
+		.filter(({ refusal }) => !refusal)
+		.map(({ ladder }) => ladder);
+	const onlyExcludedLeft = refusals.some(
+		({ refusal }) => refusal === "excluded",
 	);
 	const programId = callable.some((ladder) => ladder.id === selectedId)
 		? selectedId
