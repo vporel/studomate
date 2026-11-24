@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 262" font-family="sans-serif">
+	<line x1="170" y1="14" x2="170" y2="226" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="170" y="242" font-size="11" text-anchor="middle" fill="#607d8b">0</text>
+	<line x1="210" y1="14" x2="210" y2="226" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="210" y="242" font-size="11" text-anchor="middle" fill="#607d8b">1</text>
+	<line x1="250" y1="14" x2="250" y2="226" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="250" y="242" font-size="11" text-anchor="middle" fill="#607d8b">2</text>
+	<line x1="290" y1="14" x2="290" y2="226" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="290" y="242" font-size="11" text-anchor="middle" fill="#607d8b">3</text>
+	<line x1="330" y1="14" x2="330" y2="226" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="330" y="242" font-size="11" text-anchor="middle" fill="#607d8b">4</text>
+	<line x1="370" y1="14" x2="370" y2="226" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="370" y="242" font-size="11" text-anchor="middle" fill="#607d8b">5</text>
+	<line x1="410" y1="14" x2="410" y2="226" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="410" y="242" font-size="11" text-anchor="middle" fill="#607d8b">6</text>
+	<line x1="450" y1="14" x2="450" y2="226" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="450" y="242" font-size="11" text-anchor="middle" fill="#607d8b">7</text>
+	<line x1="490" y1="14" x2="490" y2="226" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="490" y="242" font-size="11" text-anchor="middle" fill="#607d8b">8</text>
+	<text x="504" y="242" font-size="11" text-anchor="start" fill="#607d8b">s</text>
+	<text x="8" y="42" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">X10</text>
+	<path d="M 170 58 L 170 58 L 170 28 L 370 28 L 370 58 L 490 58" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" />
+	<text x="8" y="94" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">elapsed time of t1</text>
+	<path d="M 170 110 L 370 80 L 370 110 L 490 110" fill="none" stroke="#263238" stroke-width="2.2" stroke-linejoin="round" />
+	<text x="376" y="88" font-size="11" text-anchor="start" fill="#607d8b">5 s</text>
+	<text x="8" y="146" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">t1/X10/5s</text>
+	<path d="M 170 162 L 370 162 L 370 132 L 380.0 132 L 380.0 162 L 490 162" fill="none" stroke="#d84315" stroke-width="2.2" stroke-linejoin="round" />
+	<text x="8" y="198" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">X11</text>
+	<path d="M 170 214 L 370 214 L 370 184 L 490 184 L 490 214 L 490 214" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" />
+</svg>

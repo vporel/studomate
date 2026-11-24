@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 270" font-family="sans-serif">
+	<!-- States -->
+	<rect x="206" y="14" width="112" height="206" fill="#fff9c4" stroke="#cfd8dc" stroke-width="1" />
+	<text x="262" y="34" font-size="13" font-weight="bold" text-anchor="middle" fill="#263238">clignote</text>
+	<text x="262" y="50" font-size="11" text-anchor="middle" fill="#455a64">non acquitté</text>
+	<rect x="318" y="14" width="168" height="206" fill="#c8e6c9" stroke="#cfd8dc" stroke-width="1" />
+	<text x="402" y="34" font-size="13" font-weight="bold" text-anchor="middle" fill="#263238">fixe</text>
+	<text x="402" y="50" font-size="11" text-anchor="middle" fill="#455a64">acquitté, encore présent</text>
+	<rect x="486" y="14" width="112" height="206" fill="#eceff1" stroke="#cfd8dc" stroke-width="1" />
+	<text x="542" y="34" font-size="13" font-weight="bold" text-anchor="middle" fill="#263238">éteint</text>
+	<text x="542" y="50" font-size="11" text-anchor="middle" fill="#455a64">défaut disparu</text>
+
+	<!-- Signals -->
+	<text x="8" y="108" font-size="12" font-weight="bold" text-anchor="start" fill="#263238">défaut thermique</text>
+	<path d="M 150 116 L 206 116 L 206 94 L 486 94 L 486 116 L 654 116" fill="none" stroke="#263238" stroke-width="2.2" stroke-linejoin="round" />
+	<text x="8" y="164" font-size="12" font-weight="bold" text-anchor="start" fill="#263238">acquittement</text>
+	<path d="M 150 172 L 318 172 L 318 150 L 332 150 L 332 172 L 654 172" fill="none" stroke="#263238" stroke-width="2.2" stroke-linejoin="round" />
+	<text x="8" y="214" font-size="12" font-weight="bold" text-anchor="start" fill="#263238">voyant de défaut</text>
+	<path d="M 150 226 L 206 226 L 206 204 L 220 204 L 220 226 L 234 226 L 234 204 L 248 204 L 248 226 L 262 226 L 262 204 L 276 204 L 276 226 L 290 226 L 290 204 L 304 204 L 304 226 L 318 226 L 318 204 L 486 204 L 486 226 L 654 226" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" />
+	<text x="598" y="250" font-size="11" text-anchor="end" fill="#607d8b">temps</text>
+</svg>

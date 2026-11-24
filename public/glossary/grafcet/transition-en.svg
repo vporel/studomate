@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 150" font-family="sans-serif">
+	<rect x="60" y="10" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<text x="75" y="30" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">1</text>
+	<line x1="75" y1="40" x2="75" y2="110" stroke="#263238" stroke-width="1.8" />
+	<line x1="65" y1="75" x2="85" y2="75" stroke="#263238" stroke-width="3" />
+	<text x="92" y="79" font-size="12" text-anchor="start" fill="#263238" font-family="monospace">end1</text>
+	<rect x="60" y="110" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<text x="75" y="130" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">2</text>
+</svg>

@@ -1,0 +1,11 @@
+var R=require("../../../chunks/[turbopack]_runtime.js")("server/app/serwist/[path]/route.js")
+R.c("server/chunks/[root-of-the-server]__932206c3._.js")
+R.c("server/chunks/node_modules_92038f9f._.js")
+R.c("server/chunks/src_i18n_messages_f860e0a9._.js")
+R.c("server/chunks/src_i18n_messages_29993730._.js")
+R.c("server/chunks/[root-of-the-server]__96f81548._.js")
+R.c("server/chunks/node_modules_@serwist_build_dist_chunks_bf4a6499._.js")
+R.c("server/chunks/[root-of-the-server]__d3f40404._.js")
+R.m(190826)
+R.m(318576)
+module.exports=R.m(318576).exports

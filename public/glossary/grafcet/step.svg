@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 118" font-family="sans-serif">
+	<rect x="55" y="24" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<text x="70" y="44" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">1</text>
+	<rect x="175" y="24" width="30" height="30" fill="#c8e6c9" stroke="#263238" stroke-width="1.8" />
+	<text x="190" y="44" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">2</text>
+	<rect x="295" y="24" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<rect x="300" y="29" width="20" height="20" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<text x="310" y="44" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">0</text>
+	<text x="70" y="82" font-size="12" text-anchor="middle" fill="#263238">étape inactive</text>
+	<text x="70" y="100" font-size="11" text-anchor="middle" fill="#607d8b">X1 = FAUX</text>
+	<text x="190" y="82" font-size="12" text-anchor="middle" fill="#263238">étape active</text>
+	<text x="190" y="100" font-size="11" text-anchor="middle" fill="#607d8b">X2 = VRAI</text>
+	<text x="310" y="82" font-size="12" text-anchor="middle" fill="#263238">étape initiale</text>
+	<text x="310" y="100" font-size="11" text-anchor="middle" fill="#607d8b">active au départ</text>
+</svg>
