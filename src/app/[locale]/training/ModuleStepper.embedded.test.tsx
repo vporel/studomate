@@ -61,13 +61,19 @@ jest.mock("./TrainingExerciseBlock", () => ({
 	default: function ExerciseBlock({
 		templateId,
 		watchOpen,
+		tools,
 	}: {
 		templateId: string;
 		watchOpen?: boolean;
+		tools?: unknown;
 	}) {
 		useEffect(() => () => mockUnmounted("exercise"), []);
 		return (
-			<div data-testid="exercise" data-watch-open={String(Boolean(watchOpen))}>
+			<div
+				data-testid="exercise"
+				data-watch-open={String(Boolean(watchOpen))}
+				data-tools={JSON.stringify(tools ?? null)}
+			>
 				{templateId}
 			</div>
 		);
@@ -94,6 +100,7 @@ const steps: StepData[] = [
 		embeddedTemplateId: "linear-sequence",
 		embeddedExercise: { exerciseTab: "Exercice", solutionTab: "Corrigé" },
 		embeddedWatchOpen: true,
+		embeddedTools: { ladder: ["user-program"] },
 		cta: { templateId: "linear-sequence", exerciseLabel: "Ouvrir l'exercice" },
 	},
 	{ id: "theory", kind: "theory", title: "Théorie", body: ["Corps"] },
@@ -211,6 +218,15 @@ describe("ModuleStepper embedded blocks", () => {
 		expect(await screen.findByTestId("exercise")).toHaveAttribute(
 			"data-watch-open",
 			"true",
+		);
+	});
+
+	it("hands the tools of the step to the exercise block", async () => {
+		setup();
+		fireEvent.click(screen.getByRole("button", { name: "Ouvrir l'exercice" }));
+		expect(await screen.findByTestId("exercise")).toHaveAttribute(
+			"data-tools",
+			JSON.stringify({ ladder: ["user-program"] }),
 		);
 	});
 

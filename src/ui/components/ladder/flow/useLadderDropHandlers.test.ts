@@ -15,6 +15,10 @@ import {
 	createContactElement,
 	createCoilElement,
 } from "@/schemas/ladder/element.schema";
+import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import Ladder from "@/schemas/ladder/ladder.schema";
+import Project from "@/schemas/project/project.schema";
+import { toast } from "react-toastify";
 import { useLadderStore } from "../context/LadderContext";
 import { useLadderToolbarDnD } from "../toolbar/LadderToolbarDnDContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
@@ -26,6 +30,7 @@ import {
 	rowToY,
 } from "@/ui/utils/ladder/ladder-flow-builder";
 import { LADDER_PROGRAM_DRAG_MIME_TYPE } from "@/ui/utils/ladder/ladder-program-drag";
+import { LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE } from "@/ui/utils/ladder/ladder-system-block-drag";
 
 jest.mock("../context/LadderContext", () => ({
 	useLadderStore: jest.fn(),
@@ -33,6 +38,13 @@ jest.mock("../context/LadderContext", () => ({
 jest.mock("../toolbar/LadderToolbarDnDContext", () => ({
 	useLadderToolbarDnD: jest.fn(),
 }));
+jest.mock("@/ui/components/projects/ProjectContext", () => ({
+	useProjectStore: jest.fn(),
+}));
+jest.mock("@/ui/i18n/useT", () => ({
+	useT: () => (key: string) => key,
+}));
+jest.mock("react-toastify", () => ({ toast: { warn: jest.fn() } }));
 jest.mock("@xyflow/react", () => ({
 	useReactFlow: jest.fn(),
 }));
@@ -65,6 +77,15 @@ function fakeProgramDragEvent(
 	return event;
 }
 
+/** Projet dont les ladders "prog1" et "prog2" sont appelables depuis "caller" (exécuté). */
+function projectWithCallable() {
+	const project = new Project("p1", "Projet", "");
+	for (const id of ["caller", "prog1", "prog2"]) {
+		project.addProgram(new Ladder(id, id));
+	}
+	return project;
+}
+
 describe("useLadderDropHandlers", () => {
 	const executeOperation = jest.fn();
 	const commandsStackManager = { executeOperation };
@@ -79,9 +100,19 @@ describe("useLadderDropHandlers", () => {
 		section: Section,
 		leafPositions: { id: string; row: number; col: number }[],
 		draggedItem: unknown,
+		{
+			project = projectWithCallable(),
+			ladderId = "caller",
+		}: { project?: Project | null; ladderId?: string } = {},
 	) {
 		(useLadderStore as jest.Mock).mockImplementation(
-			selectorImplementation({ commandsStackManager }),
+			selectorImplementation({
+				commandsStackManager,
+				ladder: { id: ladderId },
+			}),
+		);
+		(useProjectStore as unknown as jest.Mock).mockImplementation(
+			selectorImplementation({ project }),
 		);
 		(useLadderToolbarDnD as jest.Mock).mockReturnValue({ draggedItem });
 		(useReactFlow as jest.Mock).mockReturnValue({ screenToFlowPosition });
@@ -534,6 +565,78 @@ describe("useLadderDropHandlers", () => {
 		});
 	});
 
+	describe("outil CALL de la toolbar", () => {
+		function setupCall(section: Section) {
+			const setPendingSystemBlockCreation = jest.fn();
+			(useLadderStore as jest.Mock).mockImplementation(
+				selectorImplementation({
+					commandsStackManager,
+					setPendingSystemBlockCreation,
+					ladder: { id: "caller" },
+				}),
+			);
+			(useProjectStore as unknown as jest.Mock).mockImplementation(
+				selectorImplementation({ project: projectWithCallable() }),
+			);
+			(useLadderToolbarDnD as jest.Mock).mockReturnValue({ draggedItem: null });
+			(useReactFlow as jest.Mock).mockReturnValue({ screenToFlowPosition });
+			const { result } = renderHook(() => useLadderDropHandlers(section, []));
+			return { handleDrop: result.current[1], setPendingSystemBlockCreation };
+		}
+
+		function fakeCallDragEvent(clientX: number, clientY: number) {
+			const event = fakeDragEvent(clientX, clientY);
+			event.dataTransfer.getData = (type: string) =>
+				type === LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE ? "user-program" : "";
+			event.dataTransfer.types = [LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE];
+			return event;
+		}
+
+		it("ouvre la fenêtre de choix sans rien insérer à la dépose", () => {
+			const { handleDrop, setPendingSystemBlockCreation } = setupCall(
+				new Section("s1", "S"),
+			);
+
+			act(() => handleDrop(fakeCallDragEvent(colToX(1), rowToY(0))));
+
+			expect(executeOperation).not.toHaveBeenCalled();
+			expect(setPendingSystemBlockCreation).toHaveBeenCalledWith(
+				expect.objectContaining({ blockType: "user-program" }),
+			);
+		});
+
+		it("insère le bloc d'appel du programme choisi à la cellule visée", () => {
+			const { handleDrop, setPendingSystemBlockCreation } = setupCall(
+				new Section("s1", "S"),
+			);
+
+			act(() => handleDrop(fakeCallDragEvent(colToX(2), rowToY(1))));
+			act(() => {
+				setPendingSystemBlockCreation.mock.calls[0][0].insert({
+					programId: "prog1",
+				});
+			});
+
+			const [commands] = executeOperation.mock.calls[0];
+			expect(commands[0]).toBeInstanceOf(ElementsAddCommand);
+			expect(commands[0].payload.elements[0]).toMatchObject({
+				type: "block",
+				position: { row: 1, col: 2 },
+				data: { blockType: "user-program", params: { programId: "prog1" } },
+			});
+		});
+
+		it("refuse la dépose sur une cellule déjà occupée", () => {
+			const section = new Section("s1", "S");
+			section.elements = [createContactElement("A", "NO", 0, 1)];
+			const { handleDrop, setPendingSystemBlockCreation } = setupCall(section);
+
+			act(() => handleDrop(fakeCallDragEvent(colToX(1), rowToY(0))));
+
+			expect(setPendingSystemBlockCreation).not.toHaveBeenCalled();
+		});
+	});
+
 	it("marque le dragover comme une copie pour un programme glissé depuis l'explorateur, même sans outil de toolbar actif", () => {
 		const { result } = setup(new Section("s1", "S"), [], null);
 		const [handleDragOver] = result.current;
@@ -609,5 +712,83 @@ describe("useLadderDropHandlers", () => {
 		act(() => handleDrop(fakeProgramDragEvent(colToX(1), rowToY(0), "prog2")));
 
 		expect(executeOperation).not.toHaveBeenCalled();
+	});
+
+	describe("règle d'appel d'un programme glissé depuis l'explorateur", () => {
+		function dropProgram(
+			programId: string,
+			project: Project | null,
+			ladderId: string,
+		) {
+			const { result } = setup(new Section("s1", "S"), [], null, {
+				project,
+				ladderId,
+			});
+			const [, handleDrop] = result.current;
+			act(() =>
+				handleDrop(fakeProgramDragEvent(colToX(1), rowToY(0), programId)),
+			);
+		}
+
+		function projectWith(excluded: string[]) {
+			const project = projectWithCallable();
+			for (const id of excluded) {
+				(project.getProgram(id) as any).excludedFromExecution = true;
+			}
+			return project;
+		}
+
+		it("insère un ladder exécuté depuis un ladder exécuté, sans toast", () => {
+			dropProgram("prog1", projectWith([]), "caller");
+
+			expect(executeOperation).toHaveBeenCalledTimes(1);
+			expect(toast.warn).not.toHaveBeenCalled();
+		});
+
+		it("refuse le Main avec un toast", () => {
+			const project = projectWith([]);
+
+			dropProgram(project.main.id, project, "caller");
+
+			expect(executeOperation).not.toHaveBeenCalled();
+			expect(toast.warn).toHaveBeenCalledWith("programCallRefused.main");
+		});
+
+		it("refuse le ladder lui-même avec un toast qui ne parle que de cela", () => {
+			dropProgram("caller", projectWith([]), "caller");
+
+			expect(executeOperation).not.toHaveBeenCalled();
+			expect(toast.warn).toHaveBeenCalledTimes(1);
+			expect(toast.warn).toHaveBeenCalledWith("programCallRefused.self");
+		});
+
+		it("refuse un ladder exclu déposé dans un ladder exécuté, avec un toast", () => {
+			dropProgram("prog1", projectWith(["prog1"]), "caller");
+
+			expect(executeOperation).not.toHaveBeenCalled();
+			expect(toast.warn).toHaveBeenCalledWith("programCallRefused.excluded");
+		});
+
+		it("accepte un ladder exclu déposé dans un ladder exclu", () => {
+			dropProgram("prog1", projectWith(["prog1", "caller"]), "caller");
+
+			expect(executeOperation).toHaveBeenCalledTimes(1);
+			expect(toast.warn).not.toHaveBeenCalled();
+		});
+
+		it("accepte un ladder exécuté déposé dans un ladder exclu", () => {
+			dropProgram("prog1", projectWith(["caller"]), "caller");
+
+			expect(executeOperation).toHaveBeenCalledTimes(1);
+		});
+
+		it("refuse tout dépôt quand aucun projet n'est chargé", () => {
+			dropProgram("prog1", null, "caller");
+
+			expect(executeOperation).not.toHaveBeenCalled();
+			expect(toast.warn).toHaveBeenCalledWith(
+				"programCallRefused.not-a-ladder",
+			);
+		});
 	});
 });

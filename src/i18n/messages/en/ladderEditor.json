@@ -31,7 +31,8 @@
 		"compareToolbarLabel": "Compare block — compares two values",
 		"assignToolbarLabel": "Assign block — assigns a value to a variable",
 		"arithmeticToolbarLabel": "Calc block — arithmetic operation",
-		"convertToolbarLabel": "CONV block: converts a value to the type of the OUT variable (DINT_TO_INT…)"
+		"convertToolbarLabel": "CONV block: converts a value to the type of the OUT variable (DINT_TO_INT…)",
+		"callToolbarLabel": "CALL block: calls another ladder of the project"
 	},
 	"sectionHeader": {
 		"reorderAria": "Reorder the network",
@@ -99,6 +100,13 @@
 		"typeTP": "TP — calibrated pulse",
 		"create": "Create",
 		"save": "Save"
+	},
+	"callDialog": {
+		"title": "Call a ladder",
+		"program": "Ladder to call",
+		"noProgram": "There is no other ladder in the project. Create one in the explorer, then come back to place a CALL block.",
+		"noProgramExcludedOnly": "The project's other ladders are excluded from execution: an executed ladder cannot call them. Re-enable execution for one of them or create a new ladder, then come back to place a CALL block.",
+		"create": "Add"
 	},
 	"counterDialog": {
 		"createTitle": "New counter",

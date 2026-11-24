@@ -21,7 +21,7 @@ const LadderSystemBlockTool = ({
 	label,
 	children,
 }: {
-	blockType: SystemBlockType;
+	blockType: SystemBlockType | "user-program";
 	width?: number;
 	disabled?: boolean;
 	label?: string;

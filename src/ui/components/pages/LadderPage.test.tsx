@@ -60,6 +60,7 @@ jest.mock("../ladder/flow/LadderFlow", () => {
 });
 jest.mock("../ladder/system-blocks/TimerBlockDialog", () => () => null);
 jest.mock("../ladder/system-blocks/CounterBlockDialog", () => () => null);
+jest.mock("../ladder/system-blocks/CallBlockDialog", () => () => null);
 
 describe("LadderPage", () => {
 	const ladder = new Ladder("ladder-1", "Test");

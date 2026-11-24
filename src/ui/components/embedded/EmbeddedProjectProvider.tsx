@@ -34,6 +34,7 @@ type EmbeddedProjectProviderProps = Pick<
 	| "initialView"
 	| "initialMode"
 	| "editable"
+	| "tools"
 	| "watchOpen"
 	| "warnOnLeave"
 	| "onDirtyChange"
@@ -41,8 +42,8 @@ type EmbeddedProjectProviderProps = Pick<
 
 /**
  * Owns the store of one block. The project is copied and opened once, at the first render (the
- * `project` and `views` props are not read again); the simulation it starts is stopped when the
- * block unmounts.
+ * `project`, `views` and `tools` props are not read again); the simulation it starts is stopped
+ * when the block unmounts.
  */
 export default function EmbeddedProjectProvider({
 	project,
@@ -50,6 +51,7 @@ export default function EmbeddedProjectProvider({
 	initialView,
 	initialMode = "design",
 	editable = true,
+	tools,
 	watchOpen = false,
 	warnOnLeave = false,
 	onDirtyChange,
@@ -60,7 +62,7 @@ export default function EmbeddedProjectProvider({
 	const resolvedRef = useRef<ResolvedEmbeddedView[]>([]);
 
 	const store = useProjectStoreInstance(
-		() => createEmbeddedProjectStoreEnvironment({ locale }),
+		() => createEmbeddedProjectStoreEnvironment({ locale, tools }),
 		(created) => {
 			const opened = project.copy();
 			const titles = {

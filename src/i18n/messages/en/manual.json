@@ -518,7 +518,7 @@
 		],
 		"coilsOutro": "As with contacts, the variable is chosen by double-clicking the coil. In simulation, a powered coil is highlighted. In the ladder toolbar, only the normal, Set and Reset coils are visible by default: the \"Show more coils\" button reveals the inverted coil and the two edge coils, and \"Hide extra coils\" hides them again.",
 		"blocksTitle": "Blocks",
-		"blocksIntro1": "Blocks are advanced functional elements that fit into a network like a contact or a coil. Two ways to place them: by dragging the block from the \"Library\" section of the explorer onto a ladder canvas, or (for Comparison, Assignment, Calculation and Conversion) from the dedicated tool in the ladder toolbar.",
+		"blocksIntro1": "Blocks are advanced functional elements that fit into a network like a contact or a coil. Two ways to place them: by dragging the block from the \"Library\" section of the explorer onto a ladder canvas, or (for Comparison, Assignment, Calculation, Conversion and Program call) from the dedicated tool in the ladder toolbar.",
 		"timerBlockFigureAlt": "Network with a contact S1 wired to the IN input of a timer block T1, TON variant. The PT pin holds the constant T#5s, the ET pin the variable T1_ET, and the Q output powers a coil H1.",
 		"blocksIntro2": "Timer and Counter open a configuration window when dropped (name and variant); reopen it later by double-clicking the block or via right-click → Configure on the instance in the explorer. Comparison, Assignment, Calculation and Conversion are inserted empty and configured directly on the canvas: operands entered on the pins (variable or constant), operator chosen from the menu that opens when you click the block. Assignment, Calculation and Conversion copy their EN input to their ENO output: several of these blocks can be chained on the same network.",
 		"timerTitle": "Timer",
@@ -547,7 +547,7 @@
 		"convertTitle": "Conversion",
 		"convertBody": "Converts the value of the variable in to the type of the variable out when the circuit feeding it (EN) is true. The two lists under the CONV label choose the source and target types (INT to REAL by default), which gives the standard conversion applied, for example DINT_TO_INT; only supported pairs are offered. A variable whose type differs from the one chosen for its pin is flagged in red, and the analysis rejects it. An integer too large for the target type wraps around, as on a PLC; a REAL is rounded to the nearest integer. in and out are entered on the block's pins (variables only).",
 		"programCallTitle": "Program call",
-		"programCallBody": "Calls another ladder from the Main ladder. The target ladder runs on every scan where input EN is true, at the block's position: before the networks below it, which therefore see its writes from the same scan. This is the mechanism by which Main orchestrates the project's other ladders: a ladder not called by Main will never run (the analysis flags this as a warning).",
+		"programCallBody": "Calls another ladder, from Main or from any other ladder. Drag the CALL tool from the toolbar onto a network, then pick the ladder to call in the window that opens. This choice is final: to target another ladder, delete the block and create it again. The target ladder runs on every scan where input EN is true, at the block's position: before the networks below it, which therefore see its writes from the same scan. This is the mechanism by which ladders are chained from Main: a ladder that no block calls will never run (the analysis flags this as a warning).",
 		"connectionsTitle": "Connections",
 		"connectionsIntro": "A network is powered by the rail on the left (vertical line). Elements are connected by dragging from a connection point to the target element; the connection validator prevents invalid links (e.g. connecting two coils together).",
 		"connectionsItems": [
@@ -598,7 +598,7 @@
 		"ladderTools": [
 			"NO, NC, P (rising edge) and N (falling edge) contacts",
 			"Normal, Set and Reset coils; inverted and rising/falling edge coils via the \"Show more coils\" button",
-			"Comparison, Assignment, Calculation and Conversion blocks (the other system blocks are dragged from the explorer)",
+			"Comparison, Assignment, Calculation and Conversion blocks, and the CALL block (the other system blocks are dragged from the explorer)",
 			"\"Network\" button: adds a new network to the ladder"
 		],
 		"ladderToolsOutro": "See the Ladder section for details of these elements."

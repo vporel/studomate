@@ -9,6 +9,7 @@ import FloatingBox, {
 import { LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE } from "@/ui/utils/ladder/ladder-system-block-drag";
 import { Box } from "@mui/material";
 import type { ComponentType } from "react";
+import useLadderToolAvailable from "./useLadderToolAvailable";
 
 export type SystemBlocksPalettePosition = FloatingBoxPosition;
 
@@ -28,6 +29,7 @@ const SystemBlocksPalette = ({
 	const t = useT("ladderEditor.systemBlocksPalette");
 	const tsb = useT("ladderEditor.systemBlocks");
 	const canEdit = useCanEditActivePage();
+	const isToolAvailable = useLadderToolAvailable();
 
 	return (
 		<FloatingBox
@@ -39,7 +41,9 @@ const SystemBlocksPalette = ({
 			top={TOP_OFFSET}
 		>
 			<Box component="ul" sx={{ listStyle: "none", m: 0, p: 0.5 }}>
-				{SYSTEM_BLOCK_CATALOG.map((entry) => {
+				{SYSTEM_BLOCK_CATALOG.filter((entry) =>
+					isToolAvailable(entry.blockType),
+				).map((entry) => {
 					const Icon = entry.ExplorerIcon as ComponentType<{
 						fontSize?: "small";
 					}>;

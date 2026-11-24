@@ -518,7 +518,7 @@
 		],
 		"coilsOutro": "Igual que con los contactos, la variable se elige haciendo doble clic en la bobina. En simulación, una bobina con corriente se resalta. En la barra de herramientas del ladder, por defecto solo son visibles las bobinas normal, de activación y de desactivación: el botón \"Mostrar más bobinas\" muestra la bobina invertida y las dos bobinas de flanco, y \"Ocultar bobinas adicionales\" las vuelve a ocultar.",
 		"blocksTitle": "Bloques",
-		"blocksIntro1": "Los bloques son elementos funcionales avanzados que se integran en una red como un contacto o una bobina. Hay dos maneras de colocarlos: arrastrando el bloque desde la sección \"Biblioteca\" del explorador hasta un lienzo de ladder, o (para Comparación, Asignación, Cálculo y Conversión) desde la herramienta dedicada de la barra de herramientas del ladder.",
+		"blocksIntro1": "Los bloques son elementos funcionales avanzados que se integran en una red como un contacto o una bobina. Hay dos maneras de colocarlos: arrastrando el bloque desde la sección \"Biblioteca\" del explorador hasta un lienzo de ladder, o (para Comparación, Asignación, Cálculo, Conversión y Llamada a programa) desde la herramienta dedicada de la barra de herramientas del ladder.",
 		"timerBlockFigureAlt": "Red con un contacto S1 conectado a la entrada IN de un bloque temporizador T1, variante TON. El pin PT contiene la constante T#5s, el pin ET la variable T1_ET y la salida Q alimenta una bobina H1.",
 		"blocksIntro2": "Temporizador y Contador abren una ventana de configuración al soltarlos (nombre y variante); vuelve a abrirla más tarde haciendo doble clic en el bloque o con clic derecho → Configurar sobre la instancia en el explorador. Comparación, Asignación, Cálculo y Conversión se insertan vacíos y se configuran directamente en el lienzo: los operandos se escriben en los pines (variable o constante) y el operador se elige en el menú que se abre al hacer clic en el bloque. Asignación, Cálculo y Conversión copian su entrada EN en su salida ENO: se pueden encadenar varios de estos bloques en la misma red.",
 		"timerTitle": "Temporizador",
@@ -547,7 +547,7 @@
 		"convertTitle": "Conversión",
 		"convertBody": "Convierte el valor de la variable in al tipo de la variable out cuando el circuito que lo alimenta (EN) es verdadero. Las dos listas bajo la etiqueta CONV eligen los tipos de origen y de destino (INT a REAL por defecto), lo que da la conversión estándar aplicada, por ejemplo DINT_TO_INT; solo se ofrecen los pares admitidos. Una variable cuyo tipo difiere del elegido para su pin se marca en rojo y el análisis la rechaza. Un entero demasiado grande para el tipo de destino se desborda circularmente, como en un PLC; un REAL se redondea al entero más cercano. in y out se escriben en los pines del bloque (solo variables).",
 		"programCallTitle": "Llamada a programa",
-		"programCallBody": "Llama a otro ladder desde el ladder Main. El ladder de destino se ejecuta en cada ciclo en que la entrada EN es verdadera, en la posición del bloque: antes de las redes situadas debajo, que por tanto ven sus escrituras del mismo ciclo. Este es el mecanismo con el que Main orquesta los demás ladders del proyecto: un ladder que Main no llama nunca se ejecutará (el análisis lo señala como advertencia).",
+		"programCallBody": "Llama a otro ladder, desde Main o desde cualquier otro ladder. Arrastra la herramienta CALL de la barra de herramientas hasta una red y elige el ladder que quieres llamar en la ventana que se abre. Esta elección es definitiva: para apuntar a otro ladder, elimina el bloque y créalo de nuevo. El ladder de destino se ejecuta en cada ciclo en que la entrada EN es verdadera, en la posición del bloque: antes de las redes situadas debajo, que por tanto ven sus escrituras del mismo ciclo. Este es el mecanismo con el que los ladders se encadenan a partir de Main: un ladder que ningún bloque llama nunca se ejecutará (el análisis lo señala como advertencia).",
 		"connectionsTitle": "Conexiones",
 		"connectionsIntro": "Una red recibe corriente de la barra de la izquierda (línea vertical). Los elementos se conectan arrastrando desde un punto de conexión hasta el elemento de destino; el validador de conexiones impide los enlaces no válidos (p. ej. conectar dos bobinas entre sí).",
 		"connectionsItems": [
@@ -598,7 +598,7 @@
 		"ladderTools": [
 			"Contactos NA, NC, P (flanco ascendente) y N (flanco descendente)",
 			"Bobinas normal, de activación y de desactivación; bobinas invertida y de flanco ascendente/descendente mediante el botón \"Mostrar más bobinas\"",
-			"Bloques Comparación, Asignación, Cálculo y Conversión (los demás bloques del sistema se arrastran desde el explorador)",
+			"Bloques Comparación, Asignación, Cálculo y Conversión, y bloque CALL (los demás bloques del sistema se arrastran desde el explorador)",
 			"Botón \"Red\": añade una nueva red al ladder"
 		],
 		"ladderToolsOutro": "Consulta la sección Ladder para ver el detalle de estos elementos."

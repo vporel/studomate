@@ -24,6 +24,12 @@
 	"shareRevokeFailed": "Could not revoke the share.",
 	"shareLoginPrompt": "Sign in to share this project.",
 	"pasteWrongScope": "Cannot paste here: the clipboard holds elements from a different kind of page.",
+	"programCallRefused": {
+		"main": "The Main ladder cannot be called by another ladder.",
+		"self": "A ladder cannot call itself.",
+		"excluded": "This ladder is excluded from execution: it can only be called from a ladder that is excluded too.",
+		"not-a-ladder": "This program cannot be called here: only a ladder can be."
+	},
 	"hardwareLinked": "Online link established with the Arduino board.",
 	"hardwareLinkLost": "Link with the board lost. Its outputs went back to the fallback state.",
 	"hardwareLinkFailed": {

@@ -9,11 +9,13 @@ import { PROJECT_TEMPLATES } from "@/templates";
 import localizeProject from "@/templates/localize-project";
 import EmbeddedApp from "@/ui/components/embedded/EmbeddedApp";
 import type { EmbeddedView } from "@/ui/components/embedded/embedded-app.types";
+import type { EditorTools } from "@/ui/stores/project/editor-tools";
 import {
 	getVariablesPageDefinition,
 	type VariablesPageId,
 } from "@/ui/stores/project/variables-pages";
 import { TRAINING_EMBEDDED_HEIGHT } from "./training-embedded-height";
+import { DEFAULT_TRAINING_TOOLS, NO_TOOLS } from "./training-tools";
 import { useMemo } from "react";
 
 /** Picks the view displayed first: the first one of this kind among the views offered. */
@@ -41,6 +43,7 @@ export default function TrainingEmbeddedBlock({
 	initialView,
 	scene3d = false,
 	watchOpen = false,
+	tools,
 }: {
 	templateId: string;
 	locale: Locale;
@@ -52,6 +55,8 @@ export default function TrainingEmbeddedBlock({
 	scene3d?: boolean;
 	/** Solution only: the watch table is open when the simulation starts. */
 	watchOpen?: boolean;
+	/** Exercise only: replaces, for each editor it lists, the tools of `DEFAULT_TRAINING_TOOLS`. A solution offers no tool. */
+	tools?: EditorTools;
 }) {
 	const exercise = variant === "exercise";
 	const project = useMemo(() => {
@@ -114,6 +119,7 @@ export default function TrainingEmbeddedBlock({
 			initialMode={exercise ? "design" : "simulation"}
 			watchOpen={watchOpen}
 			editable={exercise}
+			tools={exercise ? { ...DEFAULT_TRAINING_TOOLS, ...tools } : NO_TOOLS}
 			controls={
 				exercise
 					? [

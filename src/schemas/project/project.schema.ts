@@ -60,6 +60,8 @@ export type Exercise = {
  * peuvent ainsi cohabiter, et une version ancienne de l'application peut lister tous les
  * projets tout en refusant proprement d'ouvrir ceux qui la dépassent.
  */
+export type LadderCallRefusal = "not-a-ladder" | "main" | "self" | "excluded";
+
 export const PROJECT_SCHEMA_VERSION = 6;
 
 export default class Project {
@@ -144,6 +146,30 @@ export default class Project {
 	getExecutedLadders(): Ladder[] {
 		return Object.values(this.ladders).filter(
 			(ladder) => !ladder.excludedFromExecution,
+		);
+	}
+
+	/** Why a call block placed in `callerLadderId` cannot reference `targetProgramId`, or
+	 * `undefined` when it can: never the Main nor the caller itself, and a ladder excluded from
+	 * execution only from a caller that is excluded too. */
+	getLadderCallRefusal(
+		callerLadderId: string,
+		targetProgramId: string,
+	): LadderCallRefusal | undefined {
+		const target = this.ladders[targetProgramId];
+		if (!target) return "not-a-ladder";
+		if (target.isMain()) return "main";
+		if (target.id === callerLadderId) return "self";
+		const callerExcluded =
+			this.ladders[callerLadderId]?.excludedFromExecution === true;
+		if (target.excludedFromExecution && !callerExcluded) return "excluded";
+		return undefined;
+	}
+
+	/** Ladders a call block placed in `callerLadderId` can reference (see `getLadderCallRefusal`). */
+	getLaddersCallableFrom(callerLadderId: string): Ladder[] {
+		return Object.values(this.ladders).filter(
+			(ladder) => !this.getLadderCallRefusal(callerLadderId, ladder.id),
 		);
 	}
 

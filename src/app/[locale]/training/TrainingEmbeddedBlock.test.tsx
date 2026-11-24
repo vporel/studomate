@@ -5,6 +5,7 @@ import { getHandoff } from "@/persistence/handoff.storage";
 import { render } from "@testing-library/react";
 import { stubLocalStorage } from "@tests/utils/local-storage-stub";
 import TrainingEmbeddedBlock from "./TrainingEmbeddedBlock";
+import { DEFAULT_TRAINING_TOOLS, NO_TOOLS } from "./training-tools";
 
 const mockEmbeddedApp = jest.fn((_props: any) => null);
 jest.mock("@/ui/components/embedded/EmbeddedApp", () => ({
@@ -16,6 +17,50 @@ describe("TrainingEmbeddedBlock", () => {
 	beforeEach(() => {
 		mockEmbeddedApp.mockClear();
 		localStorage.clear();
+	});
+
+	describe("tools", () => {
+		it("offers the default tools, without the call of a program", () => {
+			render(
+				<TrainingEmbeddedBlock
+					templateId="ladder-and-or"
+					locale="fr"
+					variant="exercise"
+				/>,
+			);
+
+			const { tools } = mockEmbeddedApp.mock.calls[0][0];
+			expect(tools).toEqual(DEFAULT_TRAINING_TOOLS);
+			expect(tools.ladder).not.toContain("user-program");
+		});
+
+		it("offers no tool in a solution, whatever the tools asked for", () => {
+			render(
+				<TrainingEmbeddedBlock
+					templateId="ladder-and-or"
+					locale="fr"
+					tools={{ ladder: ["contact-NO"] }}
+				/>,
+			);
+
+			expect(mockEmbeddedApp.mock.calls[0][0].tools).toEqual(NO_TOOLS);
+		});
+
+		it("replaces the default tools of an editor the step lists", () => {
+			render(
+				<TrainingEmbeddedBlock
+					templateId="ladder-and-or"
+					locale="fr"
+					variant="exercise"
+					tools={{ ladder: ["contact-NO", "user-program"] }}
+				/>,
+			);
+
+			expect(mockEmbeddedApp.mock.calls[0][0].tools).toEqual({
+				...DEFAULT_TRAINING_TOOLS,
+				ladder: ["contact-NO", "user-program"],
+			});
+		});
 	});
 
 	it("shows the Main ladder of an exercise that has no grafcet", () => {

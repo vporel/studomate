@@ -30,6 +30,7 @@ import NextLink from "next/link";
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import { useModuleIntro } from "./ModuleIntroContext";
+import type { EditorTools } from "@/ui/stores/project/editor-tools";
 import type { TrainingInitialView } from "./TrainingEmbeddedBlock";
 import EmbeddedLoading from "@/ui/components/embedded/EmbeddedLoading";
 import { TRAINING_EMBEDDED_HEIGHT } from "./training-embedded-height";
@@ -74,6 +75,8 @@ export type StepData = {
 	embeddedWatchOpen?: boolean;
 	/** The view the embedded solution displays first. */
 	embeddedInitialView?: TrainingInitialView;
+	/** Replaces, for each editor it lists, the tools offered by the embedded exercise of the step. */
+	embeddedTools?: EditorTools;
 	/** Other solutions observed in the page, each opened by its own button and sharing
 	 * `embeddedWatchOpen` and `embeddedInitialView`. */
 	embeddedMore?: { templateId: string; buttonLabel: string }[];
@@ -369,6 +372,7 @@ export default function ModuleStepper({
 									locale={locale}
 									{...openStep.embeddedExercise}
 									watchOpen={openStep.embeddedWatchOpen}
+									tools={openStep.embeddedTools}
 								/>
 							) : (
 								<TrainingEmbeddedBlock

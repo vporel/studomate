@@ -3,7 +3,7 @@
 	"PROJECT_MISSING_ANALYSER_FOR_NOTATION": "No hay ningún analizador disponible para la notación \"{notation}\" (programa \"{programName}\"). Este programa no se analizó.",
 	"PROJECT_MISSING_MAIN": "El proyecto no tiene programa Main.",
 	"PROJECT_MULTIPLE_MAINS": "El proyecto tiene {count} programas Main; debería tener exactamente uno.",
-	"LADDER_NOT_REFERENCED": "El Ladder \"{ladderName}\" no está referenciado por ningún bloque del proyecto: nunca se ejecutará.",
+	"LADDER_NOT_REFERENCED": "El Ladder \"{ladderName}\" no está referenciado por ningún bloque del proyecto: nunca se ejecutará. Para llamarlo, use la herramienta CALL de la barra de herramientas del ladder o arrástrelo desde el explorador a una red del Main o de otro ladder.",
 
 	"HARDWARE_MODEL_UNKNOWN": "El destino de hardware \"{modelId}\" es desconocido para esta versión de Studomate: no se pueden comprobar sus direcciones.",
 	"HARDWARE_PIN_UNKNOWN": "La variable \"{variableName}\" tiene la dirección {address}, que no existe en el destino {device}.",

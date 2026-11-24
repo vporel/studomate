@@ -8,6 +8,7 @@ import { SYSTEM_BLOCK_CATALOG } from "@/ui/components/ladder/system-blocks/syste
 import { ProjectMode } from "@/ui/stores/project/project-mode.enum";
 import { LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE } from "@/ui/utils/ladder/ladder-system-block-drag";
 import { selectorImplementation } from "@tests/utils/store-mocks";
+import type { EditorTools } from "@/ui/stores/project/editor-tools";
 import SystemBlocksPalette from "./SystemBlocksPalette";
 
 jest.mock("@/ui/components/projects/ProjectContext");
@@ -16,9 +17,14 @@ function setup({
 	mode = ProjectMode.DESIGN,
 	editingEnabled = true,
 	onClose = jest.fn(),
+	tools = undefined as EditorTools | undefined,
 } = {}) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
-		selectorImplementation({ mode, editingEnabled }),
+		selectorImplementation({
+			mode,
+			editingEnabled,
+			capabilities: { tools },
+		}),
 	);
 	const view = renderWithI18n(
 		<div data-testid="parent" style={{ position: "relative" }}>
@@ -58,6 +64,15 @@ describe("SystemBlocksPalette", () => {
 			"Conversion de type",
 		])
 			expect(screen.getByText(label)).toBeInTheDocument();
+	});
+
+	it("ne liste que les blocs autorisés par les outils du ladder", () => {
+		setup({ tools: { ladder: ["timer", "compare", "contact-NO"] } });
+
+		const listed = Array.from(
+			document.querySelectorAll("[data-block-type]"),
+		).map((li) => li.getAttribute("data-block-type"));
+		expect(listed).toEqual(["timer", "compare"]);
 	});
 
 	it("se présente comme une boîte non modale intitulée « Bibliothèque »", () => {
